@@ -7,7 +7,7 @@ import { Characters, CharactersData } from "../codegen/index.sol";
 contract SmartStorageUnit is System {
   function createCharacter(string memory name, string memory description) public returns (bytes32 key) {
     key = keccak256(abi.encode(block.prevrandao, _msgSender(), description));
-    Characters.set(key, TasksData({name: name, description: description, createdAt: block.timestamp}));
+    // Characters.set(key, TasksData({name: name, description: description, createdAt: block.timestamp}));
   }
 
 

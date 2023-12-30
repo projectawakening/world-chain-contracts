@@ -1,1 +1,9 @@
+# Node modules of packages
 **/node_modules/**
+
+# Directories of generated code for MUD projects
+**/out
+**/codegen
+**/cache
+# MUD Client generated static data
+**/dist 
