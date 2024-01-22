@@ -18,7 +18,7 @@ We are running the anvil node explicitly ourselves for three reasons:
 To start developing against the world and all of the CCP modules run:
 
 ```
-./dev-all
+pnpm run dev
 ```
 
 You can also run

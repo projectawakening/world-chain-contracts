@@ -11,6 +11,9 @@ importers:
       lerna:
         specifier: ^8.0.1
         version: 8.0.1
+      mprocs:
+        specifier: ^0.6.4
+        version: 0.6.4
 
   core/base-world:
     dependencies:
@@ -3891,6 +3894,12 @@ packages:
   /modify-values@1.0.1:
     resolution: {integrity: sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /mprocs@0.6.4:
+    resolution: {integrity: sha512-Y4eqnAjp3mjy0eT+zPoMQ+P/ISOzjgRG/4kh4I5cRA4Tv0rPxTCBRadn3+j+boMF5id7IoLhrVq9NFWFPuzD9A==}
+    engines: {node: '>=0.10.0'}
+    hasBin: true
     dev: true
 
   /ms@2.1.2:
