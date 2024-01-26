@@ -1,4 +1,4 @@
 packages:
-  - "modules/*"
+  - "foundation/*"
   - "common/*"
   - "core/*"

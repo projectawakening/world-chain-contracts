@@ -58,7 +58,7 @@ importers:
         specifier: 2.0.0-next.14
         version: 2.0.0-next.14
 
-  modules/smart-character:
+  foundation/smart-character:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14
@@ -101,7 +101,7 @@ importers:
         specifier: 2.0.0-next.14
         version: 2.0.0-next.14
 
-  modules/smart-object-framework:
+  foundation/smart-object-framework:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14
@@ -144,7 +144,7 @@ importers:
         specifier: 2.0.0-next.14
         version: 2.0.0-next.14
 
-  modules/smart-storage-unit:
+  foundation/smart-storage-unit:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14
