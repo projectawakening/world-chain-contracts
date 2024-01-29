@@ -28,4 +28,4 @@ npx lerna run build $CORE_FOUNDATION_SCOPE
 wait
 
 echo "------------------------- Deploying foundation modules into world $WORLD_ADDRRESS ---------------------"
-npx lerna run deploy:local $CORE_FOUNDATION_SCOPE -- --worldAddress $WORLD_ADDRESS 
+npx lerna run --stream --concurrency 1 deploy:local $CORE_FOUNDATION_SCOPE -- --worldAddress $WORLD_ADDRESS
