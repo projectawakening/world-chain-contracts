@@ -144,7 +144,7 @@ importers:
         specifier: 2.0.0-next.14
         version: 2.0.0-next.14
 
-  foundation/smart-storage-unit:
+  modules/smart-storage-unit:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14

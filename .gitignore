@@ -4,6 +4,7 @@
 # Directories of generated code for MUD projects
 **/out
 **/codegen
+**/deploys
 **/cache
 # MUD Client generated static data
 **/dist 
