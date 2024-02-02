@@ -14,8 +14,8 @@ print_instruction() {
 
 
 # Build every core contract
-CORE_SCOPE=$(npx lerna list --all --parseable --long | grep core | cut -d ':' -f 2 | sed 's/^/--scope=/' | xargs)
-npx lerna run build $CORE_SCOPE
+WORLD_SCOPE=$(npx lerna list --all --parseable --long | grep world | cut -d ':' -f 2 | sed 's/^/--scope=/' | xargs)
+npx lerna run build $WORLD_SCOPE
 wait
 
 print_instruction "Deploying base world"
@@ -31,7 +31,7 @@ echo $WORLD_ADDRESS
 
 
 
-CORE_FOUNDATION_SCOPE=$(npx lerna list --all --parseable --long | grep foundation | cut -d ':' -f 2 | sed 's/^/--scope=/' | xargs)
+CORE_FOUNDATION_SCOPE=$(npx lerna list --all --parseable --long | grep core | cut -d ':' -f 2 | sed 's/^/--scope=/' | xargs)
 
 echo "--------------------------------------- Building foundation modules ---------------------------------------"
 npx lerna run build $CORE_FOUNDATION_SCOPE

@@ -15,7 +15,7 @@ importers:
         specifier: ^0.6.4
         version: 0.6.4
 
-  core/base-world:
+  core/smart-character:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14
@@ -58,50 +58,7 @@ importers:
         specifier: 2.0.0-next.14
         version: 2.0.0-next.14
 
-  foundation/smart-character:
-    dependencies:
-      '@latticexyz/cli':
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14(google-protobuf@3.21.2)
-      '@latticexyz/schema-type':
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14(typescript@5.1.6)(zod@3.22.4)
-      '@latticexyz/store':
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14(typescript@5.1.6)
-      '@latticexyz/world':
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14(typescript@5.1.6)
-      '@latticexyz/world-modules':
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14(typescript@5.1.6)
-    devDependencies:
-      '@types/node':
-        specifier: ^18.15.11
-        version: 18.19.4
-      ds-test:
-        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
-        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
-      forge-std:
-        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
-        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
-      prettier:
-        specifier: ^2.6.2
-        version: 2.8.8
-      prettier-plugin-solidity:
-        specifier: 1.1.3
-        version: 1.1.3(prettier@2.8.8)
-      solhint:
-        specifier: ^3.3.7
-        version: 3.6.2
-      solhint-config-mud:
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14
-      solhint-plugin-mud:
-        specifier: 2.0.0-next.14
-        version: 2.0.0-next.14
-
-  foundation/smart-object-framework:
+  core/smart-object-framework:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14
@@ -145,6 +102,49 @@ importers:
         version: 2.0.0-next.14
 
   modules/smart-storage-unit:
+    dependencies:
+      '@latticexyz/cli':
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14(google-protobuf@3.21.2)
+      '@latticexyz/schema-type':
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14(typescript@5.1.6)(zod@3.22.4)
+      '@latticexyz/store':
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14(typescript@5.1.6)
+      '@latticexyz/world':
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14(typescript@5.1.6)
+      '@latticexyz/world-modules':
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14(typescript@5.1.6)
+    devDependencies:
+      '@types/node':
+        specifier: ^18.15.11
+        version: 18.19.4
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
+        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
+        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
+      prettier:
+        specifier: ^2.6.2
+        version: 2.8.8
+      prettier-plugin-solidity:
+        specifier: 1.1.3
+        version: 1.1.3(prettier@2.8.8)
+      solhint:
+        specifier: ^3.3.7
+        version: 3.6.2
+      solhint-config-mud:
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14
+      solhint-plugin-mud:
+        specifier: 2.0.0-next.14
+        version: 2.0.0-next.14
+
+  world/base-world:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.14
