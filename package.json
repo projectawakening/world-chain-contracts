@@ -1,7 +1,11 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "dev": "npx mprocs ./scripts/run-local-node.sh ./scripts/deploy-all.sh"
+  },
   "devDependencies": {
-    "lerna": "^8.0.1"
+    "lerna": "^8.0.1",
+    "mprocs": "^0.6.4"
   }
 }

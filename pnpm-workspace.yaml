@@ -1,3 +1,5 @@
 packages:
+  - "common/*"
+  - "world/*"
+  - "core/*"
   - "modules/*"
-  - "foundation/*"

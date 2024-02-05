@@ -6,7 +6,6 @@ export default mudConfig({
       valueSchema: {
         createdAt: "uint256",
         name: "string",
-        description: "string",
       },
     },
   },
