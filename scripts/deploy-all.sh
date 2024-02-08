@@ -26,7 +26,7 @@ json_text=$(echo "$trimmed" | sed -E 's/([a-zA-Z0-9_]+):/"\1":/g; s/([0-9]+):/"\
 
 # Remove asci decorators from string because we are fishing this out of a node console output
 sanitized_string=$(echo "$json_text" | sed -E 's/\x1B\[[0-9;]*[JKmsu]//g')
-WORLD_ADDRESS=$(echo $sanitized_string | jq .worldAddress)
+WORLD_ADDRESS=$(node -pe 'JSON.stringify(JSON.parse(process.argv[1]).worldAddress)' "$(echo $sanitized_string)")
 echo $WORLD_ADDRESS
 
 
