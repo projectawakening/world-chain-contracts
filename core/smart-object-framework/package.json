@@ -13,16 +13,16 @@
     "deploy:testnet": "pnpm run build && mud deploy --profile=lattice-testnet",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier --write 'src/**/*.sol'",
+    "prettier": "prettier --write 'src/**/*.sol' 'test/**/*'",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
     "test": "tsc --noEmit && mud test"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.0.0-next.14",
-    "@latticexyz/schema-type": "2.0.0-next.14",
-    "@latticexyz/store": "2.0.0-next.14",
-    "@latticexyz/world": "2.0.0-next.14",
-    "@latticexyz/world-modules": "2.0.0-next.14"
+    "@latticexyz/cli": "2.0.0-next.15",
+    "@latticexyz/schema-type": "2.0.0-next.15",
+    "@latticexyz/store": "2.0.0-next.15",
+    "@latticexyz/world": "2.0.0-next.15",
+    "@latticexyz/world-modules": "2.0.0-next.15"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
