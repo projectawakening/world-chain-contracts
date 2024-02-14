@@ -18,11 +18,11 @@
     "test": "tsc --noEmit && mud test"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.0.0-next.15",
-    "@latticexyz/schema-type": "2.0.0-next.15",
-    "@latticexyz/store": "2.0.0-next.15",
-    "@latticexyz/world": "2.0.0-next.15",
-    "@latticexyz/world-modules": "2.0.0-next.15"
+    "@latticexyz/cli": "2.0.0-next.16",
+    "@latticexyz/schema-type": "2.0.0-next.16",
+    "@latticexyz/store": "2.0.0-next.16",
+    "@latticexyz/world": "2.0.0-next.16",
+    "@latticexyz/world-modules": "2.0.0-next.16"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

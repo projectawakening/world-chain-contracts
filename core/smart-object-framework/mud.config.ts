@@ -16,59 +16,86 @@ export default mudConfig({
       openAccess: true,
     },
   },
+  userTypes: {
+    ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
+  },
   tables: {
     /**
-     * Used to register an entity (object or class)
+     * Used to store the entity type
+     */
+    EntityType: {
+      keySchema: { "typeId": "uint8" },
+      valueSchema: {
+        doesExists: "bool",
+        typeName: "bytes32"
+      }
+    },
+    /**
+     * Used to register an entity by its type
      */
     EntityTable: {
       keySchema: { "entityId": "uint256" },
       valueSchema: {
-        doesExists: "bool",
+        doesExists: "bool", //Tracks the entity which is no longer valid
         entityType: "uint8"
       }
     },
     /**
-     * Used to tag an object under a class
+     * Used to enforce association/tagging possibility by entity types
+     * eg: Objects can be tagged or grouped under a Class but not vice versa, so Object -> Class is possible
      */
-    ObjectClassMap: {
-      keySchema: { "objectId": "uint256" },
+    EntityTypeAssociation: {
+      keySchema: { "childEntityType": "uint8", "parentEntityType": "uint8" },
       valueSchema: {
-        classId: "uint256"
+        isAllowed: "bool"
       }
     },
     /**
-     * Used to associate a class with a specific set of modules and hooks 
-     * to inherit the functionality of those modules(systems) and hooks
+     * Used to tag/map an entity by its tagged entityIds
+     * eg: Similar objects can be grouped as Class, and tagged with a classId. 
+     * One entity can be tagged with multiple classIds
      */
-    ClassAssociationTable: {
-      keySchema: { "classId": "uint256" },
+    EntityMapTable: {
+      keySchema: { "entityId": "uint256" },
       valueSchema: {
-        isAssociated: "bool", // TODO Remove its unnecessary 
-        moduleIds: "uint256[]",
-        hookIds: "uint256[]"  // TODO reverse lookup
+        taggedParentEntityIds: "uint256[]"
       }
     },
     /**
-     * Used to associate a object with a specific set of modules and hooks
+     * Used to associate a entity with a specific set of modules and hooks 
      * to inherit the functionality of those modules(systems) and hooks
      */
-    ObjectAssociationTable: {
-      keySchema: { "objectId": "uint256" },
+    EntityAssociationTable: {
+      keySchema: { "entityId": "uint256" },
       valueSchema: {
-        isAssociated: "bool",
         moduleIds: "uint256[]",
         hookIds: "uint256[]"
       }
     },
+
+    /************************
+     * Module
+     ************************/
     /**
      * Used to semantically group systems associated with a module
      */
     ModuleTable: {
-      keySchema: { "moduleId": "uint256", "systemId": "bytes32" },
+      keySchema: { "moduleId": "uint256", "systemId": "ResourceId" },
       valueSchema: {
         //Can add functions registered in this system if we need granular control
         moduleName: "bytes16",
         doesExists: "bool",
+      }
+    },
+
+    /**
+     * Only used for lookup purpose to find the moduleIds associated with a system
+     * TODO - Do we need this table?
+     */
+    ModuleSystemLookupTable: {
+      keySchema: { "moduleId": "uint256" },
+      valueSchema: {
+        systemIds: "bytes32[]"
       }
     },
 
@@ -83,10 +110,8 @@ export default mudConfig({
       keySchema: { "hookId": "uint256" }, //keccak(hookSystemId, hookFunctionId)
       valueSchema: {
         isHook: "bool",
-        namespace: "bytes14",
-        hookName: "bytes16",
-        systemId: "bytes32",
-        functionSelector: "bytes4"
+        systemId: "ResourceId", //Callback systemId of the hook 
+        functionSelector: "bytes4" //Callback functionId of the hook
       }
     },
     /**
@@ -96,8 +121,8 @@ export default mudConfig({
       keySchema: { "hookId": "uint256", "targetId": "uint256" }, // targetId - uint256(keccak(systemSelector, functionId))
       valueSchema: {
         hasHook: "bool",
-        systemSelector: "bytes32",
-        functionSelector: "bytes4"
+        systemSelector: "ResourceId", //Target system to hook against
+        functionSelector: "bytes4" //Target function to hook against
       }
     },
     /**
@@ -107,8 +132,8 @@ export default mudConfig({
       keySchema: { "hookId": "uint256", "targetId": "uint256" },
       valueSchema: {
         hasHook: "bool",
-        systemSelector: "bytes32",
-        functionSelector: "bytes4"
+        systemSelector: "ResourceId", //Target system to hook against
+        functionSelector: "bytes4" //Target function to hook against
       }
     },
   },
