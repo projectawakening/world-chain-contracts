@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { System } from "@latticexyz/world/src/System.sol";
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
-import { ObjectClassMap } from "../../codegen/tables/ObjectClassMap.sol";
+import { EntityType } from "../../codegen/tables/EntityType.sol";
+import { EntityTypeAssociation } from "../../codegen/tables/EntityTypeAssociation.sol";
+import { EntityMapTable } from "../../codegen/tables/EntityMapTable.sol";
 import { ICustomErrorSystem } from "../../codegen/world/ICustomErrorSystem.sol";
 import { EveSystem } from "../internal/EveSystem.sol";
-import { EntityType } from "../../types.sol";
-import { DEFAULT_CLASS_TAG } from "../../constants.sol";
+import { INVALID_ID } from "../../constants.sol";
 
 /**
  * @title EntityCore
@@ -16,67 +16,135 @@ import { DEFAULT_CLASS_TAG } from "../../constants.sol";
  */
 contract EntityCore is EveSystem {
   /**
-   * @notice Registers an entity as a class and object
-   * @param _entityId is the id of the entity
-   * @param _entityType is the type of the entity
+   * @notice Registers an entity type
+   * @param entityTypeId is the id of a entityType
+   * @param entityType is the name of the entityType
    */
-  function registerEntity(uint256 _entityId, EntityType _entityType) public {
-    _registerEntity(_entityId, _entityType);
+  function registerEntityType(uint8 entityTypeId, bytes32 entityType) public {
+    _registerEntityType(entityTypeId, entityType);
   }
 
   /**
-   * @notice Tags an object to a class
-   * @param _entityId is the id of the object
-   * @param _classId is the id of the class
+   * @notice Registers an entity by its type
+   * @param entityId is the id of the entity
+   * @param entityType is the type of the entity
    */
-  function tagEntity(uint256 _entityId, uint256 _classId) public {
-    _tagEntity(_entityId, _classId);
+  function registerEntity(uint256 entityId, uint8 entityType) public {
+    _registerEntity(entityId, entityType);
+  }
+
+  function registerEntity(uint256[] memory entityId, uint8[] memory entityType) public {
+    if (entityId.length != entityType.length)
+      revert ICustomErrorSystem.InvalidArrayLength(
+        entityId.length,
+        entityType.length,
+        "EntityCore: Array length mismatch"
+      );
+    for (uint256 i = 0; i < entityId.length; i++) {
+      _registerEntity(entityId[i], entityType[i]);
+    }
   }
 
   /**
-   * @notice Removes an entity
-   * @param _entityId is the id of the entity
+   * @notice Defines a parent-child association enforcement between two entity types
+   * @param childEntityType is the id of the child entity type
+   * @param parentEntityType is the id of the parent entity type
    */
-  function removeEntity(uint256 _entityId) public {
-    _removeEntity(_entityId);
+  function registerEntityTypeAssociation(uint8 childEntityType, uint8 parentEntityType) public {
+    _registerEntityTypeAssociation(childEntityType, parentEntityType);
   }
 
   /**
-   * @notice Removes the class tag from an object
-   * @param _entityId is the id of the object
+   * @notice Tags/Groups a child entities to a parent entity
+   * @dev Similar Objects can be tagged under a Class and associate modules to the class, so that all the objects under the class can inherit the modules.
+   * @param entityId is the id of the child entity
+   * @param parentEntityId is the id of the parent entity which the child belongs to
    */
-  function removeClassTag(uint256 _entityId) public {
-    _removeClassTag(_entityId);
+  function tagEntity(uint256 entityId, uint256 parentEntityId) public {
+    _tagEntity(entityId, parentEntityId);
   }
 
-  function _registerEntity(uint256 _entityId, EntityType _entityType) internal {
-    if (_entityId == 0) revert ICustomErrorSystem.InvalidEntityId();
-    if (EntityTable.getEntityType(_entityId) != uint256(EntityType.Unknown))
-      revert ICustomErrorSystem.EntityAlreadyRegistered(_entityId, "EntityCore: Entity already registered");
-
-    EntityTable.set(_entityId, true, uint8(_entityType));
+  /**
+   * @notice Overloaded function to tagEntity under multiple parent entities
+   */
+  function tagEntity(uint256 entityId, uint256[] memory _parentEntityIds) public {
+    for (uint256 i = 0; i < _parentEntityIds.length; i++) {
+      _tagEntity(entityId, _parentEntityIds[i]);
+    }
   }
 
-  function _tagEntity(uint256 _entityId, uint256 _classId) internal {
-    uint256 entityType = EntityTable.getEntityType(_entityId);
-    if (entityType != uint256(EntityType.Object))
-      revert ICustomErrorSystem.EntityTypeMismatch(_entityId, uint256(EntityType.Object), entityType);
-
-    ObjectClassMap.setClassId(_entityId, _classId);
+  /**
+   * @notice Removes the parent entity tag from a child entity
+   * @param entityId is the id of the child entity
+   * @param parentEntityId is the id of the parent entity
+   */
+  function removeEntityTag(uint256 entityId, uint256 parentEntityId) public {
+    _removeEntityTag(entityId, parentEntityId);
   }
 
-  //TODO make sure there is no data dependency
-  function _removeEntity(uint256 _entityId) internal {
-    uint256 entityType = EntityTable.getEntityType(_entityId);
-    if (EntityTable.getEntityType(_entityId) == uint256(EntityType.Unknown))
-      revert ICustomErrorSystem.EntityNotRegistered(_entityId, "EntityCore: Entity not registered");
+  function _registerEntityType(uint8 entityTypeId, bytes32 entityType) internal {
+    if (entityTypeId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
+    if (EntityType.getDoesExists(entityTypeId) == true)
+      revert ICustomErrorSystem.EntityTypeAlreadyRegistered(entityTypeId, "EntityCore: EntityType already registered");
 
-    EntityTable.set(_entityId, false, uint8(EntityType.Unknown));
+    EntityType.set(entityTypeId, true, entityType);
   }
 
-  function _removeClassTag(uint256 _entityId) internal {
-    uint256 classId = ObjectClassMap.get(_entityId);
-    if (ObjectClassMap.get(_entityId) == DEFAULT_CLASS_TAG) revert ICustomErrorSystem.NoClassTag(_entityId);
-    ObjectClassMap.setClassId(_entityId, DEFAULT_CLASS_TAG);
+  function _registerEntity(uint256 entityId, uint8 entityType) internal {
+    if (entityId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
+    if (EntityType.getDoesExists(entityType) == false)
+      revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntityCore: EntityType not registered");
+    if (EntityTable.getDoesExists(entityId) == true)
+      revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntityCore: Entity already registered");
+
+    EntityTable.set(entityId, true, entityType);
+  }
+
+  function _registerEntityTypeAssociation(uint8 childEntityType, uint8 parentEntityType) internal {
+    if (EntityType.getDoesExists(childEntityType) == false)
+      revert ICustomErrorSystem.EntityTypeNotRegistered(childEntityType, "EntityCore: EntityType not registered");
+    if (EntityType.getDoesExists(parentEntityType) == false)
+      revert ICustomErrorSystem.EntityTypeNotRegistered(parentEntityType, "EntityCore: EntityType not registered");
+
+    EntityTypeAssociation.set(childEntityType, parentEntityType, true);
+  }
+
+  function _tagEntity(uint256 entityId, uint256 parentEntityId) internal {
+    _requireEntityRegistered(entityId);
+    _requireEntityRegistered(parentEntityId);
+    _requireAssociationAllowed(entityId, parentEntityId);
+
+    uint256[] memory parentEntityIds = EntityMapTable.get(entityId);
+    (, bool exists) = findIndex(parentEntityIds, parentEntityId);
+    if (exists)
+      revert ICustomErrorSystem.EntityAlreadyTagged(entityId, parentEntityId, "EntityCore: Entity already tagged");
+
+    EntityMapTable.pushTaggedParentEntityIds(entityId, parentEntityId);
+  }
+
+  function _removeEntityTag(uint256 entityId, uint256 parentEntityId) internal {
+    //TODO Have to figure out a clean way to remove an element from an array
+    uint256[] memory taggedParentEntities = EntityMapTable.get(entityId);
+    (uint256 index, bool exists) = findIndex(taggedParentEntities, parentEntityId);
+    if (exists) {
+      // Swap the element with the last one and pop the last element
+      uint256 lastIndex = taggedParentEntities.length - 1;
+      if (index != lastIndex) {
+        EntityMapTable.update(entityId, index, taggedParentEntities[lastIndex]);
+      }
+      EntityMapTable.pop(entityId);
+    }
+  }
+
+  function _requireAssociationAllowed(uint256 childEntityId, uint256 parentEntityId) internal view {
+    uint8 childEntityType = EntityTable.getEntityType(childEntityId);
+    uint8 parentEntityType = EntityTable.getEntityType(parentEntityId);
+
+    if (EntityTypeAssociation.get(childEntityType, parentEntityType) == false)
+      revert ICustomErrorSystem.EntityTypeAssociationNotAllowed(
+        childEntityType,
+        parentEntityType,
+        "EntityCore: EntityType association not allowed"
+      );
   }
 }

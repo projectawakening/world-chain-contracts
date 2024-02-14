@@ -15,11 +15,13 @@ import { IEntityCore } from "../src/codegen/world/IEntityCore.sol";
 import { IWorld } from "../src/codegen/world/IWorld.sol";
 import { ICustomErrorSystem } from "../src/codegen/world/ICustomErrorSystem.sol";
 import { EntityTable } from "../src/codegen/tables/EntityTable.sol";
+import { EntityMapTable } from "../src/codegen/tables/EntityMapTable.sol";
 import { ModuleTable } from "../src/codegen/tables/ModuleTable.sol";
 import { HookTable } from "../src/codegen/tables/HookTable.sol";
 import { EveSystem } from "../src/systems/internal/EveSystem.sol";
-import { MODULE_NAME, TABLE_ID, SYSTEM_ID, NAMESPACE, SYSTEM_NAME, HOOK_MODULE_NAME, HOOK_SYSTEM_ID, HOOK_SYSTEM_NAME } from "./constants.sol";
-import { EntityType, HookType } from "../src/types.sol";
+import { MODULE_NAME, TABLE_ID, SYSTEM_ID, NAMESPACE, NAMESPACE_ID, SYSTEM_NAME, HOOK_SYSTEM_ID, HOOK_SYSTEM_NAME, OBJECT, CLASS } from "./constants.sol";
+import { HookType } from "../src/types.sol";
+import { Utils } from "../src/utils.sol";
 
 interface ISmartDeployableTestSystem {
   function echoSmartDeployable(uint256 _value) external view returns (uint256);
@@ -31,7 +33,7 @@ contract SmartDeployableTestSystem is EveSystem {
   )
     public
     onlyAssociatedModule(_value, SYSTEM_ID, getFunctionSelector(SYSTEM_ID, "echoSmartDeployable(uint256)"))
-    hookable(_value, ResourceId.unwrap(SYSTEM_ID), abi.encode(_value))
+    hookable(_value, SYSTEM_ID, abi.encode(_value))
     returns (uint256)
   {
     return _value;
@@ -41,7 +43,7 @@ contract SmartDeployableTestSystem is EveSystem {
     ResourceId systemId,
     string memory systemFunctionSignature
   ) public pure returns (bytes4 worldFunctionSelector) {
-    bytes memory worldFunctionSignature = abi.encodePacked("deployable", "_", "system", "_", systemFunctionSignature);
+    bytes memory worldFunctionSignature = abi.encodePacked("deployable", "__", systemFunctionSignature);
     worldFunctionSelector = bytes4(keccak256(worldFunctionSignature));
   }
 }
@@ -56,18 +58,19 @@ contract SmartDeployableTestModule is Module {
   SmartDeployableTestSystem private smartDeployableTestSystem = new SmartDeployableTestSystem();
   SampleHook private sampleHook = new SampleHook();
 
-  function getName() public pure returns (bytes16) {
-    return MODULE_NAME;
-  }
-
   function installRoot(bytes memory args) public {
     // Naive check to ensure this is only installed once
-    // TODO: only revert if there's nothing to do
-    requireNotInstalled(getName(), args);
+    requireNotInstalled(__self, args);
+    IBaseWorld world = IBaseWorld(_world());
+
+    //Register namespace
+    (bool success, bytes memory data) = address(world).delegatecall(
+      abi.encodeCall(world.registerNamespace, (NAMESPACE_ID))
+    );
+    if (!success) revertWithBytes(data);
 
     // Register system
-    IBaseWorld world = IBaseWorld(_world());
-    (bool success, bytes memory data) = address(world).delegatecall(
+    (success, data) = address(world).delegatecall(
       abi.encodeCall(world.registerSystem, (SYSTEM_ID, smartDeployableTestSystem, true))
     );
     if (!success) revertWithBytes(data);
@@ -91,13 +94,12 @@ contract SmartDeployableTestModule is Module {
 
   function install(bytes memory args) public {
     // Naive check to ensure this is only installed once
-    // TODO: only revert if there's nothing to do
-    requireNotInstalled(getName(), args);
+    requireNotInstalled(__self, args);
 
     IBaseWorld world = IBaseWorld(_world());
 
-    // Register table
-    // smartDeployableTestSystem.register(TABLE_ID);
+    // Register namespace
+    world.registerNamespace(NAMESPACE_ID);
 
     // Register system
     world.registerSystem(SYSTEM_ID, smartDeployableTestSystem, true);
@@ -125,13 +127,26 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // Check that the module is installed
-    assertTrue(InstalledModules.get(smartDeployableTestModule.getName(), keccak256(new bytes(0))) != address(0));
+    assertTrue(InstalledModules.get(address(smartDeployableTestModule), keccak256(new bytes(0))));
   }
 
   function testRegisterEntity() public {
     IWorld world = IWorld(worldAddress);
-    world.registerEntity(1, EntityType.Class);
-    assertTrue(EntityTable.getEntityType(1) == uint256(EntityType.Class));
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntity(1, CLASS);
+    assertTrue(EntityTable.getEntityType(1) == CLASS);
+  }
+
+  function testRevertEntityTypeNotRegistered() public {
+    IWorld world = IWorld(worldAddress);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityTypeNotRegistered.selector,
+        2,
+        "EntityCore: EntityType not registered"
+      )
+    );
+    world.registerEntity(1, CLASS);
   }
 
   function testRevertIfEntityNotRegistered() public {
@@ -145,6 +160,130 @@ contract EveSystemTest is MudTest {
     world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (12)));
   }
 
+  function testTagEntity() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 classId = uint256(keccak256(abi.encodePacked("typeId12")));
+    uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+
+    //register entity
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+    world.registerEntity(classId, CLASS);
+    world.registerEntity(singletonObject1, OBJECT);
+
+    //Tag objects under a class
+    world.tagEntity(singletonObject1, classId);
+    uint256[] memory parentEntityIds = EntityMapTable.get(singletonObject1);
+    assertTrue(parentEntityIds[0] == classId);
+  }
+
+  function testTagMultipleParents() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 classId1 = uint256(keccak256(abi.encodePacked("typeId12")));
+    uint256 classId2 = uint256(keccak256(abi.encodePacked("typeId13")));
+    uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+
+    //register entity
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+
+    uint256[] memory entityIds = new uint256[](2);
+    uint8[] memory entityTypes = new uint8[](2);
+    entityIds[0] = classId1;
+    entityIds[1] = classId2;
+    entityTypes[0] = CLASS;
+    entityTypes[1] = CLASS;
+    world.registerEntity(entityIds, entityTypes);
+    world.registerEntity(singletonObject1, OBJECT);
+
+    //Tag objects under a class
+    world.tagEntity(singletonObject1, entityIds);
+
+    uint256[] memory parentEntityIds = EntityMapTable.get(singletonObject1);
+    assertTrue(parentEntityIds[0] == classId1);
+    assertTrue(parentEntityIds[1] == classId2);
+  }
+
+  function testRevertAlreadyTagged() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 classId = uint256(keccak256(abi.encodePacked("typeId12")));
+    uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+
+    //register entity
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+    world.registerEntity(classId, CLASS);
+    world.registerEntity(singletonObject1, OBJECT);
+
+    //Tag objects under a class
+    world.tagEntity(singletonObject1, classId);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyTagged.selector,
+        singletonObject1,
+        classId,
+        "EntityCore: Entity already tagged"
+      )
+    );
+    world.tagEntity(singletonObject1, classId);
+  }
+
+  function testRevertIfTaggingNotAllowed() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 classId = uint256(keccak256(abi.encodePacked("typeId12")));
+    uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+
+    //register entity
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+    world.registerEntity(classId, CLASS);
+    world.registerEntity(singletonObject1, OBJECT);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityTypeAssociationNotAllowed.selector,
+        CLASS,
+        OBJECT,
+        "EntityCore: EntityType association not allowed"
+      )
+    );
+    world.tagEntity(classId, singletonObject1);
+  }
+
+  function testRegisterModule() public {
+    IWorld world = IWorld(worldAddress);
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    //register module
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    assertTrue(ModuleTable.getDoesExists(moduleId, SYSTEM_ID));
+  }
+
+  function testRevertRegisterModuleIfSystemAlreadyRegistered() public {
+    IWorld world = IWorld(worldAddress);
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    //register module
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.SystemAlreadyAssociatedWithModule.selector,
+        moduleId,
+        SYSTEM_ID,
+        "ModuleCore: System already associated with the module"
+      )
+    );
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+  }
+
   function testObjectAssociate() public {
     IWorld world = IWorld(worldAddress);
     uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
@@ -154,16 +293,17 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
-    world.registerEntity(singletonEntity, EntityType.Object);
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
 
-    bool systemExists = ModuleTable.getDoesExists(moduleId, ResourceId.unwrap(SYSTEM_ID));
+    bool systemExists = ModuleTable.getDoesExists(moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
       (uint256)
@@ -180,16 +320,17 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
-    world.registerEntity(nonSingletonEntity, EntityType.Class);
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntity(nonSingletonEntity, CLASS);
 
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(nonSingletonEntity, moduleId);
 
-    bool systemExists = ModuleTable.getDoesExists(moduleId, ResourceId.unwrap(SYSTEM_ID));
+    bool systemExists = ModuleTable.getDoesExists(moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (nonSingletonEntity))),
       (uint256)
@@ -206,7 +347,8 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
-    world.registerEntity(entity, EntityType.Class);
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntity(entity, CLASS);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -231,13 +373,20 @@ contract EveSystemTest is MudTest {
 
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
-    //register entity
-    world.registerEntity(classId, EntityType.Class);
-    world.registerEntity(singletonObject1, EntityType.Object);
-    world.registerEntity(singletonObject2, EntityType.Object);
-    world.registerEntity(singletonObject3, EntityType.Object);
+    //register entityType
+    world.registerEntityType(CLASS, "Class");
+    world.registerEntityType(OBJECT, "Object");
+
+    //Allow tagging of entities
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+
+    //register entityType
+    world.registerEntity(classId, CLASS);
+    world.registerEntity(singletonObject1, OBJECT);
+    world.registerEntity(singletonObject2, OBJECT);
+    world.registerEntity(singletonObject3, OBJECT);
 
     //Tag objects under a class
     world.tagEntity(singletonObject1, classId);
@@ -247,7 +396,7 @@ contract EveSystemTest is MudTest {
     //associate entity with module
     world.associateModule(classId, moduleId);
 
-    bool systemExists = ModuleTable.getDoesExists(moduleId, ResourceId.unwrap(SYSTEM_ID));
+    bool systemExists = ModuleTable.getDoesExists(moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
       (uint256)
@@ -260,7 +409,7 @@ contract EveSystemTest is MudTest {
     assertTrue(value == singletonObject2);
   }
 
-  function testRemoveClassTag() public {
+  function testRemoveEntityTag() public {
     IWorld world = IWorld(worldAddress);
     uint256 classId = uint256(keccak256(abi.encodePacked("typeId12")));
     uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
@@ -271,11 +420,14 @@ contract EveSystemTest is MudTest {
 
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
-    world.registerEntity(classId, EntityType.Class);
-    world.registerEntity(singletonObject1, EntityType.Object);
+    world.registerEntityType(1, "Class");
+    world.registerEntityType(2, "Object");
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+    world.registerEntity(classId, CLASS);
+    world.registerEntity(singletonObject1, OBJECT);
     world.tagEntity(singletonObject1, classId);
 
     //associate entity with module
@@ -287,7 +439,7 @@ contract EveSystemTest is MudTest {
     );
     assertTrue(value == singletonObject1);
 
-    world.removeClassTag(singletonObject1);
+    world.removeEntityTag(singletonObject1, classId);
     vm.expectRevert(
       abi.encodeWithSelector(
         ICustomErrorSystem.EntityNotAssociatedWithModule.selector,
@@ -298,43 +450,135 @@ contract EveSystemTest is MudTest {
     world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1)));
   }
 
-  function testRemoveEntity() public {
+  function testRevertIfEntityAlreadyAssociated() public {
     IWorld world = IWorld(worldAddress);
-    uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+    uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
 
     //install module
     SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
     world.installModule(smartDeployableTestModule, new bytes(0));
 
+    //register entity
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
+
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
-
-    //register entity
-    world.registerEntity(singletonObject1, EntityType.Object);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
-    world.associateModule(singletonObject1, moduleId);
+    world.associateModule(singletonEntity, moduleId);
 
-    uint256 value = abi.decode(
-      world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
-      (uint256)
-    );
-    assertTrue(value == singletonObject1);
-
-    //Remove entity and check if it reverts
-    world.removeEntity(singletonObject1);
     vm.expectRevert(
       abi.encodeWithSelector(
-        ICustomErrorSystem.EntityNotRegistered.selector,
-        singletonObject1,
-        "EveSystem: Entity is not registered"
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        singletonEntity,
+        moduleId,
+        "ModuleCore: Module already associated with the entity"
       )
     );
-    world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1)));
+    world.associateModule(singletonEntity, moduleId);
   }
 
-  function testRemoveModule() public {
+  function testRevertIfParentEntityIsAlreadyAssociated() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 classId1 = uint256(keccak256(abi.encodePacked("typeId12")));
+    uint256 classId2 = uint256(keccak256(abi.encodePacked("typeId2")));
+    uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+
+    //install module
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    // register system associated with module
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+
+    //register entity
+    world.registerEntityType(1, "Class");
+    world.registerEntityType(2, "Object");
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+    world.registerEntity(classId1, CLASS);
+    world.registerEntity(classId2, CLASS);
+
+    world.registerEntity(singletonObject1, OBJECT);
+    world.tagEntity(singletonObject1, classId1);
+    world.tagEntity(singletonObject1, classId2);
+
+    //associate entity with module
+    world.associateModule(classId1, moduleId);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        classId1,
+        moduleId,
+        "ModuleCore: Module already associated with the entity"
+      )
+    );
+    world.associateModule(singletonObject1, moduleId);
+  }
+
+  function testRevertIfModuleNotRegistered() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+
+    //install module
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    world.registerEntityType(2, "Object");
+    world.registerEntity(singletonEntity, CLASS);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.ModuleNotRegistered.selector,
+        singletonEntity,
+        "EveSystem: Module not registered"
+      )
+    );
+    world.associateModule(singletonEntity, singletonEntity);
+  }
+
+  //TODO commenting until we resolve data corruption issue
+  // function testRemoveEntity() public {
+  //   IWorld world = IWorld(worldAddress);
+  //   uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
+
+  //   //install module
+  //   SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+  //   world.installModule(smartDeployableTestModule, new bytes(0));
+
+  //   // register system associated with module
+  //   uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
+  //   world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+
+  //   //register entity
+  //   world.registerEntityType(2, "Object");
+  //   world.registerEntity(singletonObject1, OBJECT);
+
+  //   //associate entity with module
+  //   world.associateModule(singletonObject1, moduleId);
+
+  //   uint256 value = abi.decode(
+  //     world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
+  //     (uint256)
+  //   );
+  //   assertTrue(value == singletonObject1);
+
+  //   //Remove entity and check if it reverts
+  //   world.removeEntity(singletonObject1);
+  //   vm.expectRevert(
+  //     abi.encodeWithSelector(
+  //       ICustomErrorSystem.EntityNotRegistered.selector,
+  //       singletonObject1,
+  //       "EveSystem: Entity is not registered"
+  //     )
+  //   );
+  //   world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1)));
+  // }
+
+  function testRemoveEntityModuleAssociation() public {
     IWorld world = IWorld(worldAddress);
     uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
 
@@ -344,10 +588,11 @@ contract EveSystemTest is MudTest {
 
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
-    world.registerEntity(singletonObject1, EntityType.Object);
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonObject1, OBJECT);
 
     //associate entity with module
     world.associateModule(singletonObject1, moduleId);
@@ -359,11 +604,12 @@ contract EveSystemTest is MudTest {
     assertTrue(value == singletonObject1);
 
     //Remove module and check if it reverts
-    world.removeModule(singletonObject1, moduleId);
+    world.removeEntityModuleAssociation(singletonObject1, moduleId);
     vm.expectRevert(
       abi.encodeWithSelector(
-        ICustomErrorSystem.ModuleNotFound.selector,
-        "EveSystem: Module associated with the system is not found"
+        ICustomErrorSystem.EntityNotAssociatedWithModule.selector,
+        singletonObject1,
+        "EveSystem: Entity is not associated with any module"
       )
     );
     world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1)));
@@ -379,10 +625,11 @@ contract EveSystemTest is MudTest {
 
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
-    world.registerEntity(singletonObject1, EntityType.Object);
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonObject1, OBJECT);
 
     //associate entity with module
     world.associateModule(singletonObject1, moduleId);
@@ -413,18 +660,19 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
-    world.registerEntity(singletonEntity, EntityType.Object);
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
 
     //Hook
     bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
-    world.registerHook(NAMESPACE, HOOK_SYSTEM_NAME, functionId);
+    world.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
 
     uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
     assertTrue(HookTable.getIsHook(hookId));
@@ -436,7 +684,7 @@ contract EveSystemTest is MudTest {
     world.addHook(
       hookId,
       HookType.BEFORE,
-      ResourceId.unwrap(SYSTEM_ID),
+      SYSTEM_ID,
       bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
     );
 
@@ -445,6 +693,149 @@ contract EveSystemTest is MudTest {
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
       (uint256)
     );
+  }
+
+  function testRevertHookAssociationIfHookNotRegistered() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+
+    // install module
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    //register entity
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
+
+    // register system associated with module
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+
+    //associate entity with module
+    world.associateModule(singletonEntity, moduleId);
+
+    //Hook
+    bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(ICustomErrorSystem.HookNotRegistered.selector, hookId, "HookCore: Hook not registered")
+    );
+    world.associateHook(singletonEntity, hookId);
+  }
+
+  function testRevertDuplicateHookAssociation() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+
+    // install module
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    //register entity
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
+
+    // register system associated with module
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+
+    //associate entity with module
+    world.associateModule(singletonEntity, moduleId);
+
+    //Hook
+    bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    world.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
+
+    uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
+    assertTrue(HookTable.getIsHook(hookId));
+
+    //asscoaite hook with a entity
+    world.associateHook(singletonEntity, hookId);
+
+    //add the hook to be executed before/after a function
+    world.addHook(
+      hookId,
+      HookType.BEFORE,
+      SYSTEM_ID,
+      bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
+    );
+
+    //execute hooks by calling the target function
+    uint256 value = abi.decode(
+      world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
+      (uint256)
+    );
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        singletonEntity,
+        hookId,
+        "HookCore: Hook already associated with the entity"
+      )
+    );
+    world.associateHook(singletonEntity, hookId);
+  }
+
+  function testRevertIfParentEntityHasHookAssociated() public {
+    IWorld world = IWorld(worldAddress);
+    uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+    uint256 classId = uint256(keccak256(abi.encodePacked("typeId12")));
+
+    // install module
+    SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+    world.installModule(smartDeployableTestModule, new bytes(0));
+
+    //register entity
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntityType(CLASS, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
+    world.registerEntity(classId, CLASS);
+
+    world.registerEntityTypeAssociation(OBJECT, CLASS);
+    world.tagEntity(singletonEntity, classId);
+
+    // register system associated with module
+    uint256 moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+
+    //associate entity with module
+    world.associateModule(classId, moduleId);
+
+    //Hook
+    bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    world.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
+
+    uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
+    assertTrue(HookTable.getIsHook(hookId));
+
+    //asscoaite hook with a entity
+    world.associateHook(classId, hookId);
+
+    //add the hook to be executed before/after a function
+    world.addHook(
+      hookId,
+      HookType.BEFORE,
+      SYSTEM_ID,
+      bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
+    );
+
+    //execute hooks by calling the target function
+    uint256 value = abi.decode(
+      world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
+      (uint256)
+    );
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        classId,
+        hookId,
+        "HookCore: Hook already associated with the entity"
+      )
+    );
+    world.associateHook(singletonEntity, hookId);
   }
 
   function testRemoveHook() public {
@@ -456,18 +847,19 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
-    world.registerEntity(singletonEntity, EntityType.Object);
+    world.registerEntityType(OBJECT, "Object");
+    world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
     uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
-    world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
 
     //Hook
     bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
-    world.registerHook(NAMESPACE, HOOK_SYSTEM_NAME, functionId);
+    world.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
 
     uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
     assertTrue(HookTable.getIsHook(hookId));
@@ -479,7 +871,7 @@ contract EveSystemTest is MudTest {
     world.addHook(
       hookId,
       HookType.BEFORE,
-      ResourceId.unwrap(SYSTEM_ID),
+      SYSTEM_ID,
       bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
     );
 
@@ -487,7 +879,7 @@ contract EveSystemTest is MudTest {
     world.removeHook(
       hookId,
       HookType.BEFORE,
-      ResourceId.unwrap(SYSTEM_ID),
+      SYSTEM_ID,
       bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
     );
 
