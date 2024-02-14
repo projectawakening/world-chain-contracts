@@ -15,12 +15,24 @@ import { INVALID_ID } from "../../constants.sol";
  *
  */
 contract EntityCore is EveSystem {
+  // Modifiers
+  modifier validEntityId(uint256 entityId) {
+    if (entityId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
+    _;
+  }
+
+  modifier entityTypeExists(uint8 entityType) {
+    if (EntityType.getDoesExists(entityType) == false)
+      revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntityCore: EntityType not registered");
+    _;
+  }
+
   /**
    * @notice Registers an entity type
    * @param entityTypeId is the id of a entityType
    * @param entityType is the name of the entityType
    */
-  function registerEntityType(uint8 entityTypeId, bytes32 entityType) public {
+  function registerEntityType(uint8 entityTypeId, bytes32 entityType) external validEntityId(entityTypeId) {
     _registerEntityType(entityTypeId, entityType);
   }
 
@@ -29,11 +41,11 @@ contract EntityCore is EveSystem {
    * @param entityId is the id of the entity
    * @param entityType is the type of the entity
    */
-  function registerEntity(uint256 entityId, uint8 entityType) public {
+  function registerEntity(uint256 entityId, uint8 entityType) external {
     _registerEntity(entityId, entityType);
   }
 
-  function registerEntity(uint256[] memory entityId, uint8[] memory entityType) public {
+  function registerEntity(uint256[] memory entityId, uint8[] memory entityType) external {
     if (entityId.length != entityType.length)
       revert ICustomErrorSystem.InvalidArrayLength(
         entityId.length,
@@ -50,7 +62,10 @@ contract EntityCore is EveSystem {
    * @param childEntityType is the id of the child entity type
    * @param parentEntityType is the id of the parent entity type
    */
-  function registerEntityTypeAssociation(uint8 childEntityType, uint8 parentEntityType) public {
+  function registerEntityTypeAssociation(
+    uint8 childEntityType,
+    uint8 parentEntityType
+  ) external entityTypeExists(childEntityType) entityTypeExists(parentEntityType) {
     _registerEntityTypeAssociation(childEntityType, parentEntityType);
   }
 
@@ -60,14 +75,14 @@ contract EntityCore is EveSystem {
    * @param entityId is the id of the child entity
    * @param parentEntityId is the id of the parent entity which the child belongs to
    */
-  function tagEntity(uint256 entityId, uint256 parentEntityId) public {
+  function tagEntity(uint256 entityId, uint256 parentEntityId) external {
     _tagEntity(entityId, parentEntityId);
   }
 
   /**
    * @notice Overloaded function to tagEntity under multiple parent entities
    */
-  function tagEntity(uint256 entityId, uint256[] memory _parentEntityIds) public {
+  function tagEntity(uint256 entityId, uint256[] memory _parentEntityIds) external {
     for (uint256 i = 0; i < _parentEntityIds.length; i++) {
       _tagEntity(entityId, _parentEntityIds[i]);
     }
@@ -78,22 +93,21 @@ contract EntityCore is EveSystem {
    * @param entityId is the id of the child entity
    * @param parentEntityId is the id of the parent entity
    */
-  function removeEntityTag(uint256 entityId, uint256 parentEntityId) public {
+  function removeEntityTag(uint256 entityId, uint256 parentEntityId) external {
     _removeEntityTag(entityId, parentEntityId);
   }
 
   function _registerEntityType(uint8 entityTypeId, bytes32 entityType) internal {
-    if (entityTypeId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
     if (EntityType.getDoesExists(entityTypeId) == true)
       revert ICustomErrorSystem.EntityTypeAlreadyRegistered(entityTypeId, "EntityCore: EntityType already registered");
 
     EntityType.set(entityTypeId, true, entityType);
   }
 
-  function _registerEntity(uint256 entityId, uint8 entityType) internal {
-    if (entityId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
-    if (EntityType.getDoesExists(entityType) == false)
-      revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntityCore: EntityType not registered");
+  function _registerEntity(
+    uint256 entityId,
+    uint8 entityType
+  ) internal validEntityId(entityId) entityTypeExists(entityType) {
     if (EntityTable.getDoesExists(entityId) == true)
       revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntityCore: Entity already registered");
 
@@ -101,11 +115,6 @@ contract EntityCore is EveSystem {
   }
 
   function _registerEntityTypeAssociation(uint8 childEntityType, uint8 parentEntityType) internal {
-    if (EntityType.getDoesExists(childEntityType) == false)
-      revert ICustomErrorSystem.EntityTypeNotRegistered(childEntityType, "EntityCore: EntityType not registered");
-    if (EntityType.getDoesExists(parentEntityType) == false)
-      revert ICustomErrorSystem.EntityTypeNotRegistered(parentEntityType, "EntityCore: EntityType not registered");
-
     EntityTypeAssociation.set(childEntityType, parentEntityType, true);
   }
 
