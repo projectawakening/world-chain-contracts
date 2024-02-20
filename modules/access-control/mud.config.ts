@@ -5,15 +5,33 @@ export default mudConfig({
     HasRole: {
       keySchema: { role: "bytes32", account: "address" },
       valueSchema: { hasRole: "bool" },
-      tableIdArgument: true,  // allows table registration with tableId definition at runtime
-      storeArgument: true,    // forces tableId input on getters/setters (abstracts out which namespace we deploy to)
+      tableIdArgument: true,
+      storeArgument: true,
     },
     RoleAdmin: {
       keySchema: { role: "bytes32" },
       valueSchema: { roleAdmin: "bytes32" },
-      tableIdArgument: true,  // allows table registration with tableId definition at runtime
-      storeArgument: true,    // forces tableId input on getters/setters (abstracts out which namespace we deploy to)
+      tableIdArgument: true,
+      storeArgument: true,
     },
+    EntityToRole: {
+      keySchema: {entity: "uint256" },
+      valueSchema: { role: "bytes32" },
+      tableIdArgument: true,
+      storeArgument: true,
+    },
+    EntityToRoleAND: {
+      keySchema: {entity: "uint256" },
+      valueSchema: { roles: "bytes32[]" },
+      tableIdArgument: true,
+      storeArgument: true,
+    },
+    EntityToRoleOR: {
+      keySchema: {entity: "uint256" },
+      valueSchema: { roles: "bytes32[]" },
+      tableIdArgument: true,
+      storeArgument: true,
+    }
   },
   excludeSystems: ["AccessControlSystem", "EveSystem"],
 });

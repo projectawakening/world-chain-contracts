@@ -12,4 +12,8 @@ ResourceId constant MODULE_NAMESPACE_ID = ResourceId.wrap(
 
 bytes16 constant HAS_ROLE_NAME = "HasRole";
 bytes16 constant ROLE_ADMIN_NAME = "RoleAdmin";
+bytes16 constant ENTITY_TO_ROLE_NAME = "EntityToRole";
+bytes16 constant ENTITY_TO_ROLE_AND_NAME = "EntityToRoleAND";
+bytes16 constant ENTITY_TO_ROLE_OR_NAME = "EntityToRoleOR";
+
 bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";

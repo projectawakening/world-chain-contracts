@@ -8,11 +8,14 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { MODULE_NAME, MODULE_NAMESPACE, MODULE_NAMESPACE_ID } from "./constants.sol";
-import { _hasRoleTableId, _roleAdminTableId, _accessControlSystemId } from "./utils.sol";
+import { _hasRoleTableId, _roleAdminTableId, _entityToRoleTableId, _entityToRoleANDTableId, _entityToRoleORTableId, _accessControlSystemId } from "./utils.sol";
 import { AccessControlSystem } from "./AccessControlSystem.sol";
 
 import { HasRole } from "../codegen/tables/HasRole.sol";
 import { RoleAdmin } from "../codegen/tables/RoleAdmin.sol";
+import { EntityToRole } from "../codegen/tables/EntityToRole.sol";
+import { EntityToRoleAND } from "../codegen/tables/EntityToRoleAND.sol";
+import { EntityToRoleOR } from "../codegen/tables/EntityToRoleOR.sol";
 
 contract AccessControlModule is Module {
   error AccessControlModule_InvalidNamespace(bytes14 namespace);
@@ -76,6 +79,9 @@ contract AccessControlModuleRegistrationLibrary {
     // Register the tables
     HasRole.register(_hasRoleTableId(namespace));
     RoleAdmin.register(_roleAdminTableId(namespace));
+    EntityToRole.register(_entityToRoleTableId(namespace));
+    EntityToRoleAND.register(_entityToRoleANDTableId(namespace));
+    EntityToRoleOR.register(_entityToRoleORTableId(namespace));
 
     // Register a new AccessControlSystem
     world.registerSystem(_accessControlSystemId(namespace), new AccessControlSystem(), true);

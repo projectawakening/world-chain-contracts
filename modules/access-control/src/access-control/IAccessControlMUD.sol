@@ -22,6 +22,21 @@ interface IAccessControlMUD is IAccessControl {
   error AccessControlRoleAlreadyCreated(bytes32 role, address account);
 
   /**
+   * @dev 'role' hook ruleset is uninitialized, needs to be set to something
+   */
+  error AccessControlHookUnititialized(uint256 entityId);
+
+  /**
+   * @dev 'roleAND' hook ruleset is uninitialized, needs to contain at least one member for hook to work
+   */
+  error AccessControlHookANDUnititialized(uint256 entityId);
+
+  /**
+   * @dev 'roleOR' hook ruleset is uninitialized, needs to contain at least one member for hook to work
+   */
+  error AccessControlHookORUnititialized(uint256 entityId);
+
+  /**
    * @dev See {IERC165-supportsInterface}.
    */
   function supportsInterface(bytes4 interfaceId) external returns(bool);

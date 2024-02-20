@@ -6,13 +6,17 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldContextConsumer } from "@latticexyz/world/src/WorldContext.sol";
 
-import { EveSystem } from "../core/EveSystem.sol";
+import { EveSystem } from "@eve/smart-object-framework/src/systems/internal/EveSystem.sol";
+import { IWorld as IWorldCore } from "@eve/smart-object-framework/src/codegen/world/IWorld.sol";
 import { IAccessControl, IAccessControlMUD } from "./IAccessControlMUD.sol";
 
 import { HasRole } from "../codegen/tables/HasRole.sol";
 import { RoleAdmin } from "../codegen/tables/RoleAdmin.sol";
+import { EntityToRole } from "../codegen/tables/EntityToRole.sol";
+import { EntityToRoleAND } from "../codegen/tables/EntityToRoleAND.sol";
+import { EntityToRoleOR } from "../codegen/tables/EntityToRoleOR.sol";
 
-import { _hasRoleTableId, _roleAdminTableId, _accessControlSystemId } from "./utils.sol";
+import { _hasRoleTableId, _roleAdminTableId, _entityToRoleTableId, _entityToRoleANDTableId, _entityToRoleORTableId, _accessControlSystemId } from "./utils.sol";
 
 /**
  * @dev RBAC System derived from OpenZeppelin's RBAC implementation
@@ -33,6 +37,54 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
   }
 
   /**
+   * @dev this method is meant to be added as a hook to other methods doing entity-related actions
+   * Equivalent to adding an `onlyRole(bytes32 role)` modifier to that method
+   * @param entityId entity targeted by the Access Control hook
+   */
+  function onlyRoleHook(uint256 entityId) external view {
+    bytes32 role = EntityToRole.get(_entityToRoleTableId(_namespace()), entityId);
+    if(role == 0) revert AccessControlHookUnititialized(entityId);
+
+    if(!(hasRole(role, _msgSender()))) {
+      revert AccessControlUnauthorizedAccount(_msgSender(), role);
+    }
+  }
+
+  /**
+   * @dev this method is meant to be added as a hook to other methods doing entity-related actions
+   * Equivalent to adding a `require(hasRole(roles[0]) && hasRole(roles[1]) && ...for role.length...)` to that method
+   * @param entityId entity targeted by the Access Control hook
+   */
+  function onlyRoleANDHook(uint256 entityId) external view {
+    bytes32[] memory roles = EntityToRoleAND.get(_entityToRoleANDTableId(_namespace()), entityId);
+    if(roles.length == 0) revert AccessControlHookANDUnititialized(entityId);
+
+    for(uint i=0; i < roles.length; i++) {
+      if(!(hasRole(roles[i], _msgSender()))) {
+        revert AccessControlUnauthorizedAccount(_msgSender(), roles[i]);
+      }
+    }
+  }
+
+  /**
+   * @dev this method is meant to be added as a hook to other methods doing entity-related actions
+   * Equivalent to adding a `require(hasRole(roles[0]) || hasRole(roles[1]) || ...for role.length...)` to that method
+   * @param entityId entity targeted by the Access Control hook
+   */
+  function onlyRoleORHook(uint256 entityId) external view {
+    bytes32[] memory roles = EntityToRoleOR.get(_entityToRoleORTableId(_namespace()), entityId);
+    if(roles.length == 0) revert AccessControlHookORUnititialized(entityId);
+
+    for(uint i=0; i < roles.length; i++) {
+      if(hasRole(roles[i], _msgSender())) {
+        return;
+      }
+    }
+    // can only revert one of the many possible roles available, let's just say we revert the 1st array member
+    revert AccessControlUnauthorizedAccount(_msgSender(), roles[0]);
+  }
+
+  /**
    * @dev See {IERC165-supportsInterface}.
    */
   function supportsInterface(bytes4 interfaceId) public pure virtual override(IAccessControlMUD, WorldContextConsumer) returns (bool) {
@@ -44,7 +96,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
   /**
    * @dev Returns `true` if `account` has been granted `role`.
    */
-  function hasRole(bytes32 role, address account) external view returns (bool) {
+  function hasRole(bytes32 role, address account) public view returns (bool) {
     return HasRole.get(_hasRoleTableId(_namespace()), role, account);
   }
 
@@ -213,9 +265,50 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
     _setRoleAdmin(role, roleAdmin);
   }
 
+  /**
+   * @dev Config function for `onlyRoleHook` method
+   * @param entityId the entityId we want to set access control's onlyRole rules for
+   * @param role the role we want to assing to it
+   */
+  function setOnlyRoleHookConfig(uint256 entityId, bytes32 role) 
+    hookable(entityId, _systemId(), abi.encode(entityId)) 
+    external
+  {
+    EntityToRole.set(_entityToRoleTableId(_namespace()), entityId, role);
+  }
+
+  /**
+   * @dev Config function for `onlyRoleANDHook` method
+   * Note that the only way to update the OnlyRoleAND array is to give an entirely new one; no in-array item updating methods for now
+   * @param entityId the entityId we want to set access control's onlyRole rules for
+   * @param roles the role we want to assing to it
+   */
+  function setOnlyRoleANDConfig(uint256 entityId, bytes32[] calldata roles)
+    hookable(entityId, _systemId(), abi.encode(entityId)) 
+    external
+  {
+    EntityToRoleAND.set(_entityToRoleANDTableId(_namespace()), entityId, roles);
+  }
+
+  /**
+   * @dev Config function for `onlyRoleANDHook` method
+   * Note that the only way to update the OnlyRoleAND array is to give an entirely new one; no in-array item updating methods for now
+   * @param entityId the entityId we want to set access control's onlyRole rules for
+   * @param roles the role we want to assing to it
+   */
+  function setOnlyRoleORConfig(uint256 entityId, bytes32[] calldata roles)
+    hookable(entityId, _systemId(), abi.encode(entityId)) 
+    external
+  {
+    EntityToRoleAND.set(_entityToRoleORTableId(_namespace()), entityId, roles);
+  }
 
   function _namespace() internal view returns (bytes14 namespace) {
     ResourceId systemId = SystemRegistry.get(address(this));
     return systemId.getNamespace();
+  }
+
+  function _systemId() internal view returns (ResourceId) {
+    return _accessControlSystemId(_namespace());
   }
 }
