@@ -21,7 +21,7 @@ contract EntityCore is EveSystem {
     _;
   }
 
-  modifier entityTypeExists(uint8 entityType) {
+  modifier requireEntityTypeExists(uint8 entityType) {
     if (EntityType.getDoesExists(entityType) == false)
       revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntityCore: EntityType not registered");
     _;
@@ -68,7 +68,7 @@ contract EntityCore is EveSystem {
   function registerEntityTypeAssociation(
     uint8 entityType,
     uint8 tagEntityType
-  ) external entityTypeExists(entityType) entityTypeExists(tagEntityType) {
+  ) external requireEntityTypeExists(entityType) requireEntityTypeExists(tagEntityType) {
     _registerEntityTypeAssociation(entityType, tagEntityType);
   }
 
@@ -110,7 +110,7 @@ contract EntityCore is EveSystem {
   function _registerEntity(
     uint256 entityId,
     uint8 entityType
-  ) internal validEntityId(entityId) entityTypeExists(entityType) {
+  ) internal validEntityId(entityId) requireEntityTypeExists(entityType) {
     if (EntityTable.getDoesExists(entityId) == true)
       revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntityCore: Entity already registered");
 
