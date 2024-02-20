@@ -16,7 +16,7 @@ import { INVALID_ID } from "../../constants.sol";
  */
 contract EntityCore is EveSystem {
   // Modifiers
-  modifier validEntityId(uint256 entityId) {
+  modifier requireValidEntityId(uint256 entityId) {
     if (entityId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
     _;
   }
@@ -32,7 +32,7 @@ contract EntityCore is EveSystem {
    * @param entityTypeId is the id of a entityType
    * @param entityType is the name of the entityType
    */
-  function registerEntityType(uint8 entityTypeId, bytes32 entityType) external validEntityId(entityTypeId) {
+  function registerEntityType(uint8 entityTypeId, bytes32 entityType) external requireValidEntityId(entityTypeId) {
     _registerEntityType(entityTypeId, entityType);
   }
 
@@ -110,7 +110,7 @@ contract EntityCore is EveSystem {
   function _registerEntity(
     uint256 entityId,
     uint8 entityType
-  ) internal validEntityId(entityId) requireEntityTypeExists(entityType) {
+  ) internal requireValidEntityId(entityId) requireEntityTypeExists(entityType) {
     if (EntityTable.getDoesExists(entityId) == true)
       revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntityCore: Entity already registered");
 
