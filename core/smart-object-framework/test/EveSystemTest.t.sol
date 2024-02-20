@@ -253,23 +253,23 @@ contract EveSystemTest is MudTest {
     world.tagEntity(classId1, singletonObject1);
   }
 
-  function testRegisterModule() public {
+  function testregisterEVEModule() public {
     IWorld world = IWorld(worldAddress);
     
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
     assertTrue(ModuleTable.getDoesExists(moduleId, SYSTEM_ID));
   }
 
-  function testRevertRegisterModuleIfSystemAlreadyRegistered() public {
+  function testRevertregisterEVEModuleIfSystemAlreadyRegistered() public {
     IWorld world = IWorld(worldAddress);
     
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
     vm.expectRevert(
       abi.encodeWithSelector(
         ICustomErrorSystem.SystemAlreadyAssociatedWithModule.selector,
@@ -278,7 +278,7 @@ contract EveSystemTest is MudTest {
         "ModuleCore: System already associated with the module"
       )
     );
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
   }
 
   function testObjectAssociate() public {
@@ -292,7 +292,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(singletonObject1, OBJECT);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonObject1, moduleId);
@@ -317,7 +317,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(nonSingletonEntity, CLASS);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(nonSingletonEntity, moduleId);
@@ -357,7 +357,7 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entityType
     world.registerEntityType(CLASS, "Class");
@@ -400,7 +400,7 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
     world.registerEntityType(1, "Class");
@@ -441,7 +441,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
@@ -464,7 +464,7 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
     world.registerEntityType(1, "Class");
@@ -520,7 +520,7 @@ contract EveSystemTest is MudTest {
   //   world.installModule(smartDeployableTestModule, new bytes(0));
 
   //   // register system associated with module
-  //   world.registerModule(SYSTEM_ID, moduleId, MODULE_NAME);
+  //   world.registerEVEModule(SYSTEM_ID, moduleId, MODULE_NAME);
 
   //   //register entity
   //   world.registerEntityType(2, "Object");
@@ -554,7 +554,7 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
     world.registerEntityType(OBJECT, "Object");
@@ -588,7 +588,7 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
     world.registerEntityType(OBJECT, "Object");
@@ -625,7 +625,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
@@ -667,7 +667,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
@@ -694,7 +694,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);
@@ -751,7 +751,7 @@ contract EveSystemTest is MudTest {
     world.tagEntity(singletonEntity, classId1);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(classId1, moduleId);
@@ -802,7 +802,7 @@ contract EveSystemTest is MudTest {
     world.registerEntity(singletonEntity, OBJECT);
 
     // register system associated with module
-    world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    world.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //associate entity with module
     world.associateModule(singletonEntity, moduleId);

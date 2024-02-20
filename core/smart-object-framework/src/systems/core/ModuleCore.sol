@@ -18,18 +18,18 @@ contract ModuleCore is EveSystem {
    * @param moduleName The name of the module
    * @param systemId The identifier for the system being called
    */
-  function registerModule(uint256 moduleId, bytes16 moduleName, ResourceId systemId) external {
+  function registerEVEModule(uint256 moduleId, bytes16 moduleName, ResourceId systemId) external {
     _requireResourceRegistered(moduleId, systemId);
-    _registerModule(moduleId, systemId, moduleName);
+    _registerEVEModule(moduleId, systemId, moduleName);
   }
 
   /**
-   * @notice Overloaded funciton for registerModule
+   * @notice Overloaded funciton for registerEVEModule
    */
-  function registerModule(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external {
+  function registerEVEModule(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external {
     for (uint256 i = 0; i < systemIds.length; i++) {
       _requireResourceRegistered(moduleId, systemIds[i]);
-      _registerModule(moduleId, systemIds[i], moduleName);
+      _registerEVEModule(moduleId, systemIds[i], moduleName);
     }
   }
 
@@ -77,7 +77,7 @@ contract ModuleCore is EveSystem {
     //TODO - check if the moduleId is registered
   }
 
-  function _registerModule(uint256 moduleId, ResourceId systemId, bytes16 moduleName) internal {
+  function _registerEVEModule(uint256 moduleId, ResourceId systemId, bytes16 moduleName) internal {
     if (ModuleTable.getDoesExists(moduleId, systemId))
       revert ICustomErrorSystem.SystemAlreadyAssociatedWithModule(
         moduleId,
