@@ -83,4 +83,28 @@ library AccessControlLib {
       )
     );
   }
+
+  function setOnlyRoleConfig(World memory world, uint256 entityId, bytes32 role) internal {
+    world.iface.call(_accessControlSystemId(world.namespace),
+      abi.encodeCall(IAccessControlMUD.setOnlyRoleConfig,
+        (entityId, role)
+      )
+    );
+  }
+
+  function setOnlyRoleANDConfig(World memory world, uint256 entityId, bytes32[] calldata roles) internal {
+    world.iface.call(_accessControlSystemId(world.namespace),
+      abi.encodeCall(IAccessControlMUD.setOnlyRoleANDConfig,
+        (entityId, roles)
+      )
+    );
+  }
+
+  function setOnlyRoleORConfig(World memory world, uint256 entityId, bytes32[] calldata roles) internal {
+    world.iface.call(_accessControlSystemId(world.namespace),
+      abi.encodeCall(IAccessControlMUD.setOnlyRoleORConfig,
+        (entityId, roles)
+      )
+    );
+  }
 }

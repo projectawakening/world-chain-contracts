@@ -270,7 +270,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param entityId the entityId we want to set access control's onlyRole rules for
    * @param role the role we want to assing to it
    */
-  function setOnlyRoleHookConfig(uint256 entityId, bytes32 role) 
+  function setOnlyRoleConfig(uint256 entityId, bytes32 role) 
     hookable(entityId, _systemId(), abi.encode(entityId)) 
     external
   {

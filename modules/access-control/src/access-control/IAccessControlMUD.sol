@@ -57,4 +57,52 @@ interface IAccessControlMUD is IAccessControl {
    * throws an error {AccessControlUnauthorizedAccount} if _msgSender isn't 'roleAdmin'
    */
   function createRole(bytes32 role, bytes32 roleAdmin) external;
+
+  /******************
+   *  HOOK METHODS  *
+   ******************/
+
+  /**
+   * @dev Config function for `onlyRoleHook` method
+   * @param entityId the entityId we want to set access control's onlyRole rules for
+   * @param role the role we want to assing to it
+   */
+  function setOnlyRoleConfig(uint256 entityId, bytes32 role) external;
+
+  /**
+   * @dev this method is meant to be added as a hook to other methods doing entity-related actions
+   * Equivalent to adding an `onlyRole(bytes32 role)` modifier to that method
+   * @param entityId entity targeted by the Access Control hook
+   */
+  function onlyRoleHook(uint256 entityId) external;
+
+  /**
+   * @dev Config function for `onlyRoleANDHook` method
+   * Note that the only way to update the OnlyRoleAND array is to give an entirely new one; no in-array item updating methods for now
+   * @param entityId the entityId we want to set access control's onlyRole rules for
+   * @param roles the role we want to assing to it
+   */
+  function setOnlyRoleANDConfig(uint256 entityId, bytes32[] calldata roles) external;
+
+  /**
+   * @dev this method is meant to be added as a hook to other methods doing entity-related actions
+   * Equivalent to adding a `require(hasRole(roles[0]) && hasRole(roles[1]) && ...for role.length...)` to that method
+   * @param entityId entity targeted by the Access Control hook
+   */
+  function onlyRoleANDHook(uint256 entityId) external;
+
+  /**
+   * @dev Config function for `onlyRoleANDHook` method
+   * Note that the only way to update the OnlyRoleAND array is to give an entirely new one; no in-array item updating methods for now
+   * @param entityId the entityId we want to set access control's onlyRole rules for
+   * @param roles the role we want to assing to it
+   */
+  function setOnlyRoleORConfig(uint256 entityId, bytes32[] calldata roles) external;
+
+  /**
+   * @dev this method is meant to be added as a hook to other methods doing entity-related actions
+   * Equivalent to adding a `require(hasRole(roles[0]) || hasRole(roles[1]) || ...for role.length...)` to that method
+   * @param entityId entity targeted by the Access Control hook
+   */
+  function onlyRoleORHook(uint256 entityId) external;
 }
