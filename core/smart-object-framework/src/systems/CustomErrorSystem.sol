@@ -10,7 +10,7 @@ contract CustomErrorSystem is System {
   error EntityNotRegistered(uint256 entityId, string message);
   error EntityTypeAlreadyRegistered(uint8 entityId, string message);
   error EntityAlreadyRegistered(uint256 entityId, string message);
-  error EntityTypeAssociationNotAllowed(uint8 childEntityType, uint8 parentEntityType, string message);
+  error EntityTypeAssociationNotAllowed(uint8 entityType, uint8 taggedEntityType, string message);
   error EntityNotAssociatedWithModule(uint256 entityId, string message);
   error EntityAlreadyAssociated(uint256 entityId, uint256 associatedId, string message);
   error EntityAlreadyTagged(uint256 entityId, uint256 tagId, string message);

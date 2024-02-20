@@ -111,9 +111,9 @@ contract HookCore is EveSystem {
       revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
 
     if (EntityMapTable.get(entityId).length > 0) {
-      uint256[] memory parentEntityIds = EntityMapTable.get(entityId);
-      for (uint256 i = 0; i < parentEntityIds.length; i++) {
-        _requireHookeNotAssociated(parentEntityIds[i], hookId);
+      uint256[] memory taggedEntityIds = EntityMapTable.get(entityId);
+      for (uint256 i = 0; i < taggedEntityIds.length; i++) {
+        _requireHookeNotAssociated(taggedEntityIds[i], hookId);
       }
     } else {
       _requireHookeNotAssociated(entityId, hookId);

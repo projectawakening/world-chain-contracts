@@ -73,6 +73,8 @@ contract ModuleCore is EveSystem {
   function _requireResourceRegistered(uint256 moduleId, ResourceId systemId) internal view {
     if (ResourceIds.getExists(systemId) == false)
       revert ICustomErrorSystem.ResourceNotRegistered(systemId, "ModuleCore: System is not registered");
+
+    //TODO - check if the moduleId is registered
   }
 
   function _registerModule(uint256 moduleId, ResourceId systemId, bytes16 moduleName) internal {
@@ -91,13 +93,13 @@ contract ModuleCore is EveSystem {
     _requireEntityRegistered(entityId);
     _requireModuleRegistered(moduleId);
 
-    //Check if the entity is tagged to a parentEntityType,
-    //if yes then the check module is already part of the parentEntityType to ensure unique moduleId association
+    //Check if the entity is tagged to a taggedEntityType,
+    //if yes then the check module is already part of the taggedEntityType to ensure unique moduleId association
     //If no then associate the entity with the module
     if (EntityMapTable.get(entityId).length > 0) {
-      uint256[] memory parentEntityIds = EntityMapTable.get(entityId);
-      for (uint256 i = 0; i < parentEntityIds.length; i++) {
-        _requireModuleNotAssociated(parentEntityIds[i], moduleId);
+      uint256[] memory taggedEntityIds = EntityMapTable.get(entityId);
+      for (uint256 i = 0; i < taggedEntityIds.length; i++) {
+        _requireModuleNotAssociated(taggedEntityIds[i], moduleId);
       }
     } else {
       _requireModuleNotAssociated(entityId, moduleId);

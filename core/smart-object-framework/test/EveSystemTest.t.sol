@@ -180,11 +180,11 @@ contract EveSystemTest is MudTest {
 
     //Tag objects under a class
     world.tagEntity(singletonObject1, classId1);
-    uint256[] memory parentEntityIds = EntityMapTable.get(singletonObject1);
-    assertTrue(parentEntityIds[0] == classId1);
+    uint256[] memory entityTagIds = EntityMapTable.get(singletonObject1);
+    assertTrue(entityTagIds[0] == classId1);
   }
 
-  function testTagMultipleParents() public {
+  function testTagMultipleEntities() public {
     IWorld world = IWorld(worldAddress);
     
     //register entity
@@ -204,9 +204,9 @@ contract EveSystemTest is MudTest {
     //Tag objects under a class
     world.tagEntity(singletonObject1, entityIds);
 
-    uint256[] memory parentEntityIds = EntityMapTable.get(singletonObject1);
-    assertTrue(parentEntityIds[0] == classId1);
-    assertTrue(parentEntityIds[1] == classId2);
+    uint256[] memory entityTagIds = EntityMapTable.get(singletonObject1);
+    assertTrue(entityTagIds[0] == classId1);
+    assertTrue(entityTagIds[1] == classId2);
   }
 
   function testRevertAlreadyTagged() public {
@@ -457,7 +457,7 @@ contract EveSystemTest is MudTest {
     world.associateModule(singletonEntity, moduleId);
   }
 
-  function testRevertIfParentEntityIsAlreadyAssociated() public {
+  function testRevertIfTaggedEntityIsAlreadyAssociated() public {
     IWorld world = IWorld(worldAddress);
 
     //install module
@@ -554,7 +554,6 @@ contract EveSystemTest is MudTest {
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     // register system associated with module
-    uint256 moduleId = uint256(keccak256(abi.encodePacked(MODULE_NAME)));
     world.registerModule(moduleId, MODULE_NAME, SYSTEM_ID);
 
     //register entity
@@ -735,7 +734,7 @@ contract EveSystemTest is MudTest {
     world.associateHook(singletonEntity, hookId);
   }
 
-  function testRevertIfParentEntityHasHookAssociated() public {
+  function testRevertIfTaggedEntityHasHookAssociated() public {
     IWorld world = IWorld(worldAddress);
 
     // install module

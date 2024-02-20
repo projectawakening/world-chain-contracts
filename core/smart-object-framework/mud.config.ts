@@ -46,7 +46,7 @@ export default mudConfig({
      * also it should prohibit Object-to-Object and Class-to-Class tagging as well
      */
     EntityTypeAssociation: {
-      keySchema: { "childEntityType": "uint8", "parentEntityType": "uint8" },
+      keySchema: { "entityType": "uint8", "taggedEntityType": "uint8" },
       valueSchema: {
         isAllowed: "bool"
       }
@@ -59,7 +59,7 @@ export default mudConfig({
     EntityMapTable: {
       keySchema: { "entityId": "uint256" },
       valueSchema: {
-        taggedParentEntityIds: "uint256[]"
+        taggedEntityIds: "uint256[]"
       }
     },
     /**

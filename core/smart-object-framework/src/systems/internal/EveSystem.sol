@@ -72,6 +72,7 @@ contract EveSystem is System {
       revert ICustomErrorSystem.ModuleNotRegistered(moduleId, "EveSystem: Module not registered");
   }
 
+  //TODO optimize this function by removing array concatenation
   function _requireSystemAssociatedWithModule(
     uint256 entityId,
     ResourceId systemId,
@@ -80,13 +81,13 @@ contract EveSystem is System {
     //Get the moduleIds for the entity
     uint256[] memory moduleIds = _getModuleIds(entityId);
 
-    //Check if the entity is tagged to a parentEntityType and get the moduleIds for the parentEntityType
+    //Check if the entity is tagged to a entityType and get the moduleIds for the entity
     bool isEntityTagged = EntityMapTable.get(entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory parentEntityIds = EntityMapTable.get(entityId);
-      for (uint256 i = 0; i < parentEntityIds.length; i++) {
-        uint256[] memory parentModuleIds = _getModuleIds(parentEntityIds[i]);
-        moduleIds = appendUint256Arrays(moduleIds, parentModuleIds);
+      uint256[] memory taggedEntityIds = EntityMapTable.get(entityId);
+      for (uint256 i = 0; i < taggedEntityIds.length; i++) {
+        uint256[] memory taggedModuleIds = _getModuleIds(taggedEntityIds[i]);
+        moduleIds = appendUint256Arrays(moduleIds, taggedModuleIds);
       }
     }
     if (moduleIds.length == 0)
@@ -129,13 +130,13 @@ contract EveSystem is System {
   function _getHookIds(uint256 entityId) internal view returns (uint256[] memory hookIds) {
     hookIds = EntityAssociationTable.getHookIds(entityId);
 
-    //Check if the entity is tagged to a parentEntityType and get the moduleIds for the parentEntityType
+    //Check if the entity is tagged to a entity and get the moduleIds for the taggedEntity
     bool isEntityTagged = EntityMapTable.get(entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory parentEntityIds = EntityMapTable.get(entityId);
-      for (uint256 i = 0; i < parentEntityIds.length; i++) {
-        uint256[] memory parentHookIds = EntityAssociationTable.getHookIds(parentEntityIds[i]);
-        hookIds = appendUint256Arrays(hookIds, parentHookIds);
+      uint256[] memory entityTagIds = EntityMapTable.get(entityId);
+      for (uint256 i = 0; i < entityTagIds.length; i++) {
+        uint256[] memory taggedHookIds = EntityAssociationTable.getHookIds(entityTagIds[i]);
+        hookIds = appendUint256Arrays(hookIds, taggedHookIds);
       }
     }
   }

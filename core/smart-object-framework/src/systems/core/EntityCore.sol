@@ -44,7 +44,10 @@ contract EntityCore is EveSystem {
   function registerEntity(uint256 entityId, uint8 entityType) external {
     _registerEntity(entityId, entityType);
   }
-
+  
+  /**
+    * @notice Overloaded function to register multiple entities
+   */
   function registerEntity(uint256[] memory entityId, uint8[] memory entityType) external {
     if (entityId.length != entityType.length)
       revert ICustomErrorSystem.InvalidArrayLength(
@@ -58,43 +61,43 @@ contract EntityCore is EveSystem {
   }
 
   /**
-   * @notice Defines a parent-child association enforcement between two entity types
-   * @param childEntityType is the id of the child entity type
-   * @param parentEntityType is the id of the parent entity type
+   * @notice Defines an association enforcement between two entity types
+   * @param entityType is the id of the entity type
+   * @param tagEntityType is the id of the entity type that can be tagged under
    */
   function registerEntityTypeAssociation(
-    uint8 childEntityType,
-    uint8 parentEntityType
-  ) external entityTypeExists(childEntityType) entityTypeExists(parentEntityType) {
-    _registerEntityTypeAssociation(childEntityType, parentEntityType);
+    uint8 entityType,
+    uint8 tagEntityType
+  ) external entityTypeExists(entityType) entityTypeExists(tagEntityType) {
+    _registerEntityTypeAssociation(entityType, tagEntityType);
   }
 
   /**
-   * @notice Tags/Groups a child entities to a parent entity
+   * @notice Tags/Groups entities to a another entity
    * @dev Similar Objects can be tagged under a Class and associate modules to the class, so that all the objects under the class can inherit the modules.
-   * @param entityId is the id of the child entity
-   * @param parentEntityId is the id of the parent entity which the child belongs to
+   * @param entityId is the id of the entity
+   * @param entityTagId is the id of the entity tag which the entity belongs to
    */
-  function tagEntity(uint256 entityId, uint256 parentEntityId) external {
-    _tagEntity(entityId, parentEntityId);
+  function tagEntity(uint256 entityId, uint256 entityTagId) external {
+    _tagEntity(entityId, entityTagId);
   }
 
   /**
-   * @notice Overloaded function to tagEntity under multiple parent entities
+   * @notice Overloaded function to tagEntity under multiple entities
    */
-  function tagEntity(uint256 entityId, uint256[] memory _parentEntityIds) external {
-    for (uint256 i = 0; i < _parentEntityIds.length; i++) {
-      _tagEntity(entityId, _parentEntityIds[i]);
+  function tagEntity(uint256 entityId, uint256[] memory entityTagIds) external {
+    for (uint256 i = 0; i < entityTagIds.length; i++) {
+      _tagEntity(entityId, entityTagIds[i]);
     }
   }
 
   /**
-   * @notice Removes the parent entity tag from a child entity
-   * @param entityId is the id of the child entity
-   * @param parentEntityId is the id of the parent entity
+   * @notice Removes the entity tag from a entity
+   * @param entityId is the id of the entity
+   * @param entityTagId is the id of the tagged entity
    */
-  function removeEntityTag(uint256 entityId, uint256 parentEntityId) external {
-    _removeEntityTag(entityId, parentEntityId);
+  function removeEntityTag(uint256 entityId, uint256 entityTagId) external {
+    _removeEntityTag(entityId, entityTagId);
   }
 
   function _registerEntityType(uint8 entityTypeId, bytes32 entityType) internal {
@@ -114,45 +117,45 @@ contract EntityCore is EveSystem {
     EntityTable.set(entityId, true, entityType);
   }
 
-  function _registerEntityTypeAssociation(uint8 childEntityType, uint8 parentEntityType) internal {
-    EntityTypeAssociation.set(childEntityType, parentEntityType, true);
+  function _registerEntityTypeAssociation(uint8 entityType, uint8 tagEntityType) internal {
+    EntityTypeAssociation.set(entityType, tagEntityType, true);
   }
 
-  function _tagEntity(uint256 entityId, uint256 parentEntityId) internal {
+  function _tagEntity(uint256 entityId, uint256 entityTagId) internal {
     _requireEntityRegistered(entityId);
-    _requireEntityRegistered(parentEntityId);
-    _requireAssociationAllowed(entityId, parentEntityId);
+    _requireEntityRegistered(entityTagId);
+    _requireAssociationAllowed(entityId, entityTagId);
 
-    uint256[] memory parentEntityIds = EntityMapTable.get(entityId);
-    (, bool exists) = findIndex(parentEntityIds, parentEntityId);
+    uint256[] memory taggedEntities = EntityMapTable.get(entityId);
+    (, bool exists) = findIndex(taggedEntities, entityTagId);
     if (exists)
-      revert ICustomErrorSystem.EntityAlreadyTagged(entityId, parentEntityId, "EntityCore: Entity already tagged");
+      revert ICustomErrorSystem.EntityAlreadyTagged(entityId, entityTagId, "EntityCore: Entity already tagged");
 
-    EntityMapTable.pushTaggedParentEntityIds(entityId, parentEntityId);
+    EntityMapTable.pushTaggedEntityIds(entityId, entityTagId);
   }
 
-  function _removeEntityTag(uint256 entityId, uint256 parentEntityId) internal {
+  function _removeEntityTag(uint256 entityId, uint256 entityTagId) internal {
     //TODO Have to figure out a clean way to remove an element from an array
-    uint256[] memory taggedParentEntities = EntityMapTable.get(entityId);
-    (uint256 index, bool exists) = findIndex(taggedParentEntities, parentEntityId);
+    uint256[] memory taggedEntities = EntityMapTable.get(entityId);
+    (uint256 index, bool exists) = findIndex(taggedEntities, entityTagId);
     if (exists) {
       // Swap the element with the last one and pop the last element
-      uint256 lastIndex = taggedParentEntities.length - 1;
+      uint256 lastIndex = taggedEntities.length - 1;
       if (index != lastIndex) {
-        EntityMapTable.update(entityId, index, taggedParentEntities[lastIndex]);
+        EntityMapTable.update(entityId, index, taggedEntities[lastIndex]);
       }
       EntityMapTable.pop(entityId);
     }
   }
 
-  function _requireAssociationAllowed(uint256 childEntityId, uint256 parentEntityId) internal view {
-    uint8 childEntityType = EntityTable.getEntityType(childEntityId);
-    uint8 parentEntityType = EntityTable.getEntityType(parentEntityId);
+  function _requireAssociationAllowed(uint256 entityId, uint256 entityTagId) internal view {
+    uint8 entityType = EntityTable.getEntityType(entityId);
+    uint8 tagEntityType = EntityTable.getEntityType(entityTagId);
 
-    if (EntityTypeAssociation.get(childEntityType, parentEntityType) == false)
+    if (EntityTypeAssociation.get(entityType, tagEntityType) == false)
       revert ICustomErrorSystem.EntityTypeAssociationNotAllowed(
-        childEntityType,
-        parentEntityType,
+        entityType,
+        tagEntityType,
         "EntityCore: EntityType association not allowed"
       );
   }
