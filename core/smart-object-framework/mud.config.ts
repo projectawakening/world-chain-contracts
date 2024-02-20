@@ -43,6 +43,7 @@ export default mudConfig({
     /**
      * Used to enforce association/tagging possibility by entity types
      * eg: Objects can be tagged or grouped under a Class but not vice versa, so Object -> Class is possible
+     * also it should prohibit Object-to-Object and Class-to-Class tagging as well
      */
     EntityTypeAssociation: {
       keySchema: { "childEntityType": "uint8", "parentEntityType": "uint8" },
