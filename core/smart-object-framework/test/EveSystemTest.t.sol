@@ -65,7 +65,6 @@ contract SmartDeployableTestModule is Module {
   function installRoot(bytes memory args) public {
     // Naive check to ensure this is only installed once
     requireNotInstalled(__self, args);
-
     IBaseWorld world = IBaseWorld(_world());
 
     //Register namespace
@@ -115,7 +114,6 @@ contract SmartDeployableTestModule is Module {
 contract EveSystemTest is Test {
   using Utils for bytes14;
   using SmartObjectLib for SmartObjectLib.World;
-
   uint256 classId1 = uint256(keccak256(abi.encodePacked("typeId12")));
   uint256 classId2 = uint256(keccak256(abi.encodePacked("typeId13")));
   uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
@@ -148,6 +146,22 @@ contract EveSystemTest is Test {
     setUp();
     assertEq(address(smartObject.iface), address(baseWorld));
   }
+
+  bytes14 constant SMART_OBJ_NAMESPACE = "SmartObject_v0";
+
+  IBaseWorld baseWorld;
+  SmartObjectLib.World smartObject;
+  SmartObjectFrameworkModule smartObjectModule;
+
+  function setUp() public {
+    baseWorld = IBaseWorld(address(new World()));
+    baseWorld.initialize(createCoreModule());
+    SmartObjectFrameworkModule module = new SmartObjectFrameworkModule();
+    baseWorld.installModule(module, abi.encode(SMART_OBJ_NAMESPACE));
+    StoreSwitch.setStoreAddress(address(baseWorld));
+    smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
+  }
+
 
   function testWorldExists() public {
     uint256 codeSize;
@@ -272,7 +286,6 @@ contract EveSystemTest is Test {
 
   function testregisterEVEModule() public {
     IWorld world = IWorld(address(baseWorld));
-
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register module
@@ -282,7 +295,6 @@ contract EveSystemTest is Test {
 
   function testRevertregisterEVEModuleIfSystemAlreadyRegistered() public {
     IWorld world = IWorld(address(baseWorld));
-
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register module
@@ -369,7 +381,6 @@ contract EveSystemTest is Test {
 
   function testObjectAssociateWithClass() public {
     IWorld world = IWorld(address(baseWorld));
-
     //install module
     world.installModule(smartDeployableTestModule, new bytes(0));
 
@@ -412,7 +423,6 @@ contract EveSystemTest is Test {
 
   function testRemoveEntityTag() public {
     IWorld world = IWorld(address(baseWorld));
-
     //install module
     world.installModule(smartDeployableTestModule, new bytes(0));
 
@@ -566,7 +576,6 @@ contract EveSystemTest is Test {
 
   function testRemoveEntityModuleAssociation() public {
     IWorld world = IWorld(address(baseWorld));
-
     //install module
     world.installModule(smartDeployableTestModule, new bytes(0));
 
