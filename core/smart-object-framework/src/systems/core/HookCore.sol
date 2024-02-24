@@ -13,7 +13,7 @@ import { HookType } from "../../types.sol";
 
 import { Utils } from "../../utils.sol";
 
-contract HookCoreSystem is EveSystem {
+contract HookCore is EveSystem {
   using Utils for bytes14;
 
   /**

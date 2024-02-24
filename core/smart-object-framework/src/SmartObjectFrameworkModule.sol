@@ -14,9 +14,9 @@ import {
   } from "./constants.sol";
 import "./utils.sol";
 
-import { EntityCoreSystem } from "./systems/core/EntityCoreSystem.sol";
-import { ModuleCoreSystem } from "./systems/core/ModuleCoreSystem.sol";
-import { HookCoreSystem } from "./systems/core/HookCoreSystem.sol";
+import { EntityCore } from "./systems/core/EntityCore.sol";
+import { ModuleCore } from "./systems/core/ModuleCore.sol";
+import { HookCore } from "./systems/core/HookCore.sol";
 
 import { EntityAssociation } from "./codegen/tables/EntityAssociation.sol";
 import { EntityMap } from "./codegen/tables/EntityMap.sol";
@@ -104,8 +104,8 @@ contract SmartObjectFrameworkModuleRegistrationLibrary {
     ModuleTable.register(namespace.moduleTableTableId());
 
     // Register a new Systems suite
-    world.registerSystem(namespace.getEntityCoreSystemId(), new EntityCoreSystem(), true);
-    world.registerSystem(namespace.getModuleCoreSystemId(), new ModuleCoreSystem(), true);
-    world.registerSystem(namespace.getHookCoreSystemId(), new HookCoreSystem(), true);
+    world.registerSystem(namespace.entityCoreSystemId(), new EntityCore(), true);
+    world.registerSystem(namespace.moduleCoreSystemId(), new ModuleCore(), true);
+    world.registerSystem(namespace.hookCoreSystemId(), new HookCore(), true);
   }
 }

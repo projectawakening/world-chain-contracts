@@ -13,7 +13,7 @@ import { INVALID_ID } from "../../constants.sol";
 
 import { Utils } from "../../utils.sol";
 
-contract ModuleCoreSystem is EveSystem {
+contract ModuleCore is EveSystem {
   using Utils for bytes14; 
   /**
    * @notice Registers a system
@@ -29,7 +29,7 @@ contract ModuleCoreSystem is EveSystem {
   /**
    * @notice Overloaded funciton for registerEVEModule
    */
-  function registerEVEModule(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external {
+  function registerEVEModules(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external {
     for (uint256 i = 0; i < systemIds.length; i++) {
       _requireResourceRegistered(moduleId, systemIds[i]);
       _registerEVEModule(moduleId, systemIds[i], moduleName);

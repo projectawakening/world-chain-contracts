@@ -1,7 +1,22 @@
 import { mudConfig } from "@latticexyz/world/register";
 
 export default mudConfig({
-  excludeSystems: ["EveSystem", "EntityCore", "ModuleCore", "HookCore"],
+  namespace: "SmartObject_v0",
+  excludeSystems: ["EveSystem"],
+  systems: {
+    EntityCore: {
+      name: "EntityCore",
+      openAccess: true,
+    },
+    ModuleCore: {
+      name: "ModuleCore",
+      openAccess: true,
+    },
+    HookCore: {
+      name: "HookCore",
+      openAccess: true,
+    },
+  },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },

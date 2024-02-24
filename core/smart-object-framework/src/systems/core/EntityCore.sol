@@ -16,7 +16,7 @@ import { Utils } from "../../utils.sol";
  * @dev EntityCore is a system that manages entities such as Classes and objects.
  *
  */
-contract EntityCoreSystem is EveSystem {
+contract EntityCore is EveSystem {
   using Utils for bytes14; 
 
   // Modifiers
@@ -52,7 +52,7 @@ contract EntityCoreSystem is EveSystem {
   /**
     * @notice Overloaded function to register multiple entities
    */
-  function registerEntity(uint256[] memory entityId, uint8[] memory entityType) external {
+  function registerEntities(uint256[] memory entityId, uint8[] memory entityType) external {
     if (entityId.length != entityType.length)
       revert ICustomErrorSystem.InvalidArrayLength(
         entityId.length,
@@ -89,7 +89,7 @@ contract EntityCoreSystem is EveSystem {
   /**
    * @notice Overloaded function to tagEntity under multiple entities
    */
-  function tagEntity(uint256 entityId, uint256[] memory entityTagIds) external {
+  function tagEntities(uint256 entityId, uint256[] memory entityTagIds) external {
     for (uint256 i = 0; i < entityTagIds.length; i++) {
       _tagEntity(entityId, entityTagIds[i]);
     }

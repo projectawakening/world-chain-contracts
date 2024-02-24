@@ -12,15 +12,15 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: name });
   }
 
-  function getEntityCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+  function entityCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ENTITY_CORE_SYSTEM_NAME });
   }
   
-  function getModuleCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+  function moduleCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: MODULE_CORE_SYSTEM_NAME });
   }
 
-  function getHookCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+  function hookCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: HOOK_CORE_SYSTEM_NAME });
   }
 
