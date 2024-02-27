@@ -147,21 +147,6 @@ contract EveSystemTest is Test {
     assertEq(address(smartObject.iface), address(baseWorld));
   }
 
-  bytes14 constant SMART_OBJ_NAMESPACE = "SmartObject_v0";
-
-  IBaseWorld baseWorld;
-  SmartObjectLib.World smartObject;
-  SmartObjectFrameworkModule smartObjectModule;
-
-  function setUp() public {
-    baseWorld = IBaseWorld(address(new World()));
-    baseWorld.initialize(createCoreModule());
-    SmartObjectFrameworkModule module = new SmartObjectFrameworkModule();
-    baseWorld.installModule(module, abi.encode(SMART_OBJ_NAMESPACE));
-    StoreSwitch.setStoreAddress(address(baseWorld));
-    smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
-  }
-
 
   function testWorldExists() public {
     uint256 codeSize;
