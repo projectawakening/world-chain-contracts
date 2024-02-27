@@ -69,29 +69,29 @@ contract SmartDeployableTestModule is Module {
     IBaseWorld world = IBaseWorld(_world());
 
     //Register namespace
-    (bool success, bytes memory data) = address(world).delegatecall(
+    (bool success, bytes memory data) = address(world).call(
       abi.encodeCall(world.registerNamespace, (NAMESPACE_ID))
     );
     if (!success) revertWithBytes(data);
 
     // Register system
-    (success, data) = address(world).delegatecall(
+    (success, data) = address(world).call(
       abi.encodeCall(world.registerSystem, (SYSTEM_ID, smartDeployableTestSystem, true))
     );
     if (!success) revertWithBytes(data);
 
-    (success, data) = address(world).delegatecall(
+    (success, data) = address(world).call(
       abi.encodeCall(world.registerSystem, (HOOK_SYSTEM_ID, sampleHook, true))
     );
     if (!success) revertWithBytes(data);
 
     // Register system's functions
-    (success, data) = address(world).delegatecall(
+    (success, data) = address(world).call(
       abi.encodeCall(world.registerFunctionSelector, (HOOK_SYSTEM_ID, "echoSmartDeployabl(uint256)"))
     );
     if (!success) revertWithBytes(data);
 
-    (success, data) = address(world).delegatecall(
+    (success, data) = address(world).call(
       abi.encodeCall(world.registerFunctionSelector, (HOOK_SYSTEM_ID, "echoSmartDeployableHook(uint256)"))
     );
     if (!success) revertWithBytes(data);
@@ -126,9 +126,9 @@ contract EveSystemTest is Test {
   uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
   uint256 singletonObject2 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
   uint256 singletonObject3 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-345")));
-  uint256 moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+  uint256 moduleId;
 
-  SmartDeployableTestModule smartDeployableTestModule = new SmartDeployableTestModule();
+  SmartDeployableTestModule smartDeployableTestModule;
 
   bytes14 constant SMART_OBJ_NAMESPACE = "SmartObject_v0";
 
@@ -143,6 +143,14 @@ contract EveSystemTest is Test {
     baseWorld.installModule(module, abi.encode(SMART_OBJ_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
+
+    smartDeployableTestModule = new SmartDeployableTestModule();
+    moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
+  }
+
+  function testSetup() public {
+    setUp();
+    assertEq(address(smartObject.iface), address(baseWorld));
   }
 
 
@@ -164,14 +172,12 @@ contract EveSystemTest is Test {
   }
 
   function testRegisterEntity() public {
-    IWorld world = IWorld(address(baseWorld));
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntity(1, CLASS);
     assertTrue(EntityTable.getEntityType(SMART_OBJ_NAMESPACE.entityTableTableId(), 1) == CLASS);
   }
 
   function testRevertEntityTypeNotRegistered() public {
-    IWorld world = IWorld(address(baseWorld));
     vm.expectRevert(
       abi.encodeWithSelector(
         ICustomErrorSystem.EntityTypeNotRegistered.selector,
@@ -193,8 +199,6 @@ contract EveSystemTest is Test {
   }
 
   function testTagEntity() public {
-    IWorld world = IWorld(address(baseWorld));
-  
     //register entity
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntityType(OBJECT, "Object");
@@ -208,9 +212,7 @@ contract EveSystemTest is Test {
     assertTrue(entityTagIds[0] == classId1);
   }
 
-  function testTagMultipleEntities() public {
-    IWorld world = IWorld(address(baseWorld));
-    
+  function testTagMultipleEntities() public { 
     //register entity
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntityType(OBJECT, "Object");
@@ -234,8 +236,6 @@ contract EveSystemTest is Test {
   }
 
   function testRevertAlreadyTagged() public {
-    IWorld world = IWorld(address(baseWorld));
-  
     //register entity
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntityType(OBJECT, "Object");
@@ -257,8 +257,6 @@ contract EveSystemTest is Test {
   }
 
   function testRevertIfTaggingNotAllowed() public {
-    IWorld world = IWorld(address(baseWorld));
-  
     //register entity
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntityType(OBJECT, "Object");

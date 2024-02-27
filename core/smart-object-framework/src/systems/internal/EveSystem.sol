@@ -21,7 +21,7 @@ import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol"
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
 import { Utils } from "../../utils.sol";
-import { SMART_OBJECT_MODULE_NAMESPACE as CORE_NAMESPACE } from "../../constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "../../constants.sol";
 
 /**
  * @title EveSystem
@@ -92,7 +92,7 @@ contract EveSystem is System {
     uint256[] memory moduleIds = _getModuleIds(entityId);
 
     //Check if the entity is tagged to a entityType and get the moduleIds for the entity
-    bool isEntityTagged = EntityMap.get(_namespace().entityMapTableId(), entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId).length > 0;
     if (isEntityTagged) {
       uint256[] memory taggedEntityIds = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
