@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@types/debug':
+        specifier: 4.1.7
+        version: 4.1.7
+      '@types/prettier':
+        specifier: 2.7.2
+        version: 2.7.2
       lerna:
         specifier: ^8.0.1
         version: 8.0.1
@@ -17,6 +23,9 @@ importers:
       nx:
         specifier: 18.1.0
         version: 18.1.0
+      typescript:
+        specifier: 5.1.6
+        version: 5.1.6
 
   core/smart-character:
     dependencies:
@@ -56,7 +65,7 @@ importers:
         version: 1.1.3(prettier@2.8.8)
       solhint:
         specifier: ^3.3.7
-        version: 3.6.2
+        version: 3.6.2(typescript@5.1.6)
       solhint-config-mud:
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16
@@ -105,7 +114,53 @@ importers:
         version: 1.1.3(prettier@2.8.8)
       solhint:
         specifier: ^3.3.7
-        version: 3.6.2
+        version: 3.6.2(typescript@5.1.6)
+      solhint-config-mud:
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16
+      solhint-plugin-mud:
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16
+
+  modules/access-control:
+    dependencies:
+      '@eve/smart-object-framework':
+        specifier: 0.0.0
+        version: link:../../core/smart-object-framework
+      '@latticexyz/cli':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(google-protobuf@3.21.2)
+      '@latticexyz/schema-type':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)(zod@3.22.4)
+      '@latticexyz/store':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+      '@latticexyz/world':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+      '@latticexyz/world-modules':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+    devDependencies:
+      '@types/node':
+        specifier: ^18.15.11
+        version: 18.19.4
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
+        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
+        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
+      prettier:
+        specifier: ^2.6.2
+        version: 2.8.8
+      prettier-plugin-solidity:
+        specifier: 1.1.3
+        version: 1.1.3(prettier@2.8.8)
+      solhint:
+        specifier: ^3.3.7
+        version: 3.6.2(typescript@5.1.6)
       solhint-config-mud:
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16
@@ -148,7 +203,7 @@ importers:
         version: 1.1.3(prettier@2.8.8)
       solhint:
         specifier: ^3.3.7
-        version: 3.6.2
+        version: 3.6.2(typescript@5.1.6)
       solhint-config-mud:
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16
@@ -191,7 +246,7 @@ importers:
         version: 1.1.3(prettier@2.8.8)
       solhint:
         specifier: ^3.3.7
-        version: 3.6.2
+        version: 3.6.2(typescript@5.1.6)
       solhint-config-mud:
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16
@@ -5250,7 +5305,7 @@ packages:
       '@solidity-parser/parser': 0.16.2
     dev: true
 
-  /solhint@3.6.2:
+  /solhint@3.6.2(typescript@5.1.6):
     resolution: {integrity: sha512-85EeLbmkcPwD+3JR7aEMKsVC9YrRSxd4qkXuMzrlf7+z2Eqdfm1wHWq1ffTuo5aDhoZxp2I9yF3QkxZOxOL7aQ==}
     hasBin: true
     dependencies:

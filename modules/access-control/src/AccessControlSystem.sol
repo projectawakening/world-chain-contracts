@@ -10,19 +10,20 @@ import { EveSystem } from "@eve/smart-object-framework/src/systems/internal/EveS
 import { IWorld as IWorldCore } from "@eve/smart-object-framework/src/codegen/world/IWorld.sol";
 import { IAccessControl, IAccessControlMUD } from "./IAccessControlMUD.sol";
 
-import { HasRole } from "../codegen/tables/HasRole.sol";
-import { RoleAdmin } from "../codegen/tables/RoleAdmin.sol";
-import { EntityToRole } from "../codegen/tables/EntityToRole.sol";
-import { EntityToRoleAND } from "../codegen/tables/EntityToRoleAND.sol";
-import { EntityToRoleOR } from "../codegen/tables/EntityToRoleOR.sol";
+import { HasRole } from "./codegen/tables/HasRole.sol";
+import { RoleAdmin } from "./codegen/tables/RoleAdmin.sol";
+import { EntityToRole } from "./codegen/tables/EntityToRole.sol";
+import { EntityToRoleAND } from "./codegen/tables/EntityToRoleAND.sol";
+import { EntityToRoleOR } from "./codegen/tables/EntityToRoleOR.sol";
 
-import { _hasRoleTableId, _roleAdminTableId, _entityToRoleTableId, _entityToRoleANDTableId, _entityToRoleORTableId, _accessControlSystemId } from "./utils.sol";
+import { Utils } from "./utils.sol";
 
 /**
  * @dev RBAC System derived from OpenZeppelin's RBAC implementation
  * so that it should be able to support ERC-165 later on
  */
 contract AccessControlSystem is EveSystem, IAccessControlMUD {
+  using Utils for bytes14;
   using WorldResourceIdInstance for ResourceId;
 
   bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
@@ -42,7 +43,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param entityId entity targeted by the Access Control hook
    */
   function onlyRoleHook(uint256 entityId) external view {
-    bytes32 role = EntityToRole.get(_entityToRoleTableId(_namespace()), entityId);
+    bytes32 role = EntityToRole.get(_namespace().entityToRoleTableId(), entityId);
     if(role == 0) revert AccessControlHookUnititialized(entityId);
 
     if(!(hasRole(role, _msgSender()))) {
@@ -56,7 +57,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param entityId entity targeted by the Access Control hook
    */
   function onlyRoleANDHook(uint256 entityId) external view {
-    bytes32[] memory roles = EntityToRoleAND.get(_entityToRoleANDTableId(_namespace()), entityId);
+    bytes32[] memory roles = EntityToRoleAND.get(_namespace().entityToRoleANDTableId(), entityId);
     if(roles.length == 0) revert AccessControlHookANDUnititialized(entityId);
 
     for(uint i=0; i < roles.length; i++) {
@@ -72,7 +73,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param entityId entity targeted by the Access Control hook
    */
   function onlyRoleORHook(uint256 entityId) external view {
-    bytes32[] memory roles = EntityToRoleOR.get(_entityToRoleORTableId(_namespace()), entityId);
+    bytes32[] memory roles = EntityToRoleOR.get(_namespace().entityToRoleORTableId(), entityId);
     if(roles.length == 0) revert AccessControlHookORUnititialized(entityId);
 
     for(uint i=0; i < roles.length; i++) {
@@ -97,7 +98,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @dev Returns `true` if `account` has been granted `role`.
    */
   function hasRole(bytes32 role, address account) public view returns (bool) {
-    return HasRole.get(_hasRoleTableId(_namespace()), role, account);
+    return HasRole.get(_namespace().hasRoleTableId(), role, account);
   }
 
   /**
@@ -113,7 +114,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * is missing `role`.
    */
   function _checkRole(bytes32 role, address account) internal view virtual {
-    if (!HasRole.get(_hasRoleTableId(_namespace()), role, account)) {
+    if (!HasRole.get(_namespace().hasRoleTableId(), role, account)) {
       revert AccessControlUnauthorizedAccount(account, role);
     }
   }
@@ -125,7 +126,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * To change a role's admin, use {AccessControl-_setRoleAdmin}.
    */
   function getRoleAdmin(bytes32 role) external view returns (bytes32) {
-    return RoleAdmin.get(_roleAdminTableId(_namespace()), role);
+    return RoleAdmin.get(_namespace().roleAdminTableId(), role);
   }
 
   /**
@@ -140,7 +141,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    */
   function grantRole(bytes32 role, address account) 
     external 
-    onlyRole(RoleAdmin.get(_roleAdminTableId(_namespace()), role))
+    onlyRole(RoleAdmin.get(_namespace().roleAdminTableId(), role))
   {
     _grantRole(role, account);
   }
@@ -156,7 +157,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    */
   function revokeRole(bytes32 role, address account)
     external
-    onlyRole(RoleAdmin.get(_roleAdminTableId(_namespace()), role))
+    onlyRole(RoleAdmin.get(_namespace().roleAdminTableId(), role))
   {
     _revokeRole(role, account);
   }
@@ -190,8 +191,8 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * Emits a {RoleAdminChanged} event.
    */
   function _setRoleAdmin(bytes32 role, bytes32 adminRole) internal virtual {
-    bytes32 previousAdminRole = RoleAdmin.get(_roleAdminTableId(_namespace()), role);
-    RoleAdmin.set(_roleAdminTableId(_namespace()), role, adminRole);
+    bytes32 previousAdminRole = RoleAdmin.get(_namespace().roleAdminTableId(), role);
+    RoleAdmin.set(_namespace().roleAdminTableId(), role, adminRole);
     emit RoleAdminChanged(role, previousAdminRole, adminRole);
   }
 
@@ -203,8 +204,8 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * May emit a {RoleGranted} event.
    */
   function _grantRole(bytes32 role, address account) internal virtual returns (bool) {
-    if (!HasRole.get(_hasRoleTableId(_namespace()), role, account)) {
-      HasRole.set(_hasRoleTableId(_namespace()), role, account, true);
+    if (!HasRole.get(_namespace().hasRoleTableId(), role, account)) {
+      HasRole.set(_namespace().hasRoleTableId(), role, account, true);
       emit RoleGranted(role, account, _msgSender());
       return true;
     } else {
@@ -220,8 +221,8 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * May emit a {RoleRevoked} event.
    */
   function _revokeRole(bytes32 role, address account) internal virtual returns (bool) {
-    if (HasRole.get(_hasRoleTableId(_namespace()), role, account)) {
-      HasRole.set(_hasRoleTableId(_namespace()), role, account, false);
+    if (HasRole.get(_namespace().hasRoleTableId(), role, account)) {
+      HasRole.set(_namespace().hasRoleTableId(), role, account, false);
       emit RoleRevoked(role, account, _msgSender());
       return true;
     } else {
@@ -240,7 +241,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
     }
 
     bytes32 singletonRole = bytes32(uint256(uint160(_msgSender())));
-    if(HasRole.get(_hasRoleTableId(_namespace()), singletonRole, _msgSender())) {
+    if(HasRole.get(_namespace().hasRoleTableId(), singletonRole, _msgSender())) {
       revert AccessControlSingletonRoleExists(_msgSender());
     }
     _setRoleAdmin(singletonRole, singletonRole);
@@ -255,10 +256,10 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param roleAdmin the role admin we want to assign to it (msgSender needs to have it)
    */
   function createRole(bytes32 role, bytes32 roleAdmin) external {
-    if(!(RoleAdmin.get(_roleAdminTableId(_namespace()), role) == DEFAULT_ADMIN_ROLE)) {
+    if(!(RoleAdmin.get(_namespace().roleAdminTableId(), role) == DEFAULT_ADMIN_ROLE)) {
       revert AccessControlRoleAlreadyCreated(role, _msgSender());
     }
-    if(!HasRole.get(_hasRoleTableId(_namespace()), roleAdmin, _msgSender())) {
+    if(!HasRole.get(_namespace().hasRoleTableId(), roleAdmin, _msgSender())) {
       revert AccessControlUnauthorizedAccount(_msgSender(), roleAdmin);
     }
 
@@ -274,7 +275,7 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
     hookable(entityId, _systemId(), abi.encode(entityId)) 
     external
   {
-    EntityToRole.set(_entityToRoleTableId(_namespace()), entityId, role);
+    EntityToRole.set(_namespace().entityToRoleTableId(), entityId, role);
   }
 
   /**
@@ -283,11 +284,11 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param entityId the entityId we want to set access control's onlyRole rules for
    * @param roles the role we want to assing to it
    */
-  function setOnlyRoleANDConfig(uint256 entityId, bytes32[] calldata roles)
+  function setOnlyRoleANDConfig(uint256 entityId, bytes32[] memory roles)
     hookable(entityId, _systemId(), abi.encode(entityId)) 
     external
   {
-    EntityToRoleAND.set(_entityToRoleANDTableId(_namespace()), entityId, roles);
+    EntityToRoleAND.set(_namespace().entityToRoleANDTableId(), entityId, roles);
   }
 
   /**
@@ -296,19 +297,14 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
    * @param entityId the entityId we want to set access control's onlyRole rules for
    * @param roles the role we want to assing to it
    */
-  function setOnlyRoleORConfig(uint256 entityId, bytes32[] calldata roles)
+  function setOnlyRoleORConfig(uint256 entityId, bytes32[] memory roles)
     hookable(entityId, _systemId(), abi.encode(entityId)) 
     external
   {
-    EntityToRoleAND.set(_entityToRoleORTableId(_namespace()), entityId, roles);
-  }
-
-  function _namespace() internal view returns (bytes14 namespace) {
-    ResourceId systemId = SystemRegistry.get(address(this));
-    return systemId.getNamespace();
+    EntityToRoleAND.set(_namespace().entityToRoleORTableId(), entityId, roles);
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _accessControlSystemId(_namespace());
+    return _namespace().accessControlSystemId();
   }
 }

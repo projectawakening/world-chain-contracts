@@ -1,6 +1,7 @@
 import { mudConfig } from "@latticexyz/world/register";
 
 export default mudConfig({
+  namespace: "RBAC_v0",
   tables: {
     HasRole: {
       keySchema: { role: "bytes32", account: "address" },
@@ -33,5 +34,5 @@ export default mudConfig({
       storeArgument: true,
     }
   },
-  excludeSystems: ["AccessControlSystem", "EveSystem"],
+  excludeSystems: ["EveSystem"],
 });

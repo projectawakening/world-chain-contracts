@@ -9,14 +9,19 @@ import { World } from "@latticexyz/world/src/World.sol";
 import { createCoreModule } from "./createCoreModule.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { AccessControlModule } from "../src/access-control/AccessControlModule.sol";
-import { IAccessControl, IAccessControlMUD } from "../src/access-control/IAccessControlMUD.sol";
-import { _hasRoleTableId, _roleAdminTableId, _accessControlSystemId } from "../src/access-control/utils.sol";
-import { AccessControlLib } from "../src/access-control/AccessControlLib.sol";
+import { AccessControlModule } from "../src/AccessControlModule.sol";
+import { IAccessControl, IAccessControlMUD } from "../src/IAccessControlMUD.sol";
+import { Utils } from "../src/utils.sol";
+import { EntityToRole } from "../src/codegen/tables/EntityToRole.sol";
+import { EntityToRoleAND } from "../src/codegen/tables/EntityToRoleAND.sol";
+import { EntityToRoleOR } from "../src/codegen/tables/EntityToRoleOR.sol";
+
+import { AccessControlLib } from "../src/AccessControlLib.sol";
 
 contract AccessControlTest is Test {
   using AccessControlLib for AccessControlLib.World;
   AccessControlLib.World accessControl;
+  using Utils for bytes14;
 
   IBaseWorld world;
   AccessControlModule accessControleModule;
@@ -28,7 +33,10 @@ contract AccessControlTest is Test {
   address charlie = address(1337);
 
   bytes32 aliceRole = bytes32(uint256(uint160(alice)));
+  bytes32 bobRole = bytes32(uint256(uint160(bob)));
+  bytes32 charlieRole = bytes32(uint256(uint160(charlie)));
   bytes32 newRole = bytes32("420");
+  uint256 entity1 = 123;
 
 
   /**
@@ -145,5 +153,30 @@ contract AccessControlTest is Test {
     vm.prank(alice);
     vm.expectRevert(abi.encodeWithSelector(IAccessControlMUD.AccessControlRoleAlreadyCreated.selector, newRole, alice));
     accessControl.createRole(newRole, aliceRole);
+  }
+
+  function testSetOnlyRoleConfig() public {
+    accessControl.setOnlyRoleConfig(entity1, aliceRole);
+    assertEq(EntityToRole.get(namespace.entityToRoleTableId(), entity1), aliceRole);
+  }
+
+  function testSetOnlyRoleANDConfig(bytes32[] memory roles) public returns (bytes32[] memory) {
+    accessControl.setOnlyRoleANDConfig(entity1, roles);
+
+    bytes32[] memory rolesInStorage = EntityToRoleAND.get(namespace.entityToRoleANDTableId(), entity1);
+    assertEq(rolesInStorage.length, roles.length);
+    for(uint i = 0; i < roles.length; i++) assertEq(roles[i], rolesInStorage[i]);
+
+    return roles;
+  }
+
+  function testSetOnlyRoleORConfig(bytes32[] memory roles) public returns (bytes32[] memory) {
+    accessControl.setOnlyRoleORConfig(entity1, roles);
+
+    bytes32[] memory rolesInStorage = EntityToRoleOR.get(namespace.entityToRoleORTableId(), entity1);
+    assertEq(rolesInStorage.length, roles.length);
+    for(uint i = 0; i < roles.length; i++) assertEq(roles[i], rolesInStorage[i]);
+
+    return roles;
   }
 }

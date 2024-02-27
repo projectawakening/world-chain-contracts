@@ -8,14 +8,14 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { MODULE_NAME, MODULE_NAMESPACE, MODULE_NAMESPACE_ID } from "./constants.sol";
-import { _hasRoleTableId, _roleAdminTableId, _entityToRoleTableId, _entityToRoleANDTableId, _entityToRoleORTableId, _accessControlSystemId } from "./utils.sol";
+import { Utils } from "./utils.sol";
 import { AccessControlSystem } from "./AccessControlSystem.sol";
 
-import { HasRole } from "../codegen/tables/HasRole.sol";
-import { RoleAdmin } from "../codegen/tables/RoleAdmin.sol";
-import { EntityToRole } from "../codegen/tables/EntityToRole.sol";
-import { EntityToRoleAND } from "../codegen/tables/EntityToRoleAND.sol";
-import { EntityToRoleOR } from "../codegen/tables/EntityToRoleOR.sol";
+import { HasRole } from "./codegen/tables/HasRole.sol";
+import { RoleAdmin } from "./codegen/tables/RoleAdmin.sol";
+import { EntityToRole } from "./codegen/tables/EntityToRole.sol";
+import { EntityToRoleAND } from "./codegen/tables/EntityToRoleAND.sol";
+import { EntityToRoleOR } from "./codegen/tables/EntityToRoleOR.sol";
 
 contract AccessControlModule is Module {
   error AccessControlModule_InvalidNamespace(bytes14 namespace);
@@ -70,6 +70,7 @@ contract AccessControlModule is Module {
 }
 
 contract AccessControlModuleRegistrationLibrary {
+  using Utils for bytes14;
   /**
    * Register systems and tables for a new access control in a given namespace
    */
@@ -77,13 +78,13 @@ contract AccessControlModuleRegistrationLibrary {
     // Register the namespace
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    HasRole.register(_hasRoleTableId(namespace));
-    RoleAdmin.register(_roleAdminTableId(namespace));
-    EntityToRole.register(_entityToRoleTableId(namespace));
-    EntityToRoleAND.register(_entityToRoleANDTableId(namespace));
-    EntityToRoleOR.register(_entityToRoleORTableId(namespace));
+    HasRole.register(namespace.hasRoleTableId());
+    RoleAdmin.register(namespace.roleAdminTableId());
+    EntityToRole.register(namespace.entityToRoleTableId());
+    EntityToRoleAND.register(namespace.entityToRoleANDTableId());
+    EntityToRoleOR.register(namespace.entityToRoleORTableId());
 
     // Register a new AccessControlSystem
-    world.registerSystem(_accessControlSystemId(namespace), new AccessControlSystem(), true);
+    world.registerSystem(namespace.accessControlSystemId(), new AccessControlSystem(), true);
   }
 }
