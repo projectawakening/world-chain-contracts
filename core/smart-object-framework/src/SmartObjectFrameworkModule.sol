@@ -66,7 +66,7 @@ contract SmartObjectFrameworkModule is Module {
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
       abi.encodeCall(SmartObjectFrameworkModuleRegistrationLibrary.register, (world, namespace))
     );
-    require(success, string(returnedData));
+    if (!success) revertWithBytes(returnData);
 
     // Transfer ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
