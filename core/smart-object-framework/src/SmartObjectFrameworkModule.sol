@@ -5,6 +5,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 
 import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./utils.sol";
@@ -66,7 +67,7 @@ contract SmartObjectFrameworkModule is Module {
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
       abi.encodeCall(SmartObjectFrameworkModuleRegistrationLibrary.register, (world, namespace))
     );
-    if (!success) revertWithBytes(returnData);
+    if (!success) revertWithBytes(returnedData);
 
     // Transfer ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
