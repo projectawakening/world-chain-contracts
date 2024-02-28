@@ -17,7 +17,7 @@ import { Utils } from "../../utils.sol";
  *
  */
 contract EntityCore is EveSystem {
-  using Utils for bytes14; 
+  using Utils for bytes14;
 
   // Modifiers
   modifier requireValidEntityId(uint256 entityId) {
@@ -48,9 +48,9 @@ contract EntityCore is EveSystem {
   function registerEntity(uint256 entityId, uint8 entityType) external {
     _registerEntity(entityId, entityType);
   }
-  
+
   /**
-    * @notice Overloaded function to register multiple entities
+   * @notice Overloaded function to register multiple entities
    */
   function registerEntities(uint256[] memory entityId, uint8[] memory entityType) external {
     if (entityId.length != entityType.length)

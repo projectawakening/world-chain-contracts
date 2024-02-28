@@ -82,156 +82,154 @@ library SmartObjectLib {
 
   // EntityCore methods
   function registerEntityType(World memory world, uint8 entityTypeId, bytes32 entityType) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.registerEntityType,
-        (entityTypeId, entityType)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.registerEntityType, (entityTypeId, entityType))
     );
   }
 
   function registerEntity(World memory world, uint256 entityId, uint8 entityType) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.registerEntity,
-        (entityId, entityType)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.registerEntity, (entityId, entityType))
     );
   }
 
   function registerEntities(World memory world, uint256[] memory entityId, uint8[] memory entityType) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.registerEntities,
-        (entityId, entityType)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.registerEntities, (entityId, entityType))
     );
   }
 
   function registerEntityTypeAssociation(World memory world, uint8 entityType, uint8 tagEntityType) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.registerEntityTypeAssociation,
-        (entityType, tagEntityType)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.registerEntityTypeAssociation, (entityType, tagEntityType))
     );
   }
 
   function tagEntity(World memory world, uint256 entityId, uint256 entityTagId) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.tagEntity,
-        (entityId, entityTagId)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.tagEntity, (entityId, entityTagId))
     );
   }
 
   function tagEntities(World memory world, uint256 entityId, uint256[] memory entityTagIds) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.tagEntities,
-        (entityId, entityTagIds)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.tagEntities, (entityId, entityTagIds))
     );
   }
 
   function removeEntityTag(World memory world, uint256 entityId, uint256 entityTagId) internal {
-    world.iface.call(world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCoreSystem.removeEntityTag,
-        (entityId, entityTagId)
-      )
+    world.iface.call(
+      world.namespace.entityCoreSystemId(),
+      abi.encodeCall(IEntityCoreSystem.removeEntityTag, (entityId, entityTagId))
     );
   }
 
   // HookCore methods
   function registerHook(World memory world, ResourceId systemId, bytes4 functionId) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCoreSystem.registerHook,
-        (systemId, functionId)
-      )
+    world.iface.call(
+      world.namespace.hookCoreSystemId(),
+      abi.encodeCall(IHookCoreSystem.registerHook, (systemId, functionId))
     );
   }
 
-  function addHook(World memory world, uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCoreSystem.addHook,
-        (hookId, hookType, systemId, functionSelector)
-      )
+  function addHook(
+    World memory world,
+    uint256 hookId,
+    HookType hookType,
+    ResourceId systemId,
+    bytes4 functionSelector
+  ) internal {
+    world.iface.call(
+      world.namespace.hookCoreSystemId(),
+      abi.encodeCall(IHookCoreSystem.addHook, (hookId, hookType, systemId, functionSelector))
     );
   }
 
-  function removeHook(World memory world, uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCoreSystem.removeHook,
-        (hookId, hookType, systemId, functionSelector)
-      )
+  function removeHook(
+    World memory world,
+    uint256 hookId,
+    HookType hookType,
+    ResourceId systemId,
+    bytes4 functionSelector
+  ) internal {
+    world.iface.call(
+      world.namespace.hookCoreSystemId(),
+      abi.encodeCall(IHookCoreSystem.removeHook, (hookId, hookType, systemId, functionSelector))
     );
   }
 
   function associateHook(World memory world, uint256 entityId, uint256 hookId) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCoreSystem.associateHook,
-        (entityId, hookId)
-      )
+    world.iface.call(
+      world.namespace.hookCoreSystemId(),
+      abi.encodeCall(IHookCoreSystem.associateHook, (entityId, hookId))
     );
   }
 
   function associateHooks(World memory world, uint256 entityId, uint256[] memory hookIds) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCoreSystem.associateHooks,
-        (entityId, hookIds)
-      )
+    world.iface.call(
+      world.namespace.hookCoreSystemId(),
+      abi.encodeCall(IHookCoreSystem.associateHooks, (entityId, hookIds))
     );
   }
 
   function removeEntityHookAssociation(World memory world, uint256 entityId, uint256 hookId) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCoreSystem.removeEntityHookAssociation,
-        (entityId, hookId)
-      )
+    world.iface.call(
+      world.namespace.hookCoreSystemId(),
+      abi.encodeCall(IHookCoreSystem.removeEntityHookAssociation, (entityId, hookId))
     );
   }
 
   // ModuleCore methods
   function registerEVEModule(World memory world, uint256 moduleId, bytes16 moduleName, ResourceId systemId) internal {
-    world.iface.call(world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCoreSystem.registerEVEModule,
-        (moduleId, moduleName, systemId)
-      )
+    world.iface.call(
+      world.namespace.moduleCoreSystemId(),
+      abi.encodeCall(IModuleCoreSystem.registerEVEModule, (moduleId, moduleName, systemId))
     );
   }
 
-  function registerEVEModules(World memory world, uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) internal {
-    world.iface.call(world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCoreSystem.registerEVEModules,
-        (moduleId, moduleName, systemIds)
-      )
+  function registerEVEModules(
+    World memory world,
+    uint256 moduleId,
+    bytes16 moduleName,
+    ResourceId[] memory systemIds
+  ) internal {
+    world.iface.call(
+      world.namespace.moduleCoreSystemId(),
+      abi.encodeCall(IModuleCoreSystem.registerEVEModules, (moduleId, moduleName, systemIds))
     );
   }
 
   function associateModule(World memory world, uint256 entityId, uint256 moduleId) internal {
-    world.iface.call(world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCoreSystem.associateModule,
-        (entityId, moduleId)
-      )
+    world.iface.call(
+      world.namespace.moduleCoreSystemId(),
+      abi.encodeCall(IModuleCoreSystem.associateModule, (entityId, moduleId))
     );
   }
 
   function associateModules(World memory world, uint256 entityId, uint256[] memory moduleIds) internal {
-    world.iface.call(world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCoreSystem.associateModules,
-        (entityId, moduleIds)
-      )
+    world.iface.call(
+      world.namespace.moduleCoreSystemId(),
+      abi.encodeCall(IModuleCoreSystem.associateModules, (entityId, moduleIds))
     );
   }
 
   function removeEntityModuleAssociation(World memory world, uint256 entityId, uint256 moduleId) internal {
-    world.iface.call(world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCoreSystem.removeEntityModuleAssociation,
-        (entityId, moduleId)
-      )
+    world.iface.call(
+      world.namespace.moduleCoreSystemId(),
+      abi.encodeCall(IModuleCoreSystem.removeEntityModuleAssociation, (entityId, moduleId))
     );
   }
 
   function removeSystemModuleAssociation(World memory world, ResourceId systemId, uint256 moduleId) internal {
-    world.iface.call(world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCoreSystem.removeSystemModuleAssociation,
-        (systemId, moduleId)
-      )
+    world.iface.call(
+      world.namespace.moduleCoreSystemId(),
+      abi.encodeCall(IModuleCoreSystem.removeSystemModuleAssociation, (systemId, moduleId))
     );
   }
 }

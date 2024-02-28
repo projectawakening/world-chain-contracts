@@ -65,13 +65,11 @@ contract SmartDeployableTestModule is Module {
   function installRoot(bytes memory args) public {
     // Naive check to ensure this is only installed once
     requireNotInstalled(__self, args);
-    
+
     IBaseWorld world = IBaseWorld(_world());
 
     //Register namespace
-    (bool success, bytes memory data) = address(world).call(
-      abi.encodeCall(world.registerNamespace, (NAMESPACE_ID))
-    );
+    (bool success, bytes memory data) = address(world).call(abi.encodeCall(world.registerNamespace, (NAMESPACE_ID)));
     if (!success) revertWithBytes(data);
 
     // Register system
@@ -80,9 +78,7 @@ contract SmartDeployableTestModule is Module {
     );
     if (!success) revertWithBytes(data);
 
-    (success, data) = address(world).call(
-      abi.encodeCall(world.registerSystem, (HOOK_SYSTEM_ID, sampleHook, true))
-    );
+    (success, data) = address(world).call(abi.encodeCall(world.registerSystem, (HOOK_SYSTEM_ID, sampleHook, true)));
     if (!success) revertWithBytes(data);
 
     // Register system's functions
@@ -119,7 +115,7 @@ contract SmartDeployableTestModule is Module {
 contract EveSystemTest is Test {
   using Utils for bytes14;
   using SmartObjectLib for SmartObjectLib.World;
-  
+
   uint256 classId1 = uint256(keccak256(abi.encodePacked("typeId12")));
   uint256 classId2 = uint256(keccak256(abi.encodePacked("typeId13")));
   uint256 singletonEntity = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
@@ -152,7 +148,6 @@ contract EveSystemTest is Test {
     setUp();
     assertEq(address(smartObject.iface), address(baseWorld));
   }
-
 
   function testWorldExists() public {
     uint256 codeSize;
@@ -212,7 +207,7 @@ contract EveSystemTest is Test {
     assertTrue(entityTagIds[0] == classId1);
   }
 
-  function testTagMultipleEntities() public { 
+  function testTagMultipleEntities() public {
     //register entity
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntityType(OBJECT, "Object");
@@ -277,7 +272,7 @@ contract EveSystemTest is Test {
 
   function testregisterEVEModule() public {
     IWorld world = IWorld(address(baseWorld));
-    
+
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register module
@@ -287,7 +282,7 @@ contract EveSystemTest is Test {
 
   function testRevertregisterEVEModuleIfSystemAlreadyRegistered() public {
     IWorld world = IWorld(address(baseWorld));
-    
+
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register module
@@ -374,7 +369,7 @@ contract EveSystemTest is Test {
 
   function testObjectAssociateWithClass() public {
     IWorld world = IWorld(address(baseWorld));
-    
+
     //install module
     world.installModule(smartDeployableTestModule, new bytes(0));
 
@@ -417,7 +412,7 @@ contract EveSystemTest is Test {
 
   function testRemoveEntityTag() public {
     IWorld world = IWorld(address(baseWorld));
-  
+
     //install module
     world.installModule(smartDeployableTestModule, new bytes(0));
 
@@ -538,7 +533,7 @@ contract EveSystemTest is Test {
   //   uint256 singletonObject1 = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-12345")));
 
   //   //install module
-  //   
+  //
   //   world.installModule(smartDeployableTestModule, new bytes(0));
 
   //   // register system associated with module
@@ -571,7 +566,7 @@ contract EveSystemTest is Test {
 
   function testRemoveEntityModuleAssociation() public {
     IWorld world = IWorld(address(baseWorld));
-    
+
     //install module
     world.installModule(smartDeployableTestModule, new bytes(0));
 
@@ -681,7 +676,7 @@ contract EveSystemTest is Test {
     IWorld world = IWorld(address(baseWorld));
 
     // install module
-    
+
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
@@ -708,7 +703,7 @@ contract EveSystemTest is Test {
     IWorld world = IWorld(address(baseWorld));
 
     // install module
-    
+
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity
@@ -760,7 +755,7 @@ contract EveSystemTest is Test {
     IWorld world = IWorld(address(baseWorld));
 
     // install module
-    
+
     world.installModule(smartDeployableTestModule, new bytes(0));
 
     //register entity

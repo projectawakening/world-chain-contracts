@@ -15,7 +15,7 @@ library Utils {
   function entityCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ENTITY_CORE_SYSTEM_NAME });
   }
-  
+
   function moduleCoreSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: MODULE_CORE_SYSTEM_NAME });
   }
@@ -33,7 +33,8 @@ library Utils {
   }
 
   function entityTypeAssociationTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ENTITY_TYPE_ASSOCIATION_NAME });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ENTITY_TYPE_ASSOCIATION_NAME });
   }
 
   function entityMapTableId(bytes14 namespace) internal pure returns (ResourceId) {

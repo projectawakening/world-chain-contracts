@@ -8,11 +8,11 @@ uint8 constant INVALID_ID = 0;
 uint256 constant EMPTY_MODULE_ID = uint256(keccak256("EMPTY_MODULE_ID"));
 
 bytes16 constant SMART_OBJECT_MODULE_NAME = "SmartObjModule";
-bytes14 constant SMART_OBJECT_MODULE_NAMESPACE= "SmartObjModule";
+bytes14 constant SMART_OBJECT_MODULE_NAMESPACE = "SmartObjModule";
 
 // TODO: this needs to match with the namespace used during `world.installModule(smartObjectModule, abi.encode("namespace"))`
-// and/or match the `namespace` field in mud.config.ts, depending how you deploy the Smart Object Framework 
-// (e.g. through `mud deploy` or inside a post-deployment Forge script) 
+// and/or match the `namespace` field in mud.config.ts, depending how you deploy the Smart Object Framework
+// (e.g. through `mud deploy` or inside a post-deployment Forge script)
 // it's a bit of an inconvenience, but refactoring the namespace used to access the right tables in EveSystem dynamically would
 // require to read some form of storage, and that makes up for a lot of read operations and it's costly
 // so it's best to just hard-code this for now

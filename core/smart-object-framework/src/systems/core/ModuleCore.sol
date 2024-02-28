@@ -9,12 +9,12 @@ import { ModuleTable } from "../../codegen/tables/ModuleTable.sol";
 import { ModuleSystemLookup } from "../../codegen/tables/ModuleSystemLookup.sol";
 import { ICustomErrorSystem } from "../../codegen/world/ICustomErrorSystem.sol";
 import { EveSystem } from "../internal/EveSystem.sol";
-import { INVALID_ID } from "../../constants.sol";
 
 import { Utils } from "../../utils.sol";
 
 contract ModuleCore is EveSystem {
-  using Utils for bytes14; 
+  using Utils for bytes14;
+
   /**
    * @notice Registers a system
    * @param moduleId The identifier for the module
@@ -130,7 +130,12 @@ contract ModuleCore is EveSystem {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = moduleIds.length - 1;
       if (index != lastIndex) {
-        EntityAssociation.updateModuleIds(_namespace().entityAssociationTableId(), entityId, index, moduleIds[lastIndex]);
+        EntityAssociation.updateModuleIds(
+          _namespace().entityAssociationTableId(),
+          entityId,
+          index,
+          moduleIds[lastIndex]
+        );
       }
       EntityAssociation.popModuleIds(_namespace().entityAssociationTableId(), entityId);
     }
@@ -138,7 +143,10 @@ contract ModuleCore is EveSystem {
 
   function _removeSystemModuleAssociation(ResourceId systemId, uint256 moduleId) internal {
     bytes32 unwrappedSystemId = ResourceId.unwrap(systemId);
-    require(ModuleTable.getDoesExists(_namespace().moduleTableTableId(), moduleId, systemId), "ModuleCore: Module not registered");
+    require(
+      ModuleTable.getDoesExists(_namespace().moduleTableTableId(), moduleId, systemId),
+      "ModuleCore: Module not registered"
+    );
     ModuleTable.deleteRecord(_namespace().moduleTableTableId(), moduleId, systemId);
 
     //update lookup table
@@ -149,7 +157,12 @@ contract ModuleCore is EveSystem {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = systemIds.length - 1;
       if (index != lastIndex) {
-        ModuleSystemLookup.updateSystemIds(_namespace().moduleSystemLookupTableId(), moduleId, index, unwrappedSystemId);
+        ModuleSystemLookup.updateSystemIds(
+          _namespace().moduleSystemLookupTableId(),
+          moduleId,
+          index,
+          unwrappedSystemId
+        );
       }
       ModuleSystemLookup.popSystemIds(_namespace().moduleSystemLookupTableId(), moduleId);
     }

@@ -1,18 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import {
-  SMART_OBJECT_MODULE_NAME as MODULE_NAME,
-  SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE,
-  SMART_OBJECT_MODULE_NAMESPACE_ID as MODULE_NAMESPACE_ID
-  } from "./constants.sol";
-import "./utils.sol";
+import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
+import { Utils } from "./utils.sol";
 
 import { EntityCore } from "./systems/core/EntityCore.sol";
 import { ModuleCore } from "./systems/core/ModuleCore.sol";
@@ -29,9 +24,7 @@ import { HookTargetBefore } from "./codegen/tables/HookTargetBefore.sol";
 import { ModuleSystemLookup } from "./codegen/tables/ModuleSystemLookup.sol";
 import { ModuleTable } from "./codegen/tables/ModuleTable.sol";
 
-
 contract SmartObjectFrameworkModule is Module {
-
   error SmartObjectFrameworkModule_InvalidNamespace(bytes14 namespace);
 
   address immutable registrationLibrary = address(new SmartObjectFrameworkModuleRegistrationLibrary());
@@ -43,6 +36,7 @@ contract SmartObjectFrameworkModule is Module {
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
     return super.supportsInterface(interfaceId);
   }
+
   function _requireDependencies() internal view {
     // Require other modules to be installed
     // (not the case here)
@@ -69,7 +63,9 @@ contract SmartObjectFrameworkModule is Module {
 
     // Register the smart object framework's tables and systems
     IBaseWorld world = IBaseWorld(_world());
-    (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(abi.encodeCall(SmartObjectFrameworkModuleRegistrationLibrary.register, (world, namespace)));
+    (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
+      abi.encodeCall(SmartObjectFrameworkModuleRegistrationLibrary.register, (world, namespace))
+    );
     require(success, string(returnedData));
 
     // Transfer ownership of the namespace to the caller
@@ -85,6 +81,7 @@ contract SmartObjectFrameworkModule is Module {
 
 contract SmartObjectFrameworkModuleRegistrationLibrary {
   using Utils for bytes14;
+
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */
