@@ -30,7 +30,6 @@ export default mudConfig({
         doesExists: "bool",
         typeName: "bytes32",
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
     /**
@@ -42,7 +41,6 @@ export default mudConfig({
         doesExists: "bool", //Tracks the entity which is no longer valid
         entityType: "uint8"
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
     /**
@@ -55,7 +53,6 @@ export default mudConfig({
       valueSchema: {
         isAllowed: "bool"
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
     /**
@@ -68,7 +65,6 @@ export default mudConfig({
       valueSchema: {
         taggedEntityIds: "uint256[]"
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
     /**
@@ -81,7 +77,6 @@ export default mudConfig({
         moduleIds: "uint256[]",
         hookIds: "uint256[]"
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
 
@@ -98,7 +93,6 @@ export default mudConfig({
         moduleName: "bytes16",
         doesExists: "bool",
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
 
@@ -111,7 +105,6 @@ export default mudConfig({
       valueSchema: {
         systemIds: "bytes32[]"
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
 
@@ -129,7 +122,6 @@ export default mudConfig({
         systemId: "ResourceId", //Callback systemId of the hook 
         functionSelector: "bytes4" //Callback functionId of the hook
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
     /**
@@ -142,7 +134,6 @@ export default mudConfig({
         systemSelector: "ResourceId", //Target system to hook against
         functionSelector: "bytes4" //Target function to hook against
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
     /**
@@ -155,7 +146,6 @@ export default mudConfig({
         systemSelector: "ResourceId", //Target system to hook against
         functionSelector: "bytes4" //Target function to hook against
       },
-      storeArgument: true,
       tableIdArgument: true,
     },
   },
