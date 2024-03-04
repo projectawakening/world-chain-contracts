@@ -16,6 +16,10 @@ import { IModuleCore } from "./interfaces/IModuleCore.sol";
  * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
  * @dev To preserve _msgSender() and other context-dependant properties, Library methods like those MUST be `internal`.
  * That way, the compiler is forced to inline the method's implementation in the contract they're imported into.
+ * 
+ * TODO: the way we generate the interfaces used below is brittle; it's a semi-manual process 
+ * (generate with `worldgen` while setting `namespace` in `mud.config.ts` to "")
+ * changes to any Core contract won't reflect in either the library, or the interfaces it imports
  */
 library SmartObjectLib {
   using Utils for bytes14;
