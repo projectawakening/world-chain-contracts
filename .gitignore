@@ -8,3 +8,5 @@
 **/cache
 # MUD Client generated static data
 **/dist 
+# Worlds.json
+**/worlds.json
