@@ -6,7 +6,10 @@
 **/codegen
 **/deploys/**
 **/cache
+**/**/worlds.json
 # MUD Client generated static data
 **/dist 
 # Worlds.json
 **/worlds.json
+
+.nx/cache
