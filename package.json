@@ -6,6 +6,7 @@
   },
   "devDependencies": {
     "lerna": "^8.0.1",
-    "mprocs": "^0.6.4"
+    "mprocs": "^0.6.4",
+    "nx": "18.1.0"
   }
 }
