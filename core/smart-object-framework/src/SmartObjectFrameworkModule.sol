@@ -37,6 +37,7 @@ contract SmartObjectFrameworkModule is Module {
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
     return super.supportsInterface(interfaceId);
   }
+
   function _requireDependencies() internal view {
     // Require other modules to be installed
     // (not the case here)
@@ -81,6 +82,7 @@ contract SmartObjectFrameworkModule is Module {
 
 contract SmartObjectFrameworkModuleRegistrationLibrary {
   using Utils for bytes14;
+
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */
