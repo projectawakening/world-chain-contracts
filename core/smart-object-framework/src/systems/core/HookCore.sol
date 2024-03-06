@@ -2,16 +2,20 @@
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { EntityMapTable } from "../../codegen/tables/EntityMapTable.sol";
-import { EntityAssociationTable } from "../../codegen/tables/EntityAssociationTable.sol";
+import { EntityMap } from "../../codegen/tables/EntityMap.sol";
+import { EntityAssociation } from "../../codegen/tables/EntityAssociation.sol";
 import { HookTable } from "../../codegen/tables/HookTable.sol";
 import { ICustomErrorSystem } from "../../codegen/world/ICustomErrorSystem.sol";
-import { HookTargetBeforeTable } from "../../codegen/tables/HookTargetBeforeTable.sol";
-import { HookTargetAfterTable } from "../../codegen/tables/HookTargetAfterTable.sol";
+import { HookTargetBefore } from "../../codegen/tables/HookTargetBefore.sol";
+import { HookTargetAfter } from "../../codegen/tables/HookTargetAfter.sol";
 import { EveSystem } from "../internal/EveSystem.sol";
 import { HookType } from "../../types.sol";
 
+import { Utils } from "../../utils.sol";
+
 contract HookCore is EveSystem {
+  using Utils for bytes14;
+
   /**
    * @notice Register the hook function to execute before or after a EVE function
    * @param systemId is the ResourceId of the system
@@ -75,43 +79,43 @@ contract HookCore is EveSystem {
 
   function _registerHook(ResourceId systemId, bytes4 functionId) internal {
     uint256 hookId = uint256(keccak256(abi.encodePacked(systemId, functionId)));
-    if (HookTable.getIsHook(hookId))
+    if (HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
       revert ICustomErrorSystem.HookAlreadyRegistered(hookId, "HookCore: Hook already registered");
 
-    HookTable.set(hookId, true, systemId, functionId);
+    HookTable.set(_namespace().hookTableTableId(), hookId, true, systemId, functionId);
   }
 
   function _addHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) internal {
-    if (!HookTable.getIsHook(hookId))
+    if (!HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
       revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
 
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
     if (hookType == HookType.BEFORE) {
-      HookTargetBeforeTable.set(hookId, targetId, true, systemId, functionSelector);
+      HookTargetBefore.set(_namespace().hookTargetBeforeTableId(), hookId, targetId, true, systemId, functionSelector);
     } else if (hookType == HookType.AFTER) {
-      HookTargetAfterTable.set(hookId, targetId, true, systemId, functionSelector);
+      HookTargetAfter.set(_namespace().hookTargetAfterTableId(), hookId, targetId, true, systemId, functionSelector);
     }
   }
 
   function _removeHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) internal {
-    if (!HookTable.getIsHook(hookId))
+    if (!HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
       revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
 
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
     if (hookType == HookType.BEFORE) {
-      HookTargetBeforeTable.deleteRecord(hookId, targetId);
+      HookTargetBefore.deleteRecord(_namespace().hookTargetBeforeTableId(), hookId, targetId);
     } else if (hookType == HookType.AFTER) {
-      HookTargetAfterTable.deleteRecord(hookId, targetId);
+      HookTargetAfter.deleteRecord(_namespace().hookTargetAfterTableId(), hookId, targetId);
     }
   }
 
   function _associateHook(uint256 entityId, uint256 hookId) internal {
     _requireEntityRegistered(entityId);
-    if (!HookTable.getIsHook(hookId))
+    if (!HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
       revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
 
-    if (EntityMapTable.get(entityId).length > 0) {
-      uint256[] memory taggedEntityIds = EntityMapTable.get(entityId);
+    if (EntityMap.get(_namespace().entityMapTableId(), entityId).length > 0) {
+      uint256[] memory taggedEntityIds = EntityMap.get(_namespace().entityMapTableId(), entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
         _requireHookeNotAssociated(taggedEntityIds[i], hookId);
       }
@@ -119,11 +123,11 @@ contract HookCore is EveSystem {
       _requireHookeNotAssociated(entityId, hookId);
     }
 
-    EntityAssociationTable.pushHookIds(entityId, hookId);
+    EntityAssociation.pushHookIds(_namespace().entityAssociationTableId(), entityId, hookId);
   }
 
   function _requireHookeNotAssociated(uint256 entityId, uint256 hookId) internal view {
-    uint256[] memory hookIds = EntityAssociationTable.getHookIds(entityId);
+    uint256[] memory hookIds = EntityAssociation.getHookIds(_namespace().entityAssociationTableId(), entityId);
     (, bool exists) = findIndex(hookIds, hookId);
     if (exists)
       revert ICustomErrorSystem.EntityAlreadyAssociated(
@@ -134,15 +138,15 @@ contract HookCore is EveSystem {
   }
 
   function _removeEntityHookAssociation(uint256 entityId, uint256 hookId) internal {
-    uint256[] memory hookIds = EntityAssociationTable.getHookIds(entityId);
+    uint256[] memory hookIds = EntityAssociation.getHookIds(_namespace().entityAssociationTableId(), entityId);
     (uint256 index, bool exists) = findIndex(hookIds, hookId);
     if (exists) {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = hookIds.length - 1;
       if (index != lastIndex) {
-        EntityAssociationTable.updateHookIds(entityId, index, hookIds[lastIndex]);
+        EntityAssociation.updateHookIds(_namespace().entityAssociationTableId(), entityId, index, hookIds[lastIndex]);
       }
-      EntityAssociationTable.popModuleIds(entityId);
+      EntityAssociation.popModuleIds(_namespace().entityAssociationTableId(), entityId);
     }
   }
 }

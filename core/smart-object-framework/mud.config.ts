@@ -1,6 +1,7 @@
 import { mudConfig } from "@latticexyz/world/register";
 
 export default mudConfig({
+  namespace: "SmartObject_v0",
   excludeSystems: ["EveSystem"],
   systems: {
     EntityCore: {
@@ -27,8 +28,9 @@ export default mudConfig({
       keySchema: { "typeId": "uint8" },
       valueSchema: {
         doesExists: "bool",
-        typeName: "bytes32"
-      }
+        typeName: "bytes32",
+      },
+      tableIdArgument: true,
     },
     /**
      * Used to register an entity by its type
@@ -38,7 +40,8 @@ export default mudConfig({
       valueSchema: {
         doesExists: "bool", //Tracks the entity which is no longer valid
         entityType: "uint8"
-      }
+      },
+      tableIdArgument: true,
     },
     /**
      * Used to enforce association/tagging possibility by entity types
@@ -49,29 +52,32 @@ export default mudConfig({
       keySchema: { "entityType": "uint8", "taggedEntityType": "uint8" },
       valueSchema: {
         isAllowed: "bool"
-      }
+      },
+      tableIdArgument: true,
     },
     /**
      * Used to tag/map an entity by its tagged entityIds
      * eg: Similar objects can be grouped as Class, and tagged with a classId. 
      * One entity can be tagged with multiple classIds
      */
-    EntityMapTable: {
+    EntityMap: {
       keySchema: { "entityId": "uint256" },
       valueSchema: {
         taggedEntityIds: "uint256[]"
-      }
+      },
+      tableIdArgument: true,
     },
     /**
      * Used to associate a entity with a specific set of modules and hooks 
      * to inherit the functionality of those modules(systems) and hooks
      */
-    EntityAssociationTable: {
+    EntityAssociation: {
       keySchema: { "entityId": "uint256" },
       valueSchema: {
         moduleIds: "uint256[]",
         hookIds: "uint256[]"
-      }
+      },
+      tableIdArgument: true,
     },
 
     /************************
@@ -86,18 +92,20 @@ export default mudConfig({
         //Can add functions registered in this system if we need granular control
         moduleName: "bytes16",
         doesExists: "bool",
-      }
+      },
+      tableIdArgument: true,
     },
 
     /**
      * Only used for lookup purpose to find the moduleIds associated with a system
      * TODO - Do we need this table?
      */
-    ModuleSystemLookupTable: {
+    ModuleSystemLookup: {
       keySchema: { "moduleId": "uint256" },
       valueSchema: {
         systemIds: "bytes32[]"
-      }
+      },
+      tableIdArgument: true,
     },
 
     /************************
@@ -113,29 +121,32 @@ export default mudConfig({
         isHook: "bool",
         systemId: "ResourceId", //Callback systemId of the hook 
         functionSelector: "bytes4" //Callback functionId of the hook
-      }
+      },
+      tableIdArgument: true,
     },
     /**
      * Used to map the function to be executed before a existing function in a system by hookId
      */
-    HookTargetBeforeTable: {
+    HookTargetBefore: {
       keySchema: { "hookId": "uint256", "targetId": "uint256" }, // targetId - uint256(keccak(systemSelector, functionId))
       valueSchema: {
         hasHook: "bool",
         systemSelector: "ResourceId", //Target system to hook against
         functionSelector: "bytes4" //Target function to hook against
-      }
+      },
+      tableIdArgument: true,
     },
     /**
      * Used to map the function to be executed after a existing function in a system by hookId
      */
-    HookTargetAfterTable: {
+    HookTargetAfter: {
       keySchema: { "hookId": "uint256", "targetId": "uint256" },
       valueSchema: {
         hasHook: "bool",
         systemSelector: "ResourceId", //Target system to hook against
         functionSelector: "bytes4" //Target function to hook against
-      }
+      },
+      tableIdArgument: true,
     },
   },
 });

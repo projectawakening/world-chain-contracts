@@ -4,10 +4,12 @@ pragma solidity >=0.8.21;
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
 import { EntityType } from "../../codegen/tables/EntityType.sol";
 import { EntityTypeAssociation } from "../../codegen/tables/EntityTypeAssociation.sol";
-import { EntityMapTable } from "../../codegen/tables/EntityMapTable.sol";
+import { EntityMap } from "../../codegen/tables/EntityMap.sol";
 import { ICustomErrorSystem } from "../../codegen/world/ICustomErrorSystem.sol";
 import { EveSystem } from "../internal/EveSystem.sol";
 import { INVALID_ID } from "../../constants.sol";
+
+import { Utils } from "../../utils.sol";
 
 /**
  * @title EntityCore
@@ -15,6 +17,8 @@ import { INVALID_ID } from "../../constants.sol";
  *
  */
 contract EntityCore is EveSystem {
+  using Utils for bytes14;
+
   // Modifiers
   modifier requireValidEntityId(uint256 entityId) {
     if (entityId == INVALID_ID) revert ICustomErrorSystem.InvalidEntityId();
@@ -22,7 +26,7 @@ contract EntityCore is EveSystem {
   }
 
   modifier requireEntityTypeExists(uint8 entityType) {
-    if (EntityType.getDoesExists(entityType) == false)
+    if (EntityType.getDoesExists(_namespace().entityTypeTableId(), entityType) == false)
       revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntityCore: EntityType not registered");
     _;
   }
@@ -44,11 +48,11 @@ contract EntityCore is EveSystem {
   function registerEntity(uint256 entityId, uint8 entityType) external {
     _registerEntity(entityId, entityType);
   }
-  
+
   /**
-    * @notice Overloaded function to register multiple entities
+   * @notice Overloaded function to register multiple entities
    */
-  function registerEntity(uint256[] memory entityId, uint8[] memory entityType) external {
+  function registerEntities(uint256[] memory entityId, uint8[] memory entityType) external {
     if (entityId.length != entityType.length)
       revert ICustomErrorSystem.InvalidArrayLength(
         entityId.length,
@@ -85,7 +89,7 @@ contract EntityCore is EveSystem {
   /**
    * @notice Overloaded function to tagEntity under multiple entities
    */
-  function tagEntity(uint256 entityId, uint256[] memory entityTagIds) external {
+  function tagEntities(uint256 entityId, uint256[] memory entityTagIds) external {
     for (uint256 i = 0; i < entityTagIds.length; i++) {
       _tagEntity(entityId, entityTagIds[i]);
     }
@@ -101,24 +105,24 @@ contract EntityCore is EveSystem {
   }
 
   function _registerEntityType(uint8 entityTypeId, bytes32 entityType) internal {
-    if (EntityType.getDoesExists(entityTypeId) == true)
+    if (EntityType.getDoesExists(_namespace().entityTypeTableId(), entityTypeId) == true)
       revert ICustomErrorSystem.EntityTypeAlreadyRegistered(entityTypeId, "EntityCore: EntityType already registered");
 
-    EntityType.set(entityTypeId, true, entityType);
+    EntityType.set(_namespace().entityTypeTableId(), entityTypeId, true, entityType);
   }
 
   function _registerEntity(
     uint256 entityId,
     uint8 entityType
   ) internal requireValidEntityId(entityId) requireEntityTypeExists(entityType) {
-    if (EntityTable.getDoesExists(entityId) == true)
+    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), entityId) == true)
       revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntityCore: Entity already registered");
 
-    EntityTable.set(entityId, true, entityType);
+    EntityTable.set(_namespace().entityTableTableId(), entityId, true, entityType);
   }
 
   function _registerEntityTypeAssociation(uint8 entityType, uint8 tagEntityType) internal {
-    EntityTypeAssociation.set(entityType, tagEntityType, true);
+    EntityTypeAssociation.set(_namespace().entityTypeAssociationTableId(), entityType, tagEntityType, true);
   }
 
   function _tagEntity(uint256 entityId, uint256 entityTagId) internal {
@@ -126,33 +130,33 @@ contract EntityCore is EveSystem {
     _requireEntityRegistered(entityTagId);
     _requireAssociationAllowed(entityId, entityTagId);
 
-    uint256[] memory taggedEntities = EntityMapTable.get(entityId);
+    uint256[] memory taggedEntities = EntityMap.get(_namespace().entityMapTableId(), entityId);
     (, bool exists) = findIndex(taggedEntities, entityTagId);
     if (exists)
       revert ICustomErrorSystem.EntityAlreadyTagged(entityId, entityTagId, "EntityCore: Entity already tagged");
 
-    EntityMapTable.pushTaggedEntityIds(entityId, entityTagId);
+    EntityMap.pushTaggedEntityIds(_namespace().entityMapTableId(), entityId, entityTagId);
   }
 
   function _removeEntityTag(uint256 entityId, uint256 entityTagId) internal {
     //TODO Have to figure out a clean way to remove an element from an array
-    uint256[] memory taggedEntities = EntityMapTable.get(entityId);
+    uint256[] memory taggedEntities = EntityMap.get(_namespace().entityMapTableId(), entityId);
     (uint256 index, bool exists) = findIndex(taggedEntities, entityTagId);
     if (exists) {
       // Swap the element with the last one and pop the last element
       uint256 lastIndex = taggedEntities.length - 1;
       if (index != lastIndex) {
-        EntityMapTable.update(entityId, index, taggedEntities[lastIndex]);
+        EntityMap.update(_namespace().entityMapTableId(), entityId, index, taggedEntities[lastIndex]);
       }
-      EntityMapTable.pop(entityId);
+      EntityMap.pop(_namespace().entityMapTableId(), entityId);
     }
   }
 
   function _requireAssociationAllowed(uint256 entityId, uint256 entityTagId) internal view {
-    uint8 entityType = EntityTable.getEntityType(entityId);
-    uint8 tagEntityType = EntityTable.getEntityType(entityTagId);
+    uint8 entityType = EntityTable.getEntityType(_namespace().entityTableTableId(), entityId);
+    uint8 tagEntityType = EntityTable.getEntityType(_namespace().entityTableTableId(), entityTagId);
 
-    if (EntityTypeAssociation.get(entityType, tagEntityType) == false)
+    if (EntityTypeAssociation.get(_namespace().entityTypeAssociationTableId(), entityType, tagEntityType) == false)
       revert ICustomErrorSystem.EntityTypeAssociationNotAllowed(
         entityType,
         tagEntityType,

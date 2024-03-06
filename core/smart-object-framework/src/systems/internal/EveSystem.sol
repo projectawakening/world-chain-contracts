@@ -1,26 +1,40 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
+import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+
 import { IWorld } from "../../codegen/world/IWorld.sol";
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
 import { ModuleTable } from "../../codegen/tables/ModuleTable.sol";
-import { EntityMapTable } from "../../codegen/tables/EntityMapTable.sol";
-import { EntityAssociationTable } from "../../codegen/tables/EntityAssociationTable.sol";
-import { HookTargetBeforeTable } from "../../codegen/tables/HookTargetBeforeTable.sol";
-import { HookTargetAfterTable } from "../../codegen/tables/HookTargetAfterTable.sol";
-import { ModuleSystemLookupTable } from "../../codegen/tables/ModuleSystemLookupTable.sol";
+import { EntityMap } from "../../codegen/tables/EntityMap.sol";
+import { EntityAssociation } from "../../codegen/tables/EntityAssociation.sol";
+import { HookTargetBefore } from "../../codegen/tables/HookTargetBefore.sol";
+import { HookTargetAfter } from "../../codegen/tables/HookTargetAfter.sol";
+import { ModuleSystemLookup } from "../../codegen/tables/ModuleSystemLookup.sol";
 import { HookTable } from "../../codegen/tables/HookTable.sol";
 import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol";
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
+import { Utils } from "../../utils.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "../../constants.sol";
+
 /**
  * @title EveSystem
  * @notice This is the base system which has all the helper functions for the other systems to inherit
+ * 
+ * TODO: the references to `CORE_NAMESPACE` are kind of an anti-pattern because the whole point is to not rely on hard-coded values
+ * Once that contract is inherited to non-core Systems, there's currently no satisfying way to dynamically retrieve that namespace
+ * ideally, this would be some global constant set at Core Systems' deployment,
+ * Or, contracts inheriting from EveSystem would need to explicitely target a deployed Core Systems' namespace
  */
 contract EveSystem is System {
+  using WorldResourceIdInstance for ResourceId;
+  using Utils for bytes14;
+
   /**
    * @notice Executes the function only if the entity is associated with the module
    * @dev Module association is defined by the systems registered in the ModuleTable
@@ -62,13 +76,13 @@ contract EveSystem is System {
    * @param entityId is the id of an object or class
    */
   function _requireEntityRegistered(uint256 entityId) internal view {
-    if (!EntityTable.getDoesExists(entityId))
+    if (!EntityTable.getDoesExists(CORE_NAMESPACE.entityTableTableId(), entityId))
       revert ICustomErrorSystem.EntityNotRegistered(entityId, "EveSystem: Entity is not registered");
   }
 
   function _requireModuleRegistered(uint256 moduleId) internal view {
     //check if the module is registered
-    if (ModuleSystemLookupTable.getSystemIds(moduleId).length == 0)
+    if (ModuleSystemLookup.getSystemIds(CORE_NAMESPACE.moduleSystemLookupTableId(), moduleId).length == 0)
       revert ICustomErrorSystem.ModuleNotRegistered(moduleId, "EveSystem: Module not registered");
   }
 
@@ -82,9 +96,9 @@ contract EveSystem is System {
     uint256[] memory moduleIds = _getModuleIds(entityId);
 
     //Check if the entity is tagged to a entityType and get the moduleIds for the entity
-    bool isEntityTagged = EntityMapTable.get(entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory taggedEntityIds = EntityMapTable.get(entityId);
+      uint256[] memory taggedEntityIds = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
         uint256[] memory taggedModuleIds = _getModuleIds(taggedEntityIds[i]);
         moduleIds = appendUint256Arrays(moduleIds, taggedModuleIds);
@@ -101,7 +115,7 @@ contract EveSystem is System {
   }
 
   function _getModuleIds(uint256 entityId) internal view returns (uint256[] memory) {
-    return EntityAssociationTable.getModuleIds(entityId);
+    return EntityAssociation.getModuleIds(CORE_NAMESPACE.entityAssociationTableId(), entityId);
   }
 
   function _validateModules(uint256[] memory moduleIds, ResourceId systemId, bytes4 functionSelector) internal view {
@@ -110,7 +124,7 @@ contract EveSystem is System {
 
     //TODO Below logic can be optimized by using supportsInterface as well
     for (uint256 i = 0; i < moduleIds.length; i++) {
-      bool systemExists = ModuleTable.getDoesExists(moduleIds[i], systemId);
+      bool systemExists = ModuleTable.getDoesExists(CORE_NAMESPACE.moduleTableTableId(), moduleIds[i], systemId);
       if (systemExists) {
         isModuleFound = true;
         bytes32 registeredSystemId = ResourceId.unwrap(FunctionSelectors.getSystemId(functionSelector));
@@ -128,14 +142,17 @@ contract EveSystem is System {
   }
 
   function _getHookIds(uint256 entityId) internal view returns (uint256[] memory hookIds) {
-    hookIds = EntityAssociationTable.getHookIds(entityId);
+    hookIds = EntityAssociation.getHookIds(CORE_NAMESPACE.entityAssociationTableId(), entityId);
 
     //Check if the entity is tagged to a entity and get the moduleIds for the taggedEntity
-    bool isEntityTagged = EntityMapTable.get(entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory entityTagIds = EntityMapTable.get(entityId);
+      uint256[] memory entityTagIds = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId);
       for (uint256 i = 0; i < entityTagIds.length; i++) {
-        uint256[] memory taggedHookIds = EntityAssociationTable.getHookIds(entityTagIds[i]);
+        uint256[] memory taggedHookIds = EntityAssociation.getHookIds(
+          CORE_NAMESPACE.entityAssociationTableId(),
+          entityTagIds[i]
+        );
         hookIds = appendUint256Arrays(hookIds, taggedHookIds);
       }
     }
@@ -148,7 +165,7 @@ contract EveSystem is System {
     bytes memory hookArgs
   ) internal {
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
-    bool hasHook = HookTargetBeforeTable.getHasHook(hookId, targetId);
+    bool hasHook = HookTargetBefore.getHasHook(CORE_NAMESPACE.hookTargetBeforeTableId(), hookId, targetId);
     if (hasHook) {
       _executeHook(hookId, hookArgs);
     }
@@ -161,14 +178,14 @@ contract EveSystem is System {
     bytes memory hookArgs
   ) internal {
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
-    bool hasHook = HookTargetAfterTable.getHasHook(hookId, targetId);
+    bool hasHook = HookTargetAfter.getHasHook(CORE_NAMESPACE.hookTargetAfterTableId(), hookId, targetId);
     if (hasHook) {
       _executeHook(hookId, hookArgs);
     }
   }
 
   function _executeHook(uint256 hookId, bytes memory hookArgs) internal {
-    HookTableData memory hookData = HookTable.get(hookId);
+    HookTableData memory hookData = HookTable.get(CORE_NAMESPACE.hookTableTableId(), hookId);
     bytes memory funcSelectorAndArgs = abi.encodePacked(hookData.functionSelector, hookArgs);
     ResourceId systemId = hookData.systemId;
     //TODO replace with callFrom ? and get the delegator address from the hookrgs ?
@@ -226,5 +243,10 @@ contract EveSystem is System {
     }
 
     return newArray;
+  }
+
+  function _namespace() internal view returns (bytes14 namespace) {
+    ResourceId systemId = SystemRegistry.get(address(this));
+    return systemId.getNamespace();
   }
 }
