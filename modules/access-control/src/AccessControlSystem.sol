@@ -40,10 +40,9 @@ contract AccessControlSystem is EveSystem, IAccessControlMUD {
   /**
    * @dev this method is meant to be added as a hook to other methods doing entity-related actions
    * Equivalent to adding an `onlyRole(bytes32 role)` modifier to that method
-   * @param args entity targeted by the Access Control hook
+   * @param entityId entity targeted by the Access Control hook
    */
-  function onlyRoleHook(bytes memory args) external view {
-    (uint256 entityId) = abi.decode(args, (uint256));
+  function onlyRoleHook(uint256 entityId) external view {
     bytes32 role = EntityToRole.get(_namespace().entityToRoleTableId(), entityId);
     if(role == 0) revert AccessControlHookUnititialized(entityId);
 
