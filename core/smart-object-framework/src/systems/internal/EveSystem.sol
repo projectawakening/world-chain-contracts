@@ -57,17 +57,16 @@ contract EveSystem is System {
    */
   modifier hookable(
     uint256 entityId,
-    ResourceId systemId,
-    bytes memory hookArgs
+    ResourceId systemId
   ) {
     bytes4 functionSelector = bytes4(msg.data[:4]);
     uint256[] memory hookIds = _getHookIds(entityId);
     for (uint256 i = 0; i < hookIds.length; i++) {
-      _executeBeforeHooks(hookIds[i], systemId, functionSelector, hookArgs);
+      _executeBeforeHooks(hookIds[i], systemId, functionSelector, msg.data[4:]);
     }
     _;
     for (uint256 i = 0; i < hookIds.length; i++) {
-      _executeAfterHooks(hookIds[i], systemId, functionSelector, hookArgs);
+      _executeAfterHooks(hookIds[i], systemId, functionSelector, msg.data[4:]);
     }
   }
 

@@ -37,7 +37,7 @@ contract SmartDeployableTestSystem is EveSystem {
   )
     public
     onlyAssociatedModule(_value, SYSTEM_ID, getFunctionSelector(SYSTEM_ID, "echoSmartDeployable(uint256)"))
-    hookable(_value, SYSTEM_ID, abi.encode(_value))
+    hookable(_value, SYSTEM_ID)
     returns (uint256)
   {
     return _value;
