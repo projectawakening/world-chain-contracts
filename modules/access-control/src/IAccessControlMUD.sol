@@ -72,9 +72,9 @@ interface IAccessControlMUD is IAccessControl {
   /**
    * @dev this method is meant to be added as a hook to other methods doing entity-related actions
    * Equivalent to adding an `onlyRole(bytes32 role)` modifier to that method
-   * @param entityId entity targeted by the Access Control hook
+   * @param args entity targeted by the Access Control hook
    */
-  function onlyRoleHook(uint256 entityId) external;
+  function onlyRoleHook(bytes memory args) external;
 
   /**
    * @dev Config function for `onlyRoleANDHook` method

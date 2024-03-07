@@ -29,9 +29,6 @@ importers:
 
   core/smart-character:
     dependencies:
-      '@eve/smart-object-framework':
-        specifier: 0.0.0
-        version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16(google-protobuf@3.21.2)
@@ -1280,6 +1277,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1298,6 +1296,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1316,6 +1315,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1334,6 +1334,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1352,6 +1353,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1370,6 +1372,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1388,6 +1391,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1406,6 +1410,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1424,6 +1429,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
@@ -1442,6 +1448,7 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
+    deprecated: This was an unintentional release and has been deprecated
     requiresBuild: true
     dev: true
     optional: true
