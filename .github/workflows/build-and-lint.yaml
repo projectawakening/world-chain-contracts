@@ -58,13 +58,13 @@ jobs:
           pnpm audit
 
       - name: Install and Build DEV
-        if: github.ref_name != 'main' #only build on dev branch
+        if: github.ref_name != 'develop' #only build on feature branches
         run: |
           MAIN_HEAD=$(git rev-parse origin/main)
           pnpm exec nx affected -t build --base=$MAIN_HEAD --verbose
 
-      - name: Install and Build MAIN
-        if: github.ref_name == 'main' #only build on main branch
+      - name: Install and Build DEVELOP
+        if: github.ref_name == 'develop' #only build on main branch
         run: |
           git show-ref
           THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
