@@ -25,7 +25,7 @@ import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "../../const
 /**
  * @title EveSystem
  * @notice This is the base system which has all the helper functions for the other systems to inherit
- * 
+ *
  * TODO: the references to `CORE_NAMESPACE` are kind of an anti-pattern because the whole point is to not rely on hard-coded values
  * Once that contract is inherited to non-core Systems, there's currently no satisfying way to dynamically retrieve that namespace
  * ideally, this would be some global constant set at Core Systems' deployment,
@@ -55,10 +55,7 @@ contract EveSystem is System {
    * @notice Allows a function to be hooked before or after a function
    * @param entityId is the id of an object or class
    */
-  modifier hookable(
-    uint256 entityId,
-    ResourceId systemId
-  ) {
+  modifier hookable(uint256 entityId, ResourceId systemId) {
     bytes4 functionSelector = bytes4(msg.data[:4]);
     uint256[] memory hookIds = _getHookIds(entityId);
     for (uint256 i = 0; i < hookIds.length; i++) {

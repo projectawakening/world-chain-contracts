@@ -7,6 +7,7 @@
     "no-inline-assembly": "off",
     "func-visibility": ["warn", { "ignoreConstructors": true }],
     "no-empty-blocks": "off",
-    "no-complex-fallback": "off"
+    "no-complex-fallback": "off",
+    "func-name-mixedcase": "error"
   }
 }

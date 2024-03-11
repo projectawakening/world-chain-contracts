@@ -5,8 +5,12 @@
     "dev": "npx mprocs ./scripts/run-local-node.sh ./scripts/deploy-all.sh"
   },
   "devDependencies": {
-    "lerna": "^8.0.1",
     "mprocs": "^0.6.4",
-    "nx": "18.1.0"
+    "nx": "18.0.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "follow-redirects@<1.15.4": ">=1.15.4"
+    }
   }
 }
