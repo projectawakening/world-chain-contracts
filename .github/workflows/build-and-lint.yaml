@@ -60,19 +60,33 @@ jobs:
         run: |
           pnpm audit
 
-      - name: Install and Build DEV
+      - name: Build feature branch
         if: github.ref_name != 'develop' #only build on feature branches
         run: |
           MAIN_HEAD=$(git rev-parse origin/main)
           pnpm exec nx affected -t build --base=$MAIN_HEAD --verbose
 
-      - name: Install and Build DEVELOP
+      - name: Build on DEVELOP
         if: github.ref_name == 'develop' #only build on main branch
         run: |
           git show-ref
           THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
           echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
           pnpm exec nx affected -t build --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
+
+      - name: Lint on feature branch
+        if: github.ref_name != 'develop' #only build on feature branches
+        run: |
+          MAIN_HEAD=$(git rev-parse origin/main)
+          pnpm exec nx affected -t lint --base=$MAIN_HEAD --verbose
+
+      - name: Lint project on DEVELOP
+        if: github.ref_name == 'develop' #only build on main branch
+        run: |
+          git show-ref
+          THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
+          echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
+          pnpm exec nx affected -t lint --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
