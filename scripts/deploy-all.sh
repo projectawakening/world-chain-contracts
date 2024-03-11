@@ -39,9 +39,9 @@ pnpm nx run-many -t deploy:local --projects "core/**" -- --worldAddress $WORLD_A
 
 
 echo "--------------------------------------- Building feature modules ---------------------------------------"
-pnpm nx run-many -t build  --projects "modules/**"
+pnpm nx run-many -t build  --projects "features/**"
 wait
 
 
 echo "------------------------- Deploying feature modules into world: $WORLD_ADDRRESS ---------------------"
-pnpm nx run-many -t deploy:local --projects "modules/**" -- --worldAddress $WORLD_ADDRESS
+pnpm nx run-many -t deploy:local --projects "features/**" -- --worldAddress $WORLD_ADDRESS
