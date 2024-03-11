@@ -67,7 +67,7 @@ jobs:
           pnpm nx affected -t build --base=$MAIN_HEAD --verbose
 
       - name: Build on DEVELOP
-        if: github.ref_name == 'develop' #only build on main branch
+        if: github.ref_name == 'develop' #only build on default branch
         run: |
           git show-ref
           THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
