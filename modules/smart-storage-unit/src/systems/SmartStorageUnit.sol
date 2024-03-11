@@ -8,7 +8,7 @@ contract SmartStorageUnit is System {
 
   function createSmartStorageUnit(string memory name, string memory description) public returns (bytes32 key) {
     key = keccak256(abi.encode(block.prevrandao, _msgSender(), description));
-    
+    throw;
 
     SmartStorageUnits.set(key, SmartStorageUnitsData({name: name, description: description, createdAt: block.timestamp}));
   }
