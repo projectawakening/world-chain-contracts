@@ -4,10 +4,10 @@ run-name: "${{ github.triggering_actor }} building the game chain smart contract
 on:
   push:
     branches:
-      - "main"
+      - "develop"
   pull_request:
     branches:
-      - "main"
+      - "develop"
   workflow_dispatch:
   create:
 
