@@ -13,8 +13,8 @@
     "deploy:testnet": "pnpm run build && mud deploy --profile=lattice-testnet",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier --write 'src/**/*.sol'",
-    "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
+    "prettier": "prettier 'src/**/*.sol' --check",
+    "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
     "test": "tsc --noEmit && mud test"
   },
   "dependencies": {
