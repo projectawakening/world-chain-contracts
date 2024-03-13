@@ -38,6 +38,7 @@ export default mudConfig({
         description: "string",
         dappURL: "string",
       },
+      offchainOnly: true,
     },
     //LOCATION MODULE
     /**
@@ -55,6 +56,12 @@ export default mudConfig({
       },
     },
     //DEPLOYABLE MODULE
+    GlobalDeployableState: {
+      valueSchema: {
+        globalState: "State",
+        updatedBlockNumber: "uint256",
+      },
+    },
     /**
      * Used to store the current state of a deployable
      */
