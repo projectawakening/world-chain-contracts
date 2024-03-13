@@ -29,6 +29,16 @@ export default mudConfig({
         volume: "uint256",
       },
     },
+    EntityRecordMetadata: {
+      keySchema: {
+        entityId: "uint256",
+      },
+      valueSchema: {
+        name: "string",
+        description: "string",
+        dappURL: "string",
+      },
+    },
     //LOCATION MODULE
     /**
      * Used to store the location of a in-game entity in the solar system
@@ -148,6 +158,7 @@ export default mudConfig({
         quantity: "uint256",
         updatedAt: "uint256",
       },
+      offchainOnly: true,
     },
   },
 });
