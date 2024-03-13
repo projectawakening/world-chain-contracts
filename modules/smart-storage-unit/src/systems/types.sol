@@ -34,7 +34,18 @@ struct WorldPosition {
  * @dev Coord structure
  */
 struct Coord {
-  int256 x;
-  int256 y;
-  int256 z;
+  uint256 x;
+  uint256 y;
+  uint256 z;
+}
+
+/**
+ * @notice Holds the data for an inventory item
+ * @dev InventoryItem structure
+ */
+struct InventoryItem {
+  uint256 inventoryItemId;
+  uint256 typeId;
+  uint256 volume;
+  uint256 quantity;
 }

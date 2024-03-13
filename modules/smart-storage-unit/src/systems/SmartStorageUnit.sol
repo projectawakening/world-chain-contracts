@@ -2,7 +2,7 @@
 pragma solidity >=0.8.21;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { EntityRecordData, SmartObjectData, WorldPosition } from "./types.sol";
+import { EntityRecordData, SmartObjectData, WorldPosition, InventoryItem } from "./types.sol";
 
 contract SmartStorageUnit is System {
   function createAndAnchorSmartStorageUnit(
@@ -32,5 +32,25 @@ contract SmartStorageUnit is System {
   function destroy(uint256 smartObjectId) public {
     //Implement the logic to destroy the smart storage unit
     // Scoop all items from the inventory
+  }
+
+  function offlineAll() public {
+    //Implement the logic to bring all smart storage units offline
+  }
+
+  function depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+    //Implement the logic to deposit items to the inventory
+  }
+
+  function depositToEphemeralInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+    //Implement the logic to deposit items to the inventory
+  }
+
+  function withdrawFromInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+    //Implement the logic to withdraw items from the inventory
+  }
+
+  function withdrawFromEphemeralInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+    //Implement the logic to withdraw items from the inventory
   }
 }

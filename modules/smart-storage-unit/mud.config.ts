@@ -1,7 +1,8 @@
 import { mudConfig } from "@latticexyz/world/register";
 
 export default mudConfig({
-  namespace: "ssu", //having a short namespace as the MUD Namespace must be <= 14 characters
+  //having a short namespace as the MUD Namespace must be <= 14 characters
+  //namespace: "ssu", //TODO uncomment when there is a module library definition, so that the abi can be generated without namespace prefix
   systems: {
     SmartStorageUnit: {
       name: "SmartStorageUnit",
@@ -12,6 +13,7 @@ export default mudConfig({
     State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
   },
   tables: {
+    //ENTITY RECORD MODULE
     /**
      * Used to store the metadata of a in-game entity
      * Singleton entityId is the hash of (typeId, itemId and databaseId) ?
@@ -27,6 +29,7 @@ export default mudConfig({
         volume: "uint256",
       },
     },
+    //LOCATION MODULE
     /**
      * Used to store the location of a in-game entity in the solar system
      */
@@ -41,6 +44,7 @@ export default mudConfig({
         z: "uint256",
       },
     },
+    //DEPLOYABLE MODULE
     /**
      * Used to store the current state of a deployable
      */
@@ -54,12 +58,13 @@ export default mudConfig({
         updatedBlockNumber: "uint256",
       },
     },
+    //STATIC DATA MODULE
     /**
      * Used to store the DNS which servers the IPFS gateway
      */
     StaticDataGlobal: {
       valueSchema: {
-        baseURI: "bytes32",
+        baseURI: "string",
       },
     },
     /**
@@ -70,7 +75,78 @@ export default mudConfig({
         smartObjectId: "uint256",
       },
       valueSchema: {
-        cid: "bytes32",
+        cid: "string",
+      },
+    },
+
+    //INVENTORY MODULE 
+    /**
+     * Used to store the inventory details of a in-game smart storage unit 
+     */
+    Inventory: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        capacity: "uint256",
+        usedCapacity: "uint256",
+        items: "uint256[]",
+      },
+    },
+    /**
+     * Used to store the inventory items of a in-game smart storage unit
+     */
+    InventoryItem: {
+      keySchema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+      },
+      valueSchema: {
+        quantity: "uint256",
+        index: "uint256",
+      },
+    },
+    //EPHEMERAL INVENTORY MODULE 
+    /**
+     * Used to store the inventory details of a in-game smart storage unit 
+     */
+    EphemeralInventory: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        capacity: "uint256",
+        usedCapacity: "uint256",
+        items: "uint256[]",
+      },
+    },
+    /**
+     * Used to store the inventory items of a in-game smart storage unit
+     */
+    EphemeralInvItem: {
+      keySchema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+        owner: "uint256",
+      },
+      valueSchema: {
+        quantity: "uint256",
+        index: "uint256",
+      },
+    },
+    /**
+     * Used to store the transfer details when a item is exchanged
+     */
+    ItemTransferOffchain: {
+      keySchema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+      },
+      valueSchema: {
+        previousOwner: "address",
+        currentOwner: "address",
+        quantity: "uint256",
+        updatedAt: "uint256",
       },
     },
   },
