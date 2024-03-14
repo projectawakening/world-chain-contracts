@@ -1,5 +1,5 @@
 {
-  "name": "@eve/smart-character",
+  "name": "@eve/entity-record",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -23,9 +23,7 @@
     "@latticexyz/store": "2.0.0-next.16",
     "@latticexyz/world": "2.0.0-next.16",
     "@latticexyz/world-modules": "2.0.0-next.16",
-    "@eve/smart-object-framework": "0.0.0",
-    "@eve/static-data": "0.0.0",
-    "@eve/common": "0.0.0"
+    "@eve/smart-object-framework": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
