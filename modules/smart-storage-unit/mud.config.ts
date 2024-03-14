@@ -130,6 +130,7 @@ export default mudConfig({
     EphemeralInventory: {
       keySchema: {
         smartObjectId: "uint256",
+        owner: "address",
       },
       valueSchema: {
         capacity: "uint256",
@@ -144,7 +145,7 @@ export default mudConfig({
       keySchema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
-        owner: "uint256",
+        owner: "address",
       },
       valueSchema: {
         quantity: "uint256",
