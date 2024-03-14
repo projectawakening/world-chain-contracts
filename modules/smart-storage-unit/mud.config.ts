@@ -12,6 +12,9 @@ export default mudConfig({
   enums: {
     State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
   },
+  userTypes: {
+    ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
+  },
   tables: {
     //ENTITY RECORD MODULE
     /**
@@ -80,6 +83,9 @@ export default mudConfig({
      * Used to store the DNS which servers the IPFS gateway
      */
     StaticDataGlobal: {
+      keySchema: {
+        systemId: "ResourceId",
+      },
       valueSchema: {
         baseURI: "string",
       },
