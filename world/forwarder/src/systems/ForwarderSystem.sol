@@ -16,7 +16,7 @@ contract ForwarderSystem is System {
    * This function is required for the forwarder contract to execute meta transactions
    * @param forwarder - address of the Forwarder contract
    */
-  function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+  function isTrustedForwarder(address forwarder) public view returns (bool) {
     return GlobalStaticData.getValue(forwarder);
   }
 }
