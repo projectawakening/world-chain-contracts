@@ -1,17 +1,31 @@
 
 import { mudConfig } from "@latticexyz/world/register";
+// since mud doesnt use that sub-repo's tsconfig.json, this works
+import constants from "@eve/common-constants/src/constants.json" assert { type: "json" };
 
 export default mudConfig({
-  namespace: "StaticData_v0",
+  namespace: constants.STATIC_DATA_DEPLOYMENT_NAMESPACE,
   excludeSystems: ["EveSystem"],
+  userTypes: {
+    ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
+  },
   tables: {
-    StaticDataGlobal: {
-      
-      valueSchema: {
-        createdAt: "uint256",
-        name: "string",
+    StaticDataTable: {
+      keySchema: {
+        key: "uint256",
       },
-      storeArgument: true,
+      valueSchema: {
+        cid: "string",
+      },
+      tableIdArgument: true,
+    },
+    StaticDataGlobalTable: {
+      keySchema: {
+        systemId: "ResourceId",
+      },
+      valueSchema: {
+        baseURI: "string",
+      },
       tableIdArgument: true,
     },
   },

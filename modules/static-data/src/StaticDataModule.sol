@@ -8,14 +8,16 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import {
-  SMART_CHARACTER_MODULE_NAME as MODULE_NAME,
-  SMART_CHARACTER_MODULE_NAMESPACE as MODULE_NAMESPACE
+  STATIC_DATA_MODULE_NAME as MODULE_NAME,
+  STATIC_DATA_MODULE_NAMESPACE as MODULE_NAMESPACE
   } from "./constants.sol";
-import "./utils.sol";
+
+import { Utils } from "./utils.sol";
+
+import { StaticDataTable } from "./codegen/tables/StaticDataTable.sol";
+import { StaticDataGlobalTable } from "./codegen/tables/StaticDataGlobalTable.sol";
 
 import { StaticData } from "./systems/StaticData.sol";
-
-import { CharactersTable } from "./codegen/tables/CharactersTable.sol";
 
 
 contract StaticDataModule is Module {
@@ -79,10 +81,12 @@ contract StaticDataModuleRegistrationLibrary {
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+
     // Register the tables
-    CharactersTable.register(namespace.charactersTableTableId());
+    StaticDataTable.register(namespace.staticDataTableId());
+    StaticDataGlobalTable.register(namespace.staticDataGlobalTableId());
 
     // Register a new Systems suite
-    world.registerSystem(namespace.StaticDataSystemId(), new StaticData(), true);
+    world.registerSystem(namespace.staticDataSystemId(), new StaticData(), true);
   }
 }

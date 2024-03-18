@@ -12,11 +12,15 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: name });
   }
 
-  function smartCharacterSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_CHARACTER_SYSTEM_NAME });
+  function staticDataSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: STATIC_DATA_SYSTEM_NAME });
   }
 
-  function charactersTableTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: CHARACTERS_TABLE_NAME });
+  function staticDataTableId(bytes14 namespace) internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: STATIC_DATA_TABLE_NAME });
+  }
+
+  function staticDataGlobalTableId(bytes14 namespace) internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: STATIC_DATA_GLOBAL_TABLE_NAME });
   }
 }

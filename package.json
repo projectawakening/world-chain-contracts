@@ -6,7 +6,8 @@
   },
   "devDependencies": {
     "mprocs": "^0.6.4",
-    "nx": "18.0.8"
+    "nx": "18.0.8",
+    "typescript": "^5.4.2"
   },
   "pnpm": {
     "overrides": {
