@@ -13,3 +13,4 @@
 **/worlds.json
 
 .nx/cache
+modules/smart-character/broadcast/
