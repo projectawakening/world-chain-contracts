@@ -28,6 +28,8 @@ sanitized_string=$(echo "$json_text" | sed -E 's/\x1B\[[0-9;]*[JKmsu]//g')
 WORLD_ADDRESS=$(node -pe 'JSON.stringify(JSON.parse(process.argv[1]).worldAddress)' "$(echo $sanitized_string)")
 echo $WORLD_ADDRESS
 
+echo "------------------------- Deploying init components into world: $WORLD_ADDRRESS ---------------------"
+pnpm nx run-many -t deploy:local --projects "world/forwarder/**" -- --worldAddress $WORLD_ADDRESS
 
 echo "--------------------------------------- Building foundation modules ---------------------------------------"
 pnpm nx run-many -t build  --projects "core/**"

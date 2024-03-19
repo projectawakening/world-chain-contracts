@@ -22,5 +22,5 @@ extra_output_files = [
 ]
 fs_permissions = [{ access = "read", path = "./"}]
 
-[profile.lattice-testnet]
-eth_rpc_url = "https://follower.testnet-chain.linfra.xyz"
+[profile.devnet]
+eth_rpc_url = "https://devnet-data-sync.nursery.reitnorf.com"
