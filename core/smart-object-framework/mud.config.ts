@@ -1,7 +1,8 @@
 import { mudConfig } from "@latticexyz/world/register";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants";
 
 export default mudConfig({
-  namespace: "SmartObject_v0",
+  namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE,
   excludeSystems: ["EveSystem"],
   systems: {
     EntityCore: {
