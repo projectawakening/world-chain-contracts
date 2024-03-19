@@ -12,10 +12,13 @@ import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol"
 
 import { EveSystem } from "@eve/smart-object-framework/src/systems/internal/EveSystem.sol";
 
+import { StaticDataGlobalTable } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
+import { Utils as StaticDataUtils } from "@eve/static-data/src/Utils.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+
 import { IERC721Mintable } from "./IERC721Mintable.sol";
 import { IERC721Receiver } from "./IERC721Receiver.sol";
 
-import { ERC721Metadata } from "./codegen/tables/ERC721Metadata.sol";
 import { OperatorApproval } from "./codegen/tables/OperatorApproval.sol";
 import { Owners } from "./codegen/tables/Owners.sol";
 import { TokenApproval } from "./codegen/tables/TokenApproval.sol";
@@ -27,6 +30,7 @@ import { Utils } from "./utils.sol";
 contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
+  using StaticDataUtils for bytes14;
 
   /**
    * @dev See {IERC721-balanceOf}.
@@ -49,14 +53,14 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
    * @dev See {IERC721Metadata-name}.
    */
   function name() public view virtual returns (string memory) {
-    return ERC721Metadata.getName(_namespace().metadataTableId());
+    return StaticDataGlobalTable.getName(_systemId(), STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId());
   }
 
   /**
    * @dev See {IERC721Metadata-symbol}.
    */
   function symbol() public view virtual returns (string memory) {
-    return ERC721Metadata.getSymbol(_namespace().metadataTableId());
+    return StaticDataGlobalTable.getSymbol(_systemId(), STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId());
   }
 
   /**
@@ -76,7 +80,7 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
    * token will be the concatenation of the `baseURI` and the `tokenId`.
    */
   function _baseURI() internal view virtual returns (string memory) {
-    return ERC721Metadata.getBaseURI(_namespace().metadataTableId());
+    return StaticDataGlobalTable.getBaseURI(STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), _namespace().erc721SystemId());
   }
 
   /**
@@ -523,5 +527,9 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
 
   function _requireOwner() internal view {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
+  }
+
+  function _systemId() internal view returns(ResourceId) {
+    return _namespace().erc721SystemId();
   }
 }

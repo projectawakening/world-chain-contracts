@@ -7,7 +7,7 @@ import { EveSystem } from "@eve/smart-object-framework/src/systems/internal/EveS
 
 import { Utils } from "../utils.sol";
 import { StaticDataTable } from "../codegen/tables/StaticDataTable.sol";
-import { StaticDataGlobalTable } from "../codegen/tables/StaticDataGlobalTable.sol";
+import { StaticDataGlobalTable, StaticDataGlobalTableData } from "../codegen/tables/StaticDataGlobalTable.sol";
 
 import { STATIC_DATA_SYSTEM_NAME } from "../constants.sol";
 
@@ -22,6 +22,36 @@ contract StaticData is EveSystem {
    */
   function setBaseURI(ResourceId systemId, string memory baseURI) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setBaseURI(_namespace().staticDataGlobalTableId(), systemId, baseURI);
+  }
+
+  /**
+   * set a new name for a SystemId (represents a class of object)
+   * TODO: should we check if the targeted SystemID even points to something ?
+   * @param systemId corresponds to the class targeted
+   * @param name the new name string
+   */
+  function setName(ResourceId systemId, string memory name) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+    StaticDataGlobalTable.setName(_namespace().staticDataGlobalTableId(), systemId, name);
+  }
+
+  /**
+   * set a new name for a SystemId (represents a class of object)
+   * TODO: should we check if the targeted SystemID even points to something ?
+   * @param systemId corresponds to the class targeted
+   * @param symbol the new symbol string
+   */
+  function setSymbol(ResourceId systemId, string memory symbol) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+    StaticDataGlobalTable.setSymbol(_namespace().staticDataGlobalTableId(), systemId, symbol);
+  }
+
+  /**
+   * set a new name for a SystemId (represents a class of object)
+   * TODO: should we check if the targeted SystemID even points to something ?
+   * @param systemId corresponds to the class targeted
+   * @param data the new metadata structure of type {StaticDataGlobalTableData}
+   */
+  function setMetadata(ResourceId systemId, StaticDataGlobalTableData memory data) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+    StaticDataGlobalTable.set(_namespace().staticDataGlobalTableId(), systemId, data);
   }
 
   /**

@@ -11,7 +11,7 @@ import { ERC721Module } from "./ERC721Module.sol";
 import { MODULE_NAMESPACE_ID, ERC721_REGISTRY_TABLE_ID } from "./constants.sol";
 import { IERC721Mintable } from "./IERC721Mintable.sol";
 
-import { ERC721MetadataData } from "./codegen/tables/ERC721Metadata.sol";
+import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
 import { ERC721Registry } from "./codegen/tables/ERC721Registry.sol";
 
 /**
@@ -21,7 +21,7 @@ import { ERC721Registry } from "./codegen/tables/ERC721Registry.sol";
 function registerERC721(
   IBaseWorld world,
   bytes14 namespace,
-  ERC721MetadataData memory metadata
+  StaticDataGlobalTableData memory metadata
 ) returns (IERC721Mintable token) {
   // Get the ERC721 module
   ERC721Module erc721Module = ERC721Module(NamespaceOwner.get(MODULE_NAMESPACE_ID));

@@ -6,6 +6,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { Utils } from "./utils.sol";
 import { IStaticData } from "./interfaces/IStaticData.sol";
+import { StaticDataGlobalTableData } from "./codegen/tables/StaticDataGlobalTable.sol";
 
 /**
  * @title Static Data Library (makes interacting with the underlying Systems cleaner)
@@ -26,6 +27,30 @@ library StaticDataLib {
     world.iface.call(world.namespace.staticDataSystemId(),
       abi.encodeCall(IStaticData.setBaseURI,
         (systemId, baseURI)
+      )
+    );
+  }
+
+  function setName(World memory world, ResourceId systemId, string memory name) public {
+    world.iface.call(world.namespace.staticDataSystemId(),
+      abi.encodeCall(IStaticData.setName,
+        (systemId, name)
+      )
+    );
+  }
+
+  function setSymbol(World memory world, ResourceId systemId, string memory symbol) public {
+    world.iface.call(world.namespace.staticDataSystemId(),
+      abi.encodeCall(IStaticData.setSymbol,
+        (systemId, symbol)
+      )
+    );
+  }
+
+  function setMetadata(World memory world, ResourceId systemId, StaticDataGlobalTableData memory data) public {
+    world.iface.call(world.namespace.staticDataSystemId(),
+      abi.encodeCall(IStaticData.setMetadata,
+        (systemId, data)
       )
     );
   }

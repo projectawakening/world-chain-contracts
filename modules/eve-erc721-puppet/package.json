@@ -1,5 +1,5 @@
 {
-  "name": "@eve/entity-record",
+  "name": "@eve/eve-erc721-puppet",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -25,6 +25,7 @@
     "@latticexyz/world-modules": "2.0.0-next.16",
     "@latticexyz/gas-report": "2.0.0-next.16",
     "@eve/smart-object-framework": "0.0.0",
+    "@eve/static-data": "0.0.0",
     "@eve/common-constants": "0.0.0"
   },
   "devDependencies": {

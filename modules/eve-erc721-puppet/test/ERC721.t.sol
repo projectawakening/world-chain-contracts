@@ -13,13 +13,15 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
 import { GasReporter } from "@latticexyz/gas-report/src/GasReporter.sol";
 
-import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
+import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE as STATIC_DATA_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
+import { StaticDataModule } from "@eve/static-data/src/StaticDataModule.sol";
 
 import { createCoreModule } from "./CreateCoreModule.sol";
 
 import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
 import { ERC721Module } from "../src/ERC721Module.sol";
-import { ERC721MetadataData } from "../src/codegen/tables/ERC721Metadata.sol";
 import { IERC721Mintable } from "../src/IERC721Mintable.sol";
 import { registerERC721 } from "../src/registerERC721.sol";
 import { IERC721Errors } from "../src/IERC721Errors.sol";
@@ -78,10 +80,13 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
     world.installModule(new PuppetModule(), new bytes(0));
+    // although not enforced, this module must be installed for `registerERC721` to work
+    // TODO: restrict module installation to other installed modules like this one
+    world.installModule(new StaticDataModule(), abi.encode(STATIC_DATA_NAMESPACE));
     StoreSwitch.setStoreAddress(address(world));
 
     // Register a new ERC721 token
-    token = registerERC721(world, DEPLOYMENT_NAMESPACE, ERC721MetadataData({ name: "Token", symbol: "TKN", baseURI: "" }));
+    token = registerERC721(world, DEPLOYMENT_NAMESPACE, StaticDataGlobalTableData({ name: "Token", symbol: "TKN", baseURI: "" }));
   }
 
   function _expectAccessDenied(address caller) internal {
@@ -145,7 +150,7 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
     IERC721Mintable anotherToken = registerERC721(
       world,
       "anotherERC721",
-      ERC721MetadataData({ name: "Token", symbol: "TKN", baseURI: "" })
+      StaticDataGlobalTableData({ name: "Token", symbol: "TKN", baseURI: "" })
     );
     assertTrue(address(anotherToken) != address(0));
     assertTrue(address(anotherToken) != address(token));

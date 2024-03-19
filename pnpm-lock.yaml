@@ -148,6 +148,9 @@ importers:
       '@eve/smart-object-framework':
         specifier: 0.0.0
         version: link:../../core/smart-object-framework
+      '@eve/static-data':
+        specifier: 0.0.0
+        version: link:../static-data
       '@latticexyz/cli':
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16(google-protobuf@3.21.2)

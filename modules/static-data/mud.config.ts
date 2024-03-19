@@ -24,6 +24,8 @@ export default mudConfig({
         systemId: "ResourceId",
       },
       valueSchema: {
+        name: "string",
+        symbol: "string",
         baseURI: "string",
       },
       tableIdArgument: true,

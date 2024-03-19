@@ -18,6 +18,7 @@ import { StaticDataModule } from "../src/StaticDataModule.sol";
 import { StaticDataLib } from "../src/StaticDataLib.sol";
 import { createCoreModule } from "./createCoreModule.sol";
 import { StaticDataGlobalTable, StaticDataTable } from "../src/codegen/index.sol";
+import { StaticDataGlobalTableData } from "../src/codegen/tables/StaticDataGlobalTable.sol";
 
 // TODO: more thorough testing
 
@@ -51,6 +52,35 @@ contract StaticDataTest is Test {
     
     staticData.setBaseURI(systemId, newURI);
     assertEq(StaticDataGlobalTable.getBaseURI(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newURI);
+  }
+
+  function testSetName(ResourceId systemId, string memory newName) public {
+    vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
+    vm.assume(bytes(newName).length != 0);
+    
+    staticData.setName(systemId, newName);
+    assertEq(StaticDataGlobalTable.getName(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newName);
+  }
+
+  function testSetSymbol(ResourceId systemId, string memory newSymbol) public {
+    vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
+    vm.assume(bytes(newSymbol).length != 0);
+    
+    staticData.setSymbol(systemId, newSymbol);
+    assertEq(StaticDataGlobalTable.getSymbol(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newSymbol);
+  }
+
+  function testSetMetadata(ResourceId systemId, string memory newURI, string memory newName, string memory newSymbol) public {
+    vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
+    vm.assume(bytes(newURI).length != 0);
+    vm.assume(bytes(newName).length != 0);
+    vm.assume(bytes(newSymbol).length != 0);
+    
+    staticData.setMetadata(systemId, StaticDataGlobalTableData({name: newName, symbol: newSymbol, baseURI: newURI}));
+
+    assertEq(StaticDataGlobalTable.getBaseURI(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newURI);
+    assertEq(StaticDataGlobalTable.getName(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newName);
+    assertEq(StaticDataGlobalTable.getSymbol(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newSymbol);
   }
 
   function testSetCID(uint256 entityId, string memory newCid) public {

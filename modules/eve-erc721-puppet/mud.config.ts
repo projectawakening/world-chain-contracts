@@ -19,15 +19,6 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
-    ERC721Metadata: {
-      keySchema: {},
-      valueSchema: {
-        name: "string",
-        symbol: "string",
-        baseURI: "string",
-      },
-      tableIdArgument: true,
-    },
     TokenURI: {
       keySchema: {
         tokenId: "uint256",

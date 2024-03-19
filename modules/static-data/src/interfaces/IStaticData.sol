@@ -2,6 +2,7 @@
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+import { StaticDataGlobalTableData } from "../codegen/tables/StaticDataGlobalTable.sol";
 
 /**
  * @title Interface for Static Data
@@ -10,6 +11,12 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
  */
 interface IStaticData {
   function setBaseURI(ResourceId systemId, string memory baseURI) external;
+
+  function setName(ResourceId systemId, string memory name) external;
+
+  function setSymbol(ResourceId systemId, string memory symbol) external;
+
+  function setMetadata(ResourceId systemId, StaticDataGlobalTableData memory data) external;
 
   function setCid(uint256 entityId, string memory cid) external;
 }

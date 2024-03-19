@@ -13,6 +13,11 @@ import { Puppet } from "@latticexyz/world-modules/src/modules/puppet/Puppet.sol"
 import { createPuppet } from "@latticexyz/world-modules/src/modules/puppet/createPuppet.sol";
 import { Balances } from "./codegen/tables/Balances.sol";
 
+import { Utils as StaticDataUtils } from "@eve/static-data/src/Utils.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { StaticDataLib } from "@eve/static-data/src/StaticDataLib.sol";
+import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
+
 import { MODULE_NAMESPACE, MODULE_NAMESPACE_ID, ERC721_REGISTRY_TABLE_ID } from "./constants.sol";
 import { Utils } from "./utils.sol";
 import { ERC721System } from "./ERC721System.sol";
@@ -22,11 +27,12 @@ import { Owners } from "./codegen/tables/Owners.sol";
 import { TokenApproval } from "./codegen/tables/TokenApproval.sol";
 import { TokenURI } from "./codegen/tables/TokenURI.sol";
 import { ERC721Registry } from "./codegen/tables/ERC721Registry.sol";
-import { ERC721Metadata, ERC721MetadataData } from "./codegen/tables/ERC721Metadata.sol";
 
 contract ERC721Module is Module {
   error ERC721Module_InvalidNamespace(bytes14 namespace);
   using Utils for bytes14;
+  using StaticDataUtils for bytes14;
+  using StaticDataLib for StaticDataLib.World;
 
   address immutable registrationLibrary = address(new ERC721ModuleRegistrationLibrary());
 
@@ -35,7 +41,7 @@ contract ERC721Module is Module {
     requireNotInstalled(__self, encodedArgs);
 
     // Decode args
-    (bytes14 namespace, ERC721MetadataData memory metadata) = abi.decode(encodedArgs, (bytes14, ERC721MetadataData));
+    (bytes14 namespace, StaticDataGlobalTableData memory metadata) = abi.decode(encodedArgs, (bytes14, StaticDataGlobalTableData));
 
     // Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -50,7 +56,8 @@ contract ERC721Module is Module {
     if (!success) revertWithBytes(returnData);
 
     // Initialize the Metadata
-    ERC721Metadata.set(namespace.metadataTableId(), metadata);
+    StaticDataLib.World memory staticData = StaticDataLib.World({iface: world, namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
+    staticData.setMetadata(namespace.erc721SystemId(), metadata);
 
     // Deploy and register the ERC721 puppet.
     ResourceId erc721SystemId = namespace.erc721SystemId();
@@ -91,7 +98,6 @@ contract ERC721ModuleRegistrationLibrary {
     TokenApproval.register(namespace.tokenApprovalTableId());
     TokenURI.register(namespace.tokenUriTableId());
     Balances.register(namespace.balancesTableId());
-    ERC721Metadata.register(namespace.metadataTableId());
 
     // Register a new ERC20System
     world.registerSystem(namespace.erc721SystemId(), new ERC721System(), true);
