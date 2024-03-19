@@ -1,32 +1,40 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity >=0.8.21;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.21;
 
-// import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-// import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
-// import { Utils } from "./utils.sol";
+import { Utils } from "./utils.sol";
+import { IEntityRecord } from "./interfaces/IEntityRecord.sol";
 
-// /**
-//  * @title Smart Character Library (makes interacting with the underlying Systems cleaner)
-//  * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
-//  * @dev To preserve _msgSender() and other context-dependant properties, Library methods like those MUST be `internal`.
-//  * That way, the compiler is forced to inline the method's implementation in the contract they're imported into.
-//  */
-// library SmartCharacterLib {
-//   using Utils for bytes14;
+/**
+ * @title Entity Record Library (makes interacting with the underlying Systems cleaner)
+ * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
+ * @dev To preserve _msgSender() and other context-dependant properties, Library methods like those MUST be `internal`.
+ * That way, the compiler is forced to inline the method's implementation in the contract they're imported into.
+ */
+library EntityRecordLib {
+  using Utils for bytes14;
 
-//   struct World {
-//     IBaseWorld iface;
-//     bytes14 namespace;
-//   }
+  struct World {
+    IBaseWorld iface;
+    bytes14 namespace;
+  }
 
-//   // SmartCharacter methods
-//   function createCharacter(World memory world, string memory name) internal returns (bytes32 key) {
-//     bytes memory returnData = world.iface.call(world.namespace.smartCharacterSystemId(),
-//       abi.encodeCall(ISmartCharacter.createCharacter,
-//         (name)
-//       )
-//     );
-//     return abi.decode(returnData, (bytes32));
-//   }
-// }
+  // Entity Record methods
+  function createEntityRecord(World memory world, uint256 entityId, uint256 itemId, uint8 typeId, uint256 volume) internal {
+    world.iface.call(world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.createEntityRecord,
+        (entityId, itemId, typeId, volume)
+      )
+    );
+  }
+
+  function createEntityRecordOffchain(World memory world, uint256 entityId, string memory name, string memory dappURL, string memory description) internal {
+    world.iface.call(world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.createEntityRecordOffchain,
+        (entityId, name, dappURL, description)
+      )
+    );
+  }
+}

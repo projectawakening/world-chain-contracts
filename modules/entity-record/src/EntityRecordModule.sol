@@ -16,7 +16,7 @@ import { Utils } from "./utils.sol";
 import { EntityRecord } from "./systems/EntityRecord.sol";
 
 import { EntityRecordTable } from "./codegen/tables/EntityRecordTable.sol";
-import { EntityRecordOffchain } from "./codegen/tables/EntityRecordOffchain.sol";
+import { EntityRecordOffchainTable } from "./codegen/tables/EntityRecordOffchainTable.sol";
 
 
 contract EntityRecordModule is Module {
@@ -82,7 +82,7 @@ contract EntityRecordModuleRegistrationLibrary {
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
     EntityRecordTable.register(namespace.entityRecordTableTableId());
-    EntityRecordOffchain.register(namepspace.entityRecordOffchainTableId());
+    EntityRecordOffchainTable.register(namespace.entityRecordOffchainTableId());
     // Register a new Systems suite
     world.registerSystem(namespace.entityRecordSystemId(), new EntityRecord(), true);
   }

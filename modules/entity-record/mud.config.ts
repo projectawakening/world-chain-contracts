@@ -1,7 +1,10 @@
 import { mudConfig } from "@latticexyz/world/register";
+// since mud doesnt use that sub-repo's tsconfig.json, this works
+import constants from "@eve/common-constants/src/constants.json" assert { type: "json" };
 
 export default mudConfig({
-  namespace: "EntityRecor_v0",
+  namespace: constants.ENTITY_RECORD_DEPLOYMENT_NAMESPACE,
+
   excludeSystems: ["EveSystem"],
   tables: {
     EntityRecordTable: {
@@ -9,14 +12,13 @@ export default mudConfig({
         entityId: "uint256",
       },
       valueSchema: {
-        isSingleton: "bool",
         itemId: "uint256",
-        typeId: "uint256",
+        typeId: "uint8",
         volume: "uint256",
       },
       tableIdArgument: true,
     },
-    EntityRecordOffchain: {
+    EntityRecordOffchainTable: {
       keySchema: {
         entityId: "uint256",
       }, 
@@ -24,7 +26,8 @@ export default mudConfig({
         name: "string",
         dappURL: "string",
         description: "string",
-      }
+      },
+      tableIdArgument: true,
     }
   },
 });
