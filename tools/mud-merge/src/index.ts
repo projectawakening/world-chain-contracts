@@ -59,9 +59,11 @@ function resolveProjectPaths() {
   // 3. Copy everything from src into the template src
 }
 
+// Clean the output directory to ensure a fresh generated output
 function preMergeClean() {
   // Locate output directory
   // if exists delete it along with all of its contents
+  // Delete project graph
 }
 
 // check if the option has been used the user
@@ -75,5 +77,6 @@ if (options.projects) {
   // 1. Resolve absolute paths to all monorepo projects
   const projectPaths = resolveProjectPaths();
   console.log("foo");
+
   console.log(projectPaths);
 }
