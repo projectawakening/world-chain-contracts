@@ -1,8 +1,10 @@
 import { mudConfig } from "@latticexyz/world/register";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants";
+// since mud doesnt use that sub-repo's tsconfig.json, this works
+// TODO make a better import statement
+import constants from "@eve/common-constants/src/constants.json" assert { type: "json" };
 
 export default mudConfig({
-  namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE,
+  namespace: constants.SMART_OBJECT_DEPLOYMENT_NAMESPACE,
   excludeSystems: ["EveSystem"],
   systems: {
     EntityCore: {
