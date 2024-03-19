@@ -1,24 +1,4 @@
 import { mudConfig } from "@latticexyz/world/register";
+import config from "./mudConfigObject.ts";
 
-export default mudConfig({
-  systems: {
-    SmartCharacterSystem: {
-      name: "SmartCharacterSystem",
-      openAccess: true,
-    },
-  },
-  tables: {
-    /**
-     * Maps the in-game character ID to on-chain EOA address
-     */
-    Characters: {
-      keySchema: {
-        characterId: "uint256",
-      },
-      valueSchema: {
-        characterAddress: "address",
-        createdAt: "uint256",
-      },
-    },
-  },
-});
+export default mudConfig(config);
