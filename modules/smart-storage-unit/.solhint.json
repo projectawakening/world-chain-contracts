@@ -21,6 +21,6 @@
     ],
     "no-empty-blocks": "off",
     "no-complex-fallback": "off",
-    "func-name-mixedcase": "error"
+    "func-name-mixedcase": "warn"
   }
 }
