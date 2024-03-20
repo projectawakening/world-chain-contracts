@@ -13,3 +13,7 @@
 **/worlds.json
 
 .nx/cache
+modules/smart-character/broadcast/
+world/base-world/broadcast/
+world/forwarder/broadcast/
+modules/.DS_Store

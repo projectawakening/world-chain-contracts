@@ -1,5 +1,5 @@
 {
-  "name": "@eve/smart-storage-unit",
+  "name": "@frontier/forwarder",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -11,6 +11,7 @@
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy:local": "pnpm run build && mud deploy",
     "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
+    "setForwarder": ". ./.env && forge script script/SetForwarder.s.sol:SetForwarder --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' --check",
@@ -25,6 +26,7 @@
     "@latticexyz/world-modules": "2.0.0-next.16"
   },
   "devDependencies": {
+    "@openzeppelin/contracts": "^5.0.2",
     "@types/node": "^18.15.11",
     "ds-test": "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0",
     "forge-std": "https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1",

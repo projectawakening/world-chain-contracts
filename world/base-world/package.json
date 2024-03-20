@@ -10,7 +10,7 @@
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy:local": "pnpm run build && mud deploy",
-    "deploy:testnet": "pnpm run build && mud deploy --profile=lattice-testnet",
+    "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' --check",
