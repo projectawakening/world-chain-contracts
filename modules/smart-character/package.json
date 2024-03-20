@@ -26,7 +26,7 @@
     "@latticexyz/world-modules": "2.0.0-next.16",
     "@eve/smart-object-framework": "0.0.0",
     "@eve/static-data": "0.0.0",
-    "@eve/common": "0.0.0"
+    "@eve/common-constants": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
