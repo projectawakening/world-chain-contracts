@@ -1,12 +1,4 @@
 import { mudConfig } from "@latticexyz/world/register";
+import config from "./mudConfigObject.ts";
 
-export default mudConfig({
-  tables: {
-    GlobalStaticData: {
-      keySchema: {
-        trustedForwarder: "address",
-      },
-      valueSchema: "bool",
-    }
-  },
-});
+export default mudConfig(config);
