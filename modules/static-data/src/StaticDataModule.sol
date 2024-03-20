@@ -7,10 +7,7 @@ import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import {
-  STATIC_DATA_MODULE_NAME as MODULE_NAME,
-  STATIC_DATA_MODULE_NAMESPACE as MODULE_NAMESPACE
-  } from "./constants.sol";
+import { STATIC_DATA_MODULE_NAME as MODULE_NAME, STATIC_DATA_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 
 import { Utils } from "./utils.sol";
 
@@ -19,9 +16,7 @@ import { StaticDataGlobalTable } from "./codegen/tables/StaticDataGlobalTable.so
 
 import { StaticData } from "./systems/StaticData.sol";
 
-
 contract StaticDataModule is Module {
-
   error StaticDataModule_InvalidNamespace(bytes14 namespace);
 
   address immutable registrationLibrary = address(new StaticDataModuleRegistrationLibrary());
@@ -33,6 +28,7 @@ contract StaticDataModule is Module {
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
     return super.supportsInterface(interfaceId);
   }
+
   function _requireDependencies() internal view {
     // Require other modules to be installed
     // (not the case here)
@@ -59,7 +55,9 @@ contract StaticDataModule is Module {
 
     // Register the smart object framework's tables and systems
     IBaseWorld world = IBaseWorld(_world());
-    (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(abi.encodeCall(StaticDataModuleRegistrationLibrary.register, (world, namespace)));
+    (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
+      abi.encodeCall(StaticDataModuleRegistrationLibrary.register, (world, namespace))
+    );
     require(success, string(returnedData));
 
     // Transfer ownership of the namespace to the caller
@@ -75,6 +73,7 @@ contract StaticDataModule is Module {
 
 contract StaticDataModuleRegistrationLibrary {
   using Utils for bytes14;
+
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */

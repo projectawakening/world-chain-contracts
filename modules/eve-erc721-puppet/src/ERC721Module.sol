@@ -41,7 +41,10 @@ contract ERC721Module is Module {
     requireNotInstalled(__self, encodedArgs);
 
     // Decode args
-    (bytes14 namespace, StaticDataGlobalTableData memory metadata) = abi.decode(encodedArgs, (bytes14, StaticDataGlobalTableData));
+    (bytes14 namespace, StaticDataGlobalTableData memory metadata) = abi.decode(
+      encodedArgs,
+      (bytes14, StaticDataGlobalTableData)
+    );
 
     // Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -56,7 +59,10 @@ contract ERC721Module is Module {
     if (!success) revertWithBytes(returnData);
 
     // Initialize the Metadata
-    StaticDataLib.World memory staticData = StaticDataLib.World({iface: world, namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
+    StaticDataLib.World memory staticData = StaticDataLib.World({
+      iface: world,
+      namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE
+    });
     staticData.setMetadata(namespace.erc721SystemId(), metadata);
 
     // Deploy and register the ERC721 puppet.
@@ -82,6 +88,7 @@ contract ERC721Module is Module {
 
 contract ERC721ModuleRegistrationLibrary {
   using Utils for bytes14;
+
   /**
    * Register systems and tables for a new ERC721 token in a given namespace
    */

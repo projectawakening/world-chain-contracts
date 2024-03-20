@@ -22,44 +22,23 @@ library StaticDataLib {
     bytes14 namespace;
   }
 
-
   function setBaseURI(World memory world, ResourceId systemId, string memory baseURI) public {
-    world.iface.call(world.namespace.staticDataSystemId(),
-      abi.encodeCall(IStaticData.setBaseURI,
-        (systemId, baseURI)
-      )
-    );
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setBaseURI, (systemId, baseURI)));
   }
 
   function setName(World memory world, ResourceId systemId, string memory name) public {
-    world.iface.call(world.namespace.staticDataSystemId(),
-      abi.encodeCall(IStaticData.setName,
-        (systemId, name)
-      )
-    );
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setName, (systemId, name)));
   }
 
   function setSymbol(World memory world, ResourceId systemId, string memory symbol) public {
-    world.iface.call(world.namespace.staticDataSystemId(),
-      abi.encodeCall(IStaticData.setSymbol,
-        (systemId, symbol)
-      )
-    );
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setSymbol, (systemId, symbol)));
   }
 
   function setMetadata(World memory world, ResourceId systemId, StaticDataGlobalTableData memory data) public {
-    world.iface.call(world.namespace.staticDataSystemId(),
-      abi.encodeCall(IStaticData.setMetadata,
-        (systemId, data)
-      )
-    );
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setMetadata, (systemId, data)));
   }
 
   function setCid(World memory world, uint256 entityId, string memory cid) public {
-    world.iface.call(world.namespace.staticDataSystemId(),
-      abi.encodeCall(IStaticData.setCid,
-        (entityId, cid)
-      )
-    );
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setCid, (entityId, cid)));
   }
 }

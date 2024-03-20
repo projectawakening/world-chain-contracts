@@ -20,7 +20,10 @@ contract StaticData is EveSystem {
    * @param systemId corresponds to the class targeted
    * @param baseURI the new base URI string
    */
-  function setBaseURI(ResourceId systemId, string memory baseURI) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  function setBaseURI(
+    ResourceId systemId,
+    string memory baseURI
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setBaseURI(_namespace().staticDataGlobalTableId(), systemId, baseURI);
   }
 
@@ -30,7 +33,10 @@ contract StaticData is EveSystem {
    * @param systemId corresponds to the class targeted
    * @param name the new name string
    */
-  function setName(ResourceId systemId, string memory name) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  function setName(
+    ResourceId systemId,
+    string memory name
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setName(_namespace().staticDataGlobalTableId(), systemId, name);
   }
 
@@ -40,7 +46,10 @@ contract StaticData is EveSystem {
    * @param systemId corresponds to the class targeted
    * @param symbol the new symbol string
    */
-  function setSymbol(ResourceId systemId, string memory symbol) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  function setSymbol(
+    ResourceId systemId,
+    string memory symbol
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setSymbol(_namespace().staticDataGlobalTableId(), systemId, symbol);
   }
 
@@ -50,7 +59,10 @@ contract StaticData is EveSystem {
    * @param systemId corresponds to the class targeted
    * @param data the new metadata structure of type {StaticDataGlobalTableData}
    */
-  function setMetadata(ResourceId systemId, StaticDataGlobalTableData memory data) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  function setMetadata(
+    ResourceId systemId,
+    StaticDataGlobalTableData memory data
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.set(_namespace().staticDataGlobalTableId(), systemId, data);
   }
 

@@ -13,7 +13,8 @@ library Utils {
   }
 
   function entityRecordSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ENTITY_RECORD_SYSTEM_NAME });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ENTITY_RECORD_SYSTEM_NAME });
   }
 
   function entityRecordTableTableId(bytes14 namespace) internal pure returns (ResourceId) {
@@ -21,6 +22,11 @@ library Utils {
   }
 
   function entityRecordOffchainTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ENTITY_RECORD_OFFCHAIN_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: namespace,
+        name: ENTITY_RECORD_OFFCHAIN_TABLE_NAME
+      });
   }
 }

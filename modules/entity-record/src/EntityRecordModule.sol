@@ -7,10 +7,7 @@ import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import {
-  ENTITY_RECORD_MODULE_NAME as MODULE_NAME,
-  ENTITY_RECORD_MODULE_NAMESPACE as MODULE_NAMESPACE
-  } from "./constants.sol";
+import { ENTITY_RECORD_MODULE_NAME as MODULE_NAME, ENTITY_RECORD_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./utils.sol";
 
 import { EntityRecord } from "./systems/EntityRecord.sol";
@@ -18,9 +15,7 @@ import { EntityRecord } from "./systems/EntityRecord.sol";
 import { EntityRecordTable } from "./codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable } from "./codegen/tables/EntityRecordOffchainTable.sol";
 
-
 contract EntityRecordModule is Module {
-
   error EntityRecordModule_InvalidNamespace(bytes14 namespace);
 
   address immutable registrationLibrary = address(new EntityRecordModuleRegistrationLibrary());
@@ -32,6 +27,7 @@ contract EntityRecordModule is Module {
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
     return super.supportsInterface(interfaceId);
   }
+
   function _requireDependencies() internal view {
     // Require other modules to be installed
     // (not the case here)
@@ -58,7 +54,9 @@ contract EntityRecordModule is Module {
 
     // Register the smart object framework's tables and systems
     IBaseWorld world = IBaseWorld(_world());
-    (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(abi.encodeCall(EntityRecordModuleRegistrationLibrary.register, (world, namespace)));
+    (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
+      abi.encodeCall(EntityRecordModuleRegistrationLibrary.register, (world, namespace))
+    );
     require(success, string(returnedData));
 
     // Transfer ownership of the namespace to the caller
@@ -74,6 +72,7 @@ contract EntityRecordModule is Module {
 
 contract EntityRecordModuleRegistrationLibrary {
   using Utils for bytes14;
+
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */

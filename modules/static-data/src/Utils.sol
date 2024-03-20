@@ -21,6 +21,7 @@ library Utils {
   }
 
   function staticDataGlobalTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: STATIC_DATA_GLOBAL_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: STATIC_DATA_GLOBAL_TABLE_NAME });
   }
 }

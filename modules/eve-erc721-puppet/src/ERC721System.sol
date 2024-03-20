@@ -80,7 +80,11 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
    * token will be the concatenation of the `baseURI` and the `tokenId`.
    */
   function _baseURI() internal view virtual returns (string memory) {
-    return StaticDataGlobalTable.getBaseURI(STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), _namespace().erc721SystemId());
+    return
+      StaticDataGlobalTable.getBaseURI(
+        STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(),
+        _namespace().erc721SystemId()
+      );
   }
 
   /**
@@ -529,7 +533,7 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   }
 
-  function _systemId() internal view returns(ResourceId) {
+  function _systemId() internal view returns (ResourceId) {
     return _namespace().erc721SystemId();
   }
 }

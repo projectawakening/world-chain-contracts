@@ -5,7 +5,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 bytes16 constant STATIC_DATA_MODULE_NAME = "StaticDataModule";
-bytes14 constant STATIC_DATA_MODULE_NAMESPACE= "StaticDataModu";
+bytes14 constant STATIC_DATA_MODULE_NAMESPACE = "StaticDataModu";
 
 ResourceId constant STATIC_DATA_MODULE_NAMESPACE_ID = ResourceId.wrap(
   bytes32(abi.encodePacked(RESOURCE_NAMESPACE, STATIC_DATA_MODULE_NAMESPACE))

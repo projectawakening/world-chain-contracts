@@ -10,31 +10,31 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ERC721_SYSTEM_NAME, BALANCES_NAME, METADATA_NAME, OPERATOR_APPROVAL_NAME, OWNERS_NAME, TOKEN_APPROVAL_NAME, TOKEN_URI_NAME } from "./constants.sol";
 
 library Utils {
-  function balancesTableId(bytes14 namespace) pure internal returns (ResourceId) {
+  function balancesTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: BALANCES_NAME });
   }
 
-  function metadataTableId(bytes14 namespace) pure internal returns (ResourceId) {
+  function metadataTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: METADATA_NAME });
   }
 
-  function operatorApprovalTableId(bytes14 namespace) pure internal returns (ResourceId) {
+  function operatorApprovalTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: OPERATOR_APPROVAL_NAME });
   }
 
-  function ownersTableId(bytes14 namespace) pure internal returns (ResourceId) {
+  function ownersTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: OWNERS_NAME });
   }
 
-  function tokenApprovalTableId(bytes14 namespace) pure internal returns (ResourceId) {
+  function tokenApprovalTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: TOKEN_APPROVAL_NAME });
   }
 
-  function tokenUriTableId(bytes14 namespace) pure internal returns (ResourceId) {
+  function tokenUriTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: TOKEN_URI_NAME });
   }
 
-  function erc721SystemId(bytes14 namespace) pure internal returns (ResourceId) {
+  function erc721SystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ERC721_SYSTEM_NAME });
   }
 }

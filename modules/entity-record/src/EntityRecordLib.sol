@@ -22,19 +22,29 @@ library EntityRecordLib {
   }
 
   // Entity Record methods
-  function createEntityRecord(World memory world, uint256 entityId, uint256 itemId, uint8 typeId, uint256 volume) internal {
-    world.iface.call(world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.createEntityRecord,
-        (entityId, itemId, typeId, volume)
-      )
+  function createEntityRecord(
+    World memory world,
+    uint256 entityId,
+    uint256 itemId,
+    uint8 typeId,
+    uint256 volume
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.createEntityRecord, (entityId, itemId, typeId, volume))
     );
   }
 
-  function createEntityRecordOffchain(World memory world, uint256 entityId, string memory name, string memory dappURL, string memory description) internal {
-    world.iface.call(world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.createEntityRecordOffchain,
-        (entityId, name, dappURL, description)
-      )
+  function createEntityRecordOffchain(
+    World memory world,
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.createEntityRecordOffchain, (entityId, name, dappURL, description))
     );
   }
 }
