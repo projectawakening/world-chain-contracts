@@ -4,9 +4,11 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IWorld } from "../src/codegen/world/IWorld.sol";
-import { EntityRecordData, SmartObjectData } from "../src/systems/types.sol";
 
+import { EntityRecordTableData } from "@eve/entity-record/src/codegen/tables/EntityRecordTable.sol";
+
+import { IWorld } from "../src/codegen/world/IWorld.sol";
+import { SmartObjectData } from "../src/types.sol";
 contract CreateSmartCharacter is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -18,7 +20,7 @@ contract CreateSmartCharacter is Script {
     IWorld(worldAddress).createCharacter(
       123,
       0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
-      EntityRecordData({ typeId: 123, itemId: 222, volume: 100 }),
+      EntityRecordTableData({ typeId: 123, itemId: 222, volume: 100 }),
       SmartObjectData({ owner: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokenURI: "https://example.com/token/123" })
     );
     vm.stopBroadcast();

@@ -22,23 +22,23 @@ library StaticDataLib {
     bytes14 namespace;
   }
 
-  function setBaseURI(World memory world, ResourceId systemId, string memory baseURI) public {
+  function setBaseURI(World memory world, ResourceId systemId, string memory baseURI) internal {
     world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setBaseURI, (systemId, baseURI)));
   }
 
-  function setName(World memory world, ResourceId systemId, string memory name) public {
+  function setName(World memory world, ResourceId systemId, string memory name) internal {
     world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setName, (systemId, name)));
   }
 
-  function setSymbol(World memory world, ResourceId systemId, string memory symbol) public {
+  function setSymbol(World memory world, ResourceId systemId, string memory symbol) internal {
     world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setSymbol, (systemId, symbol)));
   }
 
-  function setMetadata(World memory world, ResourceId systemId, StaticDataGlobalTableData memory data) public {
+  function setMetadata(World memory world, ResourceId systemId, StaticDataGlobalTableData memory data) internal {
     world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setMetadata, (systemId, data)));
   }
 
-  function setCid(World memory world, uint256 entityId, string memory cid) public {
+  function setCid(World memory world, uint256 entityId, string memory cid) internal {
     world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setCid, (entityId, cid)));
   }
 }

@@ -2,8 +2,8 @@ import { mudConfig } from "@latticexyz/world/register";
 
 export default mudConfig({
   systems: {
-    SmartCharacterSystem: {
-      name: "SmartCharacterSystem",
+    SmartCharacter: {
+      name: "SmartCharacter",
       openAccess: true,
     },
   },
@@ -11,7 +11,7 @@ export default mudConfig({
     /**
      * Maps the in-game character ID to on-chain EOA address
      */
-    Characters: {
+    CharactersTable: {
       keySchema: {
         characterId: "uint256",
       },
@@ -19,6 +19,15 @@ export default mudConfig({
         characterAddress: "address",
         createdAt: "uint256",
       },
+      tableIdArgument: true,
+    },
+    
+    CharactersConstantsTable: {
+      keySchema: {},
+      valueSchema: {
+        erc721Address: "address",
+      },
+      tableIdArgument: true,
     },
   },
 });

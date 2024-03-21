@@ -200,6 +200,12 @@ importers:
       '@eve/common-constants':
         specifier: 0.0.0
         version: link:../../common/constants
+      '@eve/entity-record':
+        specifier: 0.0.0
+        version: link:../entity-record
+      '@eve/eve-erc721-puppet':
+        specifier: 0.0.0
+        version: link:../eve-erc721-puppet
       '@eve/smart-object-framework':
         specifier: 0.0.0
         version: link:../../core/smart-object-framework
