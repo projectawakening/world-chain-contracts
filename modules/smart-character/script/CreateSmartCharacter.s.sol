@@ -17,7 +17,7 @@ contract CreateSmartCharacter is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    IWorld(worldAddress).createCharacter(
+    IWorld(worldAddress).frontier__createCharacter(
       123,
       0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
       EntityRecordTableData({ typeId: 123, itemId: 222, volume: 100 }),
