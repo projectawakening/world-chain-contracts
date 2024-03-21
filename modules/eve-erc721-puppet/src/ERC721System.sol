@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
@@ -13,16 +14,17 @@ import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol"
 import { EveSystem } from "@eve/smart-object-framework/src/systems/internal/EveSystem.sol";
 
 import { StaticDataGlobalTable } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
+import { StaticDataTable } from "@eve/static-data/src/codegen/tables/StaticDataTable.sol";
+import { StaticDataLib } from "@eve/static-data/src/StaticDataLib.sol";
 import { Utils as StaticDataUtils } from "@eve/static-data/src/Utils.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
-import { IERC721Mintable } from "./IERC721Mintable.sol";
 import { IERC721Receiver } from "./IERC721Receiver.sol";
+import { IERC721Mintable } from "./IERC721Mintable.sol";
 
 import { OperatorApproval } from "./codegen/tables/OperatorApproval.sol";
 import { Owners } from "./codegen/tables/Owners.sol";
 import { TokenApproval } from "./codegen/tables/TokenApproval.sol";
-import { TokenURI } from "./codegen/tables/TokenURI.sol";
 import { Balances } from "./codegen/tables/Balances.sol";
 
 import { Utils } from "./utils.sol";
@@ -31,6 +33,7 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using StaticDataUtils for bytes14;
+  using StaticDataLib for StaticDataLib.World;
 
   /**
    * @dev See {IERC721-balanceOf}.
@@ -70,9 +73,17 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
     _requireOwned(tokenId);
 
     string memory baseURI = _baseURI();
-    string memory _tokenURI = TokenURI.get(_namespace().tokenUriTableId(), tokenId);
+    string memory _tokenURI = StaticDataTable.getCid(STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataTableId(), tokenId);
     _tokenURI = bytes(_tokenURI).length > 0 ? _tokenURI : string(abi.encodePacked(tokenId));
     return bytes(baseURI).length > 0 ? string.concat(baseURI, _tokenURI) : _tokenURI;
+  }
+
+  /**
+   * @dev bridge gap solution to make it possible to change the default Token CID
+   * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
+   */
+  function setCid(uint256 tokenId, string memory cid) public {
+    StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE}).setCid(tokenId, cid);
   }
 
   /**

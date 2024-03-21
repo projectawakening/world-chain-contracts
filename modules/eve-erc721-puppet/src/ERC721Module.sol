@@ -25,7 +25,6 @@ import { ERC721System } from "./ERC721System.sol";
 import { OperatorApproval } from "./codegen/tables/OperatorApproval.sol";
 import { Owners } from "./codegen/tables/Owners.sol";
 import { TokenApproval } from "./codegen/tables/TokenApproval.sol";
-import { TokenURI } from "./codegen/tables/TokenURI.sol";
 import { ERC721Registry } from "./codegen/tables/ERC721Registry.sol";
 
 contract ERC721Module is Module {
@@ -103,7 +102,6 @@ contract ERC721ModuleRegistrationLibrary {
     OperatorApproval.register(namespace.operatorApprovalTableId());
     Owners.register(namespace.ownersTableId());
     TokenApproval.register(namespace.tokenApprovalTableId());
-    TokenURI.register(namespace.tokenUriTableId());
     Balances.register(namespace.balancesTableId());
 
     // Register a new ERC20System

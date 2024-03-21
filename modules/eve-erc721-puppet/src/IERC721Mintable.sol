@@ -50,4 +50,11 @@ interface IERC721Mintable is IERC721 {
    * Emits a {Transfer} event.
    */
   function burn(uint256 tokenId) external;
+
+  /**
+   * @dev bridge gap solution to make it possible to change the default Token CID
+   * TODO: this is crap. Because of that extra function, this breaks the original IERC721Mintable's ERC165 standard value
+   * needs to come up with something else, but this is easier to handle as long as we import *this* interface in other parts of the source code
+   */
+  function setCid(uint256 tokenId, string memory cid) external;
 }
