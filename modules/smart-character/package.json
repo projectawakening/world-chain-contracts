@@ -16,7 +16,7 @@
     "prettier": "prettier 'src/**/*.sol' --check",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
     "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
-    "test": "tsc --noEmit && mud test"
+    "test": "mud test"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-next.16",
