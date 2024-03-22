@@ -20,13 +20,6 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
-    //GLOBAL STATIC DATA
-    GlobalStaticData: {
-      keySchema: {
-        trustedForwarder: "address",
-      },
-      valueSchema: "bool",
-    },
     /**
      * Maps the in-game character ID to on-chain EOA address
      */

@@ -1,5 +1,5 @@
 {
-  "name": "@eve-frontier/standard-contracts",
+  "name": "@eve/frontier-standard-contracts",
   "version": "0.0.1",
   "description": "eve frontier smart contracts",
   "main": "index.js",

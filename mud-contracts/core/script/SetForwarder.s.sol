@@ -9,19 +9,17 @@ import { IWorld } from "../src/codegen/world/IWorld.sol";
 
 contract SetForwarder is Script {
   function run(address worldAddress) external {
-    IBaseWorld world = IBaseWorld(worldAddress);
-
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
     address trustedForwarderAddress = vm.envOr("FORWARDER_CONTRACT_ADDRESS", address(0x0));
 
     vm.startBroadcast(deployerPrivateKey);
 
-    IWorld(worldAddress).frontier__setTrustedForwarder(trustedForwarderAddress);
+    IWorld(worldAddress).setTrustedForwarder(trustedForwarderAddress);
 
     console.log("TrustedForwarder: ");
     console.logAddress(trustedForwarderAddress);
-    console.log(IWorld(worldAddress).frontier__isTrustedForwarder(trustedForwarderAddress));
+    console.log(IWorld(worldAddress).isTrustedForwarder(trustedForwarderAddress));
 
     vm.stopBroadcast();
   }
