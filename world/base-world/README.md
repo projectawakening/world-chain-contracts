@@ -1,2 +1,0 @@
-# Base mud world
-This module is the base world foundational module that will host the frontier world. With the current approach this does not deploy any system but rather creates the world itself. If there are systems that should be included in the world's inceptions we would add them here or in a separate foundational module.
