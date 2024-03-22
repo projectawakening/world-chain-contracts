@@ -14,5 +14,4 @@
 
 .nx/cache
 .DS_Store
-standard-contracts/lib/
 **/**/broadcast/
