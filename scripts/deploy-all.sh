@@ -13,8 +13,8 @@ print_instruction() {
 }
 
 
-# Build the world contract
-pnpm nx run-many -t build  --projects "world/**"
+# Build the contracts
+pnpm nx run-many -t build  --projects "standard-contracts/**"
 wait
 
 print_instruction "Deploying base world"
