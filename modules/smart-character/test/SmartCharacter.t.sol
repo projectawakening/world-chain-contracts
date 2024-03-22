@@ -10,9 +10,15 @@ import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
 
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
 
+import { SMART_CHARACTER_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
+import { StaticDataModule } from "@eve/static-data/src/StaticDataModule.sol";
+import { ERC721Module } from "@eve/eve-erc721-puppet/src/ERC721Module.sol";
+import { registerERC721 } from "@eve/eve-erc721-puppet/src/registerERC721.sol";
+import { IERC721Mintable } from "@eve/eve-erc721-puppet/src/IERC721Mintable.sol";
+import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
 
 import { Utils } from "../src/utils.sol";
 import { SmartCharacterModule } from "../src/SmartCharacterModule.sol";
@@ -27,21 +33,33 @@ contract SmartCharacterTest is Test {
 
   IBaseWorld baseWorld;
   SmartCharacterLib.World smartCharacter;
-  SmartCharacterModule smartCharacterModule;
 
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    SmartCharacterModule module = new SmartCharacterModule();
-    baseWorld.installModule(module, abi.encode(DEPLOYMENT_NAMESPACE));
+    // install module dependancies
+    StaticDataModule staticDataModule = new StaticDataModule();
+    PuppetModule puppetModule = new PuppetModule();
+    baseWorld.installModule(puppetModule, new bytes(0));
+    baseWorld.installModule(staticDataModule, abi.encode(STATIC_DATA_DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
-    smartCharacter = SmartCharacterLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+    IERC721Mintable erc721Token = registerERC721(
+      baseWorld,
+      EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE,
+      StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: "" })
+    );
+    
+    // install smartCharacterModule
+    SmartCharacterModule smartCharacterModule = new SmartCharacterModule();
+    baseWorld.installModule(smartCharacterModule, abi.encode(SMART_CHARACTER_DEPLOYMENT_NAMESPACE));
+    SmartCharacterLib.World({iface: baseWorld, namespace: SMART_CHARACTER_DEPLOYMENT_NAMESPACE}).registerERC721Token(address(erc721Token));
+    smartCharacter = SmartCharacterLib.World(baseWorld, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
   }
 
   function testSetup() public {
-    address smartCharacterSystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.smartCharacterSystemId());
+    address smartCharacterSystem = Systems.getSystem(SMART_CHARACTER_DEPLOYMENT_NAMESPACE.smartCharacterSystemId());
     ResourceId smartCharacterSystemId = SystemRegistry.get(smartCharacterSystem);
-    assertEq(smartCharacterSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
+    assertEq(smartCharacterSystemId.getNamespace(), SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
   }
 
   function testCreateSmartCharacter(uint256 entityId, uint256 itemId, uint8 typeId, uint256 volume) public {

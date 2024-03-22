@@ -11,8 +11,8 @@ interface ISmartCharacter {
   function createCharacter(
     uint256 characterId,
     EntityRecordTableData memory entityRecord,
-    SmartObjectData memory smartObjectData
+    string memory tokenURI
   ) external;
 
-  function registerERC721Token(StaticDataGlobalTableData memory metadata) external returns(IERC721Mintable token);
+  function registerERC721Token(address tokenAddress) external;
 }

@@ -28,9 +28,18 @@ library SmartCharacterLib {
     World memory world,
     uint256 characterId,
     EntityRecordTableData memory entityRecord,
-    SmartObjectData memory smartObjectData
+    string memory tokenURI
   ) internal {
-
+    world.iface.call(
+      world.namespace.smartCharacterSystemId(),
+      abi.encodeCall(ISmartCharacter.createCharacter, (characterId, entityRecord, tokenURI))
+    );
   }
 
+  function registerERC721Token(World memory world, address tokenAddress) internal {
+    world.iface.call(
+      world.namespace.smartCharacterSystemId(),
+      abi.encodeCall(ISmartCharacter.registerERC721Token, (tokenAddress))
+    );
+  }
 }

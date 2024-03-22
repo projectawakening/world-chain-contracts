@@ -15,7 +15,6 @@ import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/S
 
 import { CharactersTable } from "../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../codegen/tables/CharactersConstantsTable.sol";
-import { SmartObjectData } from "../types.sol";
 import { Utils } from "../Utils.sol";
 
 contract SmartCharacter is EveSystem {
@@ -26,19 +25,18 @@ contract SmartCharacter is EveSystem {
   error SmartCharacterERC721AlreadyInitialized();
 
   // TODO: this alone weighs more than 25kbytes, find alternative
-  // function registerERC721Token(StaticDataGlobalTableData memory metadata) public returns(address token) {
-  //   if(CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
-  //     revert SmartCharacterERC721AlreadyInitialized();
-  //   }
-  //   token = address(registerERC721(IBaseWorld(_world()), _namespace(), metadata));
-  //   CharactersConstantsTable.setErc721Address(_namespace().charactersConstantsTableId(), address(token));
-  // }
+  function registerERC721Token(address tokenAddress) public {
+    if(CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
+      revert SmartCharacterERC721AlreadyInitialized();
+    }
+    CharactersConstantsTable.setErc721Address(_namespace().charactersConstantsTableId(), tokenAddress);
+  }
 
   function createCharacter(
     uint256 characterId,
     address characterAddress,
     EntityRecordTableData memory entityRecord,
-    SmartObjectData memory smartObjectData
+    string memory tokenURI
   ) public {
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);
@@ -55,7 +53,8 @@ contract SmartCharacter is EveSystem {
       entityRecord.volume
     );
     //Save the smartObjectData in ERC721 Module
-    //TODO implementation
+    IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).mint(characterAddress, characterId);
+    IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).setCid(characterId, tokenURI);
   }
 
   function characterSystemId() public view returns (ResourceId) {

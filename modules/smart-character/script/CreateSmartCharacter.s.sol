@@ -21,7 +21,7 @@ contract CreateSmartCharacter is Script {
       123,
       0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
       EntityRecordTableData({ typeId: 123, itemId: 222, volume: 100 }),
-      SmartObjectData({ owner: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokenURI: "https://example.com/token/123" })
+      "https://example.com/token/123"
     );
     vm.stopBroadcast();
   }
