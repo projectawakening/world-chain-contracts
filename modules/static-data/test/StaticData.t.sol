@@ -13,10 +13,10 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
 
-import { Utils } from "../src/utils.sol";
+import { Utils } from "../src/Utils.sol";
 import { StaticDataModule } from "../src/StaticDataModule.sol";
 import { StaticDataLib } from "../src/StaticDataLib.sol";
-import { createCoreModule } from "./createCoreModule.sol";
+import { createCoreModule } from "./CreateCoreModule.sol";
 import { StaticDataGlobalTable, StaticDataTable } from "../src/codegen/index.sol";
 import { StaticDataGlobalTableData } from "../src/codegen/tables/StaticDataGlobalTable.sol";
 

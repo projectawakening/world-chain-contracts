@@ -5,7 +5,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { EveSystem } from "@eve/smart-object-framework/src/systems/internal/EveSystem.sol";
 
-import { Utils } from "../utils.sol";
+import { Utils } from "../Utils.sol";
 import { StaticDataTable } from "../codegen/tables/StaticDataTable.sol";
 import { StaticDataGlobalTable, StaticDataGlobalTableData } from "../codegen/tables/StaticDataGlobalTable.sol";
 

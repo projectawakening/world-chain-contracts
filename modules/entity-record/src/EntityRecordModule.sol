@@ -8,7 +8,7 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { ENTITY_RECORD_MODULE_NAME as MODULE_NAME, ENTITY_RECORD_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 
 import { EntityRecord } from "./systems/EntityRecord.sol";
 

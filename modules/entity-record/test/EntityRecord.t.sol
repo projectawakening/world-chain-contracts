@@ -14,10 +14,10 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
 
 
-import { Utils } from "../src/utils.sol";
+import { Utils } from "../src/Utils.sol";
 import { EntityRecordModule } from "../src/EntityRecordModule.sol";
 import { EntityRecordLib } from "../src/EntityRecordLib.sol";
-import { createCoreModule } from "./createCoreModule.sol";
+import { createCoreModule } from "./CreateCoreModule.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../src/codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../src/codegen/tables/EntityRecordOffchainTable.sol";
 

@@ -4,7 +4,7 @@ pragma solidity >=0.8.21;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 import { IEntityRecord } from "./interfaces/IEntityRecord.sol";
 
 /**

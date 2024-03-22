@@ -9,7 +9,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { STATIC_DATA_MODULE_NAME as MODULE_NAME, STATIC_DATA_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 
 import { StaticDataTable } from "./codegen/tables/StaticDataTable.sol";
 import { StaticDataGlobalTable } from "./codegen/tables/StaticDataGlobalTable.sol";
