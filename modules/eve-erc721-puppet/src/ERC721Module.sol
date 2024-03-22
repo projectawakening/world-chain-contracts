@@ -19,7 +19,7 @@ import { StaticDataLib } from "@eve/static-data/src/StaticDataLib.sol";
 import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
 
 import { MODULE_NAMESPACE, MODULE_NAMESPACE_ID, ERC721_REGISTRY_TABLE_ID } from "./constants.sol";
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 import { ERC721System } from "./ERC721System.sol";
 
 import { OperatorApproval } from "./codegen/tables/OperatorApproval.sol";

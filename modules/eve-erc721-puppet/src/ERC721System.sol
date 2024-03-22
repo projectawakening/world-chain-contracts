@@ -27,7 +27,7 @@ import { Owners } from "./codegen/tables/Owners.sol";
 import { TokenApproval } from "./codegen/tables/TokenApproval.sol";
 import { Balances } from "./codegen/tables/Balances.sol";
 
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 
 contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
