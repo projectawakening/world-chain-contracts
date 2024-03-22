@@ -7,7 +7,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { EntityRecordTableData } from "@eve/entity-record/src/codegen/tables/EntityRecordTable.sol";
 
 import { SmartObjectData } from "./types.sol";
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 import { ISmartCharacter } from "./interfaces/ISmartCharacter.sol";
 
 /**

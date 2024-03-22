@@ -20,10 +20,10 @@ import { registerERC721 } from "@eve/eve-erc721-puppet/src/registerERC721.sol";
 import { IERC721Mintable } from "@eve/eve-erc721-puppet/src/IERC721Mintable.sol";
 import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
 
-import { Utils } from "../src/utils.sol";
+import { Utils } from "../src/Utils.sol";
 import { SmartCharacterModule } from "../src/SmartCharacterModule.sol";
 import { SmartCharacterLib } from "../src/SmartCharacterLib.sol";
-import { createCoreModule } from "./createCoreModule.sol";
+import { createCoreModule } from "./CreateCoreModule.sol";
 import { CharactersTable, CharactersTableData } from "../src/codegen/tables/CharactersTable.sol";
 
 contract SmartCharacterTest is Test {
@@ -48,7 +48,7 @@ contract SmartCharacterTest is Test {
       EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE,
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: "" })
     );
-    
+
     // install smartCharacterModule
     SmartCharacterModule smartCharacterModule = new SmartCharacterModule();
     baseWorld.installModule(smartCharacterModule, abi.encode(SMART_CHARACTER_DEPLOYMENT_NAMESPACE));

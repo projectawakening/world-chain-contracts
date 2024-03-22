@@ -10,7 +10,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { StaticDataGlobalTableData } from "@eve/static-data/src/codegen/tables/StaticDataGlobalTable.sol";
 
 import { SMART_CHARACTER_MODULE_NAME as MODULE_NAME, SMART_CHARACTER_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
-import { Utils } from "./utils.sol";
+import { Utils } from "./Utils.sol";
 
 import { CharactersTable } from "./codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "./codegen/tables/CharactersConstantsTable.sol";
