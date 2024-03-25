@@ -12,6 +12,10 @@ export default mudConfig({
       name: "SmartStorageUnit",
       openAccess: true,
     },
+    StaticData: {
+      name: "StaticData",
+      openAccess: true,
+    },
   },
   enums: {
     State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
