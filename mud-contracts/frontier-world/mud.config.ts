@@ -16,6 +16,10 @@ export default mudConfig({
       name: "StaticData",
       openAccess: true,
     },
+    EntityRecord: {
+      name: "EntityRecord",
+      openAccess: true,
+    },
   },
   enums: {
     State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
@@ -59,6 +63,39 @@ export default mudConfig({
       // offchainOnly: true,
     },
 
+    /**********************
+     * STATIC DATA MODULE *
+     **********************/
+
+    /**
+     * Used to store the metadata of a in-game entity
+     * Singleton entityId is the hash of (typeId, itemId and databaseId) ?
+     * Non Singleton entityId is the hash of the typeId
+     */
+    EntityRecordTable: {
+      keySchema: {
+        entityId: "uint256",
+      },
+      valueSchema: {
+        itemId: "uint256",
+        typeId: "uint8",
+        volume: "uint256",
+      },
+      tableIdArgument: true,
+    },
+    EntityRecordOffchainTable: {
+      keySchema: {
+        entityId: "uint256",
+      }, 
+      valueSchema: {
+        name: "string",
+        dappURL: "string",
+        description: "string",
+      },
+      tableIdArgument: true,
+      // offchainOnly: true, TODO: do we enable this flag for playtest release ? 
+    },
+
     /**
      * Maps the in-game character ID to on-chain EOA address
      */
@@ -71,33 +108,7 @@ export default mudConfig({
         createdAt: "uint256",
       },
     },
-    //ENTITY RECORD MODULE
-    /**
-     * Used to store the metadata of a in-game entity
-     * Singleton entityId is the hash of (typeId, itemId and databaseId) ?
-     * Non Singleton entityId is the hash of the typeId
-     */
-    EntityRecord: {
-      keySchema: {
-        entityId: "uint256",
-      },
-      valueSchema: {
-        itemId: "uint256",
-        typeId: "uint256",
-        volume: "uint256",
-      },
-    },
-    EntityRecordMetadata: {
-      keySchema: {
-        entityId: "uint256",
-      },
-      valueSchema: {
-        name: "string",
-        description: "string",
-        dappURL: "string",
-      },
-      offchainOnly: true,
-    },
+
     //LOCATION MODULE
     /**
      * Used to store the location of a in-game entity in the solar system
