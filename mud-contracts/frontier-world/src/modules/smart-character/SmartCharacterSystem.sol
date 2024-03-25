@@ -5,7 +5,7 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_CHARACTER_MODULE_NAME, SMART_CHARACTER_MODULE_NAMESPACE } from "./constants.sol";
-import { Characters, CharactersData } from "../codegen/index.sol";
+import { Characters, CharactersData } from "../../codegen/index.sol";
 import { EntityRecordData, SmartObjectData } from "../types.sol";
 
 contract SmartCharacterSystem is System {

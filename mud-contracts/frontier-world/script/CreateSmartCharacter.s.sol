@@ -5,7 +5,7 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IWorld } from "../src/codegen/world/IWorld.sol";
-import { EntityRecordData, SmartObjectData } from "../src/types.sol";
+import { EntityRecordData, SmartObjectData } from "../src/modules/types.sol";
 
 contract CreateSmartCharacter is Script {
   function run(address worldAddress) public {

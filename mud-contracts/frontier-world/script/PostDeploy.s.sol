@@ -10,7 +10,7 @@ import { ERC721Module } from "@latticexyz/world-modules/src/modules/erc721-puppe
 import { IERC721Mintable } from "@latticexyz/world-modules/src/modules/erc721-puppet/IERC721Mintable.sol";
 import { registerERC721 } from "@latticexyz/world-modules/src/modules/erc721-puppet/registerERC721.sol";
 import { ERC721MetadataData } from "@latticexyz/world-modules/src/modules/erc721-puppet/tables/ERC721Metadata.sol";
-import { SMART_CHARACTER_MODULE_NAME, SMART_CHARACTER_MODULE_NAMESPACE } from "../src/smart-character/constants.sol";
+import { SMART_CHARACTER_MODULE_NAME, SMART_CHARACTER_MODULE_NAMESPACE } from "../src/modules/smart-character/constants.sol";
 
 contract PostDeploy is Script {
   function run(address worldAddress) external {
