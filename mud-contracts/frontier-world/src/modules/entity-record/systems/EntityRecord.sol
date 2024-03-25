@@ -31,9 +31,9 @@ contract EntityRecord is EveSystem {
 
   /**
    * @dev TODO: make sure that entityId exists in the SO-framework before going forward with this
-   * @param entityId we create an off-chain record for 
+   * @param entityId we create an off-chain record for
    * @param name name of that entity
-   * @param dappURL link to that entity's dApp URL 
+   * @param dappURL link to that entity's dApp URL
    * @param description descriptino of that entity
    */
   function createEntityRecordOffchain(
