@@ -1,5 +1,4 @@
 packages:
   - "common/*"
-  - "world/*"
-  - "core/*"
-  - "modules/*"
+  - "mud-contracts/**/**"
+  - "standard-contracts/*"
