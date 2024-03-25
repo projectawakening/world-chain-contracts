@@ -83,7 +83,10 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
    * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
    */
   function setCid(uint256 tokenId, string memory cid) public {
-    StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE}).setCid(tokenId, cid);
+    StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE }).setCid(
+      tokenId,
+      cid
+    );
   }
 
   /**
