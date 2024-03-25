@@ -3,6 +3,7 @@ import { mudConfig } from "@latticexyz/world/register";
 export default mudConfig({
   //having a short namespace as the MUD Namespace must be <= 14 characters
   namespace: "frontier",
+  excludeSystems: ["ERC721System"],
   systems: {
     SmartCharacterSystem: {
       name: "SmartCharacterSystem",
@@ -216,6 +217,71 @@ export default mudConfig({
         updatedAt: "uint256",
       },
       offchainOnly: true,
+    },
+
+    /************************
+     * ERC721 PUPPET MODULE *
+     ************************/
+
+    Balances: {
+      keySchema: {
+        account: "address",
+      },
+      valueSchema: {
+        value: "uint256",
+      },
+      tableIdArgument: true,
+    },
+
+    TokenURI: {
+      keySchema: {
+        tokenId: "uint256",
+      },
+      valueSchema: {
+        tokenURI: "string",
+      },
+      tableIdArgument: true,
+    },
+
+    Owners: {
+      keySchema: {
+        tokenId: "uint256",
+      },
+      valueSchema: {
+        owner: "address",
+      },
+      tableIdArgument: true,
+    },
+
+    ERC721Registry: {
+      keySchema: {
+        namespaceId: "ResourceId",
+      },
+      valueSchema: {
+        tokenAddress: "address",
+      },
+      tableIdArgument: true,
+    },
+
+    TokenApproval: {
+      keySchema: {
+        tokenId: "uint256",
+      },
+      valueSchema: {
+        account: "address",
+      },
+      tableIdArgument: true,
+    },
+    
+    OperatorApproval: {
+      keySchema: {
+        owner: "address",
+        operator: "address",
+      },
+      valueSchema: {
+        approved: "bool",
+      },
+      tableIdArgument: true,
     },
   },
 });
