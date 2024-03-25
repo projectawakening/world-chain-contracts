@@ -12,7 +12,6 @@
     "deploy:local": "mud deploy",
     "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
     "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
-    "setForwarder": ". ./.env && forge script script/SetForwarder.s.sol:SetForwarder --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --write",
