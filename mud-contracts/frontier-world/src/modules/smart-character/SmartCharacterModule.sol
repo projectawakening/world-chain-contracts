@@ -60,7 +60,6 @@ contract SmartCharacterModule is Module {
     );
     require(success, string(returnedData));
 
-
     // Transfer ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
     world.transferOwnership(namespaceId, _msgSender());
