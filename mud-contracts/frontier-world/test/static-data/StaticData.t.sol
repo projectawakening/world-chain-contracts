@@ -11,7 +11,7 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/static-data/Utils.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -26,7 +26,7 @@ contract StaticDataTest is Test {
   using Utils for bytes14;
   using StaticDataLib for StaticDataLib.World;
   using WorldResourceIdInstance for ResourceId;
-  
+
   IBaseWorld baseWorld;
   StaticDataLib.World staticData;
   StaticDataModule staticDataModule;
@@ -49,7 +49,7 @@ contract StaticDataTest is Test {
   function testSetBaseURI(ResourceId systemId, string memory newURI) public {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newURI).length != 0);
-    
+
     staticData.setBaseURI(systemId, newURI);
     assertEq(StaticDataGlobalTable.getBaseURI(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newURI);
   }
@@ -57,7 +57,7 @@ contract StaticDataTest is Test {
   function testSetName(ResourceId systemId, string memory newName) public {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newName).length != 0);
-    
+
     staticData.setName(systemId, newName);
     assertEq(StaticDataGlobalTable.getName(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newName);
   }
@@ -65,18 +65,23 @@ contract StaticDataTest is Test {
   function testSetSymbol(ResourceId systemId, string memory newSymbol) public {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newSymbol).length != 0);
-    
+
     staticData.setSymbol(systemId, newSymbol);
     assertEq(StaticDataGlobalTable.getSymbol(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newSymbol);
   }
 
-  function testSetMetadata(ResourceId systemId, string memory newURI, string memory newName, string memory newSymbol) public {
+  function testSetMetadata(
+    ResourceId systemId,
+    string memory newURI,
+    string memory newName,
+    string memory newSymbol
+  ) public {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newURI).length != 0);
     vm.assume(bytes(newName).length != 0);
     vm.assume(bytes(newSymbol).length != 0);
-    
-    staticData.setMetadata(systemId, StaticDataGlobalTableData({name: newName, symbol: newSymbol, baseURI: newURI}));
+
+    staticData.setMetadata(systemId, StaticDataGlobalTableData({ name: newName, symbol: newSymbol, baseURI: newURI }));
 
     assertEq(StaticDataGlobalTable.getBaseURI(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newURI);
     assertEq(StaticDataGlobalTable.getName(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newName);
@@ -86,7 +91,7 @@ contract StaticDataTest is Test {
   function testSetCID(uint256 entityId, string memory newCid) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(newCid).length != 0);
-    
+
     staticData.setCid(entityId, newCid);
     assertEq(StaticDataTable.getCid(DEPLOYMENT_NAMESPACE.staticDataTableId(), entityId), newCid);
   }
