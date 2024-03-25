@@ -10,7 +10,7 @@ import { EntityRecordData, SmartObjectData } from "./types.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISmartCharacterSystem {
-  function createCharacter(
+  function frontier__createCharacter(
     uint256 characterId,
     address characterAddress,
     EntityRecordData memory entityRecord,

@@ -11,7 +11,7 @@ contract SetForwarder is Script {
   function run(address worldAddress) external {
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-    address trustedForwarderAddress = vm.envOr("FORWARDER_CONTRACT_ADDRESS", address(0x0));
+    address trustedForwarderAddress = vm.envOr("FORWARDER_ADDRESS", address(0x0));
 
     vm.startBroadcast(deployerPrivateKey);
 

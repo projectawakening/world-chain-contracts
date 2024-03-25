@@ -33,7 +33,7 @@ contract CallWorld is Script {
     // console.logBytes(data);
 
     bytes memory data = abi.encodeWithSelector(
-      ISmartCharacterSystem.createCharacter.selector,
+      ISmartCharacterSystem.frontier__createCharacter.selector,
       123,
       0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
       EntityRecordData({ typeId: 123, itemId: 222, volume: 0 }),
