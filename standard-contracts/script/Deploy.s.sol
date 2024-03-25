@@ -13,7 +13,7 @@ contract DeployScript is Script {
     vm.startBroadcast(deployerPrivateKey);
 
     //This contract can be modified to use ERC2771ForwarderWithHashNonce
-    ERC2771Forwarder forwarder = new ERC2771Forwarder("Forwarder");
+    ERC2771Forwarder forwarder = new ERC2771Forwarder("ERC2771Forwarder");
 
     console.log("Forwarder Address:", address(forwarder));
 
