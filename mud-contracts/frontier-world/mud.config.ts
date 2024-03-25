@@ -271,7 +271,7 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
-    
+
     OperatorApproval: {
       keySchema: {
         owner: "address",
