@@ -5,8 +5,8 @@ export default mudConfig({
   namespace: "frontier",
   excludeSystems: ["ERC721System"],
   systems: {
-    SmartCharacterSystem: {
-      name: "SmartCharacterSystem",
+    SmartCharacter: {
+      name: "SmartCharacter",
       openAccess: true,
     },
     SmartStorageUnit: {
@@ -96,17 +96,30 @@ export default mudConfig({
       // offchainOnly: true, TODO: do we enable this flag for playtest release ?
     },
 
+    /**************************
+     * SMART CHARACTER MODULE *
+     **************************/
+
     /**
      * Maps the in-game character ID to on-chain EOA address
      */
-    Characters: {
+    CharactersTable: {
       keySchema: {
         characterId: "uint256",
       },
       valueSchema: {
         characterAddress: "address",
-        createdAt: "uint256",
+        createdAt: "uint256"
       },
+      tableIdArgument: true,
+    },
+    
+    CharactersConstantsTable: {
+      keySchema: {},
+      valueSchema: {
+        erc721Address: "address",
+      },
+      tableIdArgument: true,
     },
 
     //LOCATION MODULE
