@@ -85,14 +85,14 @@ export default mudConfig({
     EntityRecordOffchainTable: {
       keySchema: {
         entityId: "uint256",
-      }, 
+      },
       valueSchema: {
         name: "string",
         dappURL: "string",
         description: "string",
       },
       tableIdArgument: true,
-      // offchainOnly: true, TODO: do we enable this flag for playtest release ? 
+      // offchainOnly: true, TODO: do we enable this flag for playtest release ?
     },
 
     /**

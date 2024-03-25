@@ -11,8 +11,7 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE} from "@eve/common-constants/src/constants.sol";
-
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
@@ -47,23 +46,38 @@ contract EntityRecordTest is Test {
 
   function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint8 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
-    EntityRecordTableData memory data = EntityRecordTableData({itemId: itemId, typeId: typeId, volume: volume});
-    
+    EntityRecordTableData memory data = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume });
+
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
-    EntityRecordTableData memory tableData = EntityRecordTable.get(DEPLOYMENT_NAMESPACE.entityRecordTableTableId(), entityId);
+    EntityRecordTableData memory tableData = EntityRecordTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordTableTableId(),
+      entityId
+    );
 
     assertEq(data.itemId, tableData.itemId);
     assertEq(data.typeId, tableData.typeId);
     assertEq(data.volume, tableData.volume);
   }
 
-  function testCreateEntityRecordOffchain(uint256 entityId, string memory name, string memory dappURL, string memory description) public {
+  function testCreateEntityRecordOffchain(
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(name).length != 0);
-    EntityRecordOffchainTableData memory data = EntityRecordOffchainTableData({name: name, dappURL: dappURL, description: description});
-    
+    EntityRecordOffchainTableData memory data = EntityRecordOffchainTableData({
+      name: name,
+      dappURL: dappURL,
+      description: description
+    });
+
     entityRecord.createEntityRecordOffchain(entityId, name, dappURL, description);
-    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(), entityId);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
 
     assertEq(data.name, tableData.name);
     //assertEq(data.dappURL, tableData.dappURL);
