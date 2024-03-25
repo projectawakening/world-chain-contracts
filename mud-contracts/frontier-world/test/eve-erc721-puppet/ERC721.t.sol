@@ -86,7 +86,11 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
     StoreSwitch.setStoreAddress(address(world));
 
     // Register a new ERC721 token
-    token = registerERC721(world, DEPLOYMENT_NAMESPACE, StaticDataGlobalTableData({ name: "Token", symbol: "TKN", baseURI: "" }));
+    token = registerERC721(
+      world,
+      DEPLOYMENT_NAMESPACE,
+      StaticDataGlobalTableData({ name: "Token", symbol: "TKN", baseURI: "" })
+    );
   }
 
   function _expectAccessDenied(address caller) internal {
