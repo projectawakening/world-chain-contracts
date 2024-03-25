@@ -20,6 +20,41 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
+
+    /**********************
+     * STATIC DATA MODULE *
+     **********************/
+
+    /**
+     * Used to store the IPFS CID of a smart object
+     */
+    StaticDataTable: {
+      keySchema: {
+        key: "uint256",
+      },
+      valueSchema: {
+        cid: "string",
+      },
+      tableIdArgument: true,
+    },
+
+    /**
+     * Used to store the DNS which servers the IPFS gateway
+     */
+    StaticDataGlobalTable: {
+      keySchema: {
+        systemId: "ResourceId",
+      },
+      valueSchema: {
+        name: "string",
+        symbol: "string",
+        baseURI: "string",
+      },
+      tableIdArgument: true,
+      // TODO: put this flag back online for release ? This might be a bit heavy; for now tests are relying on on-chain
+      // offchainOnly: true,
+    },
+
     /**
      * Maps the in-game character ID to on-chain EOA address
      */
@@ -92,29 +127,6 @@ export default mudConfig({
         createdAt: "uint256",
         state: "State",
         updatedBlockNumber: "uint256",
-      },
-    },
-    //STATIC DATA MODULE
-    /**
-     * Used to store the DNS which servers the IPFS gateway
-     */
-    StaticDataGlobal: {
-      keySchema: {
-        systemId: "ResourceId",
-      },
-      valueSchema: {
-        baseURI: "string",
-      },
-    },
-    /**
-     * Used to store the IPFS CID of a smart object
-     */
-    StaticData: {
-      keySchema: {
-        smartObjectId: "uint256",
-      },
-      valueSchema: {
-        cid: "string",
       },
     },
 
