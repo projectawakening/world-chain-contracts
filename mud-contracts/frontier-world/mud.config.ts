@@ -24,7 +24,6 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
-
     /**********************
      * STATIC DATA MODULE *
      **********************/
