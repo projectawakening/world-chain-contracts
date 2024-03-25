@@ -109,11 +109,11 @@ export default mudConfig({
       },
       valueSchema: {
         characterAddress: "address",
-        createdAt: "uint256"
+        createdAt: "uint256",
       },
       tableIdArgument: true,
     },
-    
+
     CharactersConstantsTable: {
       keySchema: {},
       valueSchema: {

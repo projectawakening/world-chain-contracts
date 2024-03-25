@@ -14,10 +14,16 @@ library Utils {
   }
 
   function charactersConstantsTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: CHARACTERS_CONSTANTS_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: namespace,
+        name: CHARACTERS_CONSTANTS_TABLE_NAME
+      });
   }
 
   function smartCharacterSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_CHARACTER_SYSTEM_NAME });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_CHARACTER_SYSTEM_NAME });
   }
 }

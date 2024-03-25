@@ -28,7 +28,7 @@ contract SmartCharacter is EveSystem {
 
   // TODO: this alone weighs more than 25kbytes, find alternative
   function registerERC721Token(address tokenAddress) public {
-    if(CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
+    if (CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
       revert SmartCharacterERC721AlreadyInitialized();
     }
     CharactersConstantsTable.setErc721Address(_namespace().charactersConstantsTableId(), tokenAddress);
@@ -40,25 +40,24 @@ contract SmartCharacter is EveSystem {
     EntityRecordTableData memory entityRecord,
     string memory tokenCid
   ) public {
-    if(bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
-    
+    if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
+
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);
     //Save the entity record in EntityRecord Module
     // TODO: Do we have to create the entityId <-> characterId linkup here in Smart Object Framework ?
-    EntityRecordLib.World({
-      iface: IBaseWorld(_world()),
-      namespace: ENTITY_RECORD_DEPLOYMENT_NAMESPACE
-    })
-    .createEntityRecord(
-      characterId,
-      entityRecord.itemId,
-      entityRecord.typeId,
-      entityRecord.volume
-    );
+    EntityRecordLib
+      .World({ iface: IBaseWorld(_world()), namespace: ENTITY_RECORD_DEPLOYMENT_NAMESPACE })
+      .createEntityRecord(characterId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume);
     //Save the smartObjectData in ERC721 Module
-    IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).mint(characterAddress, characterId);
-    IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).setCid(characterId, tokenCid);
+    IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).mint(
+      characterAddress,
+      characterId
+    );
+    IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).setCid(
+      characterId,
+      tokenCid
+    );
   }
 
   function characterSystemId() public view returns (ResourceId) {
