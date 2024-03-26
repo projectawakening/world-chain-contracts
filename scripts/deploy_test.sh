@@ -28,10 +28,6 @@ echo "World Address: $WORLD_ADDRESS"
 
 wait
 
-# Update the .env file with ForwarderAddress
-# sed -i '' "s/^FORWARDER_ADDRESS=.*/FORWARDER_ADDRESS=$NEW_FORWARDER_ADDRESS/" .env
-# sed -i '' "s/^WORLD_ADDRESS=.*/WORLD_ADDRESS=$NEW_WORLD_ADDRESS/" .env
-
 # Set forwarder and deploy frontier-world
 pnpm run setForwarder
 
@@ -43,10 +39,6 @@ pnpm run deploy:local --worldAddress $WORLD_ADDRESS
 
 # Navigate back to standard-contracts
 cd ../../standard-contracts/
-
-# Update .env file in standard-contracts with WorldAddress
-# sed -i '' "s/^FORWARDER_ADDRESS=.*/FORWARDER_ADDRESS=$NEW_FORWARDER_ADDRESS/" .env
-# sed -i '' "s/^WORLD_ADDRESS=.*/WORLD_ADDRESS=$NEW_WORLD_ADDRESS/" .env
 
 # Run callWorld
 pnpm run callWorld
