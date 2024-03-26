@@ -39,7 +39,7 @@ wait
 # Deploy frontier-world
 echo "==================== Deploying Frontier World ===================="
 cd ../frontier-world
-pnpm run deploy:local --worldAddress $NEW_WORLD_ADDRESS
+pnpm run deploy:local --worldAddress $WORLD_ADDRESS
 
 # Navigate back to standard-contracts
 cd ../../standard-contracts/

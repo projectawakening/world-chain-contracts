@@ -11,7 +11,7 @@
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy:local": "pnpm run build && mud deploy",
     "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
-    "setForwarder": ". ./.env && FORWARDER_ADDRESS=$FORWARDER_ADDRESS; forge script script/SetForwarder.s.sol:SetForwarder --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
+    "setForwarder": "source ./.env && forge script script/SetForwarder.s.sol:SetForwarder --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' './*.ts' --write",
