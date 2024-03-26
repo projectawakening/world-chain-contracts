@@ -1,8 +1,19 @@
 {
-  "SMART_OBJECT_DEPLOYMENT_NAMESPACE": "frontier",
-  "ACCESS_CONTROL_DEPLOYMENT_NAMESPACE": "frontier",
-  "ENTITY_RECORD_DEPLOYMENT_NAMESPACE": "frontier",
-  "STATIC_DATA_DEPLOYMENT_NAMESPACE": "frontier",
-  "SMART_CHARACTER_DEPLOYMENT_NAMESPACE": "frontier",
-  "EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE": "frontier"
+  "namespace":
+  {
+    "FRONTIER_WORLD_DEPLOYMENT": "frontier",
+    "SMART_OBJECT_DEPLOYMENT": "frontier",
+    "ACCESS_CONTROL_DEPLOYMENT": "frontier",
+    "ENTITY_RECORD_DEPLOYMENT": "frontier",
+    "STATIC_DATA_DEPLOYMENT": "frontier",
+    "SMART_CHARACTER_DEPLOYMENT": "frontier",
+    "EVE_ERC721_PUPPET_DEPLOYMENT": "frontier"
+  },
+  "systemName":
+  {
+    "SMART_CHARACTER": "SmartCharacter",
+    "STATIC_DATA": "StaticData",
+    "ENTITY_RECORD": "EntityRecord",
+    "SMART_STORAGE_UNIT": "SmartStorageUnit"
+  }
 }

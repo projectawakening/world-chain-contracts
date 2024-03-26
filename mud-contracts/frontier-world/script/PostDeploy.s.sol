@@ -11,7 +11,6 @@ import { ERC721Module } from "../src/modules/eve-erc721-puppet/ERC721Module.sol"
 import { IERC721Mintable } from "../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { registerERC721 } from "../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { StaticDataGlobalTableData } from "../src/codegen/tables/StaticDataGlobalTable.sol";
-import { SMART_CHARACTER_MODULE_NAME, SMART_CHARACTER_MODULE_NAMESPACE } from "../src/modules/smart-character/constants.sol";
 
 contract PostDeploy is Script {
   function run(address worldAddress) external {

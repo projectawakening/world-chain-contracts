@@ -9,8 +9,6 @@ import { Utils } from "../Utils.sol";
 import { StaticDataTable } from "../../../codegen/tables/StaticDataTable.sol";
 import { StaticDataGlobalTable, StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 
-import { STATIC_DATA_SYSTEM_NAME } from "../constants.sol";
-
 contract StaticData is EveSystem {
   using Utils for bytes14;
 
@@ -79,6 +77,6 @@ contract StaticData is EveSystem {
    * returns this contract's systemId
    */
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().getSystemId(STATIC_DATA_SYSTEM_NAME);
+    return _namespace().staticDataSystemId();
   }
 }

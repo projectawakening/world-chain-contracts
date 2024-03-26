@@ -3,6 +3,8 @@ pragma solidity >=0.8.21;
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
+import { ENTITY_RECORD_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+
 import "./constants.sol";
 
 library Utils {
