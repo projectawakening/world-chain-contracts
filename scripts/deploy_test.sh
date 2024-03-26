@@ -5,7 +5,8 @@ pnpm install
 
 # Navigate to standard-contracts and setup environment
 cd standard-contracts
-cp .env_copy .env
+
+pnpm run build
 pnpm run deploy
 
 wait
