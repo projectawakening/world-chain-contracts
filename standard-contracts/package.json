@@ -6,7 +6,7 @@
   "scripts": {
     "build": "forge install && forge clean && forge build",
     "deploy": ". ./.env && forge script script/Deploy.s.sol:DeployScript --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast",
-    "callWorld": ". ./.env && forge script script/CallWorld.s.sol:CallWorld --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
+    "callWorld": ". ./.env && FORWARDER_ADDRESS=$FORWARDER_ADDRESS; WORLD_ADDRESS=$WORLD_ADDRESS; forge script script/CallWorld.s.sol:CallWorld --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier --write './src/**/*.sol' './script/**/*.sol' './test/*.sol' --ignore-path ./.prettierignore",
     "solhint": "solhint --config ./.solhint.json 'src/*.sol' './src/interfaces/*.sol' './test/*.sol'",

@@ -13,9 +13,15 @@ print_instruction() {
 }
 
 
-# Build the contracts
-pnpm nx run-many -t build  --projects "standard-contracts/**"
+# Build the standard contracts
+
+pnpm nx run @eve/frontier-standard-contracts:build
+pnpm nx run @eve/frontier-standard-contracts:deploy
+
 wait
+
+NEW_FORWARDER_ADDRESS=$(cat standard-contracts/broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+
 
 echo "------------------------- Deploying Forwarder Contract ---------------------"
 FORWARDER_CONTRACT=$(pnpm run deploy @eve-frontier/forwarder | grep -C 2 "ForwarderAddress:");
