@@ -12,10 +12,15 @@ print_instruction() {
     echo -e "===================================================================================================="
 }
 
+# Build everything
+echo "------------------------- Building all packages ---------------------"
+pnpm nx run-many -t build
+wait
+echo "==================== Packages successfully built ===================="
 
-# Build the standard contracts
+
+# Deploy the standard contracts
 echo "------------------------- Deploying forwarder contract ---------------------"
-pnpm nx run @eve/frontier-standard-contracts:build
 pnpm nx run @eve/frontier-standard-contracts:deploy
 wait
 
