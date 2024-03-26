@@ -10,7 +10,7 @@ pnpm run deploy
 
 wait
 # Capture ForwarderAddress from JSON file
-FORWARDER_ADDRESS=$(cat broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+export FORWARDER_ADDRESS=$(cat broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
 echo "==================== Forwarder Contract Deployed ===================="
 echo "Forwarder Address: $FORWARDER_ADDRESS"
@@ -20,7 +20,7 @@ cd ../mud-contracts/core/
 pnpm run deploy:local
 
 # Capture WorldContract Address from JSON file
-WORLD_ADDRESS=$(cat deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
+export WORLD_ADDRESS=$(cat deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
 
 
 echo "==================== World Contract Deployed ===================="

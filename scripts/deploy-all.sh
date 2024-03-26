@@ -14,35 +14,31 @@ print_instruction() {
 
 
 # Build the standard contracts
-
+echo "------------------------- Deploying forwarder contract ---------------------"
 pnpm nx run @eve/frontier-standard-contracts:build
 pnpm nx run @eve/frontier-standard-contracts:deploy
-
 wait
 
-NEW_FORWARDER_ADDRESS=$(cat standard-contracts/broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+
+echo "==================== Forwarder contract deployed ===================="
+echo "Forwarder Address: $FORWARDER_ADDRESS"
 
 
-echo "------------------------- Deploying Forwarder Contract ---------------------"
-FORWARDER_CONTRACT=$(pnpm run deploy @eve-frontier/forwarder | grep -C 2 "ForwarderAddress:");
-trimmed=$(echo $FORWARDER_CONTRACT | tr -d ' ')
+
+echo "------------------------- Deploying world core ---------------------"
 # pnpm nx run-many -t deploy --projects "standard-contracts/**"
-
-# print_instruction "Deploying Mud Contracts"
-# #echo "-------------------------------------- Deploying base world ---------------------------------------------"
-# WORLD_OUTPUT=$(pnpm nx deploy:local @frontier/base-world | grep -C 2 "worldAddress");
-# trimmed=$(echo $WORLD_OUTPUT | tr -d ' ')
-# json_text=$(echo "$trimmed" | sed -E 's/([a-zA-Z0-9_]+):/"\1":/g; s/([0-9]+):/"\1":/g' | tr "'" '"')
-
-# # Remove asci decorators from string because we are fishing this out of a node console output
-# sanitized_string=$(echo "$json_text" | sed -E 's/\x1B\[[0-9;]*[JKmsu]//g')
-# WORLD_ADDRESS=$(node -pe 'JSON.stringify(JSON.parse(process.argv[1]).worldAddress)' "$(echo $sanitized_string)")
-# echo $WORLD_ADDRESS
-
-# echo "------------------------- Deploying init components into world: $WORLD_ADDRRESS ---------------------"
-# pnpm nx run-many -t deploy:local --projects "world/forwarder/**" -- --worldAddress $WORLD_ADDRESS
-
-# echo "--------------------------------------- Building foundation modules ---------------------------------------"
-# pnpm nx run-many -t build  --projects "core/**"
+pnpm nx deploy:local @eve/frontier-world-core
 wait
+export WORLD_ADDRESS=$(cat ./mud-contracts/core/deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
 
+echo "==================== World Core deployed ===================="
+echo "World Address: $WORLD_ADDRESS"
+
+
+echo "------------------------- Configuring trusted forwarder ---------------------"
+pnpm nx setForwarder @eve/frontier-world-core
+echo "==================== Trusted forwarder configured ===================="
+
+echo "==================== Deploying Frontier world modules ===================="
+pnpm nx deploy:local @eve/frontier-world --worldAddress '${WORLD_ADDRESS}'
