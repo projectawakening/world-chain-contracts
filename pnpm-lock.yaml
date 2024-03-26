@@ -18,7 +18,50 @@ importers:
         specifier: 18.0.8
         version: 18.0.8
 
-  core/smart-object-framework:
+  mud-contracts/core:
+    dependencies:
+      '@latticexyz/cli':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(google-protobuf@3.21.2)
+      '@latticexyz/schema-type':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)(zod@3.22.4)
+      '@latticexyz/store':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+      '@latticexyz/world':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+      '@latticexyz/world-modules':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+    devDependencies:
+      '@types/node':
+        specifier: ^18.15.11
+        version: 18.19.26
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
+        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
+        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
+      prettier:
+        specifier: ^2.6.2
+        version: 2.8.8
+      prettier-plugin-solidity:
+        specifier: 1.1.3
+        version: 1.1.3(prettier@2.8.8)
+      solhint:
+        specifier: ^3.3.7
+        version: 3.6.2
+      solhint-config-mud:
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16
+      solhint-plugin-mud:
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16
+
+  mud-contracts/frontier-world:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.16
@@ -41,7 +84,7 @@ importers:
         version: 4.1.7
       '@types/node':
         specifier: ^18.15.11
-        version: 18.19.4
+        version: 18.19.26
       '@types/prettier':
         specifier: 2.7.2
         version: 2.7.2
@@ -67,7 +110,7 @@ importers:
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16
 
-  modules/smart-character:
+  mud-contracts/smart-object-framework:
     dependencies:
       '@latticexyz/cli':
         specifier: 2.0.0-next.16
@@ -85,141 +128,15 @@ importers:
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16(typescript@5.1.6)
     devDependencies:
+      '@types/debug':
+        specifier: 4.1.7
+        version: 4.1.7
       '@types/node':
         specifier: ^18.15.11
-        version: 18.19.4
-      ds-test:
-        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
-        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
-      forge-std:
-        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
-        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
-      prettier:
-        specifier: ^2.6.2
-        version: 2.8.8
-      prettier-plugin-solidity:
-        specifier: 1.1.3
-        version: 1.1.3(prettier@2.8.8)
-      solhint:
-        specifier: ^3.3.7
-        version: 3.6.2
-      solhint-config-mud:
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16
-      solhint-plugin-mud:
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16
-
-  modules/smart-storage-unit:
-    dependencies:
-      '@latticexyz/cli':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(google-protobuf@3.21.2)
-      '@latticexyz/schema-type':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)(zod@3.22.4)
-      '@latticexyz/store':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-      '@latticexyz/world':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-      '@latticexyz/world-modules':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-    devDependencies:
-      '@types/node':
-        specifier: ^18.15.11
-        version: 18.19.4
-      ds-test:
-        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
-        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
-      forge-std:
-        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
-        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
-      prettier:
-        specifier: ^2.6.2
-        version: 2.8.8
-      prettier-plugin-solidity:
-        specifier: 1.1.3
-        version: 1.1.3(prettier@2.8.8)
-      solhint:
-        specifier: ^3.3.7
-        version: 3.6.2
-      solhint-config-mud:
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16
-      solhint-plugin-mud:
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16
-
-  world/base-world:
-    dependencies:
-      '@latticexyz/cli':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(google-protobuf@3.21.2)
-      '@latticexyz/schema-type':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)(zod@3.22.4)
-      '@latticexyz/store':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-      '@latticexyz/world':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-      '@latticexyz/world-modules':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-    devDependencies:
-      '@types/node':
-        specifier: ^18.15.11
-        version: 18.19.4
-      ds-test:
-        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
-        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
-      forge-std:
-        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
-        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
-      prettier:
-        specifier: ^2.6.2
-        version: 2.8.8
-      prettier-plugin-solidity:
-        specifier: 1.1.3
-        version: 1.1.3(prettier@2.8.8)
-      solhint:
-        specifier: ^3.3.7
-        version: 3.6.2
-      solhint-config-mud:
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16
-      solhint-plugin-mud:
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16
-
-  world/forwarder:
-    dependencies:
-      '@latticexyz/cli':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(google-protobuf@3.21.2)
-      '@latticexyz/schema-type':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)(zod@3.22.4)
-      '@latticexyz/store':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-      '@latticexyz/world':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-      '@latticexyz/world-modules':
-        specifier: 2.0.0-next.16
-        version: 2.0.0-next.16(typescript@5.1.6)
-    devDependencies:
-      '@openzeppelin/contracts':
-        specifier: ^5.0.2
-        version: 5.0.2
-      '@types/node':
-        specifier: ^18.15.11
-        version: 18.19.4
+        version: 18.19.26
+      '@types/prettier':
+        specifier: 2.7.2
+        version: 2.7.2
       ds-test:
         specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
         version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
@@ -248,12 +165,12 @@ packages:
     resolution: {integrity: sha512-UK0bHA7hh9cR39V+4gl2/NnBBjoXIxkuWAPCaY4X7fbH4L/azIi7ilWOCjMUYfpJgraLUAqkRi2BqrjME8Rynw==}
     dev: false
 
-  /@babel/code-frame@7.23.5:
-    resolution: {integrity: sha512-CgH3s1a96LipHCmSUmYFPwY7MNx8C3avkq7i4Wl3cfa662ldtUe4VM1TPXX70pfmrlWTb6jLqTYrZyT2ZTJBgA==}
+  /@babel/code-frame@7.24.2:
+    resolution: {integrity: sha512-y5+tLQyV8pg3fsiln67BVLD1P13Eg4lh5RW9mF0zUuvLrv9uIQ4MCL+CRT+FTsBlBjcIan6PGsLcBN0m3ClUyQ==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/highlight': 7.23.4
-      chalk: 2.4.2
+      '@babel/highlight': 7.24.2
+      picocolors: 1.0.0
     dev: true
 
   /@babel/helper-validator-identifier@7.22.20:
@@ -261,13 +178,14 @@ packages:
     engines: {node: '>=6.9.0'}
     dev: true
 
-  /@babel/highlight@7.23.4:
-    resolution: {integrity: sha512-acGdbYSfp2WheJoJm/EBBBLh/ID8KDc64ISZ9DYtBmC8/Q204PZJLHyzeB5qMzJ5trcOkybd78M4x2KWsUq++A==}
+  /@babel/highlight@7.24.2:
+    resolution: {integrity: sha512-Yac1ao4flkTxTteCDZLEvdxg2fZfz1v8M4QpaGypq/WPDqg3ijHYbDfs+LG5hvzSoqaSZ9/Z9lKSP3CjZjv+pA==}
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/helper-validator-identifier': 7.22.20
       chalk: 2.4.2
       js-tokens: 4.0.0
+      picocolors: 1.0.0
     dev: true
 
   /@esbuild/android-arm64@0.17.19:
@@ -840,7 +758,7 @@ packages:
       '@latticexyz/world': 2.0.0-next.16(typescript@5.1.6)
       '@latticexyz/world-modules': 2.0.0-next.16(typescript@5.1.6)
       chalk: 5.3.0
-      chokidar: 3.5.3
+      chokidar: 3.6.0
       debug: 4.3.4
       dotenv: 16.3.1
       ejs: 3.1.9
@@ -948,7 +866,7 @@ packages:
       long: 5.2.3
       nice-grpc-common: 2.0.2
       nice-grpc-web: 2.0.2(google-protobuf@3.21.2)
-      protobufjs: 7.2.5
+      protobufjs: 7.2.6
     transitivePeerDependencies:
       - google-protobuf
     dev: false
@@ -972,7 +890,7 @@ packages:
   /@latticexyz/utils@2.0.0-next.16:
     resolution: {integrity: sha512-VycZRiQZ9PBwSJesDdpjrE19Zga/oyv6/EhXQtSRGrNTfqH39H+7fjx4CeyhhLeO/rDDgucV/U04bqdD6IkGzw==}
     dependencies:
-      mobx: 6.12.0
+      mobx: 6.12.1
       proxy-deep: 3.1.1
       rxjs: 7.5.5
     dev: false
@@ -1123,10 +1041,6 @@ packages:
     dev: true
     optional: true
 
-  /@openzeppelin/contracts@5.0.2:
-    resolution: {integrity: sha512-ytPc6eLGcHHnapAZ9S+5qsdomhjo6QBHTDRRBFfTxXIpsicMhVPouPgmUPebZZZGX7vt9USA+Z+0M0dSVtSUEA==}
-    dev: true
-
   /@protobufjs/aspromise@1.1.2:
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
     dev: false
@@ -1170,8 +1084,8 @@ packages:
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
     dev: false
 
-  /@scure/base@1.1.5:
-    resolution: {integrity: sha512-Brj9FiG2W1MRQSTB212YVPRrcbjkv48FoZi/u4l/zds/ieRrqsh7aUf6CLwkAq61oKXr/ZlTzlY66gLIj3TFTQ==}
+  /@scure/base@1.1.6:
+    resolution: {integrity: sha512-ok9AWwhcgYuGG3Zfhyqg+zwl+Wn5uE+dwC0NV/2qQkx4dABbb/bx96vWu8NSj+BNjjSjno+JRYRjle1jV08k3g==}
     dev: false
 
   /@scure/bip32@1.3.2:
@@ -1179,14 +1093,14 @@ packages:
     dependencies:
       '@noble/curves': 1.2.0
       '@noble/hashes': 1.3.2
-      '@scure/base': 1.1.5
+      '@scure/base': 1.1.6
     dev: false
 
   /@scure/bip39@1.2.1:
     resolution: {integrity: sha512-Z3/Fsz1yr904dduJD0NpiyRHhRYHdcnyh73FZWiV+/qhWi83wNJ3NWolYqCEN+ZWsUz2TWwajJggcRE9r1zUYg==}
     dependencies:
       '@noble/hashes': 1.3.2
-      '@scure/base': 1.1.5
+      '@scure/base': 1.1.6
     dev: false
 
   /@sinclair/typebox@0.27.8:
@@ -1208,8 +1122,8 @@ packages:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
     dev: true
 
-  /@types/node@18.19.4:
-    resolution: {integrity: sha512-xNzlUhzoHotIsnFoXmJB+yWmBvFZgKCI9TtPIEdYIMM1KWfwuY8zh7wvc1u1OAXlC7dlf6mZVx/s+Y5KfFz19A==}
+  /@types/node@18.19.26:
+    resolution: {integrity: sha512-+wiMJsIwLOYCvUqSdKTrfkS8mpTp+MPINe6+Np4TAGFWWRWiBQ5kSq9nZGCSPkzx9mvT+uEukzpX4MOSCydcvw==}
     dependencies:
       undici-types: 5.26.5
 
@@ -1224,7 +1138,7 @@ packages:
   /@types/ws@8.5.10:
     resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
     dependencies:
-      '@types/node': 18.19.4
+      '@types/node': 18.19.26
     dev: false
 
   /@yarnpkg/lockfile@1.1.0:
@@ -1385,8 +1299,8 @@ packages:
     resolution: {integrity: sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==}
     dev: false
 
-  /binary-extensions@2.2.0:
-    resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
+  /binary-extensions@2.3.0:
+    resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
     dev: false
 
@@ -1465,8 +1379,8 @@ packages:
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
     dev: false
 
-  /chokidar@3.5.3:
-    resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
+  /chokidar@3.6.0:
+    resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
     dependencies:
       anymatch: 3.1.3
@@ -1752,7 +1666,7 @@ packages:
       human-signals: 4.3.1
       is-stream: 3.0.0
       merge-stream: 2.0.0
-      npm-run-path: 5.2.0
+      npm-run-path: 5.3.0
       onetime: 6.0.0
       signal-exit: 3.0.7
       strip-final-newline: 3.0.0
@@ -1957,7 +1871,7 @@ packages:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
     dependencies:
-      binary-extensions: 2.2.0
+      binary-extensions: 2.3.0
     dev: false
 
   /is-docker@2.2.1:
@@ -2047,8 +1961,8 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dev: true
 
-  /js-base64@3.7.5:
-    resolution: {integrity: sha512-3MEt5DTINKqfScXKfJFrRbxkrnk2AxPWGBL/ycjz4dK8iqiSJ06UxD8jh8xuh6p10TX4t2+7FsBYVxxQbMg+qA==}
+  /js-base64@3.7.7:
+    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
     dev: false
 
   /js-sha3@0.8.0:
@@ -2200,8 +2114,8 @@ packages:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
     dev: true
 
-  /mobx@6.12.0:
-    resolution: {integrity: sha512-Mn6CN6meXEnMa0a5u6a5+RKrqRedHBhZGd15AWLk9O6uFY4KYHzImdt8JI8WODo1bjTSRnwXhJox+FCUZhCKCQ==}
+  /mobx@6.12.1:
+    resolution: {integrity: sha512-HN5/fmWCnePVI4u3Y487x3G0LIQ+qnQjowylhVxXPvBmbwottKm8R7GrsYAqljzekZUj+LoBcAUp3l8/3EPCGQ==}
     dev: false
 
   /mprocs@0.6.4:
@@ -2225,7 +2139,7 @@ packages:
     dependencies:
       '@improbable-eng/grpc-web': 0.15.0(google-protobuf@3.21.2)
       abort-controller-x: 0.4.3
-      js-base64: 3.7.5
+      js-base64: 3.7.7
       nice-grpc-common: 2.0.2
     transitivePeerDependencies:
       - google-protobuf
@@ -2247,8 +2161,8 @@ packages:
       path-key: 3.1.1
     dev: true
 
-  /npm-run-path@5.2.0:
-    resolution: {integrity: sha512-W4/tgAXFqFA0iL7fk0+uQ3g7wkL8xJmx3XdK0VGb4cHW//eZTtKGvFBBoRKVTpY7n6ze4NL9ly7rgXcHufqXKg==}
+  /npm-run-path@5.3.0:
+    resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       path-key: 4.0.0
@@ -2408,7 +2322,7 @@ packages:
     resolution: {integrity: sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==}
     engines: {node: '>=8'}
     dependencies:
-      '@babel/code-frame': 7.23.5
+      '@babel/code-frame': 7.24.2
       error-ex: 1.3.2
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
@@ -2445,6 +2359,10 @@ packages:
       util: 0.10.4
     dev: false
 
+  /picocolors@1.0.0:
+    resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
+    dev: true
+
   /picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
@@ -2470,6 +2388,7 @@ packages:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
     hasBin: true
+    requiresBuild: true
 
   /pretty-format@29.7.0:
     resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
@@ -2485,8 +2404,8 @@ packages:
     engines: {node: '>= 0.6.0'}
     dev: false
 
-  /protobufjs@7.2.5:
-    resolution: {integrity: sha512-gGXRSXvxQ7UiPgfw8gevrfRWcTlSbOFg+p/N+JVJEK5VhueL2miT6qTymqAmjr1Q5WbOCyJbyrk6JfWKwlFn6A==}
+  /protobufjs@7.2.6:
+    resolution: {integrity: sha512-dgJaEDDL6x8ASUZ1YqWciTRrdOuYNzoOf27oHNfdyvKqHr5i0FV7FSLU+aIeFjyFgVxrpTOtQUi0BLLBymZaBw==}
     engines: {node: '>=12.0.0'}
     requiresBuild: true
     dependencies:
@@ -2500,7 +2419,7 @@ packages:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 18.19.4
+      '@types/node': 18.19.26
       long: 5.2.3
     dev: false
 

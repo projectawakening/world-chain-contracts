@@ -13,37 +13,30 @@ print_instruction() {
 }
 
 
-# Build the world contract
-pnpm nx run-many -t build  --projects "world/**"
+# Build the contracts
+pnpm nx run-many -t build  --projects "standard-contracts/**"
 wait
 
-print_instruction "Deploying base world"
-#echo "-------------------------------------- Deploying base world ---------------------------------------------"
-WORLD_OUTPUT=$(pnpm nx deploy:local @frontier/base-world | grep -C 2 "worldAddress");
-trimmed=$(echo $WORLD_OUTPUT | tr -d ' ')
-json_text=$(echo "$trimmed" | sed -E 's/([a-zA-Z0-9_]+):/"\1":/g; s/([0-9]+):/"\1":/g' | tr "'" '"')
+echo "------------------------- Deploying Forwarder Contract ---------------------"
+FORWARDER_CONTRACT=$(pnpm run deploy @eve-frontier/forwarder | grep -C 2 "ForwarderAddress:");
+trimmed=$(echo $FORWARDER_CONTRACT | tr -d ' ')
+# pnpm nx run-many -t deploy --projects "standard-contracts/**"
 
-# Remove asci decorators from string because we are fishing this out of a node console output
-sanitized_string=$(echo "$json_text" | sed -E 's/\x1B\[[0-9;]*[JKmsu]//g')
-WORLD_ADDRESS=$(node -pe 'JSON.stringify(JSON.parse(process.argv[1]).worldAddress)' "$(echo $sanitized_string)")
-echo $WORLD_ADDRESS
+# print_instruction "Deploying Mud Contracts"
+# #echo "-------------------------------------- Deploying base world ---------------------------------------------"
+# WORLD_OUTPUT=$(pnpm nx deploy:local @frontier/base-world | grep -C 2 "worldAddress");
+# trimmed=$(echo $WORLD_OUTPUT | tr -d ' ')
+# json_text=$(echo "$trimmed" | sed -E 's/([a-zA-Z0-9_]+):/"\1":/g; s/([0-9]+):/"\1":/g' | tr "'" '"')
 
-echo "------------------------- Deploying init components into world: $WORLD_ADDRRESS ---------------------"
-pnpm nx run-many -t deploy:local --projects "world/forwarder/**" -- --worldAddress $WORLD_ADDRESS
+# # Remove asci decorators from string because we are fishing this out of a node console output
+# sanitized_string=$(echo "$json_text" | sed -E 's/\x1B\[[0-9;]*[JKmsu]//g')
+# WORLD_ADDRESS=$(node -pe 'JSON.stringify(JSON.parse(process.argv[1]).worldAddress)' "$(echo $sanitized_string)")
+# echo $WORLD_ADDRESS
 
-echo "--------------------------------------- Building foundation modules ---------------------------------------"
-pnpm nx run-many -t build  --projects "core/**"
+# echo "------------------------- Deploying init components into world: $WORLD_ADDRRESS ---------------------"
+# pnpm nx run-many -t deploy:local --projects "world/forwarder/**" -- --worldAddress $WORLD_ADDRESS
+
+# echo "--------------------------------------- Building foundation modules ---------------------------------------"
+# pnpm nx run-many -t build  --projects "core/**"
 wait
 
-echo "------------------------- Deploying foundation modules into world: $WORLD_ADDRRESS ---------------------"
-pnpm nx run-many -t deploy:local --projects "core/**" -- --worldAddress $WORLD_ADDRESS
-
-
-
-echo "--------------------------------------- Building feature modules ---------------------------------------"
-pnpm nx run-many -t build  --projects "modules/**"
-wait
-
-
-echo "------------------------- Deploying feature modules into world: $WORLD_ADDRRESS ---------------------"
-pnpm nx run-many -t deploy:local --projects "modules/**" -- --worldAddress $WORLD_ADDRESS
