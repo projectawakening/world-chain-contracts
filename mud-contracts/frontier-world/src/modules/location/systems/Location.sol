@@ -18,8 +18,7 @@ contract Location is EveSystem {
    * @param entityId entity we set a new location for
    * @param location (solarsystemId, x,y,z) coordinates of the entityId
    */
-  function saveLocation(uint256 entityId, LocationData memory location) public hookable(entityId, _systemId())
-  {
+  function saveLocation(uint256 entityId, LocationData memory location) public hookable(entityId, _systemId()) {
     LocationTable.set(_namespace().locationTableId(), entityId, location);
   }
 
