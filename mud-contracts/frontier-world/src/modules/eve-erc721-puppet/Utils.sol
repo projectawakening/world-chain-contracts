@@ -36,7 +36,7 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: TOKEN_URI_NAME });
   }
 
-  function erc721SystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ERC721_SYSTEM_NAME });
+  function erc721SystemId(bytes14 namespace) internal pure returns (ResourceId systemId) {
+    systemId = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ERC721_SYSTEM_NAME });
   }
 }
