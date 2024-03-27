@@ -49,10 +49,7 @@ contract LocationTest is Test {
 
     location.saveLocation(entityId, locationData);
 
-    LocationData memory tableData = LocationTable.get(
-      DEPLOYMENT_NAMESPACE.locationTableId(),
-      entityId
-    );
+    LocationData memory tableData = LocationTable.get(DEPLOYMENT_NAMESPACE.locationTableId(), entityId);
 
     assertEq(locationData.solarSystemId, tableData.solarSystemId);
     assertEq(locationData.x, tableData.x);

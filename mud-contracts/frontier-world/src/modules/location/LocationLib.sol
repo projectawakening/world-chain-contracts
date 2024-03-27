@@ -23,6 +23,9 @@ library LocationLib {
   }
 
   function saveLocation(World memory world, uint256 entityId, LocationData memory locationData) internal {
-    world.iface.call(world.namespace.locationSystemId(), abi.encodeCall(ILocation.saveLocation, (entityId, locationData)));
+    world.iface.call(
+      world.namespace.locationSystemId(),
+      abi.encodeCall(ILocation.saveLocation, (entityId, locationData))
+    );
   }
 }
