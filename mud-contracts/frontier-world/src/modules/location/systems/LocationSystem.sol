@@ -6,9 +6,9 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 
 import { Utils } from "../Utils.sol";
-import { Location as LocationTable, LocationData } from "../../../codegen/tables/Location.sol";
+import { LocationTable, LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
-contract Location is EveSystem {
+contract LocationSystem is EveSystem {
   using Utils for bytes14;
 
   /**
@@ -18,7 +18,7 @@ contract Location is EveSystem {
    * @param entityId entity we set a new location for
    * @param location (solarsystemId, x,y,z) coordinates of the entityId
    */
-  function saveLocation(uint256 entityId, LocationData memory location) public hookable(entityId, _systemId()) {
+  function saveLocation(uint256 entityId, LocationTableData memory location) public hookable(entityId, _systemId()) {
     LocationTable.set(_namespace().locationTableId(), entityId, location);
   }
 

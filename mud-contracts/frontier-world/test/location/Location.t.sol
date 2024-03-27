@@ -17,7 +17,7 @@ import { Utils } from "../../src/modules/location/Utils.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { LocationLib } from "../../src/modules/location/LocationLib.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
-import { Location as LocationTable, LocationData } from "../../src/codegen/tables/Location.sol";
+import { LocationTable, LocationTableData } from "../../src/codegen/tables/LocationTable.sol";
 
 contract LocationTest is Test {
   using Utils for bytes14;
@@ -45,11 +45,11 @@ contract LocationTest is Test {
 
   function testCreateLocation(uint256 entityId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(entityId != 0);
-    LocationData memory locationData = LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z });
+    LocationTableData memory locationData = LocationTableData({ solarSystemId: solarSystemId, x: x, y: y, z: z });
 
     location.saveLocation(entityId, locationData);
 
-    LocationData memory tableData = LocationTable.get(DEPLOYMENT_NAMESPACE.locationTableId(), entityId);
+    LocationTableData memory tableData = LocationTable.get(DEPLOYMENT_NAMESPACE.locationTableId(), entityId);
 
     assertEq(locationData.solarSystemId, tableData.solarSystemId);
     assertEq(locationData.x, tableData.x);
