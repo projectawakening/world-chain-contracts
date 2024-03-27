@@ -15,15 +15,12 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { State } from "../types.sol";
 import { Utils } from "../Utils.sol";
+import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
-contract SmartDeployable is EveSystem {
+contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using LocationLib for LocationLib.World;
-
-  error SmartDeployable_incorrectState(uint256 entityId, State requiredState, State currentState);
-  error SmartDeployable_GloballyOffline();
-
 
   /**
    * modifier to enforce a certain state to be had by an entity
@@ -52,7 +49,7 @@ contract SmartDeployable is EveSystem {
       DeployableStateData({
         createdAt: block.timestamp,
         state: State.UNANCHORED,
-        updatedBlockNumber: block.timestamp
+        updatedBlockNumber: block.number
       })
     );
   }
@@ -63,7 +60,7 @@ contract SmartDeployable is EveSystem {
    */
   function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.DESTROYED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
   }
 
     /**
@@ -73,7 +70,7 @@ contract SmartDeployable is EveSystem {
    */
   function bringOnline(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ONLINE);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
   }
 
   /**
@@ -82,7 +79,7 @@ contract SmartDeployable is EveSystem {
    */
   function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ONLINE) {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
   }
 
   /**
@@ -91,7 +88,7 @@ contract SmartDeployable is EveSystem {
    */
   function anchor(uint256 entityId, LocationTableData memory locationData) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     _locationLib().saveLocation(entityId, locationData);
   }
 
@@ -101,7 +98,7 @@ contract SmartDeployable is EveSystem {
    */
   function unanchor(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.UNANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     _locationLib().saveLocation(entityId, LocationTableData({solarSystemId: 0, x: 0, y:0, z: 0}));
   }
 
@@ -114,7 +111,7 @@ contract SmartDeployable is EveSystem {
       _namespace().globalStateTableId(),
       GlobalDeployableStateData({
         globalState: State.NULL,
-        updatedBlockNumber: block.timestamp
+        updatedBlockNumber: block.number
       })
     );
   }
@@ -128,7 +125,7 @@ contract SmartDeployable is EveSystem {
       _namespace().globalStateTableId(),
       GlobalDeployableStateData({
         globalState: State.ONLINE,
-        updatedBlockNumber: block.timestamp
+        updatedBlockNumber: block.number
       })
     );
   }
