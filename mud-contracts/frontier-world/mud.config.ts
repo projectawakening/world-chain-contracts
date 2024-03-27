@@ -23,6 +23,10 @@ export default mudConfig({
       name: constants.systemName.ENTITY_RECORD,
       openAccess: true,
     },
+    Location: {
+      name: constants.systemName.LOCATION,
+      openAccess: true,
+    }
   },
   enums: {
     State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
@@ -40,7 +44,7 @@ export default mudConfig({
      */
     StaticDataTable: {
       keySchema: {
-        key: "uint256",
+        entityId: "uint256",
       },
       valueSchema: {
         cid: "string",
@@ -133,11 +137,12 @@ export default mudConfig({
         smartObjectId: "uint256",
       },
       valueSchema: {
-        solarsystemId: "uint256",
+        solarSystemId: "uint256",
         x: "uint256",
         y: "uint256",
         z: "uint256",
       },
+      tableIdArgument: true,
     },
     //DEPLOYABLE MODULE
     GlobalDeployableState: {
