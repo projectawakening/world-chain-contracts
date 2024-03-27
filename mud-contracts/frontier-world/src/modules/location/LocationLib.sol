@@ -5,8 +5,8 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { Utils } from "./Utils.sol";
-import { ILocation } from "./interfaces/ILocation.sol";
-import { LocationData } from "../../codegen/tables/Location.sol";
+import { ILocationSystem } from "./interfaces/ILocationSystem.sol";
+import { LocationTableData } from "../../codegen/tables/LocationTable.sol";
 
 /**
  * @title Location Library (makes interacting with the underlying Systems cleaner)
@@ -22,10 +22,10 @@ library LocationLib {
     bytes14 namespace;
   }
 
-  function saveLocation(World memory world, uint256 entityId, LocationData memory locationData) internal {
+  function saveLocation(World memory world, uint256 entityId, LocationTableData memory locationData) internal {
     world.iface.call(
       world.namespace.locationSystemId(),
-      abi.encodeCall(ILocation.saveLocation, (entityId, locationData))
+      abi.encodeCall(ILocationSystem.saveLocation, (entityId, locationData))
     );
   }
 }

@@ -11,9 +11,9 @@ import { LOCATION_MODULE_NAME as MODULE_NAME, LOCATION_MODULE_NAMESPACE as MODUL
 
 import { Utils } from "./Utils.sol";
 
-import { Location as LocationTable } from "../../codegen/tables/Location.sol";
+import { LocationTable } from "../../codegen/tables/LocationTable.sol";
 
-import { Location } from "./systems/Location.sol";
+import { LocationSystem } from "./systems/LocationSystem.sol";
 
 contract LocationModule is Module {
   error LocationModule_InvalidNamespace(bytes14 namespace);
@@ -84,6 +84,6 @@ contract LocationModuleRegistrationLibrary {
     LocationTable.register(namespace.locationTableId());
 
     // Register a new Systems suite
-    world.registerSystem(namespace.locationSystemId(), new Location(), true);
+    world.registerSystem(namespace.locationSystemId(), new LocationSystem(), true);
   }
 }

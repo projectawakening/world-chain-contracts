@@ -23,7 +23,7 @@ export default mudConfig({
       name: constants.systemName.ENTITY_RECORD,
       openAccess: true,
     },
-    Location: {
+    LocationSystem: {
       name: constants.systemName.LOCATION,
       openAccess: true,
     },
@@ -135,7 +135,7 @@ export default mudConfig({
     /**
      * Used to store the location of a in-game entity in the solar system
      */
-    Location: {
+    LocationTable: {
       keySchema: {
         smartObjectId: "uint256",
       },
