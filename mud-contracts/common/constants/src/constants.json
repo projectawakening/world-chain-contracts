@@ -2,12 +2,12 @@
   "namespace":
   {
     "FRONTIER_WORLD_DEPLOYMENT": "frontier",
-    "SMART_OBJECT_DEPLOYMENT": "frontier",
-    "ACCESS_CONTROL_DEPLOYMENT": "frontier",
-    "ENTITY_RECORD_DEPLOYMENT": "frontier",
-    "STATIC_DATA_DEPLOYMENT": "frontier",
-    "SMART_CHARACTER_DEPLOYMENT": "frontier",
-    "EVE_ERC721_PUPPET_DEPLOYMENT": "frontier"
+    "SMART_OBJECT_DEPLOYMENT": "SmartObjectv0",
+    "ACCESS_CONTROL_DEPLOYMENT": "RBACv0",
+    "ENTITY_RECORD_DEPLOYMENT": "EntityRecordv0",
+    "STATIC_DATA_DEPLOYMENT": "StaticDatav0",
+    "SMART_CHARACTER_DEPLOYMENT": "SmartCharactv0",
+    "EVE_ERC721_PUPPET_DEPLOYMENT": "ERC721Puppetv0"
   },
   "systemName":
   {
