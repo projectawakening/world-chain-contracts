@@ -18,6 +18,24 @@ importers:
         specifier: 18.0.8
         version: 18.0.8
 
+  mud-contracts/common/constants:
+    dependencies:
+      '@latticexyz/cli':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(google-protobuf@3.21.2)
+      '@latticexyz/schema-type':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)(zod@3.22.4)
+      '@latticexyz/store':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+      '@latticexyz/world':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+      '@latticexyz/world-modules':
+        specifier: 2.0.0-next.16
+        version: 2.0.0-next.16(typescript@5.1.6)
+
   mud-contracts/core:
     dependencies:
       '@latticexyz/cli':
@@ -63,6 +81,12 @@ importers:
 
   mud-contracts/frontier-world:
     dependencies:
+      '@eve/common-constants':
+        specifier: 0.0.0
+        version: link:../common/constants
+      '@eve/frontier-smart-object-framework':
+        specifier: 0.0.0
+        version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16(google-protobuf@3.21.2)
