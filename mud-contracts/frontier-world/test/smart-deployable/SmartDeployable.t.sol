@@ -70,6 +70,7 @@ contract smartDeployableTest is Test {
 
   function testGloballyOfflineRevert(uint256 entityId) public {
     vm.assume(entityId != 0);
+    // TODO: build a work-around following recommendations in https://github.com/foundry-rs/foundry/issues/5454
     // try each line independantly, thenm
     // try running both lines below and see what happens, lol
     //vm.expectRevert(abi.encodeWithSelector(SmartDeployableErrors.SmartDeployable_GloballyOffline.selector));
