@@ -40,7 +40,8 @@ contract SmartCharacter is EveSystem {
     EntityRecordTableData memory entityRecord,
     string memory tokenCid
   ) public {
-    if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
+    // TODO: uncomment this if/when static data flows off-chain are ready
+    // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
 
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);
