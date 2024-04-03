@@ -6,6 +6,7 @@
     "ACCESS_CONTROL_DEPLOYMENT": "RBACv0",
     "ENTITY_RECORD_DEPLOYMENT": "EntityRecordv0",
     "STATIC_DATA_DEPLOYMENT": "StaticDatav0",
+    "LOCATION_DEPLOYMENT_NAMESPACE": "Locationv0",
     "SMART_CHARACTER_DEPLOYMENT": "SmartCharactv0",
     "EVE_ERC721_PUPPET_DEPLOYMENT": "ERC721Puppetv0"
   },
@@ -14,6 +15,7 @@
     "SMART_CHARACTER": "SmartCharacter",
     "STATIC_DATA": "StaticData",
     "ENTITY_RECORD": "EntityRecord",
-    "SMART_STORAGE_UNIT": "SmartStorageUnit"
+    "SMART_STORAGE_UNIT": "SmartStorageUnit",
+    "LOCATION": "Location"
   }
 }

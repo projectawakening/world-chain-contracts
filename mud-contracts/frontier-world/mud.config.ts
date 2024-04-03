@@ -1,6 +1,6 @@
 import { mudConfig } from "@latticexyz/world/register";
 // this import statement doesnt support remappings for some reason
-import constants =  require('./node_modules/@eve/common-constants/src/constants.json'); 
+import constants = require("./node_modules/@eve/common-constants/src/constants.json");
 
 export default mudConfig({
   //having a short namespace as the MUD Namespace must be <= 14 characters
@@ -23,6 +23,10 @@ export default mudConfig({
       name: constants.systemName.ENTITY_RECORD,
       openAccess: true,
     },
+    LocationSystem: {
+      name: constants.systemName.LOCATION,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
@@ -40,7 +44,7 @@ export default mudConfig({
      */
     StaticDataTable: {
       keySchema: {
-        key: "uint256",
+        entityId: "uint256",
       },
       valueSchema: {
         cid: "string",
@@ -124,21 +128,26 @@ export default mudConfig({
       tableIdArgument: true,
     },
 
-    //LOCATION MODULE
+    /*******************
+     * LOCATION MODULE *
+     *******************/
+
     /**
      * Used to store the location of a in-game entity in the solar system
      */
-    Location: {
+    LocationTable: {
       keySchema: {
         smartObjectId: "uint256",
       },
       valueSchema: {
-        solarsystemId: "uint256",
+        solarSystemId: "uint256",
         x: "uint256",
         y: "uint256",
         z: "uint256",
       },
+      tableIdArgument: true,
     },
+
     //DEPLOYABLE MODULE
     GlobalDeployableState: {
       valueSchema: {
