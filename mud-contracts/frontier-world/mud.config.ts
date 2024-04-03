@@ -27,9 +27,13 @@ export default mudConfig({
       name: constants.systemName.LOCATION,
       openAccess: true,
     },
+    SmartDeployable: {
+      name: constants.systemName.SMART_DEPLOYABLE,
+      openAccess: true,
+    }
   },
   enums: {
-    State: ["ANCHOR", "UNANCHOR", "ONLINE", "OFFLINE", "DESTROYED"],
+    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -148,12 +152,17 @@ export default mudConfig({
       tableIdArgument: true,
     },
 
-    //DEPLOYABLE MODULE
+    /***************************
+     * SMART DEPLOYABLE MODULE *
+     ***************************/
+    
     GlobalDeployableState: {
+      keySchema: {},
       valueSchema: {
         globalState: "State",
         updatedBlockNumber: "uint256",
       },
+      tableIdArgument: true,
     },
     /**
      * Used to store the current state of a deployable
@@ -167,6 +176,7 @@ export default mudConfig({
         state: "State",
         updatedBlockNumber: "uint256",
       },
+      tableIdArgument: true,
     },
 
     //INVENTORY MODULE

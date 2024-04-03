@@ -5,14 +5,16 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
+import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { AccessControlLib } from "@latticexyz/world-modules/src/utils/AccessControlLib.sol";
 import { PuppetMaster } from "@latticexyz/world-modules/src/modules/puppet/PuppetMaster.sol";
 import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
@@ -84,7 +86,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
    */
   function setCid(uint256 tokenId, string memory cid) public {
-    StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE }).setCid(
+    _staticDataLib().setCid(
       tokenId,
       cid
     );
@@ -546,6 +548,13 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
 
   function _requireOwner() internal view {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
+  }
+
+  function _staticDataLib() internal view returns (StaticDataLib.World memory) {
+    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
+      return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE});
+    }
+    else return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
   }
 
   function _systemId() internal view returns (ResourceId) {

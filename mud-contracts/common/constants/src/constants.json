@@ -8,14 +8,16 @@
     "STATIC_DATA_DEPLOYMENT": "StaticDatav0",
     "LOCATION_DEPLOYMENT_NAMESPACE": "Locationv0",
     "SMART_CHARACTER_DEPLOYMENT": "SmartCharactv0",
-    "EVE_ERC721_PUPPET_DEPLOYMENT": "ERC721Puppetv0"
+    "EVE_ERC721_PUPPET_DEPLOYMENT": "ERC721Puppetv0",
+    "SMART_DEPLOYABLE_DEPLOYMENT": "SmartDeployv0"
   },
   "systemName":
   {
     "SMART_CHARACTER": "SmartCharacter",
     "STATIC_DATA": "StaticData",
     "ENTITY_RECORD": "EntityRecord",
-    "SMART_STORAGE_UNIT": "SmartStorageUnit",
-    "LOCATION": "Location"
+    "LOCATION": "Location",
+    "SMART_DEPLOYABLE": "SmartDeployabl",
+    "SMART_STORAGE_UNIT": "SmartStorageUnit"
   }
 }

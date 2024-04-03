@@ -16,7 +16,7 @@ import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 import { StaticDataLib } from "../static-data/StaticDataLib.sol";
 import { StaticDataGlobalTableData } from "../../codegen/tables/StaticDataGlobalTable.sol";
 
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { MODULE_NAMESPACE, MODULE_NAMESPACE_ID, ERC721_REGISTRY_TABLE_ID } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 import { ERC721System } from "./ERC721System.sol";
@@ -58,11 +58,7 @@ contract ERC721Module is Module {
     if (!success) revertWithBytes(returnData);
 
     // Initialize the Metadata
-    StaticDataLib.World memory staticData = StaticDataLib.World({
-      iface: world,
-      namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE
-    });
-    staticData.setMetadata(namespace.erc721SystemId(), metadata);
+    _staticDataLib().setMetadata(namespace.erc721SystemId(), metadata);
 
     // Deploy and register the ERC721 puppet.
     ResourceId erc721SystemId = namespace.erc721SystemId();
@@ -82,6 +78,13 @@ contract ERC721Module is Module {
 
   function installRoot(bytes memory) public pure {
     revert Module_RootInstallNotSupported();
+  }
+
+  function _staticDataLib() internal view returns (StaticDataLib.World memory) {
+    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
+      return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE});
+    }
+    else return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
   }
 }
 
