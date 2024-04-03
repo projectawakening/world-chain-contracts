@@ -13,5 +13,3 @@ ResourceId constant ENTITY_RECORD_MODULE_NAMESPACE_ID = ResourceId.wrap(
 
 bytes16 constant ENTITY_RECORD_TABLE_NAME = "EntityRecordTabl";
 bytes16 constant ENTITY_RECORD_OFFCHAIN_TABLE_NAME = "EntityOffchainTa";
-
-bytes16 constant ENTITY_RECORD_SYSTEM_NAME = "EntityRecordSyst";

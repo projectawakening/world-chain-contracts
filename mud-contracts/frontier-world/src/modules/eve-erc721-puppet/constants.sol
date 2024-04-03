@@ -16,8 +16,6 @@ bytes16 constant OPERATOR_APPROVAL_NAME = "OperatorApproval";
 bytes16 constant TOKEN_APPROVAL_NAME = "TokenApproval";
 bytes16 constant OWNERS_NAME = "Owners";
 
-bytes16 constant ERC721_SYSTEM_NAME = "ERC721System";
-
 ResourceId constant ERC721_REGISTRY_TABLE_ID = ResourceId.wrap(
   bytes32(abi.encodePacked(RESOURCE_TABLE, MODULE_NAMESPACE, bytes16("ERC721Registry")))
 );

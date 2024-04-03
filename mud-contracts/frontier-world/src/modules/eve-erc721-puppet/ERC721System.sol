@@ -21,6 +21,7 @@ import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 
 import { IERC721Receiver } from "./IERC721Receiver.sol";
 import { IERC721Mintable } from "./IERC721Mintable.sol";
+import { IERC721Metadata } from "./IERC721Metadata.sol";
 
 import { OperatorApproval } from "../../codegen/tables/OperatorApproval.sol";
 import { Owners } from "../../codegen/tables/Owners.sol";
@@ -29,7 +30,7 @@ import { Balances } from "../../codegen/tables/Balances.sol";
 
 import { Utils } from "./Utils.sol";
 
-contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
+contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using StaticDataUtils for bytes14;
