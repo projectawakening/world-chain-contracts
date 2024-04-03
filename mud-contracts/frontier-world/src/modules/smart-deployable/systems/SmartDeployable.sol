@@ -22,13 +22,15 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using Utils for bytes14;
   using LocationLib for LocationLib.World;
 
+  // TODO: is `supportInterface` working properly here ?
+  
   /**
    * modifier to enforce a certain state to be had by an entity
    * @param entityId entityId of the object we test against
    * @param reqState required State
    */
   modifier onlyState(uint256 entityId, State reqState) {
-    if(GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.NULL) {
+    if(GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployable_GloballyOffline();
     }
     else if(uint256(DeployableState.getState(_namespace().deployableStateTableId(), entityId)) != uint256(reqState)) {
@@ -59,6 +61,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId entityId
    */
   function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
+    // TODO: figure out how to delete inventory in the case of smart storage units
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.DESTROYED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
   }
@@ -97,6 +100,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId entityId
    */
   function unanchor(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
+    // TODO: figure out how to delete inventory in the case of smart storage units
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.UNANCHORED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     _locationLib().saveLocation(entityId, LocationTableData({solarSystemId: 0, x: 0, y:0, z: 0}));
@@ -110,7 +114,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     GlobalDeployableState.set(
       _namespace().globalStateTableId(),
       GlobalDeployableStateData({
-        globalState: State.NULL,
+        globalState: State.OFFLINE,
         updatedBlockNumber: block.number
       })
     );

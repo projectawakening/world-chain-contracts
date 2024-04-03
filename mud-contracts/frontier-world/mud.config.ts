@@ -33,7 +33,7 @@ export default mudConfig({
     }
   },
   enums: {
-    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
+    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
