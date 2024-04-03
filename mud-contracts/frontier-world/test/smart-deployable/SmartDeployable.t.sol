@@ -90,4 +90,36 @@ contract smartDeployableTest is Test {
     assertEq(location.y, tableData.y);
     assertEq(location.z, tableData.z);    
   }
+
+  function testBringOnline(uint256 entityId, LocationTableData memory location) public {
+    vm.assume(entityId != 0);
+
+    testAnchor(entityId, location);
+    smartDeployable.bringOnline(entityId);
+    assertEq(uint8(State.ONLINE), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+  }
+
+  function testBringOffline(uint256 entityId, LocationTableData memory location) public {
+    vm.assume(entityId != 0);
+
+    testBringOnline(entityId, location);
+    smartDeployable.bringOffline(entityId);
+    assertEq(uint8(State.ANCHORED), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+  }
+
+  function testUnanchor(uint256 entityId, LocationTableData memory location) public {
+    vm.assume(entityId != 0);
+
+    testAnchor(entityId, location);
+    smartDeployable.unanchor(entityId);
+    assertEq(uint8(State.UNANCHORED), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+  }
+
+  function testDestroyDeployable(uint256 entityId, LocationTableData memory location) public {
+    vm.assume(entityId != 0);
+
+    testUnanchor(entityId, location);
+    smartDeployable.destroyDeployable(entityId);
+    assertEq(uint8(State.DESTROYED), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+  }
 }
