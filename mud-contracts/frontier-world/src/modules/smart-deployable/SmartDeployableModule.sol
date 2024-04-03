@@ -52,7 +52,7 @@ contract SmartDeployableModule is Module {
     // Require dependencies
     _requireDependencies();
 
-    // Register the smart object framework's tables and systems
+    // Register the smart deployable's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
       abi.encodeCall(SmartDeployableModuleRegistrationLibrary.register, (world, namespace))
