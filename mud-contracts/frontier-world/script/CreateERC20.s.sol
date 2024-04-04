@@ -18,6 +18,10 @@ contract CreateERC20 is Script {
     IBaseWorld world = IBaseWorld(0x004BfD5E619AFE26AbD52DfA50f1c047cF7d6151);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    string memory namespace = vm.envString("ERC20_NAMESPACE");
+    string memory name = vm.envString("ERC20_NAME");
+    string memory symbol = vm.envString("ERC20_SYMBOL");
+    uint8 decimals = uint8(vm.envUint("ERC20_DECIMALS"));
 
     vm.startBroadcast(deployerPrivateKey);
     // TODO: Need to make a ERC20 Factory that feeds into the static data module
@@ -25,11 +29,27 @@ contract CreateERC20 is Script {
     StoreSwitch.setStoreAddress(address(world));
     erc20Token = registerERC20(
       world,
-      "blockbusters",
-      ERC20MetadataData({ decimals: 18, name: "Blockbusters Token", symbol: "$BBT"})
+      stringToBytes14(namespace),
+      ERC20MetadataData({ decimals: decimals, name: name, symbol: symbol})
     );
 
     console.log("Deploying ERC20 token with address: ", address(erc20Token));
     vm.stopBroadcast();
   }
+
+  function stringToBytes14(string memory str) public pure returns (bytes14) {
+        bytes memory tempBytes = bytes(str);
+
+        // Ensure the bytes array is not longer than 14 bytes.
+        // If it is, this will truncate the array to the first 14 bytes.
+        // If it's shorter, it will be padded with zeros.
+        require(tempBytes.length <= 14, "String too long");
+
+        bytes14 converted;
+        for (uint i = 0; i < tempBytes.length; i++) {
+            converted |= bytes14(tempBytes[i] & 0xFF) >> (i * 8);
+        }
+
+        return converted;
+    }
 }

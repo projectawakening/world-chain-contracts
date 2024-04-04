@@ -12,7 +12,7 @@
     "deploy:local": "mud deploy",
     "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
     "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS_ENV -vvv",
-    "registerERC20": ". ./.env && forge script script/CreateERC20.s.sol:CreateERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run()\" -vvv",
+    "createERC20": ". ./.env && forge script script/CreateERC20.s.sol:CreateERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run()\" -vvv",
     "mintERC20": ". ./.env && forge script script/MintERC20.s.sol:MintERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run()\" -vvv",
     "post-deploy:devnet": ". ./.env && forge script script/PostDeploy.s.sol:PostDeploy --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "dev": "pnpm mud dev-contracts",
