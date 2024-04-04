@@ -15,7 +15,7 @@ contract CreateSmartCharacter is Script {
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     uint256 characterId = vm.envUint("CHARACTER_ID");
-    address characterAddress = vm.envAddress("CHARATER_ADDRESS");
+    address characterAddress = vm.envAddress("CHARACTER_ADDRESS");
     uint8 typeId = uint8(vm.envUint("CHARACTER_TYPE_ID"));
     uint256 itemId = vm.envUint("CHARACTER_ITEM_ID");
     uint256 volume = vm.envUint("CHARACTER_VOLUME");
