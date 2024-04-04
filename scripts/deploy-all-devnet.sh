@@ -53,3 +53,4 @@ echo "==================== Smart object framework deployed ===================="
 
 echo "==================== Deploying Frontier world modules ===================="
 pnpm nx deploy:devnet @eve/frontier-world --worldAddress '${WORLD_ADDRESS}'
+pnpm nx post-deploy:devnet @eve/frontier-world
