@@ -2,7 +2,8 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "dev": "npx mprocs ./scripts/run-local-node.sh ./scripts/deploy-all.sh"
+    "dev": "npx mprocs ./scripts/run-local-node.sh ./scripts/deploy-all.sh",
+    "deploy:devnet": "npx mprocs ./scripts/deploy-all-devnet.sh"
   },
   "devDependencies": {
     "mprocs": "^0.6.4",
