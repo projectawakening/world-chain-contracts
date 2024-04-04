@@ -14,14 +14,20 @@ contract CreateSmartCharacter is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    uint256 characterId = vm.envUint("CHARACTER_ID");
+    address characterAddress = vm.envAddress("CHARATER_ADDRESS");
+    uint8 typeId = uint8(vm.envUint("CHARACTER_TYPE_ID"));
+    uint256 itemId = vm.envUint("CHARACTER_ITEM_ID");
+    uint256 volume = vm.envUint("CHARACTER_VOLUME");
+    string memory cid = vm.envString("CHARACTER_TOKEN_CID");
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
     IWorld(worldAddress).frontier__createCharacter(
-      123,
-      0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
-      EntityRecordTableData({ typeId: 123, itemId: 222, volume: 100 }),
-      "tokenCid"
+      characterId,
+      characterAddress,
+      EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume }),
+      cid
     );
     vm.stopBroadcast();
   }
