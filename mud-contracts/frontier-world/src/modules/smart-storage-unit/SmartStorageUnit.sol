@@ -43,23 +43,6 @@ contract SmartStorageUnit is System {
     //Implement the logic to bring all smart storage units offline
   }
 
-  function depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
-    //Implement the logic to deposit items to the inventory
-    // Only owner of the smart storage unit can deposit items in the inventory
-  }
-
-  function depositToEphemeralInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
-    //Implement the logic to deposit items to the inventory
-  }
-
-  function withdrawFromInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
-    //Implement the logic to withdraw items from the inventory
-  }
-
-  function withdrawFromEphemeralInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
-    //Implement the logic to withdraw items from the inventory
-  }
-
   function smartStorageUnitSystemId() public pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({

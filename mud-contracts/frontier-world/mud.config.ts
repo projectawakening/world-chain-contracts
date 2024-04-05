@@ -122,7 +122,7 @@ export default mudConfig({
     /**
      * Used to store the inventory details of a in-game smart storage unit
      */
-    Inventory: {
+    InventoryTable: {
       keySchema: {
         smartObjectId: "uint256",
       },
@@ -131,11 +131,12 @@ export default mudConfig({
         usedCapacity: "uint256",
         items: "uint256[]",
       },
+      tableIdArgument: true,
     },
     /**
      * Used to store the inventory items of a in-game smart storage unit
      */
-    InventoryItem: {
+    InventoryItemTable: {
       keySchema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
@@ -144,12 +145,13 @@ export default mudConfig({
         quantity: "uint256",
         index: "uint256",
       },
+      tableIdArgument: true,
     },
     //EPHEMERAL INVENTORY MODULE
     /**
      * Used to store the inventory details of a in-game smart storage unit
      */
-    EphemeralInventory: {
+    EphemeralInventoryTable: {
       keySchema: {
         smartObjectId: "uint256",
         owner: "address",
@@ -159,11 +161,12 @@ export default mudConfig({
         usedCapacity: "uint256",
         items: "uint256[]",
       },
+      tableIdArgument: true,
     },
     /**
      * Used to store the inventory items of a in-game smart storage unit
      */
-    EphemeralInvItem: {
+    EphemeralInvItemTable: {
       keySchema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
@@ -173,11 +176,12 @@ export default mudConfig({
         quantity: "uint256",
         index: "uint256",
       },
+      tableIdArgument: true,
     },
     /**
      * Used to store the transfer details when a item is exchanged
      */
-    ItemTransferOffchain: {
+    ItemTransferOffchainTable: {
       keySchema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
@@ -188,6 +192,7 @@ export default mudConfig({
         quantity: "uint256",
         updatedAt: "uint256",
       },
+      tableIdArgument: true,
       offchainOnly: true,
     },
   },

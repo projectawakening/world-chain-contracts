@@ -45,6 +45,7 @@ struct Coord {
  */
 struct InventoryItem {
   uint256 inventoryItemId;
+  address owner;
   uint256 typeId;
   uint256 volume;
   uint256 quantity;
