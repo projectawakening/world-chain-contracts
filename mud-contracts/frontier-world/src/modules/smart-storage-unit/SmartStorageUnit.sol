@@ -21,28 +21,6 @@ contract SmartStorageUnit is System {
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
   }
 
-  function bringOnline(uint256 smartObjectId) public {
-    //Implement the logic to bring the smart storage unit online
-  }
-
-  function bringOffline(uint256 smartObjectId) public {
-    //Implement the logic to bring the smart storage unit offline
-  }
-
-  function unanchor(uint256 smartObjectId) public {
-    //Implement the logic to unanchor the smart storage unit
-    // Scoop all items from the inventory
-  }
-
-  function destroy(uint256 smartObjectId) public {
-    //Implement the logic to destroy the smart storage unit
-    // Scoop all items from the inventory
-  }
-
-  function offlineAll() public {
-    //Implement the logic to bring all smart storage units offline
-  }
-
   function smartStorageUnitSystemId() public pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({
