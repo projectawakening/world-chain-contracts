@@ -133,17 +133,18 @@ contract InventoryTest is Test {
       DEPLOYMENT_NAMESPACE.inventoryTableId(),
       smartObjectId
     );
+    uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
+    uint256 itemVolume = 0;
 
-    assertEq(inventoryTableData.usedCapacity, 1000);
+    assertEq(capacityBeforeWithdrawal, 1000);
+
     inventory.withdrawFromInventory(smartObjectId, items);
-
-    //Check weather the usedCapacity is reduced
     for (uint256 i = 0; i < items.length; i++) {
-      uint256 itemVolume = items[i].volume * items[i].quantity;
+      itemVolume += items[i].volume * items[i].quantity;
     }
 
     inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
-    assertEq(inventoryTableData.usedCapacity, 350);
+    assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
 
     uint256[] memory existingItems = inventoryTableData.items;
     assertEq(existingItems.length, 2);
@@ -181,7 +182,7 @@ contract InventoryTest is Test {
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidQuantity.selector,
         "InventorySystem: invalid quantity",
-        items[0].quantity,
+        3,
         items[0].quantity
       )
     );

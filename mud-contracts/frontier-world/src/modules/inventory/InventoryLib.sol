@@ -56,4 +56,28 @@ library InventoryLib {
       )
     );
   }
+
+  function depositToEphemeralInventory(
+    World memory world,
+    uint256 smartObjectId,
+    address owner,
+    InventoryItem[] memory items
+  ) internal {
+    world.iface.call(
+      world.namespace.ephemeralInventorySystemId(),
+      abi.encodeCall(IEphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+    );
+  }
+
+  function withdrawFromEphermeralInventory(
+    World memory world,
+    uint256 smartObjectId,
+    address owner,
+    InventoryItem[] memory items
+  ) internal {
+    world.iface.call(
+      world.namespace.ephemeralInventorySystemId(),
+      abi.encodeCall(IEphemeralInventorySystem.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+  }
 }

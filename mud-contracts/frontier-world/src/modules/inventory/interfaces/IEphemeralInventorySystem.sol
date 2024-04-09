@@ -16,7 +16,7 @@ interface IEphemeralInventorySystem {
     uint256 ephemeralStorageCapacity
   ) external;
 
-  function depositToEphemeralInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function depositToEphemeralInventory(uint256 smartObjectId, address owner, InventoryItem[] memory items) external;
 
-  function withdrawFromEphemeralInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function withdrawFromEphemeralInventory(uint256 smartObjectId, address owner, InventoryItem[] memory items) external;
 }

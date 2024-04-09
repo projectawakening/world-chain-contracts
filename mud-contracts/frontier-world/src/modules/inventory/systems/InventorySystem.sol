@@ -73,7 +73,7 @@ contract InventorySystem is EveSystem {
     uint256 usedCapacity,
     uint256 maxCapacity,
     uint256 index
-  ) private returns (uint256) {
+  ) internal returns (uint256) {
     uint256 reqCapacity = item.volume * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
       revert IInventoryErrors.Inventory_InsufficientCapacity(
@@ -99,7 +99,7 @@ contract InventorySystem is EveSystem {
     uint256 smartObjectId,
     InventoryItem memory item,
     uint256 usedCapacity
-  ) private returns (uint256) {
+  ) internal returns (uint256) {
     InventoryItemTableData memory itemData = InventoryItemTable.get(
       _namespace().inventoryItemTableId(),
       smartObjectId,
@@ -112,7 +112,7 @@ contract InventorySystem is EveSystem {
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) private pure {
+  function validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert IInventoryErrors.Inventory_InvalidQuantity(
         "InventorySystem: invalid quantity",
@@ -126,7 +126,7 @@ contract InventorySystem is EveSystem {
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
-  ) private {
+  ) internal {
     if (item.quantity == itemData.quantity) {
       removeItemCompletely(smartObjectId, item, itemData);
     } else {
@@ -138,19 +138,19 @@ contract InventorySystem is EveSystem {
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
-  ) private {
-    InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
+  ) internal {
     uint256[] memory inventoryItems = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId);
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
     InventoryTable.updateItems(_namespace().inventoryTableId(), smartObjectId, itemData.index, lastElement);
     InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
+    InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
   }
 
   function reduceItemQuantity(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
-  ) private {
+  ) internal {
     InventoryItemTable.set(
       _namespace().inventoryItemTableId(),
       smartObjectId,
