@@ -11,7 +11,10 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
@@ -39,6 +42,7 @@ contract smartDeployableTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
+    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
     baseWorld.installModule(new SmartDeployableModule(), abi.encode(DEPLOYMENT_NAMESPACE));
     baseWorld.installModule(new LocationModule(), abi.encode(LOCATION_DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
@@ -89,7 +93,7 @@ contract smartDeployableTest is Test {
     assertEq(location.solarSystemId, tableData.solarSystemId);
     assertEq(location.x, tableData.x);
     assertEq(location.y, tableData.y);
-    assertEq(location.z, tableData.z);    
+    assertEq(location.z, tableData.z);
   }
 
   function testBringOnline(uint256 entityId, LocationTableData memory location) public {
@@ -97,7 +101,10 @@ contract smartDeployableTest is Test {
 
     testAnchor(entityId, location);
     smartDeployable.bringOnline(entityId);
-    assertEq(uint8(State.ONLINE), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+    assertEq(
+      uint8(State.ONLINE),
+      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+    );
   }
 
   function testBringOffline(uint256 entityId, LocationTableData memory location) public {
@@ -105,7 +112,10 @@ contract smartDeployableTest is Test {
 
     testBringOnline(entityId, location);
     smartDeployable.bringOffline(entityId);
-    assertEq(uint8(State.ANCHORED), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+    assertEq(
+      uint8(State.ANCHORED),
+      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+    );
   }
 
   function testUnanchor(uint256 entityId, LocationTableData memory location) public {
@@ -113,7 +123,10 @@ contract smartDeployableTest is Test {
 
     testAnchor(entityId, location);
     smartDeployable.unanchor(entityId);
-    assertEq(uint8(State.UNANCHORED), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+    assertEq(
+      uint8(State.UNANCHORED),
+      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+    );
   }
 
   function testDestroyDeployable(uint256 entityId, LocationTableData memory location) public {
@@ -121,6 +134,9 @@ contract smartDeployableTest is Test {
 
     testUnanchor(entityId, location);
     smartDeployable.destroyDeployable(entityId);
-    assertEq(uint8(State.DESTROYED), uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId)));
+    assertEq(
+      uint8(State.DESTROYED),
+      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+    );
   }
 }

@@ -81,10 +81,9 @@ contract ERC721Module is Module {
   }
 
   function _staticDataLib() internal view returns (StaticDataLib.World memory) {
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
-      return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE});
-    }
-    else return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
+      return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE });
+    } else return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
   }
 }
 

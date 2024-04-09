@@ -11,8 +11,11 @@ bytes14 constant LOCATION_DEPLOYMENT_NAMESPACE = "Locationv0";
 bytes14 constant STATIC_DATA_DEPLOYMENT_NAMESPACE = "StaticDatav0";
 bytes14 constant SMART_CHARACTER_DEPLOYMENT_NAMESPACE = "SmartCharactv0";
 bytes14 constant EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE = "ERC721Puppetv0";
-bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "SmartDeployav0";
+bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "SmartDeployv0";
 
+bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
+bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
+bytes16 constant HOOK_CORE_SYSTEM_NAME = "HookCore";
 bytes16 constant STATIC_DATA_SYSTEM_NAME = "StaticData";
 bytes16 constant ENTITY_RECORD_SYSTEM_NAME = "EntityRecord";
 bytes16 constant LOCATION_SYSTEM_NAME = "Location";

@@ -13,6 +13,9 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
 import { GasReporter } from "@latticexyz/gas-report/src/GasReporter.sol";
 
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+
 import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE as STATIC_DATA_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
@@ -79,6 +82,7 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
   function setUp() public {
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
+    world.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
     world.installModule(new PuppetModule(), new bytes(0));
     // although not enforced, this module must be installed for `registerERC721` to work
     // TODO: restrict module installation to other installed modules like this one

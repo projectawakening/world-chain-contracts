@@ -5,7 +5,8 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { System } from "@latticexyz/world/src/System.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { WorldResourceIdInstance, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { IWorld } from "../../codegen/world/IWorld.sol";
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
@@ -20,7 +21,7 @@ import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol"
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
 import { Utils } from "../../utils.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "../../constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 /**
  * @title EveSystem
@@ -72,13 +73,13 @@ contract EveSystem is System {
    * @param entityId is the id of an object or class
    */
   function _requireEntityRegistered(uint256 entityId) internal view {
-    if (!EntityTable.getDoesExists(CORE_NAMESPACE.entityTableTableId(), entityId))
+    if (!EntityTable.getDoesExists(_coreNamespace().entityTableTableId(), entityId))
       revert ICustomErrorSystem.EntityNotRegistered(entityId, "EveSystem: Entity is not registered");
   }
 
   function _requireModuleRegistered(uint256 moduleId) internal view {
     //check if the module is registered
-    if (ModuleSystemLookup.getSystemIds(CORE_NAMESPACE.moduleSystemLookupTableId(), moduleId).length == 0)
+    if (ModuleSystemLookup.getSystemIds(_coreNamespace().moduleSystemLookupTableId(), moduleId).length == 0)
       revert ICustomErrorSystem.ModuleNotRegistered(moduleId, "EveSystem: Module not registered");
   }
 
@@ -92,9 +93,9 @@ contract EveSystem is System {
     uint256[] memory moduleIds = _getModuleIds(entityId);
 
     //Check if the entity is tagged to a entityType and get the moduleIds for the entity
-    bool isEntityTagged = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(_coreNamespace().entityMapTableId(), entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory taggedEntityIds = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId);
+      uint256[] memory taggedEntityIds = EntityMap.get(_coreNamespace().entityMapTableId(), entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
         uint256[] memory taggedModuleIds = _getModuleIds(taggedEntityIds[i]);
         moduleIds = appendUint256Arrays(moduleIds, taggedModuleIds);
@@ -111,7 +112,7 @@ contract EveSystem is System {
   }
 
   function _getModuleIds(uint256 entityId) internal view returns (uint256[] memory) {
-    return EntityAssociation.getModuleIds(CORE_NAMESPACE.entityAssociationTableId(), entityId);
+    return EntityAssociation.getModuleIds(_coreNamespace().entityAssociationTableId(), entityId);
   }
 
   function _validateModules(uint256[] memory moduleIds, ResourceId systemId, bytes4 functionSelector) internal view {
@@ -120,7 +121,7 @@ contract EveSystem is System {
 
     //TODO Below logic can be optimized by using supportsInterface as well
     for (uint256 i = 0; i < moduleIds.length; i++) {
-      bool systemExists = ModuleTable.getDoesExists(CORE_NAMESPACE.moduleTableTableId(), moduleIds[i], systemId);
+      bool systemExists = ModuleTable.getDoesExists(_coreNamespace().moduleTableTableId(), moduleIds[i], systemId);
       if (systemExists) {
         isModuleFound = true;
         bytes32 registeredSystemId = ResourceId.unwrap(FunctionSelectors.getSystemId(functionSelector));
@@ -138,15 +139,15 @@ contract EveSystem is System {
   }
 
   function _getHookIds(uint256 entityId) internal view returns (uint256[] memory hookIds) {
-    hookIds = EntityAssociation.getHookIds(CORE_NAMESPACE.entityAssociationTableId(), entityId);
+    hookIds = EntityAssociation.getHookIds(_coreNamespace().entityAssociationTableId(), entityId);
 
     //Check if the entity is tagged to a entity and get the moduleIds for the taggedEntity
-    bool isEntityTagged = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(_coreNamespace().entityMapTableId(), entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory entityTagIds = EntityMap.get(CORE_NAMESPACE.entityMapTableId(), entityId);
+      uint256[] memory entityTagIds = EntityMap.get(_coreNamespace().entityMapTableId(), entityId);
       for (uint256 i = 0; i < entityTagIds.length; i++) {
         uint256[] memory taggedHookIds = EntityAssociation.getHookIds(
-          CORE_NAMESPACE.entityAssociationTableId(),
+          _coreNamespace().entityAssociationTableId(),
           entityTagIds[i]
         );
         hookIds = appendUint256Arrays(hookIds, taggedHookIds);
@@ -161,7 +162,7 @@ contract EveSystem is System {
     bytes memory hookArgs
   ) internal {
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
-    bool hasHook = HookTargetBefore.getHasHook(CORE_NAMESPACE.hookTargetBeforeTableId(), hookId, targetId);
+    bool hasHook = HookTargetBefore.getHasHook(_coreNamespace().hookTargetBeforeTableId(), hookId, targetId);
     if (hasHook) {
       _executeHook(hookId, hookArgs);
     }
@@ -174,14 +175,14 @@ contract EveSystem is System {
     bytes memory hookArgs
   ) internal {
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
-    bool hasHook = HookTargetAfter.getHasHook(CORE_NAMESPACE.hookTargetAfterTableId(), hookId, targetId);
+    bool hasHook = HookTargetAfter.getHasHook(_coreNamespace().hookTargetAfterTableId(), hookId, targetId);
     if (hasHook) {
       _executeHook(hookId, hookArgs);
     }
   }
 
   function _executeHook(uint256 hookId, bytes memory hookArgs) internal {
-    HookTableData memory hookData = HookTable.get(CORE_NAMESPACE.hookTableTableId(), hookId);
+    HookTableData memory hookData = HookTable.get(_coreNamespace().hookTableTableId(), hookId);
     bytes memory funcSelectorAndArgs = abi.encodePacked(hookData.functionSelector, hookArgs);
     ResourceId systemId = hookData.systemId;
     //TODO replace with callFrom ? and get the delegator address from the hookrgs ?
@@ -239,6 +240,15 @@ contract EveSystem is System {
     }
 
     return newArray;
+  }
+
+  // this is a bit messy... but in line with other Utils subroutines to ward off bad namespacing configs
+  // TODO: refactor this
+  function _coreNamespace() internal view returns (bytes14) {
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(CORE_NAMESPACE))) {
+      return FRONTIER_WORLD_DEPLOYMENT_NAMESPACE;
+    }
+    return CORE_NAMESPACE;
   }
 
   function _namespace() internal view returns (bytes14 namespace) {
