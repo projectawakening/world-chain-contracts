@@ -35,6 +35,13 @@ library InventoryLib {
     );
   }
 
+  function withdrawFromInventory(World memory world, uint256 smartObjectId, InventoryItem[] memory items) internal {
+    world.iface.call(
+      world.namespace.inventorySystemId(),
+      abi.encodeCall(IInventorySystem.withdrawFromInventory, (smartObjectId, items))
+    );
+  }
+
   function setEphemeralInventoryCapacity(
     World memory world,
     uint256 smartObjectId,
