@@ -36,31 +36,14 @@ contract InventorySystem is EveSystem {
    */
   function depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
+    uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
+    uint256 itemsLength = items.length;
 
-    for (uint256 i = 0; i < items.length; i++) {
-      InventoryItem memory item = items[i];
-      uint256 reqCapacity = item.volume * item.quantity;
-      usedCapacity = usedCapacity + reqCapacity;
-
-      uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
-      if (usedCapacity > maxCapacity) {
-        revert IInventoryErrors.Inventory_InsufficientCapacity(
-          "InventorySystem: insufficient capacity",
-          maxCapacity,
-          usedCapacity
-        );
-      }
-
-      InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
-      InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
-      InventoryItemTable.set(
-        _namespace().inventoryItemTableId(),
-        smartObjectId,
-        item.inventoryItemId,
-        item.quantity,
-        i
-      );
+    for (uint256 i = 0; i < itemsLength; i++) {
+      usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
     }
+
+    InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
   }
 
   /**
@@ -72,54 +55,109 @@ contract InventorySystem is EveSystem {
    */
   function withdrawFromInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
-    uint256 unusedCapacity = 0;
+    uint256 itemsLength = items.length;
 
-    for (uint256 i = 0; i < items.length; i++) {
-      InventoryItem memory item = items[i];
-      InventoryItemTableData memory itemData = InventoryItemTable.get(
-        _namespace().inventoryItemTableId(),
-        smartObjectId,
-        item.inventoryItemId
-      );
-
-      if (item.quantity > itemData.quantity) {
-        revert IInventoryErrors.Inventory_InvalidQuantity(
-          "InventorySystem: invalid quantity",
-          itemData.quantity,
-          item.quantity
-        );
-      } else if (item.quantity == itemData.quantity) {
-        InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
-        uint256[] memory inventoryItems = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId);
-        uint256 lastElement = inventoryItems[inventoryItems.length - 1];
-        InventoryTable.updateItems(_namespace().inventoryTableId(), smartObjectId, itemData.index, lastElement);
-        InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
-      } else {
-        InventoryItemTable.set(
-          _namespace().inventoryItemTableId(),
-          smartObjectId,
-          item.inventoryItemId,
-          itemData.quantity - item.quantity,
-          itemData.index
-        );
-      }
-
-      unusedCapacity += item.volume * item.quantity;
+    for (uint256 i = 0; i < itemsLength; i++) {
+      usedCapacity = processItemWithdrawal(smartObjectId, items[i], usedCapacity);
     }
-
-    if (usedCapacity < unusedCapacity) {
-      revert IInventoryErrors.Inventory_InsufficientCapacity(
-        "InventorySystem: capacity unavailable",
-        unusedCapacity,
-        usedCapacity
-      );
-    }
-
-    usedCapacity = usedCapacity - unusedCapacity;
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
   }
 
   function _systemId() internal view returns (ResourceId) {
     return _namespace().inventorySystemId();
+  }
+
+  function processItemDeposit(
+    uint256 smartObjectId,
+    InventoryItem memory item,
+    uint256 usedCapacity,
+    uint256 maxCapacity,
+    uint256 index
+  ) private returns (uint256) {
+    uint256 reqCapacity = item.volume * item.quantity;
+    if ((usedCapacity + reqCapacity) > maxCapacity) {
+      revert IInventoryErrors.Inventory_InsufficientCapacity(
+        "InventorySystem: insufficient capacity",
+        maxCapacity,
+        usedCapacity + reqCapacity
+      );
+    }
+
+    InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
+    InventoryItemTable.set(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      item.quantity,
+      index
+    );
+
+    return usedCapacity + reqCapacity;
+  }
+
+  function processItemWithdrawal(
+    uint256 smartObjectId,
+    InventoryItem memory item,
+    uint256 usedCapacity
+  ) private returns (uint256) {
+    InventoryItemTableData memory itemData = InventoryItemTable.get(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId
+    );
+    validateWithdrawal(item, itemData);
+
+    updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
+
+    return usedCapacity - (item.volume * item.quantity);
+  }
+
+  function validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) private pure {
+    if (item.quantity > itemData.quantity) {
+      revert IInventoryErrors.Inventory_InvalidQuantity(
+        "InventorySystem: invalid quantity",
+        itemData.quantity,
+        item.quantity
+      );
+    }
+  }
+
+  function updateInventoryAfterWithdrawal(
+    uint256 smartObjectId,
+    InventoryItem memory item,
+    InventoryItemTableData memory itemData
+  ) private {
+    if (item.quantity == itemData.quantity) {
+      removeItemCompletely(smartObjectId, item, itemData);
+    } else {
+      reduceItemQuantity(smartObjectId, item, itemData);
+    }
+  }
+
+  function removeItemCompletely(
+    uint256 smartObjectId,
+    InventoryItem memory item,
+    InventoryItemTableData memory itemData
+  ) private {
+    InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
+    // InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
+    uint256[] memory inventoryItems = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId);
+    uint256 lastElement = inventoryItems[inventoryItems.length - 1];
+    InventoryTable.updateItems(_namespace().inventoryTableId(), smartObjectId, itemData.index, lastElement);
+    InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
+  }
+
+  function reduceItemQuantity(
+    uint256 smartObjectId,
+    InventoryItem memory item,
+    InventoryItemTableData memory itemData
+  ) private {
+    InventoryItemTable.set(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      itemData.quantity - item.quantity,
+      itemData.index
+    );
   }
 }
