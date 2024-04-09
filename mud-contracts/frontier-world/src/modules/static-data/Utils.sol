@@ -25,10 +25,18 @@ library Utils {
   }
 
   function staticDataSystemId(bytes14 namespace) internal view returns (ResourceId systemId) {
-    systemId = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: STATIC_DATA_SYSTEM_NAME });
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace))) { 
+    systemId = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: namespace,
+      name: STATIC_DATA_SYSTEM_NAME
+    });
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace))) {
       // in the way this is used, that would mean we registered this on `FRONTIER_WORLD_DEPLOYMENT_NAMESPACE`
-      systemId = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, name: STATIC_DATA_SYSTEM_NAME });
+      systemId = WorldResourceIdLib.encode({
+        typeId: RESOURCE_SYSTEM,
+        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+        name: STATIC_DATA_SYSTEM_NAME
+      });
     }
   }
 }

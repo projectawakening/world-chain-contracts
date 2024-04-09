@@ -18,18 +18,22 @@ library Utils {
 
   function deployableStateTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: DEPLOYABLE_STATE_TABLE_NAME
-      });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: DEPLOYABLE_STATE_TABLE_NAME });
   }
 
   function smartDeployableSystemId(bytes14 namespace) internal view returns (ResourceId systemId) {
-    systemId = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_DEPLOYABLE_SYSTEM_NAME });
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace))) { 
+    systemId = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: namespace,
+      name: SMART_DEPLOYABLE_SYSTEM_NAME
+    });
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace))) {
       // in the way this is used, that would mean we registered this on `FRONTIER_WORLD_DEPLOYMENT_NAMESPACE`
-      systemId = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, name: SMART_DEPLOYABLE_SYSTEM_NAME });
+      systemId = WorldResourceIdLib.encode({
+        typeId: RESOURCE_SYSTEM,
+        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+        name: SMART_DEPLOYABLE_SYSTEM_NAME
+      });
     }
   }
 }

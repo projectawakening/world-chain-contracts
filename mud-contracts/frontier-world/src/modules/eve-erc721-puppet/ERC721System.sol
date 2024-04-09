@@ -86,10 +86,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
    */
   function setCid(uint256 tokenId, string memory cid) public {
-    _staticDataLib().setCid(
-      tokenId,
-      cid
-    );
+    _staticDataLib().setCid(tokenId, cid);
   }
 
   /**
@@ -551,10 +548,9 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   }
 
   function _staticDataLib() internal view returns (StaticDataLib.World memory) {
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
-      return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE});
-    }
-    else return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
+      return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE });
+    } else return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal view returns (ResourceId) {

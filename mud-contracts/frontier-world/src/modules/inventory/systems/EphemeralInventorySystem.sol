@@ -17,7 +17,9 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 ephemeralStorageCapacity
   ) public {
     if (ephemeralStorageCapacity == 0) {
-      revert IInventoryErrors.EphemeralInventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
+      revert IInventoryErrors.EphemeralInventory_InvalidCapacity(
+        "InventoryEphemeralSystem: storage capacity cannot be 0"
+      );
     }
     EphemeralInventoryTable.setCapacity(
       _namespace().ephemeralInventoryTableId(),

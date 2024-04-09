@@ -10,7 +10,6 @@ import { ISmartDeployable } from "./interfaces/ISmartDeployable.sol";
 
 import { LocationTableData } from "../../codegen/tables/LocationTable.sol";
 
-
 /**
  * @title Smart Deployable Library (makes interacting with the underlying Systems cleaner)
  * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
@@ -61,25 +60,14 @@ library SmartDeployableLib {
   }
 
   function unanchor(World memory world, uint256 entityId) internal {
-    world.iface.call(
-      world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.unanchor, (entityId))
-    );
+    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.unanchor, (entityId)));
   }
-
 
   function globalOffline(World memory world) internal {
-    world.iface.call(
-      world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.globalOffline, ())
-    );
+    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOffline, ()));
   }
 
-
   function globalOnline(World memory world) internal {
-    world.iface.call(
-      world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.globalOnline, ())
-    );
+    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOnline, ()));
   }
 }
