@@ -77,7 +77,7 @@ contract InventoryTest is Test {
     InventoryItem[] memory items = new InventoryItem[](3);
     items[0] = InventoryItem(4235, address(0), 4235, 100, 3);
     items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 300, 1);
+    items[2] = InventoryItem(4237, address(2), 4237, 150, 2);
 
     inventory.setInventoryCapacity(smartObjectId, storageCapacity);
     InventoryTableData memory inventoryTableData = InventoryTable.get(
@@ -126,8 +126,8 @@ contract InventoryTest is Test {
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
     items[0] = InventoryItem(4235, address(0), 4235, 100, 1);
-    items[1] = InventoryItem(4236, address(1), 4236, 200, 1);
-    items[2] = InventoryItem(4237, address(2), 4237, 300, 1);
+    items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 150, 1);
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(
       DEPLOYMENT_NAMESPACE.inventoryTableId(),
@@ -143,7 +143,12 @@ contract InventoryTest is Test {
     }
 
     inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
-    assertEq(inventoryTableData.usedCapacity, 400);
+    assertEq(inventoryTableData.usedCapacity, 350);
+
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 2);
+    assertEq(existingItems[0], items[0].inventoryItemId);
+    assertEq(existingItems[1], items[2].inventoryItemId);
 
     //Check weather the items quantity is reduced
     InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
@@ -162,7 +167,24 @@ contract InventoryTest is Test {
       items[2].inventoryItemId
     );
     assertEq(inventoryItem1.quantity, 2);
-    assertEq(inventoryItem2.quantity, 1);
-    assertEq(inventoryItem3.quantity, 0);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 1);
+  }
+
+  function revertWithdrawalForInvalidQuantity(uint256 smartObjectId, uint256 storageCapacity) public {
+    testDepositToInventory(smartObjectId, storageCapacity);
+
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(4235, address(0), 4235, 100, 4);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InvalidQuantity.selector,
+        "InventorySystem: invalid quantity",
+        items[0].quantity,
+        items[0].quantity
+      )
+    );
+    inventory.withdrawFromInventory(smartObjectId, items);
   }
 }

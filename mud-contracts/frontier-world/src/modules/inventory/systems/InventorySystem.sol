@@ -140,7 +140,6 @@ contract InventorySystem is EveSystem {
     InventoryItemTableData memory itemData
   ) private {
     InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
-    // InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
     uint256[] memory inventoryItems = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId);
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
     InventoryTable.updateItems(_namespace().inventoryTableId(), smartObjectId, itemData.index, lastElement);
