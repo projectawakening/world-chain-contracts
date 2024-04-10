@@ -25,6 +25,8 @@ interface ISmartDeployable {
 
   function setFuelConsumptionPerMinute(uint256 fuelConsumptionPerMinute) external;
 
+  function setFuelMaxCapacity(uint256 entityId, uint256 amount) external;
+  
   function depositFuel(uint256 entityId, uint256 amount) external;
 
   function withdrawFuel(uint256 entityId, uint256 amount) external;

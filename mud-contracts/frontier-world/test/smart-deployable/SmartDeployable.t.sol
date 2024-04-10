@@ -30,6 +30,8 @@ import { DeployableState, DeployableStateData } from "../../src/codegen/tables/D
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../src/codegen/tables/DeployableFuelBalance.sol";
 import { LocationTable, LocationTableData } from "../../src/codegen/tables/LocationTable.sol";
 
+import { DEFAULT_DEPLOYABLE_FUEL_STORAGE } from "../../src/modules/smart-deployable/constants.sol";
+
 contract smartDeployableTest is Test {
   using Utils for bytes14;
   using LocationUtils for bytes14;
@@ -152,7 +154,9 @@ contract smartDeployableTest is Test {
   function testDepositFuel(uint256 entityId, uint256 fuelAmount) public {
     vm.assume(entityId != 0);
     vm.assume(fuelAmount != 0);
+    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE);
 
+    testRegisterDeployable(entityId);
     smartDeployable.depositFuel(entityId, fuelAmount);
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(
       DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
@@ -163,7 +167,8 @@ contract smartDeployableTest is Test {
   }
 
   function testDepositFuelTwice(uint256 entityId, uint256 fuelAmount) public {
-    vm.assume(fuelAmount <= UINT256_MAX / 2);
+    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE / 2);
+
     testDepositFuel(entityId, fuelAmount);
     smartDeployable.depositFuel(entityId, fuelAmount);
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(
@@ -183,13 +188,14 @@ contract smartDeployableTest is Test {
   ) public {
     vm.assume(ratePerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
     vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
-
+    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE);
     uint256 fuelConsumption = timeElapsed * (ratePerMinute / 60);
     vm.assume(fuelAmount > fuelConsumption);
+
     testSetFuelConsumptionPerMinute(ratePerMinute);
     testDepositFuel(entityId, fuelAmount);
-    testBringOnline(entityId, location);
-
+    smartDeployable.anchor(entityId, location);
+    smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsed);
     smartDeployable.updateFuel(entityId);
 
@@ -210,13 +216,14 @@ contract smartDeployableTest is Test {
   ) public {
     vm.assume(ratePerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
     vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
+    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE);
 
     uint256 fuelConsumption = timeElapsed * (ratePerMinute / 60);
     vm.assume(fuelAmount < fuelConsumption); // this time we want to run out of fuel
     testSetFuelConsumptionPerMinute(ratePerMinute);
     testDepositFuel(entityId, fuelAmount);
-    testBringOnline(entityId, location);
-
+    smartDeployable.anchor(entityId, location);
+    smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsed);
     smartDeployable.updateFuel(entityId);
 
@@ -245,14 +252,23 @@ contract smartDeployableTest is Test {
     vm.assume(timeElapsedBeforeOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
     vm.assume(timeElapsedAfterOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
     vm.assume(globalOfflineDuration < 7 days); // Example constraint: timeElapsed is less than 7 days in seconds
-
     uint256 fuelConsumption = timeElapsedBeforeOffline * (ratePerMinute / 60);
     fuelConsumption += timeElapsedAfterOffline * (ratePerMinute / 60);
     vm.assume(fuelAmount > fuelConsumption); // this time we want to run out of fuel
+    
     testSetFuelConsumptionPerMinute(ratePerMinute);
-    testDepositFuel(entityId, fuelAmount);
-    testBringOnline(entityId, location);
 
+    // have to disable fuel max inventory because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]
+    // error, since we're filtering quite a lot of possible input tuples
+    smartDeployable.registerDeployable(entityId);
+    smartDeployable.setFuelMaxCapacity(entityId, UINT256_MAX);
+    console.log("fuel max capacity: ", DeployableFuelBalance.getFuelMaxCapacity(
+      DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
+      entityId
+    ));
+    smartDeployable.depositFuel(entityId, fuelAmount);
+    smartDeployable.anchor(entityId, location);
+    smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsedBeforeOffline);
     smartDeployable.globalOffline();
     vm.warp(block.timestamp + globalOfflineDuration);
