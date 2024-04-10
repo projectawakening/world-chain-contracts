@@ -13,9 +13,9 @@ import { registerERC20 } from "@latticexyz/world-modules/src/modules/erc20-puppe
 import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-puppet/tables/ERC20Metadata.sol";
 
 contract CreateERC20 is Script {
-  function run() external {
-    StoreSwitch.setStoreAddress(0x004BfD5E619AFE26AbD52DfA50f1c047cF7d6151);
-    IBaseWorld world = IBaseWorld(0x004BfD5E619AFE26AbD52DfA50f1c047cF7d6151);
+  function run(address worldAddress) external {
+    StoreSwitch.setStoreAddress(worldAddress);
+    IBaseWorld world = IBaseWorld(worldAddress);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     string memory namespace = vm.envString("ERC20_NAMESPACE");

@@ -134,6 +134,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     );
   }
 
+  // TODO: this is kinda dirty.
   function _locationLib() internal view returns (LocationLib.World memory) {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(LOCATION_DEPLOYMENT_NAMESPACE))) {
       return LocationLib.World({ iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE });

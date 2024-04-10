@@ -35,10 +35,10 @@ echo "------------------------- Deploying world core ---------------------"
 # pnpm nx run-many -t deploy --projects "standard-contracts/**"
 pnpm nx deploy:devnet @eve/frontier-world-core
 wait
-export WORLD_ADDRESS=$(cat ./mud-contracts/core/deploys/3531000/latest.json | jq '.worldAddress' | tr -d \")
+export WORLD_ADDRESS_DEPLOYMENT=$(cat ./mud-contracts/core/deploys/3531000/latest.json | jq '.worldAddress' | tr -d \")
 
 echo "==================== World Core deployed ===================="
-echo "World Address: $WORLD_ADDRESS"
+echo "World Address: $WORLD_ADDRESS_DEPLOYMENT"
 
 
 echo "------------------------- Configuring trusted forwarder ---------------------"
@@ -46,11 +46,12 @@ pnpm nx setForwarder:devnet @eve/frontier-world-core
 echo "==================== Trusted forwarder configured ===================="
 
 echo "---------------------- Deploying smart object framework ---------------------"
-pnpm nx deploy:devnet @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS}'
+pnpm nx deploy:devnet @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS_DEPLOYMENT}'
 wait
 echo "==================== Smart object framework deployed ===================="
 
 
 echo "==================== Deploying Frontier world modules ===================="
-pnpm nx deploy:devnet @eve/frontier-world --worldAddress '${WORLD_ADDRESS}'
-pnpm nx post-deploy:devnet @eve/frontier-world
+pnpm nx deploy:devnet @eve/frontier-world --worldAddress '${WORLD_ADDRESS_DEPLOYMENT}'
+wait 
+pnpm nx post-deployment @eve/frontier-world

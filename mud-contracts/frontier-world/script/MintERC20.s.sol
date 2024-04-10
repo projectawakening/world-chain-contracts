@@ -13,8 +13,7 @@ import { registerERC20 } from "@latticexyz/world-modules/src/modules/erc20-puppe
 import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-puppet/tables/ERC20Metadata.sol";
 
 contract MintERC20 is Script {
-  function run() external {
-    address worldAddress = vm.envAddress("WORLD_ADDRESS_ENV");
+  function run(address worldAddress) external {
     address erc20Address = vm.envAddress("TARGET_ERC20");
     address to = vm.envAddress("MINT_TO");
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
