@@ -20,11 +20,11 @@ cd ../mud-contracts/core/
 pnpm run deploy:local
 
 # Capture WorldContract Address from JSON file
-export WORLD_ADDRESS_DEPLOYMENT=$(cat deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
+export WORLD_ADDRESS=$(cat deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
 
 
 echo "==================== World Contract Deployed ===================="
-echo "World Address: $WORLD_ADDRESS_DEPLOYMENT"
+echo "World Address: $WORLD_ADDRESS"
 
 wait
 
@@ -35,7 +35,7 @@ wait
 # Deploy frontier-world
 echo "==================== Deploying Frontier World ===================="
 cd ../frontier-world
-pnpm run deploy:local --worldAddress $WORLD_ADDRESS_DEPLOYMENT
+pnpm run deploy:local --worldAddress $WORLD_ADDRESS
 
 # Navigate back to standard-contracts
 cd ../../standard-contracts/
