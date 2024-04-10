@@ -22,4 +22,14 @@ interface ISmartDeployable {
   function globalOffline() external;
 
   function globalOnline() external;
+
+  function setFuelConsumptionPerMinute(uint256 fuelConsumptionPerMinute) external;
+
+  function depositFuel(uint256 entityId, uint256 amount) external;
+
+  function withdrawFuel(uint256 entityId, uint256 amount) external;
+
+  function updateFuel(uint256 entityId) external;
+
+  function currentFuelAmount(uint256 entityId) external view returns (uint256 amount);
 }
