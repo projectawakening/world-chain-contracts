@@ -13,6 +13,14 @@ import { InventoryItem } from "../../types.sol";
 contract EphemeralInventorySystem is EveSystem {
   using Utils for bytes14;
 
+  /**
+   * @notice Set the ephemeral inventory capacity
+   * @dev Set the ephemeral inventory capacity by smart storage unit id
+   * //TODO Only owner of the smart storage unit can set the capacity
+   * @param smartObjectId The smart storage unit id
+   * @param inventoryOwner The owner of the inventory
+   * @param ephemeralStorageCapacity The storage capacity
+   */
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
     address inventoryOwner,
@@ -31,11 +39,20 @@ contract EphemeralInventorySystem is EveSystem {
     );
   }
 
+  /**
+   * @notice Deposit items to the ephemeral inventory
+   * @dev Deposit items to the ephemeral inventory by smart storage unit id
+   * //TODO msg.sender should be the item owner
+   * @param smartObjectId The smart storage unit id
+   * @param inventoryOwner The owner of the inventory
+   * @param items The items to deposit to the inventory
+   */
   function depositToEphemeralInventory(
     uint256 smartObjectId,
     address inventoryOwner,
     InventoryItem[] memory items
   ) public {
+    //Make sure items are created before depositing items into the inventory
     uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
       _namespace().ephemeralInventoryTableId(),
       smartObjectId,
@@ -59,6 +76,14 @@ contract EphemeralInventorySystem is EveSystem {
     );
   }
 
+  /**
+   * @notice Withdraw items from the ephemeral inventory
+   * @dev Withdraw items from the ephemeral inventory by smart storage unit id
+   * //TODO msg.sender should be the item owner
+   * @param smartObjectId The smart storage unit id
+   * @param inventoryOwner The owner of the inventory
+   * @param items The items to withdraw from the inventory
+   */
   function withdrawFromEphemeralInventory(
     uint256 smartObjectId,
     address inventoryOwner,
@@ -82,8 +107,15 @@ contract EphemeralInventorySystem is EveSystem {
     );
   }
 
-  function interact(uint256 smartObjectId, bytes memory interactionData) public {
-    //Implement the logic to interact with the inventory
+  /**
+   * @notice Interact with the inventory
+   * @dev Function for external hook implementation
+   * @param smartObjectId The smart object id
+   * @param owner The owner of the inventory
+   * @param interactionParams The interaction data
+   */
+  function interact(uint256 smartObjectId, address owner, bytes memory interactionParams) public {
+    //Function for external hook implementation
   }
 
   function _systemId() internal view returns (ResourceId) {

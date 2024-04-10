@@ -7,9 +7,11 @@ import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldReso
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "./constants.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, InventoryItem } from "../types.sol";
 
+import { EntityRecordLib } from "../entity-record/EntityRecordLib.sol";
+
 contract SmartStorageUnit is System {
   using WorldResourceIdInstance for ResourceId;
-
+  
   /**
    * @notice Create and anchor a smart storage unit
    * @dev Create and anchor a smart storage unit by smart object id
@@ -39,9 +41,18 @@ contract SmartStorageUnit is System {
    * @param smartObjectId The smart object id
    * @param item The item to create
    */
-  function createAndDepositItem(uint256 smartObjectId, InventoryItem memory item) public {
+  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem memory item) public {
     //Check if the item exists on-chain if not Create entityRecord
     //Deposit item to the inventory
+  }
+
+  function createAndDepositItemsToEphemeralInventory(
+    uint256 smartObjectId,
+    address inventoryOwner,
+    InventoryItem[] memory items
+  ) public {
+    //Check if the item exists on-chain if not Create entityRecord
+    //Deposit item to the ephemeral inventory
   }
 
   function smartStorageUnitSystemId() public pure returns (ResourceId) {

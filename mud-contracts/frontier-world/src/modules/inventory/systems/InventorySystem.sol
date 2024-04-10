@@ -30,7 +30,7 @@ contract InventorySystem is EveSystem {
   /**
    * @notice Deposit items to the inventory
    * @dev Deposit items to the inventory by smart storage unit id
-   * //TODO Only owner of the smart storage unit can deposit items in the inventory
+   * //TODO Only owner(msg.sender) of the smart storage unit can deposit items in the inventory
    * @param smartObjectId The smart storage unit id
    * @param items The items to deposit to the inventory
    */
@@ -49,7 +49,7 @@ contract InventorySystem is EveSystem {
   /**
    * @notice Withdraw items from the inventory
    * @dev Withdraw items from the inventory by smart storage unit id
-   * //TODO Only owner of the smart storage unit can withdraw items from the inventory
+   * //TODO Only owner(msg.sender) of the smart storage unit can withdraw items from the inventory
    * @param smartObjectId The smart storage unit id
    * @param items The items to withdraw from the inventory
    */
