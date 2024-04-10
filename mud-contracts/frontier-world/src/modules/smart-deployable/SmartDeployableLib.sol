@@ -70,4 +70,40 @@ library SmartDeployableLib {
   function globalOnline(World memory world) internal {
     world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOnline, ()));
   }
+
+  function setFuelConsumptionPerMinute(World memory world, uint256 fuelConsumptionPerMinute) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.setFuelConsumptionPerMinute, (fuelConsumptionPerMinute))
+    );
+  }
+
+  function depositFuel(World memory world, uint256 entityId, uint256 amount) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.depositFuel, (entityId, amount))
+    );
+  }
+
+  function withdrawFuel(World memory world, uint256 entityId, uint256 amount) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.withdrawFuel, (entityId, amount))
+    );
+  }
+
+  function updateFuel(World memory world, uint256 entityId) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.updateFuel, (entityId))
+    );
+  }
+
+  function currentFuelAmount(World memory world, uint256 entityId) internal returns (uint256 amount) {
+    bytes memory returnData = world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.currentFuelAmount, (entityId))
+    );
+    return abi.decode(returnData, (uint256));
+  }
 }

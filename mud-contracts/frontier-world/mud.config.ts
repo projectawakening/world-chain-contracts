@@ -159,8 +159,11 @@ export default mudConfig({
     GlobalDeployableState: {
       keySchema: {},
       valueSchema: {
-        globalState: "State",
         updatedBlockNumber: "uint256",
+        fuelConsumptionPerMinute: "uint256",
+        globalState: "State",
+        lastGlobalOffline: "uint256",
+        lastGlobalOnline: "uint256",
       },
       tableIdArgument: true,
     },
@@ -175,6 +178,20 @@ export default mudConfig({
         createdAt: "uint256",
         state: "State",
         updatedBlockNumber: "uint256",
+        updatedBlockTime: "uint256",
+      },
+      tableIdArgument: true,
+    },
+    /**
+     *
+     */
+    DeployableFuelBalance: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        fuelAmount: "uint256",
+        lastUpdatedAt: "uint256", //UNIX time
       },
       tableIdArgument: true,
     },

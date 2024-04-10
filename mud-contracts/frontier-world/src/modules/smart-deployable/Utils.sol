@@ -9,7 +9,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 
 import { SMART_DEPLOYABLE_SYSTEM_NAME, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
-import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME } from "./constants.sol";
+import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME, FUEL_BALANCE_TABLE_NAME } from "./constants.sol";
 
 library Utils {
   function globalStateTableId(bytes14 namespace) internal view returns (ResourceId) {
@@ -27,6 +27,15 @@ library Utils {
         typeId: RESOURCE_TABLE,
         namespace: _namespace(namespace),
         name: DEPLOYABLE_STATE_TABLE_NAME
+      });
+  }
+
+  function deployableFuelBalanceTableId(bytes14 namespace) internal view returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: _namespace(namespace),
+        name: FUEL_BALANCE_TABLE_NAME
       });
   }
 

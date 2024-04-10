@@ -95,10 +95,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    */
   function _baseURI() internal view virtual returns (string memory) {
     return
-      StaticDataGlobalTable.getBaseURI(
-        _staticDataNamespace().staticDataGlobalTableId(),
-        _namespace().erc721SystemId()
-      );
+      StaticDataGlobalTable.getBaseURI(_staticDataNamespace().staticDataGlobalTableId(), _namespace().erc721SystemId());
   }
 
   /**
@@ -555,7 +552,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
   }
 
-    // TODO: this is kinda dirty also.
+  // TODO: this is kinda dirty also.
   function _staticDataNamespace() internal view returns (bytes14) {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
       return FRONTIER_WORLD_DEPLOYMENT_NAMESPACE;
