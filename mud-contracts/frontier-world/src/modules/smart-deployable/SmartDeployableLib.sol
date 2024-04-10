@@ -78,6 +78,13 @@ library SmartDeployableLib {
     );
   }
 
+  function setFuelMaxCapacity(World memory world, uint256 entityId, uint256 amount) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.setFuelMaxCapacity, (entityId, amount))
+    );
+  }
+
   function depositFuel(World memory world, uint256 entityId, uint256 amount) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),

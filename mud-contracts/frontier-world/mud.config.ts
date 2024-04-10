@@ -190,6 +190,7 @@ export default mudConfig({
         smartObjectId: "uint256",
       },
       valueSchema: {
+        fuelMaxCapacity: "uint256",
         fuelAmount: "uint256",
         lastUpdatedAt: "uint256", //UNIX time
       },

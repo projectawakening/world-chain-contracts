@@ -18,7 +18,7 @@ import { State } from "../types.sol";
 import { Utils } from "../Utils.sol";
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
-import { FUEL_DECIMALS } from "../constants.sol";
+import { FUEL_DECIMALS, DEFAULT_DEPLOYABLE_FUEL_STORAGE } from "../constants.sol";
 
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
@@ -65,6 +65,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         updatedBlockTime: block.timestamp
       })
     );
+    DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, DEFAULT_DEPLOYABLE_FUEL_STORAGE);
+    DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -158,12 +160,33 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   }
 
   /**
+   * @dev sets a new maximum fuel storage quantity for a Smart Deployable
+   * TODO: needs to make that function admin-only
+   * @param entityId to set the storage cap to
+   * @param amount of max fuel (for now Fuel has 18 decimals like regular ERC20 balances)
+   */
+  function setFuelMaxCapacity(uint256 entityId, uint256 amount) public {
+    DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, amount);
+  }
+
+  /**
    * @dev deposit an amount of fuel for a Smart Deployable
    * TODO: needs to make that function admin-only
    * @param entityId to deposit fuel to
    * @param amount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
   function depositFuel(uint256 entityId, uint256 amount) public {
+    _updateFuel(entityId);
+    if(DeployableFuelBalance.getFuelAmount(
+        _namespace().deployableFuelBalanceTableId(),
+        entityId) + amount 
+        >
+        DeployableFuelBalance.getFuelMaxCapacity(
+        _namespace().deployableFuelBalanceTableId(),
+        entityId
+      )) {
+      revert SmartDeployable_TooMuchFuelDeposited(entityId, amount);
+    }
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
@@ -184,6 +207,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param amount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
   function withdrawFuel(uint256 entityId, uint256 amount) public {
+    _updateFuel(entityId);
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
@@ -198,6 +222,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
 
   /**
    * @dev updates the amount of fuel on tables (allows event firing through table write op)
+   * TODO: this should be a class-level hook that we attach to all and any function related to smart-deployables,
+   * or that compose with it
    * @param entityId to update
    */
   function updateFuel(uint256 entityId) public {
