@@ -3,15 +3,52 @@ pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+
 import { EphemeralInventoryTable } from "../../../codegen/tables/EphemeralInventoryTable.sol";
 import { EphemeralInvItemTable } from "../../../codegen/tables/EphemeralInvItemTable.sol";
 import { EphemeralInvItemTableData } from "../../../codegen/tables/EphemeralInvItemTable.sol";
+import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
+import { State } from "../../../codegen/common.sol";
+
+import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils } from "../Utils.sol";
+import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { InventoryItem } from "../../types.sol";
+
+import { console } from "forge-std/console.sol";
 
 contract EphemeralInventorySystem is EveSystem {
   using Utils for bytes14;
+  using SmartDeployableUtils for bytes14;
+
+  /**
+   * modifier to enforce online state for an smart deployable
+   * @param smartObjectId is the smart deployable id
+   */
+  modifier onlyOnline(uint256 smartObjectId) {
+    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
+    if (currentState == State.OFFLINE) {
+      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
+    } else if (currentState != State.ONLINE) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
+    }
+    _;
+  }
+
+  /**
+   * modifier to enforce any state above anchored state for an smart deployable
+   * @param smartObjectId is the smart deployable id
+   */
+  modifier beyondAnchored(uint256 smartObjectId) {
+    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
+    if (currentState == State.OFFLINE) {
+      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
+    } else if (uint8(currentState) <= uint8(State.ANCHORED)) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ANCHORED, currentState);
+    }
+    _;
+  }
 
   /**
    * @notice Set the ephemeral inventory capacity
@@ -25,7 +62,7 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 smartObjectId,
     address inventoryOwner,
     uint256 ephemeralStorageCapacity
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.EphemeralInventory_InvalidCapacity(
         "InventoryEphemeralSystem: storage capacity cannot be 0"
@@ -51,7 +88,7 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 smartObjectId,
     address inventoryOwner,
     InventoryItem[] memory items
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
     //Make sure items are created before depositing items into the inventory
     uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
       _namespace().ephemeralInventoryTableId(),
@@ -88,7 +125,7 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 smartObjectId,
     address inventoryOwner,
     InventoryItem[] memory items
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
     uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
       _namespace().ephemeralInventoryTableId(),
       smartObjectId,
@@ -114,7 +151,11 @@ contract EphemeralInventorySystem is EveSystem {
    * @param owner The owner of the inventory
    * @param interactionParams The interaction data
    */
-  function interact(uint256 smartObjectId, address owner, bytes memory interactionParams) public {
+  function interact(
+    uint256 smartObjectId,
+    address owner,
+    bytes memory interactionParams
+  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
     //Function for external hook implementation
   }
 

@@ -11,7 +11,7 @@ import { EntityRecordLib } from "../entity-record/EntityRecordLib.sol";
 
 contract SmartStorageUnit is System {
   using WorldResourceIdInstance for ResourceId;
-  
+
   /**
    * @notice Create and anchor a smart storage unit
    * @dev Create and anchor a smart storage unit by smart object id

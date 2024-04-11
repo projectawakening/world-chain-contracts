@@ -35,7 +35,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     } else if (
       uint256(DeployableState.getState(_namespace().deployableStateTableId(), entityId)) != uint256(reqState)
     ) {
-      revert SmartDeployable_incorrectState(
+      revert SmartDeployable_IncorrectState(
         entityId,
         reqState,
         DeployableState.getState(_namespace().deployableStateTableId(), entityId)

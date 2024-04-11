@@ -3,16 +3,53 @@ pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+
+import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { InventoryTable } from "../../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../../codegen/tables/InventoryItemTable.sol";
 import { InventoryItemTableData } from "../../../codegen/tables/InventoryItemTable.sol";
 import { InventoryTableData } from "../../../codegen/tables/InventoryTable.sol";
+import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
+import { State } from "../../../codegen/common.sol";
+
 import { InventoryItem } from "../../types.sol";
 import { Utils } from "../Utils.sol";
+import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+
 import { IInventoryErrors } from "../IInventoryErrors.sol";
+import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 
 contract InventorySystem is EveSystem {
   using Utils for bytes14;
+  using SmartDeployableUtils for bytes14;
+
+  /**
+   * modifier to enforce online state for an smart deployable
+   * @param smartObjectId is the smart deployable id
+   */
+  modifier onlyOnline(uint256 smartObjectId) {
+    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
+    if (currentState == State.OFFLINE) {
+      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
+    } else if (currentState != State.ONLINE) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
+    }
+    _;
+  }
+
+  /**
+   * modifier to enforce any state above anchored state for an smart deployable
+   * @param smartObjectId is the smart deployable id
+   */
+  modifier beyondAnchored(uint256 smartObjectId) {
+    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
+    if (currentState == State.OFFLINE) {
+      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
+    } else if (uint8(currentState) <= uint8(State.ANCHORED)) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ANCHORED, currentState);
+    }
+    _;
+  }
 
   /**
    * @notice Set the inventory capacity
@@ -20,7 +57,10 @@ contract InventorySystem is EveSystem {
    * @param smartObjectId The smart storage unit id
    * @param storageCapacity The storage capacity
    */
-  function setInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
+  function setInventoryCapacity(
+    uint256 smartObjectId,
+    uint256 storageCapacity
+  ) public hookable(smartObjectId, _systemId()) {
     if (storageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventorySystem: storage capacity cannot be 0");
     }
@@ -34,7 +74,10 @@ contract InventorySystem is EveSystem {
    * @param smartObjectId The smart storage unit id
    * @param items The items to deposit to the inventory
    */
-  function depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+  function depositToInventory(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 itemsLength = items.length;
@@ -53,7 +96,10 @@ contract InventorySystem is EveSystem {
    * @param smartObjectId The smart storage unit id
    * @param items The items to withdraw from the inventory
    */
-  function withdrawFromInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+  function withdrawFromInventory(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 itemsLength = items.length;
 

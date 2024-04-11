@@ -13,10 +13,13 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
+import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EphemeralInventoryTable } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
 import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
+import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
@@ -26,6 +29,7 @@ import { InventoryItem } from "../../src/modules/types.sol";
 
 contract EphemeralInventoryTest is Test {
   using Utils for bytes14;
+  using SmartDeployableUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
 
@@ -53,6 +57,7 @@ contract EphemeralInventoryTest is Test {
     vm.assume(storageCapacity != 0);
     vm.assume(owner != address(0));
 
+    DeployableState.setState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), smartObjectId, State.ONLINE);
     ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
     assertEq(
       EphemeralInventoryTable.getCapacity(DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(), smartObjectId, owner),

@@ -14,12 +14,15 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
+import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { InventoryTable } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryTableData } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../src/codegen/tables/InventoryItemTable.sol";
 import { InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
+import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
@@ -28,6 +31,7 @@ import { InventoryItem } from "../../src/modules/types.sol";
 
 contract InventoryTest is Test {
   using Utils for bytes14;
+  using SmartDeployableUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
 
@@ -54,6 +58,7 @@ contract InventoryTest is Test {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
 
+    DeployableState.setState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), smartObjectId, State.ONLINE);
     inventory.setInventoryCapacity(smartObjectId, storageCapacity);
     assertEq(InventoryTable.getCapacity(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId), storageCapacity);
   }
@@ -79,7 +84,7 @@ contract InventoryTest is Test {
     items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
     items[2] = InventoryItem(4237, address(2), 4237, 150, 2);
 
-    inventory.setInventoryCapacity(smartObjectId, storageCapacity);
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryTableData memory inventoryTableData = InventoryTable.get(
       DEPLOYMENT_NAMESPACE.inventoryTableId(),
       smartObjectId
@@ -104,8 +109,7 @@ contract InventoryTest is Test {
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
-    inventory.setInventoryCapacity(smartObjectId, storageCapacity);
-
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(4235, address(0), 4235, 100, 6);
 
