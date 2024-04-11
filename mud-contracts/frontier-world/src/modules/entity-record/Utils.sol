@@ -15,7 +15,7 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: name });
   }
 
-  function entityRecordTableTableId(bytes14 namespace) internal pure returns (ResourceId) {
+  function entityRecordTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ENTITY_RECORD_TABLE_NAME });
   }
 

@@ -10,18 +10,21 @@ import { InventoryItemTable } from "../../../codegen/tables/InventoryItemTable.s
 import { InventoryItemTableData } from "../../../codegen/tables/InventoryItemTable.sol";
 import { InventoryTableData } from "../../../codegen/tables/InventoryTable.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
+import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { State } from "../../../codegen/common.sol";
+
+import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
+import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 
 import { InventoryItem } from "../../types.sol";
 import { Utils } from "../Utils.sol";
-import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
-
 import { IInventoryErrors } from "../IInventoryErrors.sol";
-import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 
 contract InventorySystem is EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
+  using EntityRecordUtils for bytes14;
 
   /**
    * modifier to enforce online state for an smart deployable
@@ -83,6 +86,14 @@ contract InventorySystem is EveSystem {
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
+      //Revert if the items to deposit is not created on-chain
+      EntityRecordTableData memory entityRecord = EntityRecordTable.get(
+        _namespace().entityRecordTableId(),
+        items[i].inventoryItemId
+      );
+      if (entityRecord.volume <= 0) {
+        revert IInventoryErrors.Inventory_InvalidItem("InventorySystem: item is not created on-chain", items[i].typeId);
+      }
       usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
     }
 

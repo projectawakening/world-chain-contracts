@@ -14,11 +14,13 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
+import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { EphemeralInventoryTable } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
 import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
@@ -30,6 +32,7 @@ import { InventoryItem } from "../../src/modules/types.sol";
 contract EphemeralInventoryTest is Test {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
+  using EntityRecordUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
 
@@ -44,6 +47,11 @@ contract EphemeralInventoryTest is Test {
     baseWorld.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     ephemeralInventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+
+    //Mock Item creation
+    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
+    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
+    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
   }
 
   function testSetup() public {
@@ -69,7 +77,7 @@ contract EphemeralInventoryTest is Test {
     vm.assume(storageCapacity == 0);
     vm.expectRevert(
       abi.encodeWithSelector(
-        IInventoryErrors.EphemeralInventory_InvalidCapacity.selector,
+        IInventoryErrors.Inventory_InvalidCapacity.selector,
         "InventoryEphemeralSystem: storage capacity cannot be 0"
       )
     );
@@ -131,7 +139,7 @@ contract EphemeralInventoryTest is Test {
 
     vm.expectRevert(
       abi.encodeWithSelector(
-        IInventoryErrors.Inventory_InsufficientEphemeralCapacity.selector,
+        IInventoryErrors.Inventory_InsufficientCapacity.selector,
         "InventoryEphemeralSystem: insufficient capacity",
         storageCapacity,
         items[0].volume * items[0].quantity

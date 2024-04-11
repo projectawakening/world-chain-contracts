@@ -15,6 +15,7 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
+import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { InventoryTable } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryTableData } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../src/codegen/tables/InventoryItemTable.sol";
@@ -22,6 +23,7 @@ import { InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTa
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
@@ -32,6 +34,7 @@ import { InventoryItem } from "../../src/modules/types.sol";
 contract InventoryTest is Test {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
+  using EntityRecordUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
 
@@ -46,6 +49,11 @@ contract InventoryTest is Test {
     baseWorld.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     inventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+
+    //Mock Item creation
+    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
+    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
+    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
   }
 
   function testSetup() public {

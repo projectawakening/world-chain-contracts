@@ -8,19 +8,21 @@ import { EphemeralInventoryTable } from "../../../codegen/tables/EphemeralInvent
 import { EphemeralInvItemTable } from "../../../codegen/tables/EphemeralInvItemTable.sol";
 import { EphemeralInvItemTableData } from "../../../codegen/tables/EphemeralInvItemTable.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
+import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { State } from "../../../codegen/common.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
+import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
+
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils } from "../Utils.sol";
-import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { InventoryItem } from "../../types.sol";
-
-import { console } from "forge-std/console.sol";
 
 contract EphemeralInventorySystem is EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
+  using EntityRecordUtils for bytes14;
 
   /**
    * modifier to enforce online state for an smart deployable
@@ -64,9 +66,7 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 ephemeralStorageCapacity
   ) public hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
-      revert IInventoryErrors.EphemeralInventory_InvalidCapacity(
-        "InventoryEphemeralSystem: storage capacity cannot be 0"
-      );
+      revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
     EphemeralInventoryTable.setCapacity(
       _namespace().ephemeralInventoryTableId(),
@@ -89,7 +89,6 @@ contract EphemeralInventorySystem is EveSystem {
     address inventoryOwner,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
-    //Make sure items are created before depositing items into the inventory
     uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
       _namespace().ephemeralInventoryTableId(),
       smartObjectId,
@@ -103,6 +102,14 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
+      //Revert if the items to deposit is not created on-chain
+      uint256 volume = EntityRecordTable.getVolume(_namespace().entityRecordTableId(), items[i].inventoryItemId);
+      if (volume <= 0) {
+        revert IInventoryErrors.Inventory_InvalidItem(
+          "InventoryEphemeralSystem: item is not created on-chain",
+          items[i].typeId
+        );
+      }
       usedCapacity = processItemDeposit(smartObjectId, inventoryOwner, items[i], usedCapacity, maxCapacity, i);
     }
     EphemeralInventoryTable.setUsedCapacity(
@@ -174,7 +181,7 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 reqCapacity = item.volume * item.quantity;
 
     if ((usedCapacity + reqCapacity) > maxCapacity) {
-      revert IInventoryErrors.Inventory_InsufficientEphemeralCapacity(
+      revert IInventoryErrors.Inventory_InsufficientCapacity(
         "InventoryEphemeralSystem: insufficient capacity",
         maxCapacity,
         usedCapacity + reqCapacity
