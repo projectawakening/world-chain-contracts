@@ -91,9 +91,9 @@ contract EphemeralInventoryTest is Test {
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 150, 2);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
     testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
 
@@ -135,7 +135,7 @@ contract EphemeralInventoryTest is Test {
     testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 6);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -154,9 +154,9 @@ contract EphemeralInventoryTest is Test {
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 1);
-    items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 150, 1);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
 
     EphemeralInventoryTableData memory inventoryTableData = EphemeralInventoryTable.get(
       DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
@@ -168,7 +168,7 @@ contract EphemeralInventoryTest is Test {
     uint256 capacityAfterWithdrawal = 0;
     assertEq(capacityBeforeWithdrawal, 1000);
 
-    ephemeralInventory.withdrawFromEphermeralInventory(smartObjectId, owner, items);
+    ephemeralInventory.withdrawFromEphemeralInventory(smartObjectId, owner, items);
     for (uint256 i = 0; i < items.length; i++) {
       uint256 itemVolume = items[i].volume * items[i].quantity;
       capacityAfterWithdrawal += itemVolume;
@@ -195,7 +195,7 @@ contract EphemeralInventoryTest is Test {
     testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 6);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -205,7 +205,7 @@ contract EphemeralInventoryTest is Test {
         items[0].quantity
       )
     );
-    ephemeralInventory.withdrawFromEphermeralInventory(smartObjectId, owner, items);
+    ephemeralInventory.withdrawFromEphemeralInventory(smartObjectId, owner, items);
   }
 
   function testOnlyAdminCanSetEphemeralInventoryCapacity(

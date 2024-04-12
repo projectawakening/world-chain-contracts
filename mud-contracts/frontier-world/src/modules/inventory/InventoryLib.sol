@@ -69,7 +69,7 @@ library InventoryLib {
     );
   }
 
-  function withdrawFromEphermeralInventory(
+  function withdrawFromEphemeralInventory(
     World memory world,
     uint256 smartObjectId,
     address owner,

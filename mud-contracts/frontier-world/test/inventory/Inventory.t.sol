@@ -88,9 +88,9 @@ contract InventoryTest is Test {
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 150, 2);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryTableData memory inventoryTableData = InventoryTable.get(
@@ -119,7 +119,7 @@ contract InventoryTest is Test {
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 6);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -137,9 +137,9 @@ contract InventoryTest is Test {
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 1);
-    items[1] = InventoryItem(4236, address(1), 4236, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 150, 1);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(
       DEPLOYMENT_NAMESPACE.inventoryTableId(),
@@ -188,7 +188,7 @@ contract InventoryTest is Test {
     testDepositToInventory(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 100, 4);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 4);
 
     vm.expectRevert(
       abi.encodeWithSelector(
