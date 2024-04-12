@@ -24,10 +24,19 @@ library SmartDeployableLib {
     bytes14 namespace;
   }
 
-  function registerDeployable(World memory world, uint256 entityId) internal {
+  function registerDeployable(
+    World memory world,
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity
+  ) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.registerDeployable, (entityId))
+      abi.encodeCall(
+        ISmartDeployable.registerDeployable,
+        (entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity)
+      )
     );
   }
 
@@ -71,31 +80,35 @@ library SmartDeployableLib {
     world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOnline, ()));
   }
 
-  function setFuelConsumptionPerMinute(World memory world, uint256 fuelConsumptionPerMinute) internal {
+  function setFuelConsumptionPerMinute(
+    World memory world,
+    uint256 entityId,
+    uint256 fuelConsumptionPerMinute
+  ) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.setFuelConsumptionPerMinute, (fuelConsumptionPerMinute))
+      abi.encodeCall(ISmartDeployable.setFuelConsumptionPerMinute, (entityId, fuelConsumptionPerMinute))
     );
   }
 
-  function setFuelMaxCapacity(World memory world, uint256 entityId, uint256 amount) internal {
+  function setFuelMaxCapacity(World memory world, uint256 entityId, uint256 capacityInWei) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.setFuelMaxCapacity, (entityId, amount))
+      abi.encodeCall(ISmartDeployable.setFuelMaxCapacity, (entityId, capacityInWei))
     );
   }
 
-  function depositFuel(World memory world, uint256 entityId, uint256 amount) internal {
+  function depositFuel(World memory world, uint256 entityId, uint256 unitAmount) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.depositFuel, (entityId, amount))
+      abi.encodeCall(ISmartDeployable.depositFuel, (entityId, unitAmount))
     );
   }
 
-  function withdrawFuel(World memory world, uint256 entityId, uint256 amount) internal {
+  function withdrawFuel(World memory world, uint256 entityId, uint256 unitAmount) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.withdrawFuel, (entityId, amount))
+      abi.encodeCall(ISmartDeployable.withdrawFuel, (entityId, unitAmount))
     );
   }
 

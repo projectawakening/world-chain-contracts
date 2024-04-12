@@ -6,7 +6,6 @@ import { RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol
 
 // TODO: those value are placeholder ones, change before May release
 uint256 constant FUEL_DECIMALS = 18;
-uint256 constant DEFAULT_DEPLOYABLE_FUEL_STORAGE = 10000 * FUEL_DECIMALS;
 
 bytes16 constant SMART_DEPLOYABLE_MODULE_NAME = "SmartDeployable";
 bytes14 constant SMART_DEPLOYABLE_MODULE_NAMESPACE = "SmartDeployabl";

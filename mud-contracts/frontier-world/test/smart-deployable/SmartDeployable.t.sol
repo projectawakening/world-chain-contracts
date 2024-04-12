@@ -30,7 +30,7 @@ import { DeployableState, DeployableStateData } from "../../src/codegen/tables/D
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../src/codegen/tables/DeployableFuelBalance.sol";
 import { LocationTable, LocationTableData } from "../../src/codegen/tables/LocationTable.sol";
 
-import { DEFAULT_DEPLOYABLE_FUEL_STORAGE } from "../../src/modules/smart-deployable/constants.sol";
+import { FUEL_DECIMALS } from "../../src/modules/smart-deployable/constants.sol";
 
 contract smartDeployableTest is Test {
   using Utils for bytes14;
@@ -58,9 +58,19 @@ contract smartDeployableTest is Test {
     assertEq(smartDeployableSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
-  function testRegisterDeployable(uint256 entityId) public {
+  function testRegisterDeployable(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity
+  ) public {
+    smartDeployable.globalOnline();
+    smartDeployable.globalOffline();
     smartDeployable.globalOnline();
     vm.assume(entityId != 0);
+    vm.assume(fuelUnitVolume != 0);
+    vm.assume(fuelConsumptionPerMinute != 0);
+    vm.assume(fuelMaxCapacity != 0);
     DeployableStateData memory data = DeployableStateData({
       createdAt: block.timestamp,
       state: State.UNANCHORED,
@@ -68,7 +78,7 @@ contract smartDeployableTest is Test {
       updatedBlockTime: block.timestamp
     });
 
-    smartDeployable.registerDeployable(entityId);
+    smartDeployable.registerDeployable(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
     DeployableStateData memory tableData = DeployableState.get(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId);
 
     assertEq(data.createdAt, tableData.createdAt);
@@ -87,9 +97,15 @@ contract smartDeployableTest is Test {
     assertEq(true, true);
   }
 
-  function testAnchor(uint256 entityId, LocationTableData memory location) public {
+  function testAnchor(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location
+  ) public {
     vm.assume(entityId != 0);
-    testRegisterDeployable(entityId);
+    testRegisterDeployable(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
 
     smartDeployable.anchor(entityId, location);
     LocationTableData memory tableData = LocationTable.get(LOCATION_DEPLOYMENT_NAMESPACE.locationTableId(), entityId);
@@ -100,10 +116,16 @@ contract smartDeployableTest is Test {
     assertEq(location.z, tableData.z);
   }
 
-  function testBringOnline(uint256 entityId, LocationTableData memory location) public {
+  function testBringOnline(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location
+  ) public {
     vm.assume(entityId != 0);
 
-    testAnchor(entityId, location);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.bringOnline(entityId);
     assertEq(
       uint8(State.ONLINE),
@@ -111,10 +133,16 @@ contract smartDeployableTest is Test {
     );
   }
 
-  function testBringOffline(uint256 entityId, LocationTableData memory location) public {
+  function testBringOffline(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location
+  ) public {
     vm.assume(entityId != 0);
 
-    testBringOnline(entityId, location);
+    testBringOnline(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.bringOffline(entityId);
     assertEq(
       uint8(State.ANCHORED),
@@ -122,10 +150,16 @@ contract smartDeployableTest is Test {
     );
   }
 
-  function testUnanchor(uint256 entityId, LocationTableData memory location) public {
+  function testUnanchor(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location
+  ) public {
     vm.assume(entityId != 0);
 
-    testAnchor(entityId, location);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.unanchor(entityId);
     assertEq(
       uint8(State.UNANCHORED),
@@ -133,10 +167,16 @@ contract smartDeployableTest is Test {
     );
   }
 
-  function testDestroyDeployable(uint256 entityId, LocationTableData memory location) public {
+  function testDestroyDeployable(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location
+  ) public {
     vm.assume(entityId != 0);
 
-    testUnanchor(entityId, location);
+    testUnanchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.destroyDeployable(entityId);
     assertEq(
       uint8(State.DESTROYED),
@@ -144,57 +184,80 @@ contract smartDeployableTest is Test {
     );
   }
 
-  function testSetFuelConsumptionPerMinute(uint256 rate) public {
+  function testSetFuelConsumptionPerMinute(uint256 entityId, uint256 rate) public {
+    vm.assume(entityId != 0);
     vm.assume(rate != 0);
 
-    smartDeployable.setFuelConsumptionPerMinute(rate);
-    assertEq(GlobalDeployableState.getFuelConsumptionPerMinute(DEPLOYMENT_NAMESPACE.globalStateTableId()), rate);
+    smartDeployable.setFuelConsumptionPerMinute(entityId, rate);
+    assertEq(
+      DeployableFuelBalance.getFuelConsumptionPerMinute(DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(), entityId),
+      rate
+    );
   }
 
-  function testDepositFuel(uint256 entityId, uint256 fuelAmount) public {
+  function testDepositFuel(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location,
+    uint256 fuelUnitAmount
+  ) public {
     vm.assume(entityId != 0);
-    vm.assume(fuelAmount != 0);
-    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE);
+    vm.assume(fuelUnitAmount != 0);
+    vm.assume(fuelUnitAmount < type(uint64).max);
+    vm.assume(fuelUnitVolume < type(uint64).max);
+    vm.assume(fuelUnitAmount * fuelUnitVolume < fuelMaxCapacity);
 
-    testRegisterDeployable(entityId);
-    smartDeployable.depositFuel(entityId, fuelAmount);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    smartDeployable.depositFuel(entityId, fuelUnitAmount);
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(
       DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
       entityId
     );
-    assertEq(data.fuelAmount, fuelAmount);
+    assertEq(data.fuelAmount, fuelUnitAmount * (10 ** FUEL_DECIMALS));
     assertEq(data.lastUpdatedAt, block.timestamp);
   }
 
-  function testDepositFuelTwice(uint256 entityId, uint256 fuelAmount) public {
-    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE / 2);
+  function testDepositFuelTwice(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationTableData memory location,
+    uint256 fuelUnitAmount
+  ) public {
+    vm.assume(fuelUnitAmount < type(uint64).max / 2);
+    vm.assume(fuelUnitVolume < type(uint64).max / 2);
+    vm.assume(fuelUnitAmount * fuelUnitVolume * 2 < fuelMaxCapacity);
 
-    testDepositFuel(entityId, fuelAmount);
-    smartDeployable.depositFuel(entityId, fuelAmount);
+    testDepositFuel(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location, fuelUnitAmount);
+    smartDeployable.depositFuel(entityId, fuelUnitAmount);
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(
       DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
       entityId
     );
-    assertEq(data.fuelAmount, fuelAmount * 2);
+    assertEq(data.fuelAmount, fuelUnitAmount * 2 * (10 ** FUEL_DECIMALS));
     assertEq(data.lastUpdatedAt, block.timestamp);
   }
 
   function testFuelConsumption(
     uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
     LocationTableData memory location,
-    uint256 ratePerMinute,
-    uint256 fuelAmount,
+    uint256 fuelUnitAmount,
     uint256 timeElapsed
   ) public {
-    vm.assume(ratePerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
+    vm.assume(fuelUnitAmount < type(uint64).max);
+    vm.assume(fuelUnitVolume < type(uint64).max);
+    vm.assume(fuelConsumptionPerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
     vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
-    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE);
-    uint256 fuelConsumption = timeElapsed * (ratePerMinute / 60);
-    vm.assume(fuelAmount > fuelConsumption);
+    uint256 fuelConsumption = timeElapsed * (fuelConsumptionPerMinute / 60);
+    vm.assume(fuelUnitAmount * (10**FUEL_DECIMALS) > fuelConsumption);
 
-    testSetFuelConsumptionPerMinute(ratePerMinute);
-    testDepositFuel(entityId, fuelAmount);
-    smartDeployable.anchor(entityId, location);
+    testDepositFuel(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location, fuelUnitAmount);
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsed);
     smartDeployable.updateFuel(entityId);
@@ -203,26 +266,27 @@ contract smartDeployableTest is Test {
       DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
       entityId
     );
-    assertEq(data.fuelAmount, fuelAmount - fuelConsumption);
+    assertEq(data.fuelAmount, fuelUnitAmount * (10 ** FUEL_DECIMALS) - fuelConsumption);
     assertEq(data.lastUpdatedAt, block.timestamp);
   }
 
   function testFuelConsumptionRunsOut(
     uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
     LocationTableData memory location,
-    uint256 ratePerMinute,
-    uint256 fuelAmount,
+    uint256 fuelUnitAmount,
     uint256 timeElapsed
   ) public {
-    vm.assume(ratePerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
+    fuelUnitAmount %= 1000000; // more leniant than vm.assume
+    fuelConsumptionPerMinute /= 10**FUEL_DECIMALS;
+    vm.assume(fuelUnitVolume < type(uint128).max);
+    vm.assume(fuelConsumptionPerMinute > (10**FUEL_DECIMALS)/1000); // relatively high consumption
     vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
-    vm.assume(fuelAmount <= DEFAULT_DEPLOYABLE_FUEL_STORAGE);
-
-    uint256 fuelConsumption = timeElapsed * (ratePerMinute / 60);
-    vm.assume(fuelAmount < fuelConsumption); // this time we want to run out of fuel
-    testSetFuelConsumptionPerMinute(ratePerMinute);
-    testDepositFuel(entityId, fuelAmount);
-    smartDeployable.anchor(entityId, location);
+    uint256 fuelConsumption = timeElapsed * (fuelConsumptionPerMinute / 60);
+    vm.assume(fuelUnitAmount * (10**FUEL_DECIMALS) < fuelConsumption); // this time we want to run out of fuel
+    testDepositFuel(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location, fuelUnitAmount);
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsed);
     smartDeployable.updateFuel(entityId);
@@ -241,32 +305,33 @@ contract smartDeployableTest is Test {
 
   function testFuelRefundDuringGlobalOffline(
     uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
     LocationTableData memory location,
-    uint256 ratePerMinute,
-    uint256 fuelAmount,
+    uint256 fuelUnitAmount,
     uint256 timeElapsedBeforeOffline,
     uint256 globalOfflineDuration,
     uint256 timeElapsedAfterOffline
   ) public {
-    vm.assume(ratePerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
+    vm.assume(fuelUnitAmount < type(uint32).max);
+    vm.assume(fuelUnitVolume < type(uint128).max);
+    vm.assume(fuelConsumptionPerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
     vm.assume(timeElapsedBeforeOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
     vm.assume(timeElapsedAfterOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
     vm.assume(globalOfflineDuration < 7 days); // Example constraint: timeElapsed is less than 7 days in seconds
-    uint256 fuelConsumption = timeElapsedBeforeOffline * (ratePerMinute / 60);
-    fuelConsumption += timeElapsedAfterOffline * (ratePerMinute / 60);
-    vm.assume(fuelAmount > fuelConsumption); // this time we want to run out of fuel
-    
-    testSetFuelConsumptionPerMinute(ratePerMinute);
+    uint256 fuelConsumption = timeElapsedBeforeOffline * (fuelConsumptionPerMinute / 60);
+    fuelConsumption += timeElapsedAfterOffline * (fuelConsumptionPerMinute / 60);
+    vm.assume(fuelUnitAmount * (10 ** FUEL_DECIMALS) > fuelConsumption); // this time we want to run out of fuel
 
     // have to disable fuel max inventory because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]
     // error, since we're filtering quite a lot of possible input tuples
-    smartDeployable.registerDeployable(entityId);
+    smartDeployable.registerDeployable(entityId, fuelUnitVolume, fuelConsumptionPerMinute, UINT256_MAX);
     smartDeployable.setFuelMaxCapacity(entityId, UINT256_MAX);
-    console.log("fuel max capacity: ", DeployableFuelBalance.getFuelMaxCapacity(
-      DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
-      entityId
-    ));
-    smartDeployable.depositFuel(entityId, fuelAmount);
+    console.log(
+      "fuel max capacity: ",
+      DeployableFuelBalance.getFuelMaxCapacity(DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(), entityId)
+    );
+    smartDeployable.depositFuel(entityId, fuelUnitAmount);
     smartDeployable.anchor(entityId, location);
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsedBeforeOffline);
@@ -281,7 +346,7 @@ contract smartDeployableTest is Test {
       DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
       entityId
     );
-    assertEq(data.fuelAmount, fuelAmount - fuelConsumption);
+    assertEq(data.fuelAmount, fuelUnitAmount * (10**FUEL_DECIMALS) - fuelConsumption);
     assertEq(data.lastUpdatedAt, block.timestamp);
     assertEq(
       uint8(State.ONLINE),

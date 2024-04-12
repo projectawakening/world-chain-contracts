@@ -160,7 +160,6 @@ export default mudConfig({
       keySchema: {},
       valueSchema: {
         updatedBlockNumber: "uint256",
-        fuelConsumptionPerMinute: "uint256",
         globalState: "State",
         lastGlobalOffline: "uint256",
         lastGlobalOnline: "uint256",
@@ -190,6 +189,8 @@ export default mudConfig({
         smartObjectId: "uint256",
       },
       valueSchema: {
+        fuelUnitVolume: "uint256",
+        fuelConsumptionPerMinute: "uint256",
         fuelMaxCapacity: "uint256",
         fuelAmount: "uint256",
         lastUpdatedAt: "uint256", //UNIX time
