@@ -2,7 +2,10 @@
 
 This image contains the packaged source code required to build, test and deploy the Frontier world as a whole.
 
-# Installation 
+## Building the image
+
+
+## Installation 
 Pull the image from our docker registry (URL TBD).
 
 and run it with the command: 
@@ -16,7 +19,8 @@ Make sure to have a running EVM node available and pass the appropriate url as a
 
 To ABIs from this deployer image you can run: 
 
-```bash 
-docker cp frontier-deployer-container:/monorepo/abis .
+```bash
+docker cp frontier-world-deployer:/monorepo/abis .
 ```
 This copies the directory containing the ABIs from the deployment into your current directory.
+

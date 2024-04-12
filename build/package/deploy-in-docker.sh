@@ -64,7 +64,7 @@ show_progress 0 6
 
 #1 Deploying the standard contracts
 echo " - Deploying standard contracts..."
-pnpm nx run @eve/frontier-standard-contracts:deploy &> '/dev/null'
+pnpm nx run @eve/frontier-standard-contracts:deploy 1> '/dev/null'
 wait
 show_progress 1 6
 
@@ -72,7 +72,7 @@ export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/31337
 
 #2 Deploy the world core
 echo " - Deploying frontier world..."
-pnpm nx deploy @eve/frontier-world-core &> '/dev/null'
+pnpm nx deploy @eve/frontier-world-core 1> '/dev/null'
 wait
 show_progress 2 6
 
@@ -80,7 +80,7 @@ export WORLD_ADDRESS=$(cat ./mud-contracts/core/deploys/31337/latest.json | jq '
 
 #3 Configure the world to receive the forwarder
 echo " - Configuring trusted forwarder within the world"
-pnpm nx setForwarder @eve/frontier-world-core &> '/dev/null'
+pnpm nx setForwarder @eve/frontier-world-core 1> '/dev/null'
 
 wait
 show_progress 3 6
@@ -90,7 +90,7 @@ show_progress 3 6
 #
 # TODO stop using :local for all the 
 echo " - Installing smart object framework into world"
-pnpm nx deploy @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS}' &> '/dev/null'
+pnpm nx deploy @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
 show_progress 4 6
 
 #5 Deploy Frontier world features
@@ -107,7 +107,5 @@ cp -r standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ abis/trusted-for
 cp -r mud-contracts/frontier-world/out/IWorld.sol/ abis/frontier-world
 show_progress 6 6
 
-
-echo "Frontier world successfully deployed"
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
