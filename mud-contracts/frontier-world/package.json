@@ -9,7 +9,7 @@
     "build:abi-ts": "mud abi-ts",
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
-    "deploy:local": "mud deploy",
+    "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL",
     "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
     "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
@@ -27,7 +27,6 @@
     "@latticexyz/gas-report": "2.0.0-next.16",
     "@eve/frontier-smart-object-framework": "0.0.0",
     "@eve/common-constants": "0.0.0"
-
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
@@ -42,3 +41,4 @@
     "solhint-plugin-mud": "2.0.0-next.16"
   }
 }
+
