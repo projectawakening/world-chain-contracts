@@ -10,7 +10,6 @@
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL",
-    "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
     "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
