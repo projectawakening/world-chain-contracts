@@ -7,7 +7,12 @@ import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
 interface ISmartDeployable {
-  function registerDeployable(uint256 entityId) external;
+  function registerDeployable(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity
+  ) external;
 
   function destroyDeployable(uint256 entityId) external;
 
@@ -23,13 +28,13 @@ interface ISmartDeployable {
 
   function globalOnline() external;
 
-  function setFuelConsumptionPerMinute(uint256 fuelConsumptionPerMinute) external;
+  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinute) external;
 
   function setFuelMaxCapacity(uint256 entityId, uint256 amount) external;
-  
-  function depositFuel(uint256 entityId, uint256 amount) external;
 
-  function withdrawFuel(uint256 entityId, uint256 amount) external;
+  function depositFuel(uint256 entityId, uint256 unitAmount) external;
+
+  function withdrawFuel(uint256 entityId, uint256 unitAmount) external;
 
   function updateFuel(uint256 entityId) external;
 

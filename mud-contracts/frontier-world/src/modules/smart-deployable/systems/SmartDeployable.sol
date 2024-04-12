@@ -18,7 +18,7 @@ import { State } from "../types.sol";
 import { Utils } from "../Utils.sol";
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
-import { FUEL_DECIMALS, DEFAULT_DEPLOYABLE_FUEL_STORAGE } from "../constants.sol";
+import { FUEL_DECIMALS } from "../constants.sol";
 
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
@@ -54,7 +54,12 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
    */
-  function registerDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
+  function registerDeployable(
+    uint256 entityId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity
+  ) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
     DeployableState.set(
       _namespace().deployableStateTableId(),
       entityId,
@@ -65,8 +70,17 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         updatedBlockTime: block.timestamp
       })
     );
-    DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, DEFAULT_DEPLOYABLE_FUEL_STORAGE);
-    DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
+    DeployableFuelBalance.set(
+      _namespace().deployableFuelBalanceTableId(),
+      entityId,
+      DeployableFuelBalanceData({
+        fuelUnitVolume: fuelUnitVolume,
+        fuelConsumptionPerMinute: fuelConsumptionPerMinute,
+        fuelMaxCapacity: fuelMaxCapacity,
+        fuelAmount: 0,
+        lastUpdatedAt: block.timestamp
+      })
+    );
   }
 
   /**
@@ -91,6 +105,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ONLINE);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableFuelBalance.setLastUpdatedAt(
+      _namespace().deployableFuelBalanceTableId(),
+      entityId,
+      block.timestamp
+    );
   }
 
   /**
@@ -153,44 +172,48 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * WARNING: this will retroactively change the consumption rate of all smart deployables since they were last brought online.
    * do not tweak this too much. Right now this will have to do, or, ideally, we would need to update all fuel balances before changing this
    * TODO: needs to be only callable by admin
-   * @param fuelConsumptionPerMinute global rate shared by all Smart Deployables
+   * @param fuelConsumptionPerMinute global rate shared by all Smart Deployables (in Wei)
    */
-  function setFuelConsumptionPerMinute(uint256 fuelConsumptionPerMinute) public {
-    GlobalDeployableState.setFuelConsumptionPerMinute(_namespace().globalStateTableId(), fuelConsumptionPerMinute);
+  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinute) public {
+    DeployableFuelBalance.setFuelConsumptionPerMinute(
+      _namespace().deployableFuelBalanceTableId(),
+      entityId,
+      fuelConsumptionPerMinute
+    );
   }
 
   /**
    * @dev sets a new maximum fuel storage quantity for a Smart Deployable
    * TODO: needs to make that function admin-only
    * @param entityId to set the storage cap to
-   * @param amount of max fuel (for now Fuel has 18 decimals like regular ERC20 balances)
+   * @param capacityInWei of max fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function setFuelMaxCapacity(uint256 entityId, uint256 amount) public {
-    DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, amount);
+  function setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) public {
+    DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, capacityInWei);
   }
 
   /**
    * @dev deposit an amount of fuel for a Smart Deployable
    * TODO: needs to make that function admin-only
    * @param entityId to deposit fuel to
-   * @param amount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
+   * @param unitAmount of fuel in full units
    */
-  function depositFuel(uint256 entityId, uint256 amount) public {
+  function depositFuel(uint256 entityId, uint256 unitAmount) public {
     _updateFuel(entityId);
-    if(DeployableFuelBalance.getFuelAmount(
-        _namespace().deployableFuelBalanceTableId(),
-        entityId) + amount 
-        >
-        DeployableFuelBalance.getFuelMaxCapacity(
-        _namespace().deployableFuelBalanceTableId(),
-        entityId
-      )) {
-      revert SmartDeployable_TooMuchFuelDeposited(entityId, amount);
+    if (
+      (((DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
+        unitAmount *
+        (10 ** FUEL_DECIMALS)) *
+        DeployableFuelBalance.getFuelUnitVolume(_namespace().deployableFuelBalanceTableId(), entityId))) /
+        (10 ** FUEL_DECIMALS) >
+      DeployableFuelBalance.getFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId)
+    ) {
+      revert SmartDeployable_TooMuchFuelDeposited(entityId, unitAmount);
     }
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      _currentFuelAmount(entityId) + amount
+      (_currentFuelAmount(entityId) + unitAmount * (10 ** FUEL_DECIMALS))
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -204,14 +227,14 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * Will revert if you try to withdraw more fuel than there's in it
    * TODO: needs to make that function admin-only
    * @param entityId to deposit fuel to
-   * @param amount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
+   * @param unitAmount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function withdrawFuel(uint256 entityId, uint256 amount) public {
+  function withdrawFuel(uint256 entityId, uint256 unitAmount) public {
     _updateFuel(entityId);
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      _currentFuelAmount(entityId) - amount // will revert if underflow
+      (_currentFuelAmount(entityId) - unitAmount * (10 ** FUEL_DECIMALS)) // will revert if underflow
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -235,7 +258,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId looked up
    */
   function currentFuelAmount(uint256 entityId) public view returns (uint256 amount) {
-    return _currentFuelAmount(entityId);
+    return _currentFuelAmount(entityId) / (10 ** FUEL_DECIMALS);
   }
 
   /********************
@@ -284,9 +307,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       _namespace().deployableFuelBalanceTableId(),
       entityId
     );
-    uint256 fuelCPM = GlobalDeployableState.getFuelConsumptionPerMinute(_namespace().globalStateTableId());
     // elapsed time in seconds, multiplied by consumption rate per second
-    uint256 fuelConsumed = (block.timestamp - data.lastUpdatedAt) * (fuelCPM / 60);
+    uint256 fuelConsumed = (block.timestamp - data.lastUpdatedAt) * (data.fuelConsumptionPerMinute / 60);
     fuelConsumed -= _globalOfflineFuelRefund(entityId);
     if (fuelConsumed >= data.fuelAmount) {
       return 0;
@@ -312,7 +334,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
 
     uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spend online during server downtime
     return
-      elapsedRefundTime * (GlobalDeployableState.getFuelConsumptionPerMinute(_namespace().globalStateTableId()) / 60);
+      elapsedRefundTime *
+      (DeployableFuelBalance.getFuelConsumptionPerMinute(_namespace().deployableFuelBalanceTableId(), entityId) / 60);
   }
 
   // TODO: this is kinda dirty.
