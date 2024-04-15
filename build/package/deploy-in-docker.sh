@@ -100,8 +100,8 @@ show_progress 5 6
 
 echo " - Collecting ABIs"
 mkdir abis
-mkdir apis/trusted-forwarder
-mkdir apis/frontier-world
+mkdir abis/trusted-forwarder
+mkdir abis/frontier-world
 
 cp -r standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ abis/trusted-forwarder
 cp -r mud-contracts/frontier-world/out/IWorld.sol/ abis/frontier-world
