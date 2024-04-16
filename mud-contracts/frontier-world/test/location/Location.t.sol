@@ -11,6 +11,9 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+
 import { LOCATION_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/location/Utils.sol";
@@ -31,8 +34,8 @@ contract LocationTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    LocationModule module = new LocationModule();
-    baseWorld.installModule(module, abi.encode(DEPLOYMENT_NAMESPACE));
+    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
+    baseWorld.installModule(new LocationModule(), abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     location = LocationLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
   }

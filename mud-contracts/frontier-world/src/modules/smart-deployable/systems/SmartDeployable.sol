@@ -7,7 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { LocationLib } from "../../location/LocationLib.sol";
 
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codegen/tables/GlobalDeployableState.sol";
@@ -23,18 +23,23 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using LocationLib for LocationLib.World;
 
   // TODO: is `supportInterface` working properly here ?
-  
+
   /**
    * modifier to enforce a certain state to be had by an entity
    * @param entityId entityId of the object we test against
    * @param reqState required State
    */
   modifier onlyState(uint256 entityId, State reqState) {
-    if(GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployable_GloballyOffline();
-    }
-    else if(uint256(DeployableState.getState(_namespace().deployableStateTableId(), entityId)) != uint256(reqState)) {
-      revert SmartDeployable_incorrectState(entityId, reqState, DeployableState.getState(_namespace().deployableStateTableId(), entityId));
+    } else if (
+      uint256(DeployableState.getState(_namespace().deployableStateTableId(), entityId)) != uint256(reqState)
+    ) {
+      revert SmartDeployable_incorrectState(
+        entityId,
+        reqState,
+        DeployableState.getState(_namespace().deployableStateTableId(), entityId)
+      );
     }
     _;
   }
@@ -47,12 +52,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function registerDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
     DeployableState.set(
       _namespace().deployableStateTableId(),
-      entityId, 
-      DeployableStateData({
-        createdAt: block.timestamp,
-        state: State.UNANCHORED,
-        updatedBlockNumber: block.number
-      })
+      entityId,
+      DeployableStateData({ createdAt: block.timestamp, state: State.UNANCHORED, updatedBlockNumber: block.number })
     );
   }
 
@@ -60,13 +61,15 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev destroys a smart deployable
    * @param entityId entityId
    */
-  function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
+  function destroyDeployable(
+    uint256 entityId
+  ) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
     // TODO: figure out how to delete inventory in the case of smart storage units
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.DESTROYED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
   }
 
-    /**
+  /**
    * @dev brings online smart deployable (must have been anchored first)
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
@@ -89,7 +92,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev anchors a smart deployable (must have been unanchored first)
    * @param entityId entityId
    */
-  function anchor(uint256 entityId, LocationTableData memory locationData) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
+  function anchor(
+    uint256 entityId,
+    LocationTableData memory locationData
+  ) public hookable(entityId, _systemId()) onlyState(entityId, State.UNANCHORED) {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ANCHORED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     _locationLib().saveLocation(entityId, locationData);
@@ -103,7 +109,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     // TODO: figure out how to delete inventory in the case of smart storage units
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.UNANCHORED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    _locationLib().saveLocation(entityId, LocationTableData({solarSystemId: 0, x: 0, y:0, z: 0}));
+    _locationLib().saveLocation(entityId, LocationTableData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
   }
 
   /**
@@ -113,10 +119,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function globalOffline() public {
     GlobalDeployableState.set(
       _namespace().globalStateTableId(),
-      GlobalDeployableStateData({
-        globalState: State.OFFLINE,
-        updatedBlockNumber: block.number
-      })
+      GlobalDeployableStateData({ globalState: State.OFFLINE, updatedBlockNumber: block.number })
     );
   }
 
@@ -127,21 +130,16 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function globalOnline() public {
     GlobalDeployableState.set(
       _namespace().globalStateTableId(),
-      GlobalDeployableStateData({
-        globalState: State.ONLINE,
-        updatedBlockNumber: block.number
-      })
+      GlobalDeployableStateData({ globalState: State.ONLINE, updatedBlockNumber: block.number })
     );
   }
 
+  // TODO: this is kinda dirty.
   function _locationLib() internal view returns (LocationLib.World memory) {
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(LOCATION_DEPLOYMENT_NAMESPACE))) {
-      return LocationLib.World({iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE});
-    }
-    else return LocationLib.World({iface: IBaseWorld(_world()), namespace: LOCATION_DEPLOYMENT_NAMESPACE});
+    return LocationLib.World({ iface: IBaseWorld(_world()), namespace: LOCATION_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal view returns (ResourceId) {
-   return _namespace().smartDeployableSystemId();
+    return _namespace().smartDeployableSystemId();
   }
 }

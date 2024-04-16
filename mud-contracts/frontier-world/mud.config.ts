@@ -30,7 +30,7 @@ export default mudConfig({
     SmartDeployable: {
       name: constants.systemName.SMART_DEPLOYABLE,
       openAccess: true,
-    }
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
@@ -155,7 +155,7 @@ export default mudConfig({
     /***************************
      * SMART DEPLOYABLE MODULE *
      ***************************/
-    
+
     GlobalDeployableState: {
       keySchema: {},
       valueSchema: {
@@ -305,7 +305,7 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
-    
+
     OperatorApproval: {
       keySchema: {
         owner: "address",
