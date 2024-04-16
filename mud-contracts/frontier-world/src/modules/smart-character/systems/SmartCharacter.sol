@@ -7,7 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
 import { registerERC721 } from "../../eve-erc721-puppet/registerERC721.sol";
@@ -62,9 +62,6 @@ contract SmartCharacter is EveSystem {
 
   // TODO: this is kinda dirty.
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {
-    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(ENTITY_RECORD_DEPLOYMENT_NAMESPACE))) {
-      return EntityRecordLib.World({ iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE });
-    }
     return EntityRecordLib.World({ iface: IBaseWorld(_world()), namespace: ENTITY_RECORD_DEPLOYMENT_NAMESPACE });
   }
 

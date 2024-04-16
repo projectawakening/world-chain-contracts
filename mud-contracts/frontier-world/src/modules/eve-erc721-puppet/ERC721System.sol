@@ -14,7 +14,7 @@ import { PuppetMaster } from "@latticexyz/world-modules/src/modules/puppet/Puppe
 import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
@@ -549,17 +549,11 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
 
   // TODO: this is kinda dirty.
   function _staticDataLib() internal view returns (StaticDataLib.World memory) {
-    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
-      return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE });
-    }
     return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
   }
 
     // TODO: this is kinda dirty also.
-  function _staticDataNamespace() internal view returns (bytes14) {
-    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
-      return FRONTIER_WORLD_DEPLOYMENT_NAMESPACE;
-    }
+  function _staticDataNamespace() internal pure returns (bytes14) {
     return STATIC_DATA_DEPLOYMENT_NAMESPACE;
   }
 

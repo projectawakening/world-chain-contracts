@@ -21,7 +21,7 @@ import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol"
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
 import { Utils } from "../../utils.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 /**
  * @title EveSystem
@@ -244,10 +244,7 @@ contract EveSystem is System {
 
   // this is a bit messy... but in line with other Utils subroutines to ward off bad namespacing configs
   // TODO: refactor this
-  function _coreNamespace() internal view returns (bytes14) {
-    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(CORE_NAMESPACE))) {
-      return FRONTIER_WORLD_DEPLOYMENT_NAMESPACE;
-    }
+  function _coreNamespace() internal pure returns (bytes14) {
     return CORE_NAMESPACE;
   }
 

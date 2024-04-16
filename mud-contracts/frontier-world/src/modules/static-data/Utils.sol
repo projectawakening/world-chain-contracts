@@ -4,48 +4,41 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { STATIC_DATA_SYSTEM_NAME, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
 
 import "./constants.sol";
 
 library Utils {
   using WorldResourceIdInstance for ResourceId;
 
-  function getSystemId(bytes14 namespace, bytes16 name) internal view returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: _namespace(namespace), name: name });
+  function getSystemId(bytes14 namespace, bytes16 name) internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: name });
   }
 
-  function staticDataTableId(bytes14 namespace) internal view returns (ResourceId) {
+  function staticDataTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({
         typeId: RESOURCE_TABLE,
-        namespace: _namespace(namespace),
+        namespace: namespace,
         name: STATIC_DATA_TABLE_NAME
       });
   }
 
-  function staticDataGlobalTableId(bytes14 namespace) internal view returns (ResourceId) {
+  function staticDataGlobalTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({
         typeId: RESOURCE_TABLE,
-        namespace: _namespace(namespace),
+        namespace: namespace,
         name: STATIC_DATA_GLOBAL_TABLE_NAME
       });
   }
 
-  function staticDataSystemId(bytes14 namespace) internal view returns (ResourceId) {
+  function staticDataSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({
         typeId: RESOURCE_SYSTEM,
-        namespace: _namespace(namespace),
+        namespace: namespace,
         name: STATIC_DATA_SYSTEM_NAME
       });
-  }
-
-  function _namespace(bytes14 namespace) internal view returns (bytes14) {
-    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace))) {
-      return FRONTIER_WORLD_DEPLOYMENT_NAMESPACE;
-    }
-    return namespace;
   }
 }

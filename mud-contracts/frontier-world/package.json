@@ -22,7 +22,7 @@
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && mud test"
+    "test": "tsc --noEmit && forge test -vvv"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-next.16",
