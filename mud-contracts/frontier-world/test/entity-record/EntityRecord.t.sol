@@ -67,6 +67,8 @@ contract EntityRecordTest is Test {
   ) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(name).length != 0);
+    vm.assume(bytes(dappURL).length != 0);
+    vm.assume(bytes(description).length != 0);
     EntityRecordOffchainTableData memory data = EntityRecordOffchainTableData({
       name: name,
       dappURL: dappURL,
@@ -80,7 +82,90 @@ contract EntityRecordTest is Test {
     );
 
     assertEq(data.name, tableData.name);
-    //assertEq(data.dappURL, tableData.dappURL);
-    //assertEq(data.description, tableData.description);
+    assertEq(data.dappURL, tableData.dappURL);
+    assertEq(data.description, tableData.description);
+  }
+
+  function testSetEntityRecordOffchain(
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(name).length != 0);
+    vm.assume(bytes(dappURL).length != 0);
+    vm.assume(bytes(description).length != 0);
+    EntityRecordOffchainTableData memory data = EntityRecordOffchainTableData({
+      name: name,
+      dappURL: dappURL,
+      description: description
+    });
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setEntityRecordOffchain(entityId, name, dappURL, description);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(data.name, tableData.name);
+    assertEq(data.dappURL, tableData.dappURL);
+    assertEq(data.description, tableData.description);
+  }
+
+  function testSetEntityRecordName(
+    uint256 entityId,
+    string memory name
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(name).length != 0);
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setEntityRecordName(entityId, name);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(name, tableData.name);
+  }
+
+  function testSetEntityRecordDappURL(
+    uint256 entityId,
+    string memory dappURL
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(dappURL).length != 0);
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setEntityRecordDappURL(entityId, dappURL);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(dappURL, tableData.dappURL);
+  }
+
+  function testSetEntityRecordDescription(
+    uint256 entityId,
+    string memory description
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(description).length != 0);
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setEntityRecordDescription(entityId, description);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(description, tableData.description);
   }
 }

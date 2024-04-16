@@ -47,4 +47,50 @@ library EntityRecordLib {
       abi.encodeCall(IEntityRecord.createEntityRecordOffchain, (entityId, name, dappURL, description))
     );
   }
+
+  function setEntityRecordOffchain(
+    World memory world,
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setEntityRecordOffchain, (entityId, name, dappURL, description))
+    );
+  }
+
+  function setEntityRecordName(
+    World memory world,
+    uint256 entityId,
+    string memory name
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setEntityRecordName, (entityId, name))
+    );
+  }
+
+  function setEntityRecordDappURL(
+    World memory world,
+    uint256 entityId,
+    string memory dappURL
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setEntityRecordDappURL, (entityId, dappURL))
+    );
+  }
+
+    function setEntityRecordDescription(
+    World memory world,
+    uint256 entityId,
+    string memory description
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setEntityRecordDescription, (entityId, description))
+    );
+  }
 }
