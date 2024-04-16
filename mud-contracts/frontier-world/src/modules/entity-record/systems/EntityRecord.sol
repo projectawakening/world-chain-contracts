@@ -47,6 +47,24 @@ contract EntityRecord is EveSystem {
   }
 
   /**
+   * @dev creates a new entity record
+   * TODO: make sure that entityId exists in the SO-framework before going forward with this
+   *  make that Owner only too
+   *  @param entityId we create an off-chain record for
+   * @param name name of that entity
+   * @param dappURL link to that entity's dApp URL
+   * @param description description of that entity
+   */
+  function setEntityRecordOffchain(
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) public hookable(entityId, _systemId()) {
+    EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
+  }
+
+  /**
    * @dev changes that entity's name
    * TODO: make sure that entityId exists in the SO-framework before going forward with this
    * also make it owner only ?
