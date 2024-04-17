@@ -16,6 +16,7 @@ import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+import { EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 import { Utils } from "../Utils.sol";
 
@@ -39,6 +40,7 @@ contract SmartCharacter is EveSystem {
     uint256 characterId,
     address characterAddress,
     EntityRecordTableData memory entityRecord,
+    EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
   ) public {
     // TODO: uncomment this if/when static data flows off-chain are ready
@@ -50,6 +52,7 @@ contract SmartCharacter is EveSystem {
     // TODO: Do we have to create the entityId <-> characterId linkup here in Smart Object Framework ?
     _entityRecordLib().createEntityRecord(characterId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume);
     //Save the smartObjectData in ERC721 Module
+    _entityRecordLib().createEntityRecordOffchain(characterId, entityRecordOffchain.name, entityRecordOffchain.dappURL, entityRecordOffchain.description);
     IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).mint(
       characterAddress,
       characterId
