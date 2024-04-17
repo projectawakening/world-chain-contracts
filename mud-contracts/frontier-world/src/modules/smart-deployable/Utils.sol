@@ -13,12 +13,7 @@ import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME } from "./constant
 
 library Utils {
   function globalStateTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: GLOBAL_STATE_TABLE_NAME
-      });
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: GLOBAL_STATE_TABLE_NAME });
   }
 
   function deployableStateTableId(bytes14 namespace) internal pure returns (ResourceId) {
@@ -28,10 +23,6 @@ library Utils {
 
   function smartDeployableSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_SYSTEM,
-        namespace: namespace,
-        name: SMART_DEPLOYABLE_SYSTEM_NAME
-      });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_DEPLOYABLE_SYSTEM_NAME });
   }
 }

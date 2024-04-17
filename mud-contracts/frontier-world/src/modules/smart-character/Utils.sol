@@ -13,12 +13,7 @@ import { CHARACTERS_TABLE_NAME, CHARACTERS_CONSTANTS_TABLE_NAME } from "./consta
 
 library Utils {
   function charactersTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: CHARACTERS_TABLE_NAME
-      });
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: CHARACTERS_TABLE_NAME });
   }
 
   function charactersConstantsTableId(bytes14 namespace) internal pure returns (ResourceId) {
@@ -32,10 +27,6 @@ library Utils {
 
   function smartCharacterSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_SYSTEM,
-        namespace: namespace,
-        name: SMART_CHARACTER_SYSTEM_NAME
-      });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_CHARACTER_SYSTEM_NAME });
   }
 }

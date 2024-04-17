@@ -32,7 +32,7 @@ contract InventorySystem is EveSystem {
    */
   modifier onlyOnline(uint256 smartObjectId) {
     State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
-    if (currentState == State.OFFLINE) {
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
     } else if (currentState != State.ONLINE) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
@@ -46,10 +46,10 @@ contract InventorySystem is EveSystem {
    */
   modifier beyondAnchored(uint256 smartObjectId) {
     State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
-    if (currentState == State.OFFLINE) {
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
-    } else if (uint8(currentState) <= uint8(State.ANCHORED)) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ANCHORED, currentState);
+    } else if (currentState == State.NULL || currentState == State.UNANCHORED || currentState == State.DESTROYED) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.NULL, currentState);
     }
     _;
   }
