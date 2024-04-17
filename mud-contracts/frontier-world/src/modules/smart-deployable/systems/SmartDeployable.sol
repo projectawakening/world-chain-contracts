@@ -35,6 +35,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param reqState required State
    */
   modifier onlyState(uint256 entityId, State reqState) {
+    _updateFuel(entityId);
     if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployable_GloballyOffline();
     } else if (
@@ -116,8 +117,22 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings offline smart deployable (must have been online first)
    * @param entityId entityId
    */
-  function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ONLINE) {
+  function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) {
+    // because updateFuel might already bring it offline, we are handling this without onlyState modifier
     _updateFuel(entityId);
+    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), entityId);
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
+      revert SmartDeployable_GloballyOffline();
+    } else if (
+      uint256(currentState) != uint256(State.ONLINE) &&
+      uint256(currentState) != uint256(State.ANCHORED)
+    ) {
+      revert SmartDeployable_incorrectState(
+        entityId,
+        State.ONLINE,
+        DeployableState.getState(_namespace().deployableStateTableId(), entityId)
+      );
+    }
     _bringOffline(entityId);
   }
 

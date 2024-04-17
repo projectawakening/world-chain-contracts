@@ -126,6 +126,9 @@ contract smartDeployableTest is Test {
     vm.assume(entityId != 0);
 
     testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    vm.assume(fuelUnitVolume < type(uint64).max / 2);
+    vm.assume(fuelUnitVolume < fuelMaxCapacity);
+    smartDeployable.depositFuel(entityId, 1);
     smartDeployable.bringOnline(entityId);
     assertEq(
       uint8(State.ONLINE),
