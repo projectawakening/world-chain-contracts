@@ -35,6 +35,7 @@ show_progress() {
 # Default values
 rpc_url=""
 private_key=""
+world_address=""
 
 # Parse command-line arguments
 while [ $# -gt 0 ]; do
@@ -47,12 +48,17 @@ while [ $# -gt 0 ]; do
             private_key="$2"
             shift 2
             ;;
+        -wa|--world-address)
+            world_address="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
             ;;
     esac
 done
+
 
 ## Temporarily hardcode private key and rpc url before adding them as params
 export RPC_URL="$rpc_url"
@@ -71,12 +77,26 @@ show_progress 1 6
 export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
 #2 Deploy the world core
+#
+# If the world address was not set by a parameter we deploy a new core
+# If the world address was passed as a parameter we are updating that world
 echo " - Deploying frontier world..."
-pnpm nx deploy @eve/frontier-world-core 1> '/dev/null'
-wait
-show_progress 2 6
-
-export WORLD_ADDRESS=$(cat ./mud-contracts/core/deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
+if [ -z "$world_address" ]; then
+    # If not set, execute a command to obtain the value
+    echo "No world address parameter set - Deploying a new frontier world..."
+    pnpm nx deploy @eve/frontier-world-core 1> '/dev/null'
+    wait
+    show_progress 2 6
+    world_address=$(cat ./mud-contracts/core/deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
+    export WORLD_ADDRESS="$world_address"
+else
+    # If set, use that value
+    export WORLD_ADDRESS="$world_address"
+    echo "World address parameter set - Updating the world @ ${WORLD_ADDRESS}..."
+    pnpm nx deploy @eve/frontier-world-core --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
+    wait
+    show_progress 2 6
+fi
 
 #3 Configure the world to receive the forwarder
 echo " - Configuring trusted forwarder within the world"
