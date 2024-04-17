@@ -9,6 +9,7 @@ import { EphemeralInvItemTable } from "../../../codegen/tables/EphemeralInvItemT
 import { EphemeralInvItemTableData } from "../../../codegen/tables/EphemeralInvItemTable.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { State } from "../../../codegen/common.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
@@ -30,7 +31,7 @@ contract EphemeralInventorySystem is EveSystem {
    */
   modifier onlyOnline(uint256 smartObjectId) {
     State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
-    if (currentState == State.OFFLINE) {
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
     } else if (currentState != State.ONLINE) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
@@ -44,7 +45,7 @@ contract EphemeralInventorySystem is EveSystem {
    */
   modifier beyondAnchored(uint256 smartObjectId) {
     State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
-    if (currentState == State.OFFLINE) {
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
     } else if (uint8(currentState) <= uint8(State.ANCHORED)) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ANCHORED, currentState);
