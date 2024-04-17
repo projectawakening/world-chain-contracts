@@ -50,7 +50,7 @@ contract EntityRecordTest is Test {
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordTableTableId(),
+      DEPLOYMENT_NAMESPACE.entityRecordTableId(),
       entityId
     );
 

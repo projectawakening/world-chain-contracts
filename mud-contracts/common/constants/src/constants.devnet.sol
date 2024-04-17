@@ -11,6 +11,7 @@ bytes14 constant LOCATION_DEPLOYMENT_NAMESPACE = "frontier";
 bytes14 constant STATIC_DATA_DEPLOYMENT_NAMESPACE = "frontier";
 bytes14 constant SMART_CHARACTER_DEPLOYMENT_NAMESPACE = "frontier";
 bytes14 constant EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE = "frontier";
+bytes14 constant INVENTORY_DEPLOYMENT_NAMESPACE = "frontier";
 bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "frontier";
 
 bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";

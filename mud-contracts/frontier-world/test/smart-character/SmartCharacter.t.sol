@@ -102,7 +102,7 @@ contract SmartCharacterTest is Test {
       entityId
     );
     EntityRecordTableData memory loggedEntityRecordData = EntityRecordTable.get(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableTableId(),
+      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
       entityId
     );
 

@@ -80,7 +80,7 @@ contract EntityRecordModuleRegistrationLibrary {
     // Register the namespace
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    EntityRecordTable.register(namespace.entityRecordTableTableId());
+    EntityRecordTable.register(namespace.entityRecordTableId());
     EntityRecordOffchainTable.register(namespace.entityRecordOffchainTableId());
     // Register a new Systems suite
     world.registerSystem(namespace.entityRecordSystemId(), new EntityRecord(), true);
