@@ -4,7 +4,7 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { STATIC_DATA_SYSTEM_NAME, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
 
 import "./constants.sol";
 
@@ -16,27 +16,29 @@ library Utils {
   }
 
   function staticDataTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: STATIC_DATA_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: namespace,
+        name: STATIC_DATA_TABLE_NAME
+      });
   }
 
   function staticDataGlobalTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: STATIC_DATA_GLOBAL_TABLE_NAME });
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: namespace,
+        name: STATIC_DATA_GLOBAL_TABLE_NAME
+      });
   }
 
-  function staticDataSystemId(bytes14 namespace) internal view returns (ResourceId systemId) {
-    systemId = WorldResourceIdLib.encode({
-      typeId: RESOURCE_SYSTEM,
-      namespace: namespace,
-      name: STATIC_DATA_SYSTEM_NAME
-    });
-    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace))) {
-      // in the way this is used, that would mean we registered this on `FRONTIER_WORLD_DEPLOYMENT_NAMESPACE`
-      systemId = WorldResourceIdLib.encode({
+  function staticDataSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({
         typeId: RESOURCE_SYSTEM,
-        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+        namespace: namespace,
         name: STATIC_DATA_SYSTEM_NAME
       });
-    }
   }
 }

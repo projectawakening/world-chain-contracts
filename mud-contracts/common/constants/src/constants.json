@@ -13,11 +13,14 @@
   },
   "systemName":
   {
+    "ENTITY_CORE": "EntityCore",
+    "MODULE_CORE": "ModuleCore",
+    "HOOK_CORE": "HookCore",
     "SMART_CHARACTER": "SmartCharacter",
     "STATIC_DATA": "StaticData",
     "ENTITY_RECORD": "EntityRecord",
     "LOCATION": "Location",
-    "SMART_DEPLOYABLE": "SmartDeployabl",
+    "SMART_DEPLOYABLE": "SmartDeployable",
     "SMART_STORAGE_UNIT": "SmartStorageUnit"
   }
 }
