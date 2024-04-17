@@ -32,6 +32,7 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract SmartCharacterTest is Test {
   using SmartCharacterUtils for bytes14;
@@ -78,6 +79,7 @@ contract SmartCharacterTest is Test {
     uint256 itemId,
     uint8 typeId,
     uint256 volume,
+    EntityRecordOffchainTableData memory offchainData,
     string memory tokenCid
   ) public {
     vm.assume(entityId != 0);
@@ -94,7 +96,7 @@ contract SmartCharacterTest is Test {
       createdAt: block.timestamp
     });
 
-    smartCharacter.createCharacter(entityId, characterAddress, entityRecordData, tokenCid);
+    smartCharacter.createCharacter(entityId, characterAddress, entityRecordData, offchainData, tokenCid);
     CharactersTableData memory loggedCharactersData = CharactersTable.get(
       SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(),
       entityId

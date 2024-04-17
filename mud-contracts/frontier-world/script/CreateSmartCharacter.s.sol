@@ -8,6 +8,7 @@ import { IBaseWorld } from "../src/codegen/world/IWorld.sol";
 import { SmartObjectData } from "../src/modules/types.sol";
 import { EntityRecordTableData } from "../src/codegen/tables/EntityRecordTable.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordOffchainTableData } from "../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract CreateSmartCharacter is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -22,13 +23,17 @@ contract CreateSmartCharacter is Script {
     uint256 itemId = vm.envUint("CHARACTER_ITEM_ID");
     uint256 volume = vm.envUint("CHARACTER_VOLUME");
     string memory cid = vm.envString("CHARACTER_TOKEN_CID");
+    string memory characterName = vm.envString("CHARACTER_NAME");
+
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
     SmartCharacterLib.World memory smartCharacter = SmartCharacterLib.World({iface: IBaseWorld(worldAddress), namespace: "frontier" });
+    
     smartCharacter.createCharacter(
       characterId,
       characterAddress,
       EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume }),
+      EntityRecordOffchainTableData({name: characterName, dappURL: "noURL", description: "."}),
       cid
     );
     vm.stopBroadcast();

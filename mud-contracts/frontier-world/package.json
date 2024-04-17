@@ -17,6 +17,8 @@
     "createERC20:devnet": ". ./.env && forge script script/CreateERC20.s.sol:CreateERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "mintERC20:local": ". ./.env && forge script script/MintERC20.s.sol:MintERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "mintERC20:devnet": ". ./.env && forge script script/MintERC20.s.sol:MintERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createMintERC20:local": ". ./.env && forge script script/CreateMintERC20.s.sol:CreateMintERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createMintERC20:devnet": ". ./.env && forge script script/CreateMintERC20.s.sol:CreateMintERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "post-deployment": ". ./.env && forge script script/PostDeploy.s.sol:PostDeploy --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
