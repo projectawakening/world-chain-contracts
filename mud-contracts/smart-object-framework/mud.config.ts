@@ -1,19 +1,20 @@
 import { mudConfig } from "@latticexyz/world/register";
+import constants = require("./node_modules/@eve/common-constants/src/constants.json");
 
 export default mudConfig({
-  namespace: "frontier",
+  namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
   excludeSystems: ["EveSystem"],
   systems: {
     EntityCore: {
-      name: "EntityCore",
+      name: constants.systemName.ENTITY_CORE,
       openAccess: true,
     },
     ModuleCore: {
-      name: "ModuleCore",
+      name: constants.systemName.MODULE_CORE,
       openAccess: true,
     },
     HookCore: {
-      name: "HookCore",
+      name: constants.systemName.HOOK_CORE,
       openAccess: true,
     },
   },

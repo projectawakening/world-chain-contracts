@@ -11,12 +11,20 @@
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy:local": "mud deploy",
     "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
-    "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
+    "createSmartCharacter:local": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createSmartCharacter:devnet": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createERC20:local": ". ./.env && forge script script/CreateERC20.s.sol:CreateERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createERC20:devnet": ". ./.env && forge script script/CreateERC20.s.sol:CreateERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "mintERC20:local": ". ./.env && forge script script/MintERC20.s.sol:MintERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "mintERC20:devnet": ". ./.env && forge script script/MintERC20.s.sol:MintERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createMintERC20:local": ". ./.env && forge script script/CreateMintERC20.s.sol:CreateMintERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createMintERC20:devnet": ". ./.env && forge script script/CreateMintERC20.s.sol:CreateMintERC20 --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "post-deployment": ". ./.env && forge script script/PostDeploy.s.sol:PostDeploy --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && mud test"
+    "test": "tsc --noEmit && forge test -vvv"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-next.16",
