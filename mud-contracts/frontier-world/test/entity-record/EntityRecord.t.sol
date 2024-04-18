@@ -50,7 +50,7 @@ contract EntityRecordTest is Test {
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordTableTableId(),
+      DEPLOYMENT_NAMESPACE.entityRecordTableId(),
       entityId
     );
 
@@ -104,7 +104,7 @@ contract EntityRecordTest is Test {
 
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
-    entityRecord.setEntityRecordOffchain(entityId, name, dappURL, description);
+    entityRecord.setEntityMetadata(entityId, name, dappURL, description);
     EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
       DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
       entityId
@@ -124,7 +124,7 @@ contract EntityRecordTest is Test {
 
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
-    entityRecord.setEntityRecordName(entityId, name);
+    entityRecord.setName(entityId, name);
     EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
       DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
       entityId
@@ -142,7 +142,7 @@ contract EntityRecordTest is Test {
 
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
-    entityRecord.setEntityRecordDappURL(entityId, dappURL);
+    entityRecord.setDappURL(entityId, dappURL);
     EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
       DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
       entityId
@@ -160,7 +160,7 @@ contract EntityRecordTest is Test {
 
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
-    entityRecord.setEntityRecordDescription(entityId, description);
+    entityRecord.setDescription(entityId, description);
     EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
       DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
       entityId

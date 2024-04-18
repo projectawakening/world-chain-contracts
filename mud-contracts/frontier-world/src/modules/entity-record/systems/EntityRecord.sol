@@ -26,7 +26,7 @@ contract EntityRecord is EveSystem {
     uint8 typeId,
     uint256 volume
   ) public hookable(entityId, _systemId()) {
-    EntityRecordTable.set(_namespace().entityRecordTableTableId(), entityId, itemId, typeId, volume);
+    EntityRecordTable.set(_namespace().entityRecordTableId(), entityId, itemId, typeId, volume);
   }
 
   /**
@@ -55,7 +55,7 @@ contract EntityRecord is EveSystem {
    * @param dappURL link to that entity's dApp URL
    * @param description description of that entity
    */
-  function setEntityRecordOffchain(
+  function setEntityMetadata(
     uint256 entityId,
     string memory name,
     string memory dappURL,
@@ -71,7 +71,7 @@ contract EntityRecord is EveSystem {
    * @param entityId we create an off-chain record for
    * @param name name of that entity
    */
-  function setEntityRecordName(
+  function setName(
     uint256 entityId,
     string memory name
   ) public hookable(entityId, _systemId()) {
@@ -85,7 +85,7 @@ contract EntityRecord is EveSystem {
    * @param entityId we create an off-chain record for
    * @param dappURL link to that entity's dApp URL
    */
-  function setEntityRecordDappURL(
+  function setDappURL(
     uint256 entityId,
     string memory dappURL
   ) public hookable(entityId, _systemId()) {
@@ -99,7 +99,7 @@ contract EntityRecord is EveSystem {
    * @param entityId we create an off-chain record for
    * @param description description of that entity
    */
-  function setEntityRecordDescription(
+  function setDescription(
     uint256 entityId,
     string memory description
   ) public hookable(entityId, _systemId()) {

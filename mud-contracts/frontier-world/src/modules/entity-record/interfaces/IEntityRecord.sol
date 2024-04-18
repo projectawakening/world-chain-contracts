@@ -14,24 +14,24 @@ interface IEntityRecord {
     string memory description
   ) external;
 
-  function setEntityRecordOffchain(
+  function setEntityMetadata(
     uint256 entityId,
     string memory name,
     string memory dappURL,
     string memory description
   ) external;
 
-  function setEntityRecordName(
+  function setName(
     uint256 entityId,
     string memory name
   ) external;
 
-  function setEntityRecordDappURL(
+  function setDappURL(
     uint256 entityId,
     string memory dappURL
   ) external;
 
-  function setEntityRecordDescription(
+  function setDescription(
     uint256 entityId,
     string memory description
   ) external;

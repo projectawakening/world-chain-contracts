@@ -48,7 +48,7 @@ library EntityRecordLib {
     );
   }
 
-  function setEntityRecordOffchain(
+  function setEntityMetadata(
     World memory world,
     uint256 entityId,
     string memory name,
@@ -57,40 +57,40 @@ library EntityRecordLib {
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setEntityRecordOffchain, (entityId, name, dappURL, description))
+      abi.encodeCall(IEntityRecord.setEntityMetadata, (entityId, name, dappURL, description))
     );
   }
 
-  function setEntityRecordName(
+  function setName(
     World memory world,
     uint256 entityId,
     string memory name
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setEntityRecordName, (entityId, name))
+      abi.encodeCall(IEntityRecord.setName, (entityId, name))
     );
   }
 
-  function setEntityRecordDappURL(
+  function setDappURL(
     World memory world,
     uint256 entityId,
     string memory dappURL
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setEntityRecordDappURL, (entityId, dappURL))
+      abi.encodeCall(IEntityRecord.setDappURL, (entityId, dappURL))
     );
   }
 
-    function setEntityRecordDescription(
+    function setDescription(
     World memory world,
     uint256 entityId,
     string memory description
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setEntityRecordDescription, (entityId, description))
+      abi.encodeCall(IEntityRecord.setDescription, (entityId, description))
     );
   }
 }
