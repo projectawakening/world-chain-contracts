@@ -30,11 +30,12 @@ contract EntityRecord is EveSystem {
   }
 
   /**
-   * @dev TODO: make sure that entityId exists in the SO-framework before going forward with this
+   * @dev creates a new entity record
+   * TODO: make sure that entityId exists in the SO-framework before going forward with this
    * @param entityId we create an off-chain record for
    * @param name name of that entity
    * @param dappURL link to that entity's dApp URL
-   * @param description descriptino of that entity
+   * @param description description of that entity
    */
   function createEntityRecordOffchain(
     uint256 entityId,
@@ -43,6 +44,66 @@ contract EntityRecord is EveSystem {
     string memory description
   ) public hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
+  }
+
+  /**
+   * @dev creates a new entity record
+   * TODO: make sure that entityId exists in the SO-framework before going forward with this
+   *  make that Owner only too
+   *  @param entityId we create an off-chain record for
+   * @param name name of that entity
+   * @param dappURL link to that entity's dApp URL
+   * @param description description of that entity
+   */
+  function setEntityMetadata(
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) public hookable(entityId, _systemId()) {
+    EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
+  }
+
+  /**
+   * @dev changes that entity's name
+   * TODO: make sure that entityId exists in the SO-framework before going forward with this
+   * also make it owner only ?
+   * @param entityId we create an off-chain record for
+   * @param name name of that entity
+   */
+  function setName(
+    uint256 entityId,
+    string memory name
+  ) public hookable(entityId, _systemId()) {
+    EntityRecordOffchainTable.setName(_namespace().entityRecordOffchainTableId(), entityId, name);
+  }
+
+  /**
+   * @dev changes that entity's dapp URL
+   * TODO: make sure that entityId exists in the SO-framework before going forward with this
+   * also make it owner only ?
+   * @param entityId we create an off-chain record for
+   * @param dappURL link to that entity's dApp URL
+   */
+  function setDappURL(
+    uint256 entityId,
+    string memory dappURL
+  ) public hookable(entityId, _systemId()) {
+    EntityRecordOffchainTable.setDappURL(_namespace().entityRecordOffchainTableId(), entityId, dappURL);
+  }
+
+  /**
+   * @dev changes that entity's description
+   * TODO: make sure that entityId exists in the SO-framework before going forward with this
+   * also make it owner only ?
+   * @param entityId we create an off-chain record for
+   * @param description description of that entity
+   */
+  function setDescription(
+    uint256 entityId,
+    string memory description
+  ) public hookable(entityId, _systemId()) {
+    EntityRecordOffchainTable.setDescription(_namespace().entityRecordOffchainTableId(), entityId, description);
   }
 
   function _systemId() internal view returns (ResourceId) {
