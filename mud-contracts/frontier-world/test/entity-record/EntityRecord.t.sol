@@ -11,7 +11,8 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
 
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
@@ -27,13 +28,12 @@ contract EntityRecordTest is Test {
 
   IBaseWorld baseWorld;
   EntityRecordLib.World entityRecord;
-  EntityRecordModule entityRecordModule;
 
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    EntityRecordModule module = new EntityRecordModule();
-    baseWorld.installModule(module, abi.encode(DEPLOYMENT_NAMESPACE));
+    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
+    baseWorld.installModule(new EntityRecordModule(), abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     entityRecord = EntityRecordLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
   }
@@ -50,7 +50,7 @@ contract EntityRecordTest is Test {
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordTableTableId(),
+      DEPLOYMENT_NAMESPACE.entityRecordTableId(),
       entityId
     );
 
@@ -67,6 +67,8 @@ contract EntityRecordTest is Test {
   ) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(name).length != 0);
+    vm.assume(bytes(dappURL).length != 0);
+    vm.assume(bytes(description).length != 0);
     EntityRecordOffchainTableData memory data = EntityRecordOffchainTableData({
       name: name,
       dappURL: dappURL,
@@ -80,7 +82,90 @@ contract EntityRecordTest is Test {
     );
 
     assertEq(data.name, tableData.name);
-    //assertEq(data.dappURL, tableData.dappURL);
-    //assertEq(data.description, tableData.description);
+    assertEq(data.dappURL, tableData.dappURL);
+    assertEq(data.description, tableData.description);
+  }
+
+  function testSetEntityRecordOffchain(
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(name).length != 0);
+    vm.assume(bytes(dappURL).length != 0);
+    vm.assume(bytes(description).length != 0);
+    EntityRecordOffchainTableData memory data = EntityRecordOffchainTableData({
+      name: name,
+      dappURL: dappURL,
+      description: description
+    });
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setEntityMetadata(entityId, name, dappURL, description);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(data.name, tableData.name);
+    assertEq(data.dappURL, tableData.dappURL);
+    assertEq(data.description, tableData.description);
+  }
+
+  function testSetEntityRecordName(
+    uint256 entityId,
+    string memory name
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(name).length != 0);
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setName(entityId, name);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(name, tableData.name);
+  }
+
+  function testSetEntityRecordDappURL(
+    uint256 entityId,
+    string memory dappURL
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(dappURL).length != 0);
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setDappURL(entityId, dappURL);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(dappURL, tableData.dappURL);
+  }
+
+  function testSetEntityRecordDescription(
+    uint256 entityId,
+    string memory description
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(bytes(description).length != 0);
+
+    testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
+
+    entityRecord.setDescription(entityId, description);
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
+      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
+      entityId
+    );
+
+    assertEq(description, tableData.description);
   }
 }

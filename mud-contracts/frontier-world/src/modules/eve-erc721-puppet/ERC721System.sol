@@ -14,7 +14,7 @@ import { PuppetMaster } from "@latticexyz/world-modules/src/modules/puppet/Puppe
 import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
@@ -59,14 +59,14 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * @dev See {IERC721Metadata-name}.
    */
   function name() public view virtual returns (string memory) {
-    return StaticDataGlobalTable.getName(_systemId(), STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId());
+    return StaticDataGlobalTable.getName(_systemId(), _staticDataNamespace().staticDataGlobalTableId());
   }
 
   /**
    * @dev See {IERC721Metadata-symbol}.
    */
   function symbol() public view virtual returns (string memory) {
-    return StaticDataGlobalTable.getSymbol(_systemId(), STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId());
+    return StaticDataGlobalTable.getSymbol(_systemId(), _staticDataNamespace().staticDataGlobalTableId());
   }
 
   /**
@@ -76,7 +76,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     _requireOwned(tokenId);
 
     string memory baseURI = _baseURI();
-    string memory _tokenURI = StaticDataTable.getCid(STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataTableId(), tokenId);
+    string memory _tokenURI = StaticDataTable.getCid(_staticDataNamespace().staticDataTableId(), tokenId);
     _tokenURI = bytes(_tokenURI).length > 0 ? _tokenURI : string(abi.encodePacked(tokenId));
     return bytes(baseURI).length > 0 ? string.concat(baseURI, _tokenURI) : _tokenURI;
   }
@@ -86,10 +86,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
    */
   function setCid(uint256 tokenId, string memory cid) public {
-    _staticDataLib().setCid(
-      tokenId,
-      cid
-    );
+    _staticDataLib().setCid(tokenId, cid);
   }
 
   /**
@@ -98,10 +95,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    */
   function _baseURI() internal view virtual returns (string memory) {
     return
-      StaticDataGlobalTable.getBaseURI(
-        STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(),
-        _namespace().erc721SystemId()
-      );
+      StaticDataGlobalTable.getBaseURI(_staticDataNamespace().staticDataGlobalTableId(), _namespace().erc721SystemId());
   }
 
   /**
@@ -550,11 +544,14 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   }
 
+  // TODO: this is kinda dirty.
   function _staticDataLib() internal view returns (StaticDataLib.World memory) {
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(STATIC_DATA_DEPLOYMENT_NAMESPACE))) {
-      return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE});
-    }
-    else return StaticDataLib.World({iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE});
+    return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
+  }
+
+  // TODO: this is kinda dirty also.
+  function _staticDataNamespace() internal pure returns (bytes14) {
+    return STATIC_DATA_DEPLOYMENT_NAMESPACE;
   }
 
   function _systemId() internal view returns (ResourceId) {

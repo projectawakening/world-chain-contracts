@@ -21,7 +21,8 @@
     "@latticexyz/schema-type": "2.0.0-next.16",
     "@latticexyz/store": "2.0.0-next.16",
     "@latticexyz/world": "2.0.0-next.16",
-    "@latticexyz/world-modules": "2.0.0-next.16"
+    "@latticexyz/world-modules": "2.0.0-next.16",
+    "@eve/common-constants": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
