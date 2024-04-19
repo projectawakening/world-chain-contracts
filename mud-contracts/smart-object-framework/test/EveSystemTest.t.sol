@@ -153,6 +153,15 @@ contract EveSystemTest is Test {
     assertEq(address(smartObject.iface), address(baseWorld));
   }
 
+  function testMultipleSOFModuleInstalls() public {
+    baseWorld = IBaseWorld(address(new World()));
+    baseWorld.initialize(createCoreModule());
+    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJ_NAMESPACE));
+    SmartObjectFrameworkModule newModule = new SmartObjectFrameworkModule();
+    baseWorld.transferOwnership(WorldResourceIdLib.encodeNamespace(SMART_OBJ_NAMESPACE), address(newModule));
+    baseWorld.installModule(newModule, abi.encode(SMART_OBJ_NAMESPACE));
+  }
+
   function testWorldExists() public {
     uint256 codeSize;
     address addr = address(baseWorld);

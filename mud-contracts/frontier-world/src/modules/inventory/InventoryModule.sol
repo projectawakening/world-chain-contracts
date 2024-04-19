@@ -73,17 +73,25 @@ contract InventoryModuleRegistration {
 
   function register(IBaseWorld world, bytes14 namespace) public {
     //Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     //Register the tables and systems for inventory namespace
-    InventoryTable.register(namespace.inventoryTableId());
-    InventoryItemTable.register(namespace.inventoryItemTableId());
-    EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
-    EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
-    ItemTransferOffchainTable.register(namespace.itemTransferTableId());
+    if(!ResourceIds.getExists(namespace.inventoryTableId()))
+      InventoryTable.register(namespace.inventoryTableId());
+    if(!ResourceIds.getExists(namespace.inventoryItemTableId()))
+      InventoryItemTable.register(namespace.inventoryItemTableId());
+    if(!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))
+      EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
+    if(!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
+      EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
+    if(!ResourceIds.getExists(namespace.itemTransferTableId()))
+      ItemTransferOffchainTable.register(namespace.itemTransferTableId());
 
     //Register the systems
-    world.registerSystem(namespace.inventorySystemId(), new InventorySystem(), true);
+    if(!ResourceIds.getExists(namespace.inventorySystemId()))
+      world.registerSystem(namespace.inventorySystemId(), new InventorySystem(), true);
+    if(!ResourceIds.getExists(namespace.ephemeralInventorySystemId()))
     world.registerSystem(namespace.ephemeralInventorySystemId(), new EphemeralInventorySystem(), true);
   }
 }

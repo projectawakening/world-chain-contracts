@@ -35,8 +35,8 @@ contract PostDeploy is Script {
     );
 
     console.log("Deploying ERC721 token with address: ", address(erc721Token));
-    // SmartCharacterLib.World({iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE})
-    //   .registerERC721Token(address(erc721Token));
+    SmartCharacterLib.World({iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE})
+      .registerERC721Token(address(erc721Token));
     vm.stopBroadcast();
   }
 }

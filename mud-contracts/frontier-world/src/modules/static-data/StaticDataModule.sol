@@ -79,13 +79,17 @@ contract StaticDataModuleRegistrationLibrary {
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     // Register the tables
-    StaticDataTable.register(namespace.staticDataTableId());
-    StaticDataGlobalTable.register(namespace.staticDataGlobalTableId());
+    if(!ResourceIds.getExists(namespace.staticDataTableId()))
+      StaticDataTable.register(namespace.staticDataTableId());
+    if(!ResourceIds.getExists(namespace.staticDataGlobalTableId()))
+      StaticDataGlobalTable.register(namespace.staticDataGlobalTableId());
 
     // Register a new Systems suite
-    world.registerSystem(namespace.staticDataSystemId(), new StaticData(), true);
+    if(!ResourceIds.getExists(namespace.staticDataSystemId()))
+      world.registerSystem(namespace.staticDataSystemId(), new StaticData(), true);
   }
 }

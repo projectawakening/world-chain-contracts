@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: MIT
+ // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
@@ -88,22 +89,36 @@ contract SmartObjectFrameworkModuleRegistrationLibrary {
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    EntityAssociation.register(namespace.entityAssociationTableId());
-    EntityMap.register(namespace.entityMapTableId());
-    EntityTable.register(namespace.entityTableTableId());
-    EntityType.register(namespace.entityTypeTableId());
-    EntityTypeAssociation.register(namespace.entityTypeAssociationTableId());
-    HookTable.register(namespace.hookTableTableId());
-    HookTargetAfter.register(namespace.hookTargetAfterTableId());
-    HookTargetBefore.register(namespace.hookTargetBeforeTableId());
-    ModuleSystemLookup.register(namespace.moduleSystemLookupTableId());
-    ModuleTable.register(namespace.moduleTableTableId());
+    if(!ResourceIds.getExists(namespace.entityAssociationTableId()))
+      EntityAssociation.register(namespace.entityAssociationTableId());
+    if(!ResourceIds.getExists(namespace.entityMapTableId()))
+      EntityMap.register(namespace.entityMapTableId());
+    if(!ResourceIds.getExists(namespace.entityTableTableId()))
+      EntityTable.register(namespace.entityTableTableId());
+    if(!ResourceIds.getExists(namespace.entityTypeTableId()))
+      EntityType.register(namespace.entityTypeTableId());
+    if(!ResourceIds.getExists(namespace.entityTypeAssociationTableId()))
+      EntityTypeAssociation.register(namespace.entityTypeAssociationTableId());
+    if(!ResourceIds.getExists(namespace.hookTableTableId()))
+      HookTable.register(namespace.hookTableTableId());
+    if(!ResourceIds.getExists(namespace.hookTargetAfterTableId()))
+      HookTargetAfter.register(namespace.hookTargetAfterTableId());
+    if(!ResourceIds.getExists(namespace.hookTargetBeforeTableId()))
+      HookTargetBefore.register(namespace.hookTargetBeforeTableId());
+    if(!ResourceIds.getExists(namespace.moduleSystemLookupTableId()))
+      ModuleSystemLookup.register(namespace.moduleSystemLookupTableId());
+    if(!ResourceIds.getExists(namespace.moduleTableTableId()))
+      ModuleTable.register(namespace.moduleTableTableId());
 
     // Register a new Systems suite
-    world.registerSystem(namespace.entityCoreSystemId(), new EntityCore(), true);
-    world.registerSystem(namespace.moduleCoreSystemId(), new ModuleCore(), true);
-    world.registerSystem(namespace.hookCoreSystemId(), new HookCore(), true);
+    if(!ResourceIds.getExists(namespace.entityCoreSystemId()))
+      world.registerSystem(namespace.entityCoreSystemId(), new EntityCore(), true);
+    if(!ResourceIds.getExists(namespace.moduleCoreSystemId()))
+      world.registerSystem(namespace.moduleCoreSystemId(), new ModuleCore(), true);
+    if(!ResourceIds.getExists(namespace.hookCoreSystemId()))
+      world.registerSystem(namespace.hookCoreSystemId(), new HookCore(), true);
   }
 }
