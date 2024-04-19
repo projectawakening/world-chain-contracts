@@ -123,9 +123,10 @@ mkdir abis
 mkdir abis/trusted-forwarder
 mkdir abis/frontier-world
 
-cp -r standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ abis/trusted-forwarder
-cp -r mud-contracts/frontier-world/out/IWorld.sol/ abis/frontier-world
+cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2711TrustedForwarder.abi.json abis/trusted-forwarder/
+cp -r mud-contracts/frontier-world/out/IWorld.sol/IWorld.abi.json abis/frontier-world/
 show_progress 6 6
+
 
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
