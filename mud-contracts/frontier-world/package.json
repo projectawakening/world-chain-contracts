@@ -8,9 +8,9 @@
     "build:abi": "forge build",
     "build:abi-ts": "mud abi-ts",
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
+    "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL --alwaysRunPostDeploy",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
-    "deploy:local": "mud deploy",
-    "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
+    "createSmartCharacter": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "createSmartCharacter:local": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "createSmartCharacter:devnet": ". ./.env && forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "createERC20:local": ". ./.env && forge script script/CreateERC20.s.sol:CreateERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
@@ -35,7 +35,6 @@
     "@latticexyz/gas-report": "2.0.0-next.16",
     "@eve/frontier-smart-object-framework": "0.0.0",
     "@eve/common-constants": "0.0.0"
-
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
