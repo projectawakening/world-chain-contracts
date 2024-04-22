@@ -69,11 +69,11 @@ echo "World Address: $WORLD_ADDRESS"
 
 
 echo "------------------------- Configuring trusted forwarder ---------------------"
-pnpm nx setForwarder:local @eve/frontier-world-core
+pnpm nx setForwarder @eve/frontier-world-core
 echo "==================== Trusted forwarder configured ===================="
 
 echo "---------------------- Deploying smart object framework ---------------------"
-pnpm nx deploy:local @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS}'
+pnpm nx deploy @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS}'
 wait
 echo "==================== Smart object framework deployed ===================="
 
