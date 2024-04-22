@@ -17,11 +17,16 @@ contract CreateERC20 is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     IBaseWorld world = IBaseWorld(worldAddress);
 
+    // Private Key loaded from environment
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    string memory namespace = vm.envString("ERC20_NAMESPACE");
-    string memory name = vm.envString("ERC20_NAME");
-    string memory symbol = vm.envString("ERC20_SYMBOL");
-    uint8 decimals = uint8(vm.envUint("ERC20_DECIMALS"));
+    
+    // Test parameters hardcoded 
+    // TODO accept as parameters to the run method for test reproducability
+    string memory namespace = "myfakeerc20";
+    // Namespace must be <14chars and unique
+    string memory name = "Space token";
+    string memory symbol = "SPACE";
+    uint8 decimals = uint8(18);
 
     vm.startBroadcast(deployerPrivateKey);
     // TODO: Need to make a ERC20 Factory that feeds into the static data module
