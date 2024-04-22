@@ -1,5 +1,5 @@
 {
-  "name": "integration-tests",
+  "name": "end-to-end-tests",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",

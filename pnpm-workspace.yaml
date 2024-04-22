@@ -2,4 +2,4 @@ packages:
   - "common/*"
   - "mud-contracts/**/**"
   - "standard-contracts"
-  - "integration-tests"
+  - "end-to-end-tests"
