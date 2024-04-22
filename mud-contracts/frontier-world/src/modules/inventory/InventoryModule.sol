@@ -6,6 +6,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { System } from "@latticexyz/world/src/System.sol";
 
 import { INVENTORY_MODULE_NAME as MODULE_NAME, INVENTORY_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { InventoryTable } from "../../codegen/tables/InventoryTable.sol";
@@ -36,12 +37,14 @@ contract InventoryModule is Module {
     //Require other dependant modules to be registered
   }
 
+  // TODO: right now it needs to receive each system address as parameters (because of contract size limit), but there is no type checking
+  // fix it
   function install(bytes memory encodeArgs) public {
     //Require the module to be installed with the args
     requireNotInstalled(__self, encodeArgs);
 
     //Extract args
-    bytes14 namespace = abi.decode(encodeArgs, (bytes14));
+    (bytes14 namespace, address inventorySystem, address ephemeralInventory) = abi.decode(encodeArgs, (bytes14, address, address));
 
     //Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -54,7 +57,7 @@ contract InventoryModule is Module {
     //Register Inventory module's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(InventoryModuleRegistration.register, (world, namespace))
+      abi.encodeCall(InventoryModuleRegistration.register, (world, namespace, inventorySystem, ephemeralInventory))
     );
     require(success, string(returnedData));
 
@@ -71,7 +74,7 @@ contract InventoryModule is Module {
 contract InventoryModuleRegistration {
   using Utils for bytes14;
 
-  function register(IBaseWorld world, bytes14 namespace) public {
+  function register(IBaseWorld world, bytes14 namespace, address inventorySystem, address ephemeralInventory) public {
     //Register the namespace
     if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
@@ -90,8 +93,8 @@ contract InventoryModuleRegistration {
 
     //Register the systems
     if(!ResourceIds.getExists(namespace.inventorySystemId()))
-      world.registerSystem(namespace.inventorySystemId(), new InventorySystem(), true);
+      world.registerSystem(namespace.inventorySystemId(), System(inventorySystem), true);
     if(!ResourceIds.getExists(namespace.ephemeralInventorySystemId()))
-    world.registerSystem(namespace.ephemeralInventorySystemId(), new EphemeralInventorySystem(), true);
+    world.registerSystem(namespace.ephemeralInventorySystemId(), System(ephemeralInventory), true);
   }
 }

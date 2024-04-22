@@ -33,6 +33,10 @@ import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
+
+import { InventorySystem } from "../../src/modules/inventory/systems/InventorySystem.sol";
+import { EphemeralInventorySystem } from "../../src/modules/inventory/systems/EphemeralInventorySystem.sol";
+
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { InventoryItem } from "../../src/modules/types.sol";
@@ -137,7 +141,9 @@ contract EphemeralInventoryTest is Test {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
     inventoryModule = new InventoryModule();
-    baseWorld.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE));
+    InventorySystem inventorySystem = new InventorySystem();
+    EphemeralInventorySystem ephemeralInv = new EphemeralInventorySystem();
+    baseWorld.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephemeralInv)));
     StoreSwitch.setStoreAddress(address(baseWorld));
     inventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
 
