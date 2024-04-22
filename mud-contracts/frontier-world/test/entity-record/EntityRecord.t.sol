@@ -38,6 +38,12 @@ contract EntityRecordTest is Test {
     entityRecord = EntityRecordLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
   }
 
+  function testSOFDeploymentCost() public {
+        baseWorld = IBaseWorld(address(new World()));
+    baseWorld.initialize(createCoreModule());
+    //baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
+  }
+
   function testSetup() public {
     address entityRecordSystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.entityRecordSystemId());
     ResourceId entityRecordSystemId = SystemRegistry.get(entityRecordSystem);
