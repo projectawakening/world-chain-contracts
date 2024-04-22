@@ -78,15 +78,14 @@ contract LocationModuleRegistrationLibrary {
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     // Register the tables
-    if(!ResourceIds.getExists(namespace.locationTableId()))
-      LocationTable.register(namespace.locationTableId());
+    if (!ResourceIds.getExists(namespace.locationTableId())) LocationTable.register(namespace.locationTableId());
 
     // Register a new Systems suite
-    if(!ResourceIds.getExists(namespace.locationSystemId()))
-    world.registerSystem(namespace.locationSystemId(), new LocationSystem(), true);
+    if (!ResourceIds.getExists(namespace.locationSystemId()))
+      world.registerSystem(namespace.locationSystemId(), new LocationSystem(), true);
   }
 }

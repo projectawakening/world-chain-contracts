@@ -36,14 +36,17 @@ contract EntityRecordTest is Test {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
 
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore()));
+    baseWorld.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
     baseWorld.installModule(new EntityRecordModule(), abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     entityRecord = EntityRecordLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
   }
 
   function testSOFDeploymentCost() public {
-        baseWorld = IBaseWorld(address(new World()));
+    baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
     //baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
   }
@@ -125,10 +128,7 @@ contract EntityRecordTest is Test {
     assertEq(data.description, tableData.description);
   }
 
-  function testSetEntityRecordName(
-    uint256 entityId,
-    string memory name
-  ) public {
+  function testSetEntityRecordName(uint256 entityId, string memory name) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(name).length != 0);
 
@@ -143,10 +143,7 @@ contract EntityRecordTest is Test {
     assertEq(name, tableData.name);
   }
 
-  function testSetEntityRecordDappURL(
-    uint256 entityId,
-    string memory dappURL
-  ) public {
+  function testSetEntityRecordDappURL(uint256 entityId, string memory dappURL) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(dappURL).length != 0);
 
@@ -161,10 +158,7 @@ contract EntityRecordTest is Test {
     assertEq(dappURL, tableData.dappURL);
   }
 
-  function testSetEntityRecordDescription(
-    uint256 entityId,
-    string memory description
-  ) public {
+  function testSetEntityRecordDescription(uint256 entityId, string memory description) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(description).length != 0);
 

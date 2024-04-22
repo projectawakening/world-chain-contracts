@@ -78,15 +78,15 @@ contract SmartDeployableModuleRegistrationLibrary {
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if(!ResourceIds.getExists(namespace.globalStateTableId()))
+    if (!ResourceIds.getExists(namespace.globalStateTableId()))
       GlobalDeployableState.register(namespace.globalStateTableId());
-    if(!ResourceIds.getExists(namespace.deployableStateTableId()))
+    if (!ResourceIds.getExists(namespace.deployableStateTableId()))
       DeployableState.register(namespace.deployableStateTableId());
     // Register a new Systems suite
-    if(!ResourceIds.getExists(namespace.smartDeployableSystemId()))
+    if (!ResourceIds.getExists(namespace.smartDeployableSystemId()))
       world.registerSystem(namespace.smartDeployableSystemId(), new SmartDeployable(), true);
   }
 }

@@ -85,7 +85,10 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
   function setUp() public {
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
-    world.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore()));
+    world.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
     world.installModule(new PuppetModule(), new bytes(0));
     // although not enforced, this module must be installed for `registerERC721` to work
     // TODO: restrict module installation to other installed modules like this one

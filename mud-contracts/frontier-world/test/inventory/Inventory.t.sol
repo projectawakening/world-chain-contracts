@@ -52,7 +52,10 @@ contract InventoryTest is Test {
     inventoryModule = new InventoryModule();
     InventorySystem inventorySystem = new InventorySystem();
     EphemeralInventorySystem ephemeralInv = new EphemeralInventorySystem();
-    baseWorld.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephemeralInv)));
+    baseWorld.installModule(
+      inventoryModule,
+      abi.encode(DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephemeralInv))
+    );
     StoreSwitch.setStoreAddress(address(baseWorld));
     inventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
 

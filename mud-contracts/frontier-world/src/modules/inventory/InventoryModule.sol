@@ -44,7 +44,10 @@ contract InventoryModule is Module {
     requireNotInstalled(__self, encodeArgs);
 
     //Extract args
-    (bytes14 namespace, address inventorySystem, address ephemeralInventory) = abi.decode(encodeArgs, (bytes14, address, address));
+    (bytes14 namespace, address inventorySystem, address ephemeralInventory) = abi.decode(
+      encodeArgs,
+      (bytes14, address, address)
+    );
 
     //Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -76,25 +79,24 @@ contract InventoryModuleRegistration {
 
   function register(IBaseWorld world, bytes14 namespace, address inventorySystem, address ephemeralInventory) public {
     //Register the namespace
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     //Register the tables and systems for inventory namespace
-    if(!ResourceIds.getExists(namespace.inventoryTableId()))
-      InventoryTable.register(namespace.inventoryTableId());
-    if(!ResourceIds.getExists(namespace.inventoryItemTableId()))
+    if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
+    if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
       InventoryItemTable.register(namespace.inventoryItemTableId());
-    if(!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))
+    if (!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))
       EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
-    if(!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
+    if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
       EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
-    if(!ResourceIds.getExists(namespace.itemTransferTableId()))
+    if (!ResourceIds.getExists(namespace.itemTransferTableId()))
       ItemTransferOffchainTable.register(namespace.itemTransferTableId());
 
     //Register the systems
-    if(!ResourceIds.getExists(namespace.inventorySystemId()))
+    if (!ResourceIds.getExists(namespace.inventorySystemId()))
       world.registerSystem(namespace.inventorySystemId(), System(inventorySystem), true);
-    if(!ResourceIds.getExists(namespace.ephemeralInventorySystemId()))
-    world.registerSystem(namespace.ephemeralInventorySystemId(), System(ephemeralInventory), true);
+    if (!ResourceIds.getExists(namespace.ephemeralInventorySystemId()))
+      world.registerSystem(namespace.ephemeralInventorySystemId(), System(ephemeralInventory), true);
   }
 }

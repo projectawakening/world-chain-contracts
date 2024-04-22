@@ -1,4 +1,4 @@
- // SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
@@ -58,7 +58,10 @@ contract SmartObjectFrameworkModule is Module {
     // Extract args
     // TODO doing so means we have to "trust" whoever calls the `install` method to forward the right contracts
     // needs a re-think at some point
-    (bytes14 namespace, address entityCore, address hookCore, address moduleCore) = abi.decode(encodedArgs, (bytes14, address, address, address));
+    (bytes14 namespace, address entityCore, address hookCore, address moduleCore) = abi.decode(
+      encodedArgs,
+      (bytes14, address, address, address)
+    );
 
     // Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -71,7 +74,10 @@ contract SmartObjectFrameworkModule is Module {
     // Register the smart object framework's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(SmartObjectFrameworkModuleRegistrationLibrary.register, (world, namespace, entityCore, hookCore, moduleCore))
+      abi.encodeCall(
+        SmartObjectFrameworkModuleRegistrationLibrary.register,
+        (world, namespace, entityCore, hookCore, moduleCore)
+      )
     );
     if (!success) revertWithBytes(returnedData);
 
@@ -92,38 +98,39 @@ contract SmartObjectFrameworkModuleRegistrationLibrary {
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */
-  function register(IBaseWorld world, bytes14 namespace, address entityCore, address hookCore, address moduleCore) public {
+  function register(
+    IBaseWorld world,
+    bytes14 namespace,
+    address entityCore,
+    address hookCore,
+    address moduleCore
+  ) public {
     // Register the namespace
-    if(!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if(!ResourceIds.getExists(namespace.entityAssociationTableId()))
+    if (!ResourceIds.getExists(namespace.entityAssociationTableId()))
       EntityAssociation.register(namespace.entityAssociationTableId());
-    if(!ResourceIds.getExists(namespace.entityMapTableId()))
-      EntityMap.register(namespace.entityMapTableId());
-    if(!ResourceIds.getExists(namespace.entityTableTableId()))
-      EntityTable.register(namespace.entityTableTableId());
-    if(!ResourceIds.getExists(namespace.entityTypeTableId()))
-      EntityType.register(namespace.entityTypeTableId());
-    if(!ResourceIds.getExists(namespace.entityTypeAssociationTableId()))
+    if (!ResourceIds.getExists(namespace.entityMapTableId())) EntityMap.register(namespace.entityMapTableId());
+    if (!ResourceIds.getExists(namespace.entityTableTableId())) EntityTable.register(namespace.entityTableTableId());
+    if (!ResourceIds.getExists(namespace.entityTypeTableId())) EntityType.register(namespace.entityTypeTableId());
+    if (!ResourceIds.getExists(namespace.entityTypeAssociationTableId()))
       EntityTypeAssociation.register(namespace.entityTypeAssociationTableId());
-    if(!ResourceIds.getExists(namespace.hookTableTableId()))
-      HookTable.register(namespace.hookTableTableId());
-    if(!ResourceIds.getExists(namespace.hookTargetAfterTableId()))
+    if (!ResourceIds.getExists(namespace.hookTableTableId())) HookTable.register(namespace.hookTableTableId());
+    if (!ResourceIds.getExists(namespace.hookTargetAfterTableId()))
       HookTargetAfter.register(namespace.hookTargetAfterTableId());
-    if(!ResourceIds.getExists(namespace.hookTargetBeforeTableId()))
+    if (!ResourceIds.getExists(namespace.hookTargetBeforeTableId()))
       HookTargetBefore.register(namespace.hookTargetBeforeTableId());
-    if(!ResourceIds.getExists(namespace.moduleSystemLookupTableId()))
+    if (!ResourceIds.getExists(namespace.moduleSystemLookupTableId()))
       ModuleSystemLookup.register(namespace.moduleSystemLookupTableId());
-    if(!ResourceIds.getExists(namespace.moduleTableTableId()))
-      ModuleTable.register(namespace.moduleTableTableId());
+    if (!ResourceIds.getExists(namespace.moduleTableTableId())) ModuleTable.register(namespace.moduleTableTableId());
 
     // Register a new Systems suite
-    if(!ResourceIds.getExists(namespace.entityCoreSystemId()))
+    if (!ResourceIds.getExists(namespace.entityCoreSystemId()))
       world.registerSystem(namespace.entityCoreSystemId(), System(entityCore), true);
-    if(!ResourceIds.getExists(namespace.moduleCoreSystemId()))
+    if (!ResourceIds.getExists(namespace.moduleCoreSystemId()))
       world.registerSystem(namespace.moduleCoreSystemId(), System(moduleCore), true);
-    if(!ResourceIds.getExists(namespace.hookCoreSystemId()))
+    if (!ResourceIds.getExists(namespace.hookCoreSystemId()))
       world.registerSystem(namespace.hookCoreSystemId(), System(hookCore), true);
   }
 }

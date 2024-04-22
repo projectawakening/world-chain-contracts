@@ -40,7 +40,10 @@ contract StaticDataTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore()));
+    baseWorld.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
     StaticDataModule module = new StaticDataModule();
     baseWorld.installModule(module, abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));

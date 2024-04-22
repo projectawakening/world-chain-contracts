@@ -21,18 +21,9 @@ interface IEntityRecord {
     string memory description
   ) external;
 
-  function setName(
-    uint256 entityId,
-    string memory name
-  ) external;
+  function setName(uint256 entityId, string memory name) external;
 
-  function setDappURL(
-    uint256 entityId,
-    string memory dappURL
-  ) external;
+  function setDappURL(uint256 entityId, string memory dappURL) external;
 
-  function setDescription(
-    uint256 entityId,
-    string memory description
-  ) external;
+  function setDescription(uint256 entityId, string memory description) external;
 }

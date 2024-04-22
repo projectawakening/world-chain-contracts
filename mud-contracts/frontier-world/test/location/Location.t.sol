@@ -37,7 +37,10 @@ contract LocationTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore()));
+    baseWorld.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
     baseWorld.installModule(new LocationModule(), abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     location = LocationLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
