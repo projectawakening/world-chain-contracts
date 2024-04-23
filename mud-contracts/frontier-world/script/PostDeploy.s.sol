@@ -12,7 +12,6 @@ import { IERC721Mintable } from "../src/modules/eve-erc721-puppet/IERC721Mintabl
 import { registerERC721 } from "../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { StaticDataGlobalTableData } from "../src/codegen/tables/StaticDataGlobalTable.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -35,7 +34,7 @@ contract PostDeploy is Script {
     );
 
     console.log("Deploying ERC721 token with address: ", address(erc721Token));
-    // SmartCharacterLib.World({iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE})
+      // SmartCharacterLib.World({iface: IBaseWorld(world), namespace: "frontier"})
     //   .registerERC721Token(address(erc721Token));
     vm.stopBroadcast();
   }
