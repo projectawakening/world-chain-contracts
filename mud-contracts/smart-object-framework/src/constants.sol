@@ -24,3 +24,10 @@ bytes16 constant ENTITY_ASSOCIATION_NAME = "EntityAssociatio";
 bytes16 constant MODULE_SYSTEM_LOOKUP_NAME = "ModuleSystemLook";
 bytes16 constant HOOK_TARGET_BEFORE_NAME = "HookTargetBefore";
 bytes16 constant HOOK_TARGET_AFTER_NAME = "HookTargetAfter";
+
+bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
+bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
+bytes16 constant HOOK_CORE_SYSTEM_NAME = "HookCore";
+bytes16 constant STATIC_DATA_SYSTEM_NAME = "StaticData";
+bytes16 constant ENTITY_RECORD_SYSTEM_NAME = "EntityRecord";
+bytes16 constant LOCATION_SYSTEM_NAME = "Location";
