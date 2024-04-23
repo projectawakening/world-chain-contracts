@@ -1,34 +1,32 @@
 import { mudConfig } from "@latticexyz/world/register";
-// this import statement doesnt support remappings for some reason
-import constants = require("./node_modules/@eve/common-constants/src/constants.json");
 
 export default mudConfig({
   //having a short namespace as the MUD Namespace must be <= 14 characters
-  namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
+  namespace: "frontier",
   excludeSystems: ["ERC721System"],
   systems: {
     SmartCharacter: {
-      name: constants.systemName.SMART_CHARACTER,
+      name: "SmartCharacter",
       openAccess: true,
     },
     SmartStorageUnit: {
-      name: constants.systemName.SMART_STORAGE_UNIT,
+      name: "SmartStorageUnit",
       openAccess: true,
     },
     StaticData: {
-      name: constants.systemName.STATIC_DATA,
+      name: "StaticData",
       openAccess: true,
     },
     EntityRecord: {
-      name: constants.systemName.ENTITY_RECORD,
+      name: "EntityRecord",
       openAccess: true,
     },
     LocationSystem: {
-      name: constants.systemName.LOCATION,
+      name: "Location",
       openAccess: true,
     },
     SmartDeployable: {
-      name: constants.systemName.SMART_DEPLOYABLE,
+      name: "SmartDeployable",
       openAccess: true,
     },
   },
