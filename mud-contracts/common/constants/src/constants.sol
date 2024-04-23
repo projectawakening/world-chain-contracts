@@ -14,9 +14,7 @@ bytes14 constant EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE = "ERC721Puppetv0";
 bytes14 constant INVENTORY_DEPLOYMENT_NAMESPACE = "Inventoryv0";
 bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "SmartDeployv0";
 
-bytes16 constant SMART_CHARACTER_SYSTEM_NAME = "SmartCharacter";
+
 bytes16 constant ERC721_SYSTEM_NAME = "ERC721System";
-bytes16 constant SMART_DEPLOYABLE_SYSTEM_NAME = "SmartDeployable";
-bytes16 constant SMART_STORAGE_UNIT_SYSTEM_NAME = "SmartStorageUnit";
 bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";

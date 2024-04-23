@@ -7,9 +7,8 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { SMART_CHARACTER_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+import { CHARACTERS_TABLE_NAME, CHARACTERS_CONSTANTS_TABLE_NAME, SMART_CHARACTER_SYSTEM_NAME } from "./constants.sol";
 
-import { CHARACTERS_TABLE_NAME, CHARACTERS_CONSTANTS_TABLE_NAME } from "./constants.sol";
 
 library Utils {
   function charactersTableId(bytes14 namespace) internal pure returns (ResourceId) {

@@ -6,3 +6,5 @@ import { RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol
 
 bytes16 constant SMART_STORAGE_MODULE_NAME = "SmartStorage";
 bytes14 constant SMART_STORAGE_MODULE_NAMESPACE = "SmartStorage";
+
+bytes16 constant SMART_STORAGE_UNIT_SYSTEM_NAME = "SmartStorageUnit";

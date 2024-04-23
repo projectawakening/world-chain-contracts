@@ -12,3 +12,5 @@ ResourceId constant LOCATION_MODULE_NAMESPACE_ID = ResourceId.wrap(
 );
 
 bytes16 constant LOCATION_TABLE_NAME = "LocationTable";
+
+bytes16 constant LOCATION_SYSTEM_NAME = "Location";

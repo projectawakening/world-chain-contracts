@@ -4,7 +4,7 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { STATIC_DATA_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_SYSTEM_NAME } from "./constants.sol";
 
 import "./constants.sol";
 

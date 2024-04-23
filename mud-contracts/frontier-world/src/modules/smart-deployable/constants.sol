@@ -9,3 +9,5 @@ bytes14 constant SMART_DEPLOYABLE_MODULE_NAMESPACE = "SmartDeployabl";
 
 bytes16 constant GLOBAL_STATE_TABLE_NAME = "GlobalStateTable";
 bytes16 constant DEPLOYABLE_STATE_TABLE_NAME = "DeployableTable";
+
+bytes16 constant SMART_DEPLOYABLE_SYSTEM_NAME = "SmartDeployable";
