@@ -5,7 +5,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { IInventorySystem } from "./interfaces/IInventorySystem.sol";
 import { IEphemeralInventorySystem } from "./interfaces/IEphemeralInventorySystem.sol";
 import { Utils } from "./Utils.sol";
-import { InventoryItem } from "../types.sol";
+import { InventoryItem } from "./types.sol";
 
 /**
  * @title InventoryLib (makes interacting with the underlying systems cleaner)

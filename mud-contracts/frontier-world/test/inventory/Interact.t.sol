@@ -34,8 +34,7 @@ import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
-
-import { InventoryItem } from "../../src/modules/types.sol";
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 contract VendingMachineTestSystem is System {
   using InventoryLib for InventoryLib.World;

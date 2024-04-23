@@ -17,7 +17,7 @@ import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErr
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 
-import { InventoryItem } from "../../types.sol";
+import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 

@@ -29,7 +29,7 @@ import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
-import { InventoryItem } from "../../src/modules/types.sol";
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 contract InventoryTest is Test {
   using Utils for bytes14;

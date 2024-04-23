@@ -4,10 +4,10 @@ pragma solidity >=0.8.21;
 import { System } from "@latticexyz/world/src/System.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "./constants.sol";
+import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, InventoryItem } from "../types.sol";
 
-import { EntityRecordLib } from "../entity-record/EntityRecordLib.sol";
+import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
 contract SmartStorageUnit is System {
   using WorldResourceIdInstance for ResourceId;
@@ -39,9 +39,9 @@ contract SmartStorageUnit is System {
    * //TODO only server account can create items on-chain
    * //TODO Represent item as a ERC1155 asset with ownership on-chain
    * @param smartObjectId The smart object id
-   * @param item The item to create
+   * @param items The item to create
    */
-  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem memory item) public {
+  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
     //Check if the item exists on-chain if not Create entityRecord
     //Deposit item to the inventory
   }

@@ -18,7 +18,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils } from "../Utils.sol";
-import { InventoryItem } from "../../types.sol";
+import { InventoryItem } from "../types.sol";
 
 contract EphemeralInventorySystem is EveSystem {
   using Utils for bytes14;
