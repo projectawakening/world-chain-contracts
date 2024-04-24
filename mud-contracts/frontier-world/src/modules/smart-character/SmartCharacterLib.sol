@@ -35,7 +35,10 @@ library SmartCharacterLib {
   ) internal {
     world.iface.call(
       world.namespace.smartCharacterSystemId(),
-      abi.encodeCall(ISmartCharacter.createCharacter, (characterId, characterAddress, entityRecord, entityRecordOffchain, tokenCid))
+      abi.encodeCall(
+        ISmartCharacter.createCharacter,
+        (characterId, characterAddress, entityRecord, entityRecordOffchain, tokenCid)
+      )
     );
   }
 

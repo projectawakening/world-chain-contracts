@@ -13,8 +13,9 @@ import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/Puppe
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
+import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.sol";
@@ -23,11 +24,15 @@ import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mint
 import { IERC721Metadata } from "../../src/modules/eve-erc721-puppet/IERC721Metadata.sol";
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
+import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
+import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 
 import { Utils as SmartStorageUnitUtils } from "../../src/modules/smart-storage-unit/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
+import { State } from "../../src/modules/smart-deployable/types.sol";
 
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
@@ -37,12 +42,16 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 contract SmartStorageUnitTest is Test {
   using SmartStorageUnitUtils for bytes14;
   using EntityRecordUtils for bytes14;
+  using SmartDeployableUtils for bytes14;
+  using LocationUtils for bytes14;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
+  using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld baseWorld;
   SmartStorageUnitLib.World smartStorageUnit;
   IERC721Mintable erc721Token;
+  SmartDeployableLib.World smartDeployable;
 
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
@@ -55,15 +64,17 @@ contract SmartStorageUnitTest is Test {
     baseWorld.installModule(new EntityRecordModule(), abi.encode(ENTITY_RECORD_DEPLOYMENT_NAMESPACE));
     baseWorld.installModule(new SmartDeployableModule(), abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE));
     baseWorld.installModule(new InventoryModule(), abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE));
+    baseWorld.installModule(new LocationModule(), abi.encode(LOCATION_DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
     erc721Token = registerERC721(
       baseWorld,
       EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE,
       StaticDataGlobalTableData({ name: "SmartStorageUnit", symbol: "SSU", baseURI: "" })
     );
-
     baseWorld.installModule(new SmartStorageUnitModule(), abi.encode(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE));
+
     smartStorageUnit = SmartStorageUnitLib.World(baseWorld, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+    smartDeployable = SmartDeployableLib.World(baseWorld, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
   }
 
   function testSetup() public {
@@ -89,9 +100,16 @@ contract SmartStorageUnitTest is Test {
       storageCapacity,
       ephemeralStorageCapacity
     );
+    smartDeployable.bringOnline(smartObjectId);
   }
 
   function testCreateAndDepositItemsToInventory(uint256 smartObjectId) public {
+    testCreateAndAnchorSmartStorageUnit(smartObjectId);
+    State currentState = DeployableState.getState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    assertEq(uint8(currentState), uint8(State.ONLINE));
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
@@ -106,6 +124,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndDepositItemsToEphemeralInventory(uint256 smartObjectId) public {
+    testCreateAndAnchorSmartStorageUnit(smartObjectId);
     InventoryItem[] memory items = new InventoryItem[](1);
     address inventoryOwner = address(0);
     items[0] = InventoryItem({
@@ -116,7 +135,6 @@ contract SmartStorageUnitTest is Test {
       volume: 10,
       quantity: 5
     });
-
     smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, inventoryOwner, items);
   }
 }

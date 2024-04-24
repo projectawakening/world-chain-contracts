@@ -3,14 +3,36 @@ pragma solidity >=0.8.21;
 
 import { System } from "@latticexyz/world/src/System.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
-import { EntityRecordData, SmartObjectData, WorldPosition, InventoryItem } from "../types.sol";
+import { EntityRecordData, SmartObjectData, WorldPosition } from "../types.sol";
+import { InventoryItem } from "../../inventory/types.sol";
 
+import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
-contract SmartStorageUnit is System {
+import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+import { InventoryLib } from "../../inventory/InventoryLib.sol";
+
+import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
+import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
+
+import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
+import { Utils } from "../Utils.sol";
+
+contract SmartStorageUnit is EveSystem {
   using WorldResourceIdInstance for ResourceId;
+  using Utils for bytes14;
+  using SmartDeployableUtils for bytes14;
+  using EntityRecordUtils for bytes14;
+  using EntityRecordLib for EntityRecordLib.World;
+  using InventoryLib for InventoryLib.World;
+  using SmartDeployableLib for SmartDeployableLib.World;
+
+  error SmartStorageUnitERC721AlreadyInitialized();
 
   /**
    * @notice Create and anchor a smart storage unit
@@ -31,6 +53,24 @@ contract SmartStorageUnit is System {
     uint256 ephemeralStorageCapacity
   ) public {
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
+    _entityRecordLib().createEntityRecord(
+      smartObjectId,
+      entityRecordData.itemId,
+      entityRecordData.typeId,
+      entityRecordData.volume
+    );
+
+    _smartDeployableLib().registerDeployable(smartObjectId);
+    LocationTableData memory locationData = LocationTableData({
+      solarSystemId: worldPosition.solarSystemId,
+      x: worldPosition.position.x,
+      y: worldPosition.position.y,
+      z: worldPosition.position.z
+    });
+    _smartDeployableLib().anchor(smartObjectId, locationData);
+
+    _inventoryLib().setInventoryCapacity(smartObjectId, storageCapacity);
+    _inventoryLib().setEphemeralInventoryCapacity(smartObjectId, smartObjectData.owner, ephemeralStorageCapacity);
   }
 
   /**
@@ -42,8 +82,17 @@ contract SmartStorageUnit is System {
    * @param items The item to create
    */
   function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
-    //Check if the item exists on-chain if not Create entityRecord
+    for (uint256 i = 0; i < items.length; i++) {
+      //Check if the item exists on-chain if not Create entityRecord
+      _entityRecordLib().createEntityRecord(
+        items[i].inventoryItemId,
+        items[i].itemId,
+        items[i].typeId,
+        items[i].volume
+      );
+    }
     //Deposit item to the inventory
+    _inventoryLib().depositToInventory(smartObjectId, items);
   }
 
   function createAndDepositItemsToEphemeralInventory(
@@ -52,15 +101,27 @@ contract SmartStorageUnit is System {
     InventoryItem[] memory items
   ) public {
     //Check if the item exists on-chain if not Create entityRecord
+    for (uint256 i = 0; i < items.length; i++) {
+      _entityRecordLib().createEntityRecord(
+        items[i].inventoryItemId,
+        items[i].itemId,
+        items[i].typeId,
+        items[i].volume
+      );
+    }
     //Deposit item to the ephemeral inventory
+    _inventoryLib().depositToEphemeralInventory(smartObjectId, inventoryOwner, items);
   }
 
-  function smartStorageUnitSystemId() public pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_SYSTEM,
-        namespace: SMART_STORAGE_MODULE_NAMESPACE,
-        name: SMART_STORAGE_MODULE_NAME
-      });
+  function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {
+    return EntityRecordLib.World({ iface: IBaseWorld(_world()), namespace: ENTITY_RECORD_DEPLOYMENT_NAMESPACE });
+  }
+
+  function _inventoryLib() internal view returns (InventoryLib.World memory) {
+    return InventoryLib.World({ iface: IBaseWorld(_world()), namespace: INVENTORY_DEPLOYMENT_NAMESPACE });
+  }
+
+  function _smartDeployableLib() internal view returns (SmartDeployableLib.World memory) {
+    return SmartDeployableLib.World({ iface: IBaseWorld(_world()), namespace: SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE });
   }
 }

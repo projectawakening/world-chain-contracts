@@ -88,7 +88,7 @@ export default mudConfig({
       },
       valueSchema: {
         itemId: "uint256",
-        typeId: "uint8",
+        typeId: "uint256",
         volume: "uint256",
       },
       tableIdArgument: true,

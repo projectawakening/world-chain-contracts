@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";

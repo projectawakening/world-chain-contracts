@@ -3,12 +3,12 @@ pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { InventoryTable } from "../../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../../codegen/tables/InventoryItemTable.sol";
 import { InventoryItemTableData } from "../../../codegen/tables/InventoryItemTable.sol";
-import { InventoryTableData } from "../../../codegen/tables/InventoryTable.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { State } from "../../../codegen/common.sol";
@@ -31,8 +31,13 @@ contract InventorySystem is EveSystem {
    * @param smartObjectId is the smart deployable id
    */
   modifier onlyOnline(uint256 smartObjectId) {
-    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
-    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
+    State currentState = DeployableState.getState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    if (
+      GlobalDeployableState.getGlobalState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.globalStateTableId()) == State.OFFLINE
+    ) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
     } else if (currentState != State.ONLINE) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
@@ -45,8 +50,13 @@ contract InventorySystem is EveSystem {
    * @param smartObjectId is the smart deployable id
    */
   modifier beyondAnchored(uint256 smartObjectId) {
-    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), smartObjectId);
-    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
+    State currentState = DeployableState.getState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    if (
+      GlobalDeployableState.getGlobalState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.globalStateTableId()) == State.OFFLINE
+    ) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
     } else if (currentState == State.NULL || currentState == State.UNANCHORED || currentState == State.DESTROYED) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.NULL, currentState);
@@ -88,10 +98,10 @@ contract InventorySystem is EveSystem {
     for (uint256 i = 0; i < itemsLength; i++) {
       //Revert if the items to deposit is not created on-chain
       EntityRecordTableData memory entityRecord = EntityRecordTable.get(
-        _namespace().entityRecordTableId(),
+        ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
         items[i].inventoryItemId
       );
-      if (entityRecord.volume <= 0) {
+      if (entityRecord.itemId == 0) {
         revert IInventoryErrors.Inventory_InvalidItem("InventorySystem: item is not created on-chain", items[i].typeId);
       }
       usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);

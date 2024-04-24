@@ -44,7 +44,7 @@ contract EntityRecordTest is Test {
     assertEq(entityRecordSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
-  function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint8 typeId, uint256 volume) public {
+  function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
     EntityRecordTableData memory data = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume });
 
@@ -115,10 +115,7 @@ contract EntityRecordTest is Test {
     assertEq(data.description, tableData.description);
   }
 
-  function testSetEntityRecordName(
-    uint256 entityId,
-    string memory name
-  ) public {
+  function testSetEntityRecordName(uint256 entityId, string memory name) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(name).length != 0);
 
@@ -133,10 +130,7 @@ contract EntityRecordTest is Test {
     assertEq(name, tableData.name);
   }
 
-  function testSetEntityRecordDappURL(
-    uint256 entityId,
-    string memory dappURL
-  ) public {
+  function testSetEntityRecordDappURL(uint256 entityId, string memory dappURL) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(dappURL).length != 0);
 
@@ -151,10 +145,7 @@ contract EntityRecordTest is Test {
     assertEq(dappURL, tableData.dappURL);
   }
 
-  function testSetEntityRecordDescription(
-    uint256 entityId,
-    string memory description
-  ) public {
+  function testSetEntityRecordDescription(uint256 entityId, string memory description) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(description).length != 0);
 

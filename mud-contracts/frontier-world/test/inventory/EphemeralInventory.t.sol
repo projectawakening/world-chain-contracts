@@ -215,7 +215,7 @@ contract EphemeralInventoryTest is Test {
     //TODO: Implement the logic to check if the caller is admin after RBAC implementation
   }
 
-  function testOnlyAnyoneCanDepositToInventory() public {
+  function testAnyoneCanDepositToInventory() public {
     //TODO : Add test case for only owner can withdraw from inventory after RBAC
   }
 

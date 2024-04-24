@@ -21,6 +21,4 @@ interface ISmartStorageUnit {
     address inventoryOwner,
     InventoryItem[] memory items
   ) external;
-
-  function smartStorageUnitSystemId() external pure returns (ResourceId);
 }
