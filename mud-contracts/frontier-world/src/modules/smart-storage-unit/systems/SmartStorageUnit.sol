@@ -6,7 +6,7 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
-import { EntityRecordData, SmartObjectData, WorldPosition } from "../types.sol";
+import { EntityRecordData, WorldPosition } from "../types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
@@ -22,6 +22,8 @@ import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils } from "../Utils.sol";
+
+import { SmartObjectData } from "../../smart-deployable/types.sol";
 
 contract SmartStorageUnit is EveSystem {
   using WorldResourceIdInstance for ResourceId;
@@ -60,7 +62,7 @@ contract SmartStorageUnit is EveSystem {
       entityRecordData.volume
     );
 
-    _smartDeployableLib().registerDeployable(smartObjectId);
+    _smartDeployableLib().registerDeployable(smartObjectId, smartObjectData);
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
       x: worldPosition.position.x,
@@ -75,11 +77,11 @@ contract SmartStorageUnit is EveSystem {
 
   /**
    * @notice Create an item on chain and deposit it to the inventory
-   * @dev Create an item by smart object id
+   * @dev Create an item by smart object id and deposit it to the inventory
    * //TODO only server account can create items on-chain
    * //TODO Represent item as a ERC1155 asset with ownership on-chain
    * @param smartObjectId The smart object id
-   * @param items The item to create
+   * @param items The item to store in a inventory
    */
   function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
     for (uint256 i = 0; i < items.length; i++) {
@@ -95,6 +97,15 @@ contract SmartStorageUnit is EveSystem {
     _inventoryLib().depositToInventory(smartObjectId, items);
   }
 
+  /**
+   * @notice Create an item on chain and deposit it to the ephemeral inventory
+   * @dev Create an item by smart object id and deposit it to the ephemeral inventory
+   * //TODO only server account can create items on-chain
+   * //TODO Represent item as a ERC1155 asset with ownership on-chain
+   * @param smartObjectId The smart object id
+   * @param inventoryOwner The owner of the inventory
+   * @param items The item to store in a inventory
+   */
   function createAndDepositItemsToEphemeralInventory(
     uint256 smartObjectId,
     address inventoryOwner,
@@ -111,6 +122,24 @@ contract SmartStorageUnit is EveSystem {
     }
     //Deposit item to the ephemeral inventory
     _inventoryLib().depositToEphemeralInventory(smartObjectId, inventoryOwner, items);
+  }
+
+  /**
+   * @notice Create metadata of a smart deployable
+   * @dev Create metadata of a smart deployable by smart object id
+   * //TODO This function will be moved to ipfs in future
+   * @param smartObjectId The smart object id
+   * @param name The name of the smart deployable
+   * @param dappURL The dapp URL of the smart deployable
+   * @param description The description of the smart deployable
+   */
+  function createDeploybaleMetadata(
+    uint256 smartObjectId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) public {
+    _entityRecordLib().createEntityRecordOffchain(smartObjectId, name, dappURL, description);
   }
 
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {

@@ -178,6 +178,13 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
+    DeployableTokenTable: {
+      keySchema: {},
+      valueSchema: {
+        erc721Address: "address",
+      },
+      tableIdArgument: true,
+    },
 
     //INVENTORY MODULE
     /**

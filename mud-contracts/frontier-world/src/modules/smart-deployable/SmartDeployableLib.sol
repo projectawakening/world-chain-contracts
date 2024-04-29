@@ -4,7 +4,7 @@ pragma solidity >=0.8.21;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { State } from "./types.sol";
+import { State, SmartObjectData } from "./types.sol";
 import { Utils } from "./Utils.sol";
 import { ISmartDeployable } from "./interfaces/ISmartDeployable.sol";
 
@@ -24,10 +24,17 @@ library SmartDeployableLib {
     bytes14 namespace;
   }
 
-  function registerDeployable(World memory world, uint256 entityId) internal {
+  function registerDeployableToken(World memory world, address tokenAddress) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.registerDeployable, (entityId))
+      abi.encodeCall(ISmartDeployable.registerDeployableToken, (tokenAddress))
+    );
+  }
+
+  function registerDeployable(World memory world, uint256 entityId, SmartObjectData memory smartObjectData) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.registerDeployable, (entityId, smartObjectData))
     );
   }
 

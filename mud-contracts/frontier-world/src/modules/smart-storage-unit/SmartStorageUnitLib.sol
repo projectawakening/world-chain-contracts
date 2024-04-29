@@ -64,4 +64,17 @@ library SmartStorageUnitLib {
       )
     );
   }
+
+  function createDeploybaleMetadata(
+    World memory world,
+    uint256 smartObjectId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) internal {
+    world.iface.call(
+      world.namespace.smartStorageUnitSystemId(),
+      abi.encodeCall(ISmartStorageUnit.createDeploybaleMetadata, (smartObjectId, name, dappURL, description))
+    );
+  }
 }
