@@ -101,14 +101,19 @@ contract SmartStorageUnitTest is Test {
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
       entityRecordData,
       smartObjectData,
       worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
       storageCapacity,
       ephemeralStorageCapacity
     );
+    smartDeployable.depositFuel(smartObjectId, 100000);
     smartDeployable.bringOnline(smartObjectId);
 
     State currentState = DeployableState.getState(

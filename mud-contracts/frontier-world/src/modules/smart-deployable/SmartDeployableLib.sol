@@ -26,8 +26,8 @@ library SmartDeployableLib {
 
   function registerDeployable(
     World memory world,
-    SmartObjectData memory smartObjectData,
     uint256 entityId,
+    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity

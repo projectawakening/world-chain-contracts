@@ -9,7 +9,6 @@ import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { SmartObjectData } from "../types.sol";
 
 interface ISmartDeployable {
-  
   function registerDeployable(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
@@ -17,8 +16,6 @@ interface ISmartDeployable {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
   ) external;
-
-  function registerDeployable(uint256 entityId) external;
 
   function destroyDeployable(uint256 entityId) external;
 

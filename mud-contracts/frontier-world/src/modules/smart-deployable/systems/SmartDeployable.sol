@@ -126,11 +126,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ONLINE);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
-    DeployableFuelBalance.setLastUpdatedAt(
-      _namespace().deployableFuelBalanceTableId(),
-      entityId,
-      block.timestamp
-    );
+    DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -143,11 +139,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     State currentState = DeployableState.getState(_namespace().deployableStateTableId(), entityId);
     if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployable_GloballyOffline();
-    } else if (
-      uint256(currentState) != uint256(State.ONLINE) &&
-      uint256(currentState) != uint256(State.ANCHORED)
-    ) {
-      revert SmartDeployable_incorrectState(
+    } else if (uint256(currentState) != uint256(State.ONLINE) && uint256(currentState) != uint256(State.ANCHORED)) {
+      revert SmartDeployable_IncorrectState(
         entityId,
         State.ONLINE,
         DeployableState.getState(_namespace().deployableStateTableId(), entityId)
@@ -236,10 +229,12 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function depositFuel(uint256 entityId, uint256 unitAmount) public {
     _updateFuel(entityId);
     if (
-      (((DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
-        unitAmount *
-        (10 ** FUEL_DECIMALS)) *
-        DeployableFuelBalance.getFuelUnitVolume(_namespace().deployableFuelBalanceTableId(), entityId))) /
+      (
+        ((DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
+          unitAmount *
+          (10 ** FUEL_DECIMALS)) *
+          DeployableFuelBalance.getFuelUnitVolume(_namespace().deployableFuelBalanceTableId(), entityId))
+      ) /
         (10 ** FUEL_DECIMALS) >
       DeployableFuelBalance.getFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId)
     ) {

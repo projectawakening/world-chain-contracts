@@ -51,6 +51,9 @@ contract SmartStorageUnit is EveSystem {
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public {
@@ -62,7 +65,13 @@ contract SmartStorageUnit is EveSystem {
       entityRecordData.volume
     );
 
-    _smartDeployableLib().registerDeployable(smartObjectId, smartObjectData);
+    _smartDeployableLib().registerDeployable(
+      smartObjectId,
+      smartObjectData,
+      fuelUnitVolume,
+      fuelConsumptionPerMinute,
+      fuelMaxCapacity
+    );
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
       x: worldPosition.position.x,

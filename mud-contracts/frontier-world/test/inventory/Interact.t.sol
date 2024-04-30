@@ -184,7 +184,11 @@ contract InteractTest is Test {
     address inventoryOwner = address(1);
     address ephItemOwner = address(0);
 
-    DeployableState.setState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(), smartObjectId, State.ONLINE);
+    DeployableState.setState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId,
+      State.ONLINE
+    );
     inventory.setInventoryCapacity(smartObjectId, storageCapacity);
     inventory.setEphemeralInventoryCapacity(smartObjectId, inventoryOwner, storageCapacity);
 

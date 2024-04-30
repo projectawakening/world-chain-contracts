@@ -205,6 +205,7 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
+
     DeployableTokenTable: {
       keySchema: {},
       valueSchema: {
