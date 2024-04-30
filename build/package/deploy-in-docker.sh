@@ -123,8 +123,13 @@ mkdir abis
 mkdir abis/trusted-forwarder
 mkdir abis/frontier-world
 
-cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2711TrustedForwarder.abi.json abis/trusted-forwarder/
-cp -r mud-contracts/frontier-world/out/IWorld.sol/IWorld.abi.json abis/frontier-world/
+# Copy ABIS to be used for External consumption
+cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v${IMAGE_TAG}.abi.json"
+cp mud-contracts/frontier-world/out/IWorld.sol/IWorld.abi.json "abis/frontier-world/IWorld-v${IMAGE_TAG}.abi.json"
+# Custome ERC2771 Compatible IWorld contract
+jq 'map((.name? |= gsub("^frontier__"; "")) // .)' "abis/frontier-world/IWorld-v${IMAGE_TAG}.abi.json" > "abis/frontier-world/ERC2771IWorld-v${IMAGE_TAG}.abi.json"
+
+
 show_progress 6 6
 
 
