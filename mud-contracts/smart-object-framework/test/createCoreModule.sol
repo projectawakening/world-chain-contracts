@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // cherry-picked from staged changes for next-17 release, unavailable in .16
-pragma solidity >=0.8.21;
+pragma solidity >=0.8.24;
 
 import { AccessManagementSystem } from "@latticexyz/world/src/modules/core/implementations/AccessManagementSystem.sol";
 import { BalanceTransferSystem } from "@latticexyz/world/src/modules/core/implementations/BalanceTransferSystem.sol";

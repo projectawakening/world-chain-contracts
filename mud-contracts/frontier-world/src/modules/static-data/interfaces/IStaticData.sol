@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.21;
+pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
