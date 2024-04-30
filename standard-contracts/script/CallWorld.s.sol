@@ -9,6 +9,18 @@ import { Nonces } from "openzeppelin-contracts/utils/Nonces.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "./types.sol";
 
+struct EntityRecordOffchainTableData {
+  string name;
+  string dappURL;
+  string description;
+}
+
+struct EntityRecordTableData {
+  uint256 itemId;
+  uint256 typeId;
+  uint256 volume;
+}
+
 contract CallWorld is Script {
   ERC2771Forwarder internal _erc2771Forwarder;
   uint256 _signerPrivatekey;
@@ -24,23 +36,24 @@ contract CallWorld is Script {
 
     _signerPrivatekey = 0xA11CE;
     _signer = vm.addr(_signerPrivatekey);
-
     uint256 nonce = uint256(keccak256(abi.encodePacked("a")));
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    uint256 storageCapacity = 100000000;
-    uint256 ephemeralStorageCapacity = 100000000000;
-    EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 });
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: _signer, tokenURI: "test" });
-    WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
 
+    uint256 characterId = 12513;
+    // The address this character will be minted to
+    address characterAddress = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+
+    uint256 typeId = 123;
+    uint256 itemId = 234;
+    uint256 volume = 100;
+    string memory cid = "azerty";
+    string memory characterName = "awesome-o";
     bytes memory data = abi.encodeWithSelector(
-      0x9da298e5,
-      smartObjectId,
-      entityRecordData,
-      smartObjectData,
-      worldPosition,
-      storageCapacity,
-      ephemeralStorageCapacity
+      0x571478ca,
+      characterId,
+      characterAddress,
+      EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume }),
+      EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
+      cid
     );
 
     ERC2771Forwarder.ForwardRequest memory req = ERC2771Forwarder.ForwardRequest({
@@ -54,27 +67,27 @@ contract CallWorld is Script {
     });
 
     //Make this EIP712 complaint
-    // bytes32 digest = _erc2771Forwarder.structHash(req);
+    bytes32 digest = _erc2771Forwarder.structHash(req);
 
-    //Sign the request
-    // (uint8 v, bytes32 r, bytes32 s) = vm.sign(_signerPrivatekey, digest);
-    // bytes memory signature = abi.encodePacked(r, s, v);
+    // Sign the request
+    (uint8 v, bytes32 r, bytes32 s) = vm.sign(_signerPrivatekey, digest);
+    bytes memory signature = abi.encodePacked(r, s, v);
 
-    // ERC2771Forwarder.ForwardRequestData memory requestData = ERC2771Forwarder.ForwardRequestData({
-    //   from: req.from,
-    //   to: req.to,
-    //   value: req.value,
-    //   gas: req.gas,
-    //   nonce: req.nonce,
-    //   deadline: req.deadline,
-    //   data: req.data,
-    //   signature: signature
-    // });
+    ERC2771Forwarder.ForwardRequestData memory requestData = ERC2771Forwarder.ForwardRequestData({
+      from: req.from,
+      to: req.to,
+      value: req.value,
+      gas: req.gas,
+      nonce: req.nonce,
+      deadline: req.deadline,
+      data: req.data,
+      signature: signature
+    });
 
-    // bool verified = _erc2771Forwarder.verify(requestData);
-    // console.log(verified);
+    bool verified = _erc2771Forwarder.verify(requestData);
+    console.log(verified);
 
-    // _erc2771Forwarder.execute(requestData);
+    _erc2771Forwarder.execute(requestData);
     vm.stopBroadcast();
   }
 }

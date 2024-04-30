@@ -17,14 +17,15 @@
     "test": "tsc --noEmit && forge test -vvv"
   },
   "dependencies": {
-    "@eve/common-constants": "0.0.0",
-    "@eve/frontier-smart-object-framework": "0.0.0",
     "@latticexyz/cli": "2.0.0-next.16",
-    "@latticexyz/gas-report": "2.0.0-next.16",
     "@latticexyz/schema-type": "2.0.0-next.16",
     "@latticexyz/store": "2.0.0-next.16",
     "@latticexyz/world": "2.0.0-next.16",
-    "@latticexyz/world-modules": "2.0.0-next.16"
+    "@latticexyz/world-modules": "2.0.0-next.16",
+    "@latticexyz/gas-report": "2.0.0-next.16",
+    "@eve/frontier-smart-object-framework": "0.0.0",
+    "@eve/common-constants": "0.0.0",
+    "@eve/frontier-world": "0.0.0"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",
