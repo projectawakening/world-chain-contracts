@@ -65,7 +65,7 @@ library SmartStorageUnitLib {
     );
   }
 
-  function createDeploybaleMetadata(
+  function setDeploybaleMetadata(
     World memory world,
     uint256 smartObjectId,
     string memory name,
@@ -74,7 +74,7 @@ library SmartStorageUnitLib {
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.createDeploybaleMetadata, (smartObjectId, name, dappURL, description))
+      abi.encodeCall(ISmartStorageUnit.setDeploybaleMetadata, (smartObjectId, name, dappURL, description))
     );
   }
 }

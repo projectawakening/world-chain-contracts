@@ -133,7 +133,7 @@ contract SmartStorageUnit is EveSystem {
    * @param dappURL The dapp URL of the smart deployable
    * @param description The description of the smart deployable
    */
-  function createDeploybaleMetadata(
+  function setDeploybaleMetadata(
     uint256 smartObjectId,
     string memory name,
     string memory dappURL,

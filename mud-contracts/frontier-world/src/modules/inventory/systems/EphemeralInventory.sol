@@ -21,7 +21,7 @@ import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils } from "../Utils.sol";
 import { InventoryItem } from "../types.sol";
 
-contract EphemeralInventorySystem is EveSystem {
+contract EphemeralInventory is EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;

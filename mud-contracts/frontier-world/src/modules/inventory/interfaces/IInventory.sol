@@ -6,10 +6,10 @@ pragma solidity >=0.8.21;
 import { InventoryItem } from "../types.sol";
 
 /**
- * @title IInventorySystem
+ * @title IInventory
  * @dev This interface is to make interacting with the underlying system easier via worldCall.
  */
-interface IInventorySystem {
+interface IInventory {
   function setInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) external;
 
   function depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) external;

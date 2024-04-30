@@ -31,6 +31,14 @@ export default mudConfig({
       name: constants.systemName.SMART_DEPLOYABLE,
       openAccess: true,
     },
+    Inventory: {
+      name: constants.systemName.INVENTORY,
+      openAccess: true,
+    },
+    EphemeralInventory: {
+      name: constants.systemName.EPHEMERAL_INVENTORY,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],

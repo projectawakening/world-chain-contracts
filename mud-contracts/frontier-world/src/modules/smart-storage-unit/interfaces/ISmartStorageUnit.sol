@@ -22,7 +22,7 @@ interface ISmartStorageUnit {
     InventoryItem[] memory items
   ) external;
 
-  function createDeploybaleMetadata(
+  function setDeploybaleMetadata(
     uint256 smartObjectId,
     string memory name,
     string memory dappURL,

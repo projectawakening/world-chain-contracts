@@ -64,8 +64,8 @@ contract InventoryTest is Test {
   }
 
   function testSetup() public {
-    address InventorySystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
-    ResourceId inventorySystemId = SystemRegistry.get(InventorySystem);
+    address Inventory = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
+    ResourceId inventorySystemId = SystemRegistry.get(Inventory);
     assertEq(inventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
@@ -87,7 +87,7 @@ contract InventoryTest is Test {
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidCapacity.selector,
-        "InventorySystem: storage capacity cannot be 0"
+        "Inventory: storage capacity cannot be 0"
       )
     );
     inventory.setInventoryCapacity(smartObjectId, storageCapacity);
@@ -135,7 +135,7 @@ contract InventoryTest is Test {
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InsufficientCapacity.selector,
-        "InventorySystem: insufficient capacity",
+        "Inventory: insufficient capacity",
         storageCapacity,
         items[0].volume * items[0].quantity
       )
@@ -204,7 +204,7 @@ contract InventoryTest is Test {
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidQuantity.selector,
-        "InventorySystem: invalid quantity",
+        "Inventory: invalid quantity",
         3,
         items[0].quantity
       )

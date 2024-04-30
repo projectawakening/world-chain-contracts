@@ -21,7 +21,7 @@ import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 
-contract InventorySystem is EveSystem {
+contract Inventory is EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
@@ -75,7 +75,7 @@ contract InventorySystem is EveSystem {
     uint256 storageCapacity
   ) public hookable(smartObjectId, _systemId()) {
     if (storageCapacity == 0) {
-      revert IInventoryErrors.Inventory_InvalidCapacity("InventorySystem: storage capacity cannot be 0");
+      revert IInventoryErrors.Inventory_InvalidCapacity("Inventory: storage capacity cannot be 0");
     }
     InventoryTable.setCapacity(_namespace().inventoryTableId(), smartObjectId, storageCapacity);
   }
@@ -102,7 +102,7 @@ contract InventorySystem is EveSystem {
         items[i].inventoryItemId
       );
       if (entityRecord.itemId == 0) {
-        revert IInventoryErrors.Inventory_InvalidItem("InventorySystem: item is not created on-chain", items[i].typeId);
+        revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
       }
       usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
     }
@@ -144,7 +144,7 @@ contract InventorySystem is EveSystem {
     uint256 reqCapacity = item.volume * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
       revert IInventoryErrors.Inventory_InsufficientCapacity(
-        "InventorySystem: insufficient capacity",
+        "Inventory: insufficient capacity",
         maxCapacity,
         usedCapacity + reqCapacity
       );
@@ -182,7 +182,7 @@ contract InventorySystem is EveSystem {
   function validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert IInventoryErrors.Inventory_InvalidQuantity(
-        "InventorySystem: invalid quantity",
+        "Inventory: invalid quantity",
         itemData.quantity,
         item.quantity
       );

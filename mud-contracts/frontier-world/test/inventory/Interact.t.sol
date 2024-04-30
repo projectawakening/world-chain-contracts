@@ -203,8 +203,8 @@ contract InteractTest is Test {
     ResourceId ephemeralInventorySystemId = SystemRegistry.get(EpheremalSystem);
     assertEq(ephemeralInventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
 
-    address InventorySystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
-    ResourceId inventorySystemId = SystemRegistry.get(InventorySystem);
+    address Inventory = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
+    ResourceId inventorySystemId = SystemRegistry.get(Inventory);
     assertEq(inventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
 
     address VendingMachineSystem = Systems.getSystem(VENDING_MACHINE_SYSTEM_ID);
