@@ -12,4 +12,4 @@ ResourceId constant STATIC_DATA_MODULE_NAMESPACE_ID = ResourceId.wrap(
 );
 
 bytes16 constant STATIC_DATA_TABLE_NAME = "StaticDataTable";
-bytes16 constant STATIC_DATA_GLOBAL_TABLE_NAME = "StaticDataGTable";
+bytes16 constant STATIC_DATA_GLOBAL_TABLE_NAME = "StaticDataGlobal";

@@ -31,6 +31,14 @@ export default mudConfig({
       name: constants.systemName.SMART_DEPLOYABLE,
       openAccess: true,
     },
+    Inventory: {
+      name: constants.systemName.INVENTORY,
+      openAccess: true,
+    },
+    EphemeralInventory: {
+      name: constants.systemName.EPHEMERAL_INVENTORY,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
@@ -88,7 +96,7 @@ export default mudConfig({
       },
       valueSchema: {
         itemId: "uint256",
-        typeId: "uint8",
+        typeId: "uint256",
         volume: "uint256",
       },
       tableIdArgument: true,
@@ -175,6 +183,13 @@ export default mudConfig({
         createdAt: "uint256",
         state: "State",
         updatedBlockNumber: "uint256",
+      },
+      tableIdArgument: true,
+    },
+    DeployableTokenTable: {
+      keySchema: {},
+      valueSchema: {
+        erc721Address: "address",
       },
       tableIdArgument: true,
     },

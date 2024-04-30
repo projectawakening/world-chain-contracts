@@ -52,7 +52,12 @@ contract SmartCharacter is EveSystem {
     // TODO: Do we have to create the entityId <-> characterId linkup here in Smart Object Framework ?
     _entityRecordLib().createEntityRecord(characterId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume);
     //Save the smartObjectData in ERC721 Module
-    _entityRecordLib().createEntityRecordOffchain(characterId, entityRecordOffchain.name, entityRecordOffchain.dappURL, entityRecordOffchain.description);
+    _entityRecordLib().createEntityRecordOffchain(
+      characterId,
+      entityRecordOffchain.name,
+      entityRecordOffchain.dappURL,
+      entityRecordOffchain.description
+    );
     IERC721Mintable(CharactersConstantsTable.getErc721Address((_namespace().charactersConstantsTableId()))).mint(
       characterAddress,
       characterId

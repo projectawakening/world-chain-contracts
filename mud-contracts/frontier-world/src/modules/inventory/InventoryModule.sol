@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
@@ -14,8 +13,8 @@ import { EphemeralInventoryTable } from "../../codegen/tables/EphemeralInventory
 import { EphemeralInvItemTable } from "../../codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../codegen/tables/ItemTransferOffchainTable.sol";
 
-import { InventorySystem } from "./systems/InventorySystem.sol";
-import { EphemeralInventorySystem } from "./systems/EphemeralInventorySystem.sol";
+import { Inventory } from "./systems/Inventory.sol";
+import { EphemeralInventory } from "./systems/EphemeralInventory.sol";
 
 import { Utils } from "./Utils.sol";
 
@@ -83,7 +82,7 @@ contract InventoryModuleRegistration {
     ItemTransferOffchainTable.register(namespace.itemTransferTableId());
 
     //Register the systems
-    world.registerSystem(namespace.inventorySystemId(), new InventorySystem(), true);
-    world.registerSystem(namespace.ephemeralInventorySystemId(), new EphemeralInventorySystem(), true);
+    world.registerSystem(namespace.inventorySystemId(), new Inventory(), true);
+    world.registerSystem(namespace.ephemeralInventorySystemId(), new EphemeralInventory(), true);
   }
 }
