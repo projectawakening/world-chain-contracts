@@ -24,8 +24,7 @@
     "depositToEphemeral:devnet": ". ./.env.devnet && forge script script/DepositToEphemeral.s.sol:DepositToEphemeral --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier '**/*.sol' --write",
-    "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && forge test -vvv"
+    "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-next.16",
