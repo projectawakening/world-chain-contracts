@@ -12,10 +12,12 @@ import { IERC721Mintable } from "../src/modules/eve-erc721-puppet/IERC721Mintabl
 import { registerERC721 } from "../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { StaticDataGlobalTableData } from "../src/codegen/tables/StaticDataGlobalTable.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
+import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
+  using SmartDeployableLib for SmartDeployableLib.World;
 
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -26,17 +28,31 @@ contract PostDeploy is Script {
 
     vm.startBroadcast(deployerPrivateKey);
 
-    IERC721Mintable erc721Token;
+    IERC721Mintable erc721CharacterToken;
     world.installModule(new PuppetModule(), new bytes(0));
-    erc721Token = registerERC721(
+    erc721CharacterToken = registerERC721(
       world,
       "myERC721",
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
     );
 
-    console.log("Deploying ERC721 token with address: ", address(erc721Token));
-    SmartCharacterLib.World({iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE})
-      .registerERC721Token(address(erc721Token));
+    console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));
+    SmartCharacterLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .registerERC721Token(address(erc721CharacterToken));
+
+    IERC721Mintable erc721SmartDeployableToken;
+    erc721SmartDeployableToken = registerERC721(
+      world,
+      "erc721Deploybl",
+      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
+    );
+
+    console.log("Deploying ERC721 token with address: ", address(erc721SmartDeployableToken));
+    SmartDeployableLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .registerDeployableToken(address(erc721SmartDeployableToken));
+
     vm.stopBroadcast();
   }
 }

@@ -25,3 +25,5 @@ bytes16 constant SMART_CHARACTER_SYSTEM_NAME = "SmartCharacter";
 bytes16 constant ERC721_SYSTEM_NAME = "ERC721System";
 bytes16 constant SMART_DEPLOYABLE_SYSTEM_NAME = "SmartDeployable";
 bytes16 constant SMART_STORAGE_UNIT_SYSTEM_NAME = "SmartStorageUnit";
+bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
+bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
