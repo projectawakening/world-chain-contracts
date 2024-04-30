@@ -7,9 +7,7 @@ import { ECDSA } from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Nonces } from "openzeppelin-contracts/utils/Nonces.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
-import { ITasksSystem } from "./worldInterface/ITasksSystem.sol";
-import { ISmartCharacterSystem } from "./worldInterface/ISmartCharacterSystem.sol";
-import { EntityRecordData, SmartObjectData } from "./worldInterface/types.sol";
+import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "./types.sol";
 
 contract CallWorld is Script {
   ERC2771Forwarder internal _erc2771Forwarder;
@@ -28,16 +26,21 @@ contract CallWorld is Script {
     _signer = vm.addr(_signerPrivatekey);
 
     uint256 nonce = uint256(keccak256(abi.encodePacked("a")));
-
-    // bytes memory data = abi.encodeWithSelector(ITasksSystem.completeTask.selector, 1);
-    // console.logBytes(data);
+    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+    uint256 storageCapacity = 100000000;
+    uint256 ephemeralStorageCapacity = 100000000000;
+    EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: _signer, tokenURI: "test" });
+    WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
 
     bytes memory data = abi.encodeWithSelector(
-      ISmartCharacterSystem.frontier__createCharacter.selector,
-      123,
-      0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
-      EntityRecordData({ typeId: 123, itemId: 222, volume: 0 }),
-      SmartObjectData({ owner: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokenURI: "https://example.com/token/123" })
+      0x9da298e5,
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      storageCapacity,
+      ephemeralStorageCapacity
     );
 
     ERC2771Forwarder.ForwardRequest memory req = ERC2771Forwarder.ForwardRequest({
@@ -51,27 +54,27 @@ contract CallWorld is Script {
     });
 
     //Make this EIP712 complaint
-    bytes32 digest = _erc2771Forwarder.structHash(req);
+    // bytes32 digest = _erc2771Forwarder.structHash(req);
 
     //Sign the request
-    (uint8 v, bytes32 r, bytes32 s) = vm.sign(_signerPrivatekey, digest);
-    bytes memory signature = abi.encodePacked(r, s, v);
+    // (uint8 v, bytes32 r, bytes32 s) = vm.sign(_signerPrivatekey, digest);
+    // bytes memory signature = abi.encodePacked(r, s, v);
 
-    ERC2771Forwarder.ForwardRequestData memory requestData = ERC2771Forwarder.ForwardRequestData({
-      from: req.from,
-      to: req.to,
-      value: req.value,
-      gas: req.gas,
-      nonce: req.nonce,
-      deadline: req.deadline,
-      data: req.data,
-      signature: signature
-    });
+    // ERC2771Forwarder.ForwardRequestData memory requestData = ERC2771Forwarder.ForwardRequestData({
+    //   from: req.from,
+    //   to: req.to,
+    //   value: req.value,
+    //   gas: req.gas,
+    //   nonce: req.nonce,
+    //   deadline: req.deadline,
+    //   data: req.data,
+    //   signature: signature
+    // });
 
-    bool verified = _erc2771Forwarder.verify(requestData);
-    console.log(verified);
+    // bool verified = _erc2771Forwarder.verify(requestData);
+    // console.log(verified);
 
-    _erc2771Forwarder.execute(requestData);
+    // _erc2771Forwarder.execute(requestData);
     vm.stopBroadcast();
   }
 }
