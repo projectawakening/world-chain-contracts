@@ -27,7 +27,7 @@ import { SmartObjectFrameworkModule } from "../src/SmartObjectFrameworkModule.so
 import { SmartObjectLib } from "../src/SmartObjectLib.sol";
 import { createCoreModule } from "./createCoreModule.sol";
 
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as SMART_OBJ_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 // TODO: The tests showing as "[FAIL. Reason: call did not revert as expected]" are actually reverting as expected.
 // This is a Forge bug that makes nested revert statements not caught by higher-order `vm.expectRevert` routine
@@ -101,8 +101,7 @@ contract SmartDeployableTestModule is Module {
   }
 
   function install(bytes memory args) public {
-    // Naive check to ensure this is only installed once
-    requireNotInstalled(__self, args);
+
 
     IBaseWorld world = IBaseWorld(_world());
 
@@ -140,9 +139,9 @@ contract EveSystemTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJ_NAMESPACE));
+    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(DEPLOYMENT_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
-    smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
+    smartObject = SmartObjectLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
 
     smartDeployableTestModule = new SmartDeployableTestModule();
     moduleId = uint256(keccak256(abi.encodePacked(address(smartDeployableTestModule))));
@@ -173,7 +172,7 @@ contract EveSystemTest is Test {
   function testRegisterEntity() public {
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntity(1, CLASS);
-    assertTrue(EntityTable.getEntityType(SMART_OBJ_NAMESPACE.entityTableTableId(), 1) == CLASS);
+    assertTrue(EntityTable.getEntityType(DEPLOYMENT_NAMESPACE.entityTableTableId(), 1) == CLASS);
   }
 
   function testRevertEntityTypeNotRegistered() public {
@@ -208,7 +207,7 @@ contract EveSystemTest is Test {
 
     //Tag objects under a class
     smartObject.tagEntity(singletonObject1, classId1);
-    uint256[] memory entityTagIds = EntityMap.get(SMART_OBJ_NAMESPACE.entityMapTableId(), singletonObject1);
+    uint256[] memory entityTagIds = EntityMap.get(DEPLOYMENT_NAMESPACE.entityMapTableId(), singletonObject1);
     assertTrue(entityTagIds[0] == classId1);
   }
 
@@ -230,7 +229,7 @@ contract EveSystemTest is Test {
     //Tag objects under a class
     smartObject.tagEntities(singletonObject1, entityIds);
 
-    uint256[] memory entityTagIds = EntityMap.get(SMART_OBJ_NAMESPACE.entityMapTableId(), singletonObject1);
+    uint256[] memory entityTagIds = EntityMap.get(DEPLOYMENT_NAMESPACE.entityMapTableId(), singletonObject1);
     assertTrue(entityTagIds[0] == classId1);
     assertTrue(entityTagIds[1] == classId2);
   }
@@ -282,7 +281,7 @@ contract EveSystemTest is Test {
 
     //register module
     smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    assertTrue(ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID));
+    assertTrue(ModuleTable.getDoesExists(DEPLOYMENT_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID));
   }
 
   function testRevertregisterEVEModuleIfSystemAlreadyRegistered() public {
@@ -318,7 +317,7 @@ contract EveSystemTest is Test {
     //associate entity with module
     smartObject.associateModule(singletonObject1, moduleId);
 
-    ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
+    ModuleTable.getDoesExists(DEPLOYMENT_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
       (uint256)
@@ -343,7 +342,7 @@ contract EveSystemTest is Test {
     //associate entity with module
     smartObject.associateModule(nonSingletonEntity, moduleId);
 
-    ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
+    ModuleTable.getDoesExists(DEPLOYMENT_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (nonSingletonEntity))),
       (uint256)
@@ -401,7 +400,7 @@ contract EveSystemTest is Test {
     //associate entity with module
     smartObject.associateModule(classId1, moduleId);
 
-    ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
+    ModuleTable.getDoesExists(DEPLOYMENT_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
       (uint256)
@@ -645,7 +644,7 @@ contract EveSystemTest is Test {
     smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
 
     uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    assertTrue(HookTable.getIsHook(DEPLOYMENT_NAMESPACE.hookTableTableId(), hookId));
 
     //asscoaite hook with a entity
     smartObject.associateHook(singletonEntity, hookId);
@@ -702,7 +701,7 @@ contract EveSystemTest is Test {
     // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
     // smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
     // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    // assertTrue(HookTable.getIsHook(DEPLOYMENT_NAMESPACE.hookTableTableId(), hookId));
     // //asscoaite hook with a entity
     // smartObject.associateHook(singletonEntity, hookId);
     // //add the hook to be executed before/after a function
@@ -748,7 +747,7 @@ contract EveSystemTest is Test {
     // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
     // smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
     // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    // assertTrue(HookTable.getIsHook(DEPLOYMENT_NAMESPACE.hookTableTableId(), hookId));
     // //asscoaite hook with a entity
     // smartObject.associateHook(classId1, hookId);
     // //add the hook to be executed before/after a function
@@ -795,7 +794,7 @@ contract EveSystemTest is Test {
     smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
 
     uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    assertTrue(HookTable.getIsHook(DEPLOYMENT_NAMESPACE.hookTableTableId(), hookId));
 
     //asscoaite hook with a entity
     smartObject.associateHook(singletonEntity, hookId);

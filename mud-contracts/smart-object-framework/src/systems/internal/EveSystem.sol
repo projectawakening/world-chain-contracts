@@ -21,7 +21,7 @@ import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol"
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
 import { Utils } from "../../utils.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 /**
  * @title EveSystem
@@ -245,7 +245,7 @@ contract EveSystem is System {
   // this is a bit messy... but in line with other Utils subroutines to ward off bad namespacing configs
   // TODO: refactor this
   function _coreNamespace() internal pure returns (bytes14) {
-    return CORE_NAMESPACE;
+    return DEPLOYMENT_NAMESPACE;
   }
 
   function _namespace() internal view returns (bytes14 namespace) {
