@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.24;
+pragma solidity >=0.8.20;
 
 // World imports
 import { World } from "@latticexyz/world/src/World.sol";

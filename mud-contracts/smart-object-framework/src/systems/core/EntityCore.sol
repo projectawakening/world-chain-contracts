@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.24;
+pragma solidity >=0.8.21;
 
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
 import { EntityType } from "../../codegen/tables/EntityType.sol";

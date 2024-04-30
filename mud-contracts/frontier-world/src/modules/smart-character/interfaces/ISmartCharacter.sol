@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.24;
+pragma solidity >=0.8.21;
 
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
