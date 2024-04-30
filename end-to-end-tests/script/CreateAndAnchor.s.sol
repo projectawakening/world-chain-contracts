@@ -30,11 +30,17 @@ contract CreateAndAnchor is Script {
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: player, tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+    uint256 fuelUnitVolume = 1e18;
+    uint256 fuelConsumptionPerMinute = 1;
+    uint256 fuelMaxCapacity = 1000000 * 1e18;
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
       entityRecordData,
       smartObjectData,
       worldPosition,
+      fuelUnitVolume,
+      fuelConsumptionPerMinute,
+      fuelMaxCapacity,
       storageCapacity,
       ephemeralStorageCapacity
     );

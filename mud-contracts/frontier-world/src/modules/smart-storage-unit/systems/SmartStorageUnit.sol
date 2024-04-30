@@ -130,6 +130,7 @@ contract SmartStorageUnit is EveSystem {
       );
     }
     //Deposit item to the ephemeral inventory
+    // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
     _inventoryLib().depositToEphemeralInventory(smartObjectId, inventoryOwner, items);
   }
 
