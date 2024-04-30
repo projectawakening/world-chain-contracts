@@ -16,8 +16,7 @@
     "createMintERC20:devnet": ". ./.env.devnet && forge script script/CreateMintERC20.s.sol:CreateMintERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier '**/*.sol' --write",
-    "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && forge test -vvv"
+    "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-next.16",
