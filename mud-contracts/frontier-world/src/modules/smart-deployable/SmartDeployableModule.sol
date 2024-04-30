@@ -13,6 +13,7 @@ import { Utils } from "./Utils.sol";
 import { GlobalDeployableState } from "../../codegen/tables/GlobalDeployableState.sol";
 import { DeployableState } from "../../codegen/tables/DeployableState.sol";
 import { DeployableFuelBalance } from "../../codegen/tables/DeployableFuelBalance.sol";
+import { DeployableTokenTable } from "../../codegen/tables/DeployableTokenTable.sol";
 
 import { SmartDeployable } from "./systems/SmartDeployable.sol";
 
@@ -84,6 +85,7 @@ contract SmartDeployableModuleRegistrationLibrary {
     GlobalDeployableState.register(namespace.globalStateTableId());
     DeployableState.register(namespace.deployableStateTableId());
     DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
+    DeployableTokenTable.register(namespace.deployableTokenTableId());
     // Register a new Systems suite
     world.registerSystem(namespace.smartDeployableSystemId(), new SmartDeployable(), true);
   }

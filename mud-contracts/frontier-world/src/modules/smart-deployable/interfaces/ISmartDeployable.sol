@@ -6,13 +6,19 @@ import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
+import { SmartObjectData } from "../types.sol";
+
 interface ISmartDeployable {
+  
   function registerDeployable(
     uint256 entityId,
+    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
   ) external;
+
+  function registerDeployable(uint256 entityId) external;
 
   function destroyDeployable(uint256 entityId) external;
 
@@ -39,4 +45,6 @@ interface ISmartDeployable {
   function updateFuel(uint256 entityId) external;
 
   function currentFuelAmount(uint256 entityId) external view returns (uint256 amount);
+
+  function registerDeployableToken(address tokenAddress) external;
 }

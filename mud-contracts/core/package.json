@@ -9,10 +9,8 @@
     "build:abi-ts": "mud abi-ts",
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
-    "deploy:local": "pnpm run build && mud deploy",
-    "deploy:devnet": "pnpm run build && mud deploy --profile=devnet",
-    "setForwarder:local": "source .env && WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
-    "setForwarder:devnet": "source .env && WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $DEVNET_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL",
+    "setForwarder": "WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' './*.ts' --write",
@@ -34,6 +32,7 @@
     "prettier-plugin-solidity": "1.1.3",
     "solhint": "^3.3.7",
     "solhint-config-mud": "2.0.0-next.16",
-    "solhint-plugin-mud": "2.0.0-next.16"
+    "solhint-plugin-mud": "2.0.0-next.16",
+    "typescript": "^5.4.5"
   }
 }

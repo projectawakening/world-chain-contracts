@@ -8,13 +8,16 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 import { LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
-import { LocationLib } from "../../location/LocationLib.sol";
 
+import { LocationLib } from "../../location/LocationLib.sol";
+import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
+import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
 import { State } from "../types.sol";
+import { State, SmartObjectData } from "../types.sol";
 import { Utils } from "../Utils.sol";
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
@@ -41,13 +44,20 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     } else if (
       uint256(DeployableState.getState(_namespace().deployableStateTableId(), entityId)) != uint256(reqState)
     ) {
-      revert SmartDeployable_incorrectState(
+      revert SmartDeployable_IncorrectState(
         entityId,
         reqState,
         DeployableState.getState(_namespace().deployableStateTableId(), entityId)
       );
     }
     _;
+  }
+
+  function registerDeployableToken(address tokenAddress) public {
+    if (DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()) != address(0)) {
+      revert SmartDeployableERC721AlreadyInitialized();
+    }
+    DeployableTokenTable.setErc721Address(_namespace().deployableTokenTableId(), tokenAddress);
   }
 
   /**
@@ -57,6 +67,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    */
   function registerDeployable(
     uint256 entityId,
+    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
@@ -81,6 +92,15 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         fuelAmount: 0,
         lastUpdatedAt: block.timestamp
       })
+    );
+
+    IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
+      smartObjectData.owner,
+      entityId
+    );
+    IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).setCid(
+      entityId,
+      smartObjectData.tokenURI
     );
   }
 

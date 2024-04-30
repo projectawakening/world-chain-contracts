@@ -26,7 +26,7 @@ library EntityRecordLib {
     World memory world,
     uint256 entityId,
     uint256 itemId,
-    uint8 typeId,
+    uint256 typeId,
     uint256 volume
   ) internal {
     world.iface.call(
@@ -45,6 +45,37 @@ library EntityRecordLib {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
       abi.encodeCall(IEntityRecord.createEntityRecordOffchain, (entityId, name, dappURL, description))
+    );
+  }
+
+  function setEntityMetadata(
+    World memory world,
+    uint256 entityId,
+    string memory name,
+    string memory dappURL,
+    string memory description
+  ) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setEntityMetadata, (entityId, name, dappURL, description))
+    );
+  }
+
+  function setName(World memory world, uint256 entityId, string memory name) internal {
+    world.iface.call(world.namespace.entityRecordSystemId(), abi.encodeCall(IEntityRecord.setName, (entityId, name)));
+  }
+
+  function setDappURL(World memory world, uint256 entityId, string memory dappURL) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setDappURL, (entityId, dappURL))
+    );
+  }
+
+  function setDescription(World memory world, uint256 entityId, string memory description) internal {
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecord.setDescription, (entityId, description))
     );
   }
 }
