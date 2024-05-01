@@ -38,7 +38,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param reqState required State
    */
   modifier onlyState(uint256 entityId, State reqState) {
-    _updateFuel(entityId);
     if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployable_GloballyOffline();
     } else if (
@@ -68,9 +67,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function registerDeployable(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
-    uint256 fuelMaxCapacity
+    uint256 fuelUnitVolumeInWei,
+    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelMaxCapacityInWei
   ) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
     DeployableState.set(
       _namespace().deployableStateTableId(),
@@ -86,9 +85,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       _namespace().deployableFuelBalanceTableId(),
       entityId,
       DeployableFuelBalanceData({
-        fuelUnitVolume: fuelUnitVolume,
-        fuelConsumptionPerMinute: fuelConsumptionPerMinute,
-        fuelMaxCapacity: fuelMaxCapacity,
+        fuelUnitVolume: fuelUnitVolumeInWei,
+        fuelConsumptionPerMinute: fuelConsumptionPerMinuteInWei,
+        fuelMaxCapacity: fuelMaxCapacityInWei,
         fuelAmount: 0,
         lastUpdatedAt: block.timestamp
       })
@@ -123,6 +122,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId entityId
    */
   function bringOnline(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
+    _updateFuel(entityId);
     DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ONLINE);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
@@ -133,19 +133,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings offline smart deployable (must have been online first)
    * @param entityId entityId
    */
-  function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) {
-    // because updateFuel might already bring it offline, we are handling this without onlyState modifier
+  function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ONLINE) {
     _updateFuel(entityId);
-    State currentState = DeployableState.getState(_namespace().deployableStateTableId(), entityId);
-    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
-      revert SmartDeployable_GloballyOffline();
-    } else if (uint256(currentState) != uint256(State.ONLINE) && uint256(currentState) != uint256(State.ANCHORED)) {
-      revert SmartDeployable_IncorrectState(
-        entityId,
-        State.ONLINE,
-        DeployableState.getState(_namespace().deployableStateTableId(), entityId)
-      );
-    }
     _bringOffline(entityId);
   }
 
@@ -200,13 +189,13 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * WARNING: this will retroactively change the consumption rate of all smart deployables since they were last brought online.
    * do not tweak this too much. Right now this will have to do, or, ideally, we would need to update all fuel balances before changing this
    * TODO: needs to be only callable by admin
-   * @param fuelConsumptionPerMinute global rate shared by all Smart Deployables (in Wei)
+   * @param fuelConsumptionPerMinuteInWei global rate shared by all Smart Deployables (in Wei)
    */
-  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinute) public {
+  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinuteInWei) public {
     DeployableFuelBalance.setFuelConsumptionPerMinute(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      fuelConsumptionPerMinute
+      fuelConsumptionPerMinuteInWei
     );
   }
 
