@@ -28,13 +28,12 @@ import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.so
 import { LocationModule } from "../src/modules/location/LocationModule.sol";
 import { SmartCharacterModule } from "../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartDeployableModule } from "../src/modules/smart-deployable/SmartDeployableModule.sol";
-//import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
+import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
 import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -57,30 +56,36 @@ contract PostDeploy is Script {
     SmartCharacterModule smartCharacterModule = new SmartCharacterModule();
     SmartDeployableModule smartDeployableModule = new SmartDeployableModule();
     InventoryModule inventoryModule = new InventoryModule();
-    // SmartStorageUnitModule ssuModule = new SmartStorageUnitModule();
+    SmartStorageUnitModule ssuModule = new SmartStorageUnitModule();
 
     _installPuppet(world);
     
     // SOF System front-loaded
-    EntityCore entityCore = new EntityCore();
-    HookCore hookCore = new HookCore();
-    ModuleCore moduleCore = new ModuleCore();
+    // TODO: Stack (way) too deep. Even though this is technically a "script" it is also a standard solidity method
+    // Also, the conditionals with module deployment means here we don't really need to actually deploy new contracts, do we ?
+
+    // EntityCore entityCore = new EntityCore();
+    // HookCore hookCore = new HookCore();
+    // ModuleCore moduleCore = new ModuleCore();
 
     //InventoryModule Systems front-loaded
-    InventorySystem inventorySystem = new Inventory();
-    EphemeralInventorySystem ephInvSystem = new EphemeralInventory();
+    Inventory inventorySystem = new Inventory();
+    EphemeralInventory ephInvSystem = new EphemeralInventory();
 
     // installing all modules sequentially
-    _installModule(world, deployer, sofModule, SMART_OBJECT_DEPLOYMENT_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore));
-    _installModule(world, deployer, entityRecordModule, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, staticDataModule, STATIC_DATA_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, locationModule, LOCATION_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, smartCharacterModule, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, smartDeployableModule, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, inventoryModule, INVENTORY_DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephInvSystem));
-    // _installModule(world, deployer, ssuModule, SSU_DEPLOYMENT_NAMESPACE);
+    // TODO: Stack (way) too deep. Even though this is technically a "script" it is also a standard solidity method so 
+    // same EVM restrictions applies, even if the underlying computations are performed over multiple transactions
 
-    _initSmartCharacterERC721(world);
+    // _installModule(world, deployer, sofModule, SMART_OBJECT_DEPLOYMENT_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore));
+    // _installModule(world, deployer, entityRecordModule, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
+    // _installModule(world, deployer, staticDataModule, STATIC_DATA_DEPLOYMENT_NAMESPACE);
+    // _installModule(world, deployer, locationModule, LOCATION_DEPLOYMENT_NAMESPACE);
+    // _installModule(world, deployer, smartCharacterModule, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
+    // _installModule(world, deployer, smartDeployableModule, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    // _installModule(world, deployer, inventoryModule, INVENTORY_DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephInvSystem));
+    // _installModule(world, deployer, ssuModule, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+
+    _initERC721(world);
 
     vm.stopBroadcast();
   }
@@ -110,10 +115,10 @@ contract PostDeploy is Script {
     world.installModule(module, abi.encode(namespace, system1, system2, system3));
   }
 
-  function _initSmartCharacterERC721(IBaseWorld world) internal {
+  function _initERC721(IBaseWorld world) internal {
     string memory baseURI = vm.envString("BASE_URI");
-    IERC721Mintable erc721Token;
-    erc721Token = registerERC721(
+    IERC721Mintable erc721CharacterToken;
+    erc721CharacterToken = registerERC721(
       world,
       "myERC721",
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })

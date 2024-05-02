@@ -10,6 +10,9 @@ import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
@@ -33,21 +36,32 @@ contract StaticDataTest is Test {
   using StaticDataLib for StaticDataLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld baseWorld;
+  IBaseWorld world;
   StaticDataLib.World staticData;
-  StaticDataModule staticDataModule;
 
   function setUp() public {
-    baseWorld = IBaseWorld(address(new World()));
-    baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(
+    world = IBaseWorld(address(new World()));
+    world.initialize(createCoreModule());
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
+
+    // installing SOF module (dependancy)
+    world.installModule(
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    StaticDataModule module = new StaticDataModule();
-    baseWorld.installModule(module, abi.encode(DEPLOYMENT_NAMESPACE));
-    StoreSwitch.setStoreAddress(address(baseWorld));
-    staticData = StaticDataLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+
+    _installModule(new StaticDataModule(), DEPLOYMENT_NAMESPACE);
+
+    staticData = StaticDataLib.World(world, DEPLOYMENT_NAMESPACE);
+  }
+
+  // helper function to guard against multiple module registrations on the same namespace
+  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
+  function _installModule(IModule module, bytes14 namespace) internal{
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace));
   }
 
   function testSetup() public {

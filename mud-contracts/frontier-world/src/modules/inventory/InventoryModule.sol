@@ -6,6 +6,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 
 import { INVENTORY_MODULE_NAME as MODULE_NAME, INVENTORY_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
@@ -23,7 +24,7 @@ import { Utils } from "./Utils.sol";
 contract InventoryModule is Module {
   error InventoryModule_InvalidNamespace(bytes14 namespace);
 
-  address immutable registrationLibrary = address(new InventoryModuleRegistration());
+  address immutable registrationLibrary = address(new InventoryModuleRegistrationLibrary());
 
   function getName() public pure returns (bytes16) {
     return MODULE_NAME;
@@ -60,9 +61,9 @@ contract InventoryModule is Module {
     //Register Inventory module's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(InventoryModuleRegistration.register, (world, namespace, inventorySystem, ephemeralInventory))
+      abi.encodeCall(InventoryModuleRegistrationLibrary.register, (world, namespace, inventorySystem, ephemeralInventory))
     );
-    require(success, string(returnedData));
+    if (!success) revertWithBytes(returnedData);
 
     //Transfer the ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
@@ -74,7 +75,7 @@ contract InventoryModule is Module {
   }
 }
 
-contract InventoryModuleRegistration {
+contract InventoryModuleRegistrationLibrary {
   using Utils for bytes14;
 
   function register(IBaseWorld world, bytes14 namespace, address inventorySystem, address ephemeralInventory) public {
@@ -83,7 +84,8 @@ contract InventoryModuleRegistration {
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     //Register the tables and systems for inventory namespace
-    if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
+    if (!ResourceIds.getExists(namespace.inventoryTableId()))
+      InventoryTable.register(namespace.inventoryTableId());
     if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
       InventoryItemTable.register(namespace.inventoryItemTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))

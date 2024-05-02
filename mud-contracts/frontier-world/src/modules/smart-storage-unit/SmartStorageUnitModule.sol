@@ -60,7 +60,12 @@ contract SmartStorageUnitModuleRegistrationLibrary {
    * Register systems and tables for a new smart storage unit in a given namespace
    */
   function register(IBaseWorld world, bytes14 namespace) external {
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
-    world.registerSystem(namespace.smartStorageUnitSystemId(), new SmartStorageUnit(), true);
+    //Register the namespace
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+
+    //Register the systems
+    if (!ResourceIds.getExists(namespace.smartStorageUnitSystemId()))
+      world.registerSystem(namespace.smartStorageUnitSystemId(), new SmartStorageUnit(), true);
   }
 }

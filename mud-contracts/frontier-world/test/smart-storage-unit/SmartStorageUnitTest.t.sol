@@ -2,6 +2,7 @@
 pragma solidity >=0.8.21;
 
 import "forge-std/Test.sol";
+import "forge-std/console.sol";
 import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -10,10 +11,16 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
+import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
+import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { EntityRecordTableData, EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -32,8 +39,10 @@ import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC7
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
-import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
 
 import { Utils as SmartStorageUnitUtils } from "../../src/modules/smart-storage-unit/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
@@ -57,36 +66,60 @@ contract SmartStorageUnitTest is Test {
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld baseWorld;
+  IBaseWorld world;
+  IERC721Mintable erc721DeployableToken;
   SmartStorageUnitLib.World smartStorageUnit;
-  IERC721Mintable erc721Token;
   SmartDeployableLib.World smartDeployable;
   uint256 storageCapacity = 100000;
   uint256 ephemeralStorageCapacity = 100000;
 
+  bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
+
   function setUp() public {
-    baseWorld = IBaseWorld(address(new World()));
-    baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
+    world = IBaseWorld(address(new World()));
+    world.initialize(createCoreModule());
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
+
+    // installing SOF & other modules (SmartCharacterModule dependancies)
+    world.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
 
     // install module dependancies
-    baseWorld.installModule(new PuppetModule(), new bytes(0));
-    baseWorld.installModule(new StaticDataModule(), abi.encode(STATIC_DATA_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new EntityRecordModule(), abi.encode(ENTITY_RECORD_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new SmartDeployableModule(), abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new InventoryModule(), abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new LocationModule(), abi.encode(LOCATION_DEPLOYMENT_NAMESPACE));
-    StoreSwitch.setStoreAddress(address(baseWorld));
-    erc721Token = registerERC721(
-      baseWorld,
-      EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE,
-      StaticDataGlobalTableData({ name: "SmartStorageUnit", symbol: "SSU", baseURI: "" })
-    );
-    baseWorld.installModule(new SmartStorageUnitModule(), abi.encode(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE));
+    _installModule(new PuppetModule(), 0);
+    _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
+    _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
+    _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
 
-    smartStorageUnit = SmartStorageUnitLib.World(baseWorld, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
-    smartDeployable = SmartDeployableLib.World(baseWorld, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
-    smartDeployable.registerDeployableToken(address(erc721Token));
+    erc721DeployableToken = registerERC721(
+      world,
+      ERC721_DEPLOYABLE,
+      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
+    );
+    _installModule(new SmartDeployableModule(), SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    smartDeployable.registerDeployableToken(address(erc721DeployableToken));
+
+      // Inventory module installation
+    InventoryModule inventoryModule = new InventoryModule();
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE), address(inventoryModule));
+  
+    world.installModule(inventoryModule, abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+
+    // SmartStorageUnitModule installation
+    _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+    smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+  }
+
+  // helper function to guard against multiple module registrations on the same namespace
+  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
+  function _installModule(IModule module, bytes14 namespace) internal{
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace));
   }
 
   function testSetup() public {
@@ -140,7 +173,7 @@ contract SmartStorageUnitTest is Test {
     assertEq(locationTableData.y, worldPosition.position.y);
     assertEq(locationTableData.z, worldPosition.position.z);
 
-    assertEq(erc721Token.ownerOf(smartObjectId), address(1));
+    assertEq(erc721DeployableToken.ownerOf(smartObjectId), address(1));
 
     smartStorageUnit.setDeploybaleMetadata(smartObjectId, "testName", "testDappURL", "testdesc");
 

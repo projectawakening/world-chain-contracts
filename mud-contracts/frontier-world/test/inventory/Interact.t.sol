@@ -13,9 +13,19 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
+import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import "@eve/common-constants/src/constants.sol";
+
+import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
+import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
+import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -26,6 +36,9 @@ import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/code
 import { ItemTransferOffchainTable } from "../../src/codegen/tables/ItemTransferOffchainTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
+
+import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
+
 
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
@@ -39,7 +52,12 @@ import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
 
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
+import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
+import { LocationModule } from "../../src/modules/location/LocationModule.sol";
+import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
+import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
+import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
@@ -127,11 +145,16 @@ contract InteractTest is Test {
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
   using InventoryLib for InventoryLib.World;
+  using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld baseWorld;
+  IBaseWorld world;
   InventoryLib.World inventory;
+  SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
+  IERC721Mintable erc721DeployableToken;
+
+  bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
 
   VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
   bytes16 constant SYSTEM_NAME = bytes16("System");
@@ -139,26 +162,43 @@ contract InteractTest is Test {
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, SYSTEM_NAME))));
 
   function setUp() public {
-    baseWorld = IBaseWorld(address(new World()));
-    baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(new EntityRecordModule(), abi.encode(ENTITY_RECORD_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new SmartDeployableModule(), abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE));
+    world = IBaseWorld(address(new World()));
+    world.initialize(createCoreModule());
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
 
-    inventoryModule = new InventoryModule();
-    InventorySystem inventorySystem = new InventorySystem();
-    EphemeralInventorySystem ephemeralInv = new EphemeralInventorySystem();
-    baseWorld.installModule(
-      inventoryModule,
-      abi.encode(DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephemeralInv))
+    // installing SOF & other modules (SmartCharacterModule dependancies)
+    world.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    // install module dependancies
+    _installModule(new PuppetModule(), 0);
+    _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
+    _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
+    _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
 
-    StoreSwitch.setStoreAddress(address(baseWorld));
-    inventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+    erc721DeployableToken = registerERC721(
+      world,
+      ERC721_DEPLOYABLE,
+      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
+    );
+    _installModule(new SmartDeployableModule(), SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 
-    baseWorld.registerSystem(VENDING_MACHINE_SYSTEM_ID, vendingMachineSystem, true);
+    // Inventory Module installation
+    inventoryModule = new InventoryModule();
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
+    world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+    inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
+
+    // Vending Machine registration
+    world.registerSystem(VENDING_MACHINE_SYSTEM_ID, vendingMachineSystem, true);
 
     // Register system's functions
-    baseWorld.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactHandler(uint256, address, uint256)");
+    world.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactHandler(uint256, address, uint256)");
 
     //Mock Smart Storage Unit data
     EntityRecordTableData memory entity1 = EntityRecordTableData({ typeId: 1, itemId: 2345, volume: 100 });
@@ -212,22 +252,29 @@ contract InteractTest is Test {
     inventory.depositToEphemeralInventory(smartObjectId, inventoryOwner, ephInvItems);
   }
 
+  // helper function to guard against multiple module registrations on the same namespace
+  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
+  function _installModule(IModule module, bytes14 namespace) internal{
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace));
+  }
+
   function testSetup() public {
-    address EpheremalSystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId());
-    ResourceId ephemeralInventorySystemId = SystemRegistry.get(EpheremalSystem);
+    address epheremalInventoryAddress = Systems.getSystem(DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId());
+    ResourceId ephemeralInventorySystemId = SystemRegistry.get(epheremalInventoryAddress);
     assertEq(ephemeralInventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
 
-    address Inventory = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
-    ResourceId inventorySystemId = SystemRegistry.get(Inventory);
+    address inventoryAddress = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
+    ResourceId inventorySystemId = SystemRegistry.get(inventoryAddress);
     assertEq(inventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
 
-    address VendingMachineSystem = Systems.getSystem(VENDING_MACHINE_SYSTEM_ID);
-    ResourceId vendingMachineSystemId = SystemRegistry.get(VendingMachineSystem);
+    address vendingMachineSystemAddress = Systems.getSystem(VENDING_MACHINE_SYSTEM_ID);
+    ResourceId vendingMachineSystemId = SystemRegistry.get(vendingMachineSystemAddress);
     assertEq(vendingMachineSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
   function testInteractHandler() public {
-    IWorld world = IWorld(address(baseWorld));
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
     uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));

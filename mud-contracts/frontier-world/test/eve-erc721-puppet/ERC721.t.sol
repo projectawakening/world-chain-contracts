@@ -12,6 +12,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
 import { GasReporter } from "@latticexyz/gas-report/src/GasReporter.sol";
+import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
@@ -19,7 +20,6 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE as STATIC_DATA_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -81,19 +81,21 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
   IBaseWorld world;
   ERC721Module erc721Module;
   IERC721Mintable token;
+  bytes14 constant DEPLOYMENT_NAMESPACE = "MyERC721";
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
+
+    // Module dependancies installation
     world.installModule(
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    world.installModule(new PuppetModule(), new bytes(0));
-    // although not enforced, this module must be installed for `registerERC721` to work
-    // TODO: restrict module installation to other installed modules like this one
-    world.installModule(new StaticDataModule(), abi.encode(STATIC_DATA_NAMESPACE));
-    StoreSwitch.setStoreAddress(address(world));
+    _installModule(new PuppetModule(), 0);
+    _installModule(new StaticDataModule(), STATIC_DATA_NAMESPACE);
 
     // Register a new ERC721 token
     token = registerERC721(
@@ -102,6 +104,15 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
       StaticDataGlobalTableData({ name: "Token", symbol: "TKN", baseURI: "" })
     );
   }
+
+  // helper function to guard against multiple module registrations on the same namespace
+  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
+  function _installModule(IModule module, bytes14 namespace) internal{
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace));
+  }
+
 
   function _expectAccessDenied(address caller) internal {
     ResourceId tokenSystemId = Utils.erc721SystemId(DEPLOYMENT_NAMESPACE);
