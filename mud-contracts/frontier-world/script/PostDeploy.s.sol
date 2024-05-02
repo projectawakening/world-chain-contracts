@@ -42,55 +42,32 @@ contract PostDeploy is Script {
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
     IBaseWorld world = IBaseWorld(worldAddress);
-
+    string memory baseURI = vm.envString("BASE_URI");
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address deployer = vm.addr(deployerPrivateKey);
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
 
     vm.startBroadcast(deployerPrivateKey);
-
-    // creating all module contracts
-    SmartObjectFrameworkModule sofModule = new SmartObjectFrameworkModule();
-    EntityRecordModule entityRecordModule = new EntityRecordModule();
-    StaticDataModule staticDataModule = new StaticDataModule();
-    LocationModule locationModule = new LocationModule();
-    SmartCharacterModule smartCharacterModule = new SmartCharacterModule();
-    SmartDeployableModule smartDeployableModule = new SmartDeployableModule();
-    InventoryModule inventoryModule = new InventoryModule();
-    SmartStorageUnitModule ssuModule = new SmartStorageUnitModule();
-
-    _installPuppet(world);
-    
-    // SOF System front-loaded
-    // TODO: Stack (way) too deep. Even though this is technically a "script" it is also a standard solidity method
-    // Also, the conditionals with module deployment means here we don't really need to actually deploy new contracts, do we ?
-
-    // EntityCore entityCore = new EntityCore();
-    // HookCore hookCore = new HookCore();
-    // ModuleCore moduleCore = new ModuleCore();
-
-    //InventoryModule Systems front-loaded
-    Inventory inventorySystem = new Inventory();
-    EphemeralInventory ephInvSystem = new EphemeralInventory();
-
     // installing all modules sequentially
-    // TODO: Stack (way) too deep. Even though this is technically a "script" it is also a standard solidity method so 
-    // same EVM restrictions applies, even if the underlying computations are performed over multiple transactions
+    _installModule(world, deployer, new SmartObjectFrameworkModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new EntityCore()), address(new HookCore()), address(new ModuleCore()));
+    _installPuppet(world, deployer);
+    _installModule(world, deployer, new StaticDataModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(world, deployer, new EntityRecordModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(world, deployer, new LocationModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(world, deployer, new SmartCharacterModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(world, deployer, new SmartDeployableModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(world, deployer, new InventoryModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new Inventory()), address(new EphemeralInventory()));
+    _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
 
-    // _installModule(world, deployer, sofModule, SMART_OBJECT_DEPLOYMENT_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore));
-    // _installModule(world, deployer, entityRecordModule, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
-    // _installModule(world, deployer, staticDataModule, STATIC_DATA_DEPLOYMENT_NAMESPACE);
-    // _installModule(world, deployer, locationModule, LOCATION_DEPLOYMENT_NAMESPACE);
-    // _installModule(world, deployer, smartCharacterModule, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
-    // _installModule(world, deployer, smartDeployableModule, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
-    // _installModule(world, deployer, inventoryModule, INVENTORY_DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephInvSystem));
-    // _installModule(world, deployer, ssuModule, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
-
-    _initERC721(world);
+    // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
+    _initERC721(world, baseURI);
 
     vm.stopBroadcast();
   }
 
-  function _installPuppet(IBaseWorld world) internal {
+  function _installPuppet(IBaseWorld world, address deployer) internal {
+    StoreSwitch.setStoreAddress(address(world));
     // creating all module contracts
     PuppetModule puppetModule = new PuppetModule(); 
     // puppetModule is conventionally installed as such
@@ -98,49 +75,46 @@ contract PostDeploy is Script {
   }
 
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace) internal {
+    StoreSwitch.setStoreAddress(address(world));
     if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace));
   }
 
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1, address system2) internal {
+    StoreSwitch.setStoreAddress(address(world));
     if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1, system2));
   }
 
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1, address system2, address system3) internal {
+    StoreSwitch.setStoreAddress(address(world));
     if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1, system2, system3));
   }
 
-  function _initERC721(IBaseWorld world) internal {
-    string memory baseURI = vm.envString("BASE_URI");
-    IERC721Mintable erc721CharacterToken;
-    erc721CharacterToken = registerERC721(
-      world,
-      "myERC721",
-      StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
-    );
-
-    console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));
-    SmartCharacterLib
-      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
-      .registerERC721Token(address(erc721CharacterToken));
-
-    IERC721Mintable erc721SmartDeployableToken;
-    erc721SmartDeployableToken = registerERC721(
+  function _initERC721(IBaseWorld world, string memory baseURI) internal {
+    IERC721Mintable erc721SmartDeployableToken = registerERC721(
       world,
       "erc721Deploybl",
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
     );
 
+    IERC721Mintable erc721CharacterToken = registerERC721(
+      world,
+      "smartChar",
+      StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
+    );
+    console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));
+    SmartCharacterLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .registerERC721Token(address(erc721CharacterToken));
+
     console.log("Deploying ERC721 token with address: ", address(erc721SmartDeployableToken));
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .registerDeployableToken(address(erc721SmartDeployableToken));
-
-    vm.stopBroadcast();
   }
 }
