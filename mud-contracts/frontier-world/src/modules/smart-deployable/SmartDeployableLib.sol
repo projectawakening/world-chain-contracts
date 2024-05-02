@@ -24,17 +24,27 @@ library SmartDeployableLib {
     bytes14 namespace;
   }
 
+  function registerDeployable(
+    World memory world,
+    uint256 entityId,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolumeInWei,
+    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelMaxCapacityInWei
+  ) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(
+        ISmartDeployable.registerDeployable,
+        (entityId, smartObjectData, fuelUnitVolumeInWei, fuelConsumptionPerMinuteInWei, fuelMaxCapacityInWei)
+      )
+    );
+  }
+
   function registerDeployableToken(World memory world, address tokenAddress) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
       abi.encodeCall(ISmartDeployable.registerDeployableToken, (tokenAddress))
-    );
-  }
-
-  function registerDeployable(World memory world, uint256 entityId, SmartObjectData memory smartObjectData) internal {
-    world.iface.call(
-      world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.registerDeployable, (entityId, smartObjectData))
     );
   }
 
@@ -76,5 +86,52 @@ library SmartDeployableLib {
 
   function globalOnline(World memory world) internal {
     world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOnline, ()));
+  }
+
+  function setFuelConsumptionPerMinute(
+    World memory world,
+    uint256 entityId,
+    uint256 fuelConsumptionPerMinuteInWei
+  ) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.setFuelConsumptionPerMinute, (entityId, fuelConsumptionPerMinuteInWei))
+    );
+  }
+
+  function setFuelMaxCapacity(World memory world, uint256 entityId, uint256 capacityInWei) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.setFuelMaxCapacity, (entityId, capacityInWei))
+    );
+  }
+
+  function depositFuel(World memory world, uint256 entityId, uint256 unitAmount) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.depositFuel, (entityId, unitAmount))
+    );
+  }
+
+  function withdrawFuel(World memory world, uint256 entityId, uint256 unitAmount) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.withdrawFuel, (entityId, unitAmount))
+    );
+  }
+
+  function updateFuel(World memory world, uint256 entityId) internal {
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.updateFuel, (entityId))
+    );
+  }
+
+  function currentFuelAmount(World memory world, uint256 entityId) internal returns (uint256 amount) {
+    bytes memory returnData = world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.currentFuelAmount, (entityId))
+    );
+    return abi.decode(returnData, (uint256));
   }
 }

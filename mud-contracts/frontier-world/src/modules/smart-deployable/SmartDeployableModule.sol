@@ -12,6 +12,7 @@ import { Utils } from "./Utils.sol";
 
 import { GlobalDeployableState } from "../../codegen/tables/GlobalDeployableState.sol";
 import { DeployableState } from "../../codegen/tables/DeployableState.sol";
+import { DeployableFuelBalance } from "../../codegen/tables/DeployableFuelBalance.sol";
 import { DeployableTokenTable } from "../../codegen/tables/DeployableTokenTable.sol";
 
 import { SmartDeployable } from "./systems/SmartDeployable.sol";
@@ -88,6 +89,8 @@ contract SmartDeployableModuleRegistrationLibrary {
       DeployableState.register(namespace.deployableStateTableId());
     if (!ResourceIds.getExists(namespace.deployableTokenTableId()))
       DeployableTokenTable.register(namespace.deployableTokenTableId());
+    if (!ResourceIds.getExists(namespace.deployableFuelBalanceTableId()))
+    DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartDeployableSystemId()))
