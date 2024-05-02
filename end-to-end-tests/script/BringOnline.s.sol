@@ -23,7 +23,7 @@ contract BringOnline is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    smartDeployable.bringOnline(smartObjectId);
+    smartDeployable.bringOnline(smartObjectId); // needs to have some fuel in it to work, else it will just let the state to offline
 
     vm.stopBroadcast();
   }

@@ -27,6 +27,9 @@ library SmartStorageUnitLib {
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) internal {
@@ -34,7 +37,17 @@ library SmartStorageUnitLib {
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
         ISmartStorageUnit.createAndAnchorSmartStorageUnit,
-        (smartObjectId, entityRecordData, smartObjectData, worldPosition, storageCapacity, ephemeralStorageCapacity)
+        (
+          smartObjectId,
+          entityRecordData,
+          smartObjectData,
+          worldPosition,
+          fuelUnitVolume,
+          fuelConsumptionPerMinute,
+          fuelMaxCapacity,
+          storageCapacity,
+          ephemeralStorageCapacity
+        )
       )
     );
   }

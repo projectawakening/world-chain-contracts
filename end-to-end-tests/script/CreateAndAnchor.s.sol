@@ -25,18 +25,22 @@ contract CreateAndAnchor is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    uint256 storageCapacity = 100000000;
-    uint256 ephemeralStorageCapacity = 100000000000;
-    EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 });
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: player, tokenURI: "test" });
-    WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+    // uint256 storageCapacity = 100000000;
+    // uint256 ephemeralStorageCapacity = 100000000000;
+    // EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 });
+    // SmartObjectData memory smartObjectData = SmartObjectData({ owner: player, tokenURI: "test" });
+    // WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
-      entityRecordData,
-      smartObjectData,
-      worldPosition,
-      storageCapacity,
-      ephemeralStorageCapacity
+      EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 }),
+      SmartObjectData({ owner: player, tokenURI: "test" }),
+      WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) }),
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, //fuelMaxCapacity,
+      100000000, // storageCapacity,
+      100000000000 // ephemeralStorageCapacity
     );
 
     vm.stopBroadcast();
