@@ -11,26 +11,29 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { EphemeralInventoryTable } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
 import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
-import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
+
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
+import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
+import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
+import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
-import { InventorySystem } from "../../src/modules/inventory/systems/InventorySystem.sol";
-import { EphemeralInventorySystem } from "../../src/modules/inventory/systems/EphemeralInventorySystem.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
 
-import { InventoryItem } from "../../src/modules/types.sol";
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 contract EphemeralInventoryTest is Test {
   using Utils for bytes14;
@@ -46,20 +49,24 @@ contract EphemeralInventoryTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
+    baseWorld.installModule(new EntityRecordModule(), abi.encode(ENTITY_RECORD_DEPLOYMENT_NAMESPACE));
+    baseWorld.installModule(new SmartDeployableModule(), abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE));
+    
     inventoryModule = new InventoryModule();
-    InventorySystem inventorySystem = new InventorySystem();
-    EphemeralInventorySystem ephemeralInv = new EphemeralInventorySystem();
+    Inventory inventorySystem = new Inventory();
+    EphemeralInventory ephemeralInv = new EphemeralInventory();
     baseWorld.installModule(
       inventoryModule,
       abi.encode(DEPLOYMENT_NAMESPACE, address(inventorySystem), address(ephemeralInv))
     );
+
     StoreSwitch.setStoreAddress(address(baseWorld));
     ephemeralInventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
 
     //Mock Item creation
-    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
-    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
-    EntityRecordTable.set(DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
   }
 
   function testSetup() public {
@@ -73,7 +80,11 @@ contract EphemeralInventoryTest is Test {
     vm.assume(storageCapacity != 0);
     vm.assume(owner != address(0));
 
-    DeployableState.setState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), smartObjectId, State.ONLINE);
+    DeployableState.setState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId,
+      State.ONLINE
+    );
     ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
     assertEq(
       EphemeralInventoryTable.getCapacity(DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(), smartObjectId, owner),
@@ -224,7 +235,7 @@ contract EphemeralInventoryTest is Test {
     //TODO: Implement the logic to check if the caller is admin after RBAC implementation
   }
 
-  function testOnlyAnyoneCanDepositToInventory() public {
+  function testAnyoneCanDepositToInventory() public {
     //TODO : Add test case for only owner can withdraw from inventory after RBAC
   }
 

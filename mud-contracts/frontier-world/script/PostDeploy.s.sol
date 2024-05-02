@@ -31,11 +31,14 @@ import { SmartDeployableModule } from "../src/modules/smart-deployable/SmartDepl
 //import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
-import { InventorySystem } from "../src/modules/inventory/systems/InventorySystem.sol";
-import { EphemeralInventorySystem } from "../src/modules/inventory/systems/EphemeralInventorySystem.sol";
+import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
+import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
+import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
+  using SmartDeployableLib for SmartDeployableLib.World;
 
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -64,8 +67,8 @@ contract PostDeploy is Script {
     ModuleCore moduleCore = new ModuleCore();
 
     //InventoryModule Systems front-loaded
-    InventorySystem inventorySystem = new InventorySystem();
-    EphemeralInventorySystem ephInvSystem = new EphemeralInventorySystem();
+    InventorySystem inventorySystem = new Inventory();
+    EphemeralInventorySystem ephInvSystem = new EphemeralInventory();
 
     // installing all modules sequentially
     _installModule(world, deployer, sofModule, SMART_OBJECT_DEPLOYMENT_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore));
@@ -116,8 +119,23 @@ contract PostDeploy is Script {
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
     );
 
-    console.log("Deploying ERC721 token with address: ", address(erc721Token));
-    SmartCharacterLib.World({iface: IBaseWorld(world), namespace: SMART_CHARACTER_DEPLOYMENT_NAMESPACE})
-      .registerERC721Token(address(erc721Token));
+    console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));
+    SmartCharacterLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .registerERC721Token(address(erc721CharacterToken));
+
+    IERC721Mintable erc721SmartDeployableToken;
+    erc721SmartDeployableToken = registerERC721(
+      world,
+      "erc721Deploybl",
+      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
+    );
+
+    console.log("Deploying ERC721 token with address: ", address(erc721SmartDeployableToken));
+    SmartDeployableLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .registerDeployableToken(address(erc721SmartDeployableToken));
+
+    vm.stopBroadcast();
   }
 }

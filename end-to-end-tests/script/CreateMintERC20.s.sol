@@ -18,12 +18,12 @@ contract CreateMintERC20 is Script {
     IBaseWorld world = IBaseWorld(worldAddress);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    string memory namespace = vm.envString("ERC20_NAMESPACE");
-    string memory name = vm.envString("ERC20_NAME");
-    string memory symbol = vm.envString("ERC20_SYMBOL");
-    uint8 decimals = uint8(vm.envUint("ERC20_DECIMALS"));
-    address to = vm.envAddress("MINT_TO");
-    uint256 amount = vm.envUint("MINT_AMOUNT");
+    string memory namespace = "Test Namespace";
+    string memory name = "Test Token";
+    string memory symbol = "TEST";
+    uint8 decimals = uint8(18);
+    address to = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    uint256 amount = 10000000000;
 
     vm.startBroadcast(deployerPrivateKey);
     // TODO: Need to make a ERC20 Factory that feeds into the static data module

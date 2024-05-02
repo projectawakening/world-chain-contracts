@@ -57,7 +57,7 @@ contract EntityRecordTest is Test {
     assertEq(entityRecordSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
-  function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint8 typeId, uint256 volume) public {
+  function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
     EntityRecordTableData memory data = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume });
 

@@ -26,7 +26,7 @@ library EntityRecordLib {
     World memory world,
     uint256 entityId,
     uint256 itemId,
-    uint8 typeId,
+    uint256 typeId,
     uint256 volume
   ) internal {
     world.iface.call(

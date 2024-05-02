@@ -8,12 +8,14 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 import { LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
-import { LocationLib } from "../../location/LocationLib.sol";
 
+import { LocationLib } from "../../location/LocationLib.sol";
+import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
+import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
-import { State } from "../types.sol";
+import { State, SmartObjectData } from "../types.sol";
 import { Utils } from "../Utils.sol";
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
@@ -44,16 +46,35 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     _;
   }
 
+  function registerDeployableToken(address tokenAddress) public {
+    if (DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()) != address(0)) {
+      revert SmartDeployableERC721AlreadyInitialized();
+    }
+    DeployableTokenTable.setErc721Address(_namespace().deployableTokenTableId(), tokenAddress);
+  }
+
   /**
    * @dev registers a new smart deployable (must be "NULL" state)
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
    */
-  function registerDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
+  function registerDeployable(
+    uint256 entityId,
+    SmartObjectData memory smartObjectData
+  ) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
     DeployableState.set(
       _namespace().deployableStateTableId(),
       entityId,
       DeployableStateData({ createdAt: block.timestamp, state: State.UNANCHORED, updatedBlockNumber: block.number })
+    );
+
+    IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
+      smartObjectData.owner,
+      entityId
+    );
+    IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).setCid(
+      entityId,
+      smartObjectData.tokenURI
     );
   }
 

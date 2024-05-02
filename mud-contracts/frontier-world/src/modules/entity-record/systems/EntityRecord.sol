@@ -23,7 +23,7 @@ contract EntityRecord is EveSystem {
   function createEntityRecord(
     uint256 entityId,
     uint256 itemId,
-    uint8 typeId,
+    uint256 typeId,
     uint256 volume
   ) public hookable(entityId, _systemId()) {
     EntityRecordTable.set(_namespace().entityRecordTableId(), entityId, itemId, typeId, volume);

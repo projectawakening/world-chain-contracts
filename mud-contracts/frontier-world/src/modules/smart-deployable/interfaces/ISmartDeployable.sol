@@ -6,8 +6,10 @@ import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
+import { SmartObjectData } from "../types.sol";
+
 interface ISmartDeployable {
-  function registerDeployable(uint256 entityId) external;
+  function registerDeployable(uint256 entityId, SmartObjectData memory smartObjectData) external;
 
   function destroyDeployable(uint256 entityId) external;
 
@@ -22,4 +24,6 @@ interface ISmartDeployable {
   function globalOffline() external;
 
   function globalOnline() external;
+
+  function registerDeployableToken(address tokenAddress) external;
 }

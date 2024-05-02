@@ -10,8 +10,8 @@
   },
   "pnpm": {
     "overrides": {
-      "follow-redirects@<1.15.6": ">=1.15.6"
+      "follow-redirects@<1.15.6": ">=1.15.6",
+      "ejs@<3.1.10": ">=3.1.10"
     }
   }
 }
-

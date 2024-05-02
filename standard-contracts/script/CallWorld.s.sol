@@ -7,9 +7,19 @@ import { ECDSA } from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Nonces } from "openzeppelin-contracts/utils/Nonces.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
-import { ITasksSystem } from "./worldInterface/ITasksSystem.sol";
-import { ISmartCharacterSystem } from "./worldInterface/ISmartCharacterSystem.sol";
-import { EntityRecordData, SmartObjectData } from "./worldInterface/types.sol";
+import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "./types.sol";
+
+struct EntityRecordOffchainTableData {
+  string name;
+  string dappURL;
+  string description;
+}
+
+struct EntityRecordTableData {
+  uint256 itemId;
+  uint256 typeId;
+  uint256 volume;
+}
 
 contract CallWorld is Script {
   ERC2771Forwarder internal _erc2771Forwarder;
@@ -26,18 +36,24 @@ contract CallWorld is Script {
 
     _signerPrivatekey = 0xA11CE;
     _signer = vm.addr(_signerPrivatekey);
-
     uint256 nonce = uint256(keccak256(abi.encodePacked("a")));
 
-    // bytes memory data = abi.encodeWithSelector(ITasksSystem.completeTask.selector, 1);
-    // console.logBytes(data);
+    uint256 characterId = 12513;
+    // The address this character will be minted to
+    address characterAddress = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 
+    uint256 typeId = 123;
+    uint256 itemId = 234;
+    uint256 volume = 100;
+    string memory cid = "azerty";
+    string memory characterName = "awesome-o";
     bytes memory data = abi.encodeWithSelector(
-      ISmartCharacterSystem.frontier__createCharacter.selector,
-      123,
-      0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
-      EntityRecordData({ typeId: 123, itemId: 222, volume: 0 }),
-      SmartObjectData({ owner: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokenURI: "https://example.com/token/123" })
+      0x571478ca,
+      characterId,
+      characterAddress,
+      EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume }),
+      EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
+      cid
     );
 
     ERC2771Forwarder.ForwardRequest memory req = ERC2771Forwarder.ForwardRequest({
@@ -53,7 +69,7 @@ contract CallWorld is Script {
     //Make this EIP712 complaint
     bytes32 digest = _erc2771Forwarder.structHash(req);
 
-    //Sign the request
+    // Sign the request
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(_signerPrivatekey, digest);
     bytes memory signature = abi.encodePacked(r, s, v);
 

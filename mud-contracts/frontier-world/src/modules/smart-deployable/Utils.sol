@@ -9,7 +9,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 
 import { SMART_DEPLOYABLE_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
 
-import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME } from "./constants.sol";
+import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME, DEPLOYABLE_TOKEN_TABLE_NAME } from "./constants.sol";
 
 library Utils {
   function globalStateTableId(bytes14 namespace) internal pure returns (ResourceId) {
@@ -19,6 +19,11 @@ library Utils {
   function deployableStateTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: DEPLOYABLE_STATE_TABLE_NAME });
+  }
+
+  function deployableTokenTableId(bytes14 namespace) internal pure returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: DEPLOYABLE_TOKEN_TABLE_NAME });
   }
 
   function smartDeployableSystemId(bytes14 namespace) internal pure returns (ResourceId) {

@@ -83,7 +83,7 @@ contract SmartCharacterTest is Test {
     uint256 entityId,
     address characterAddress,
     uint256 itemId,
-    uint8 typeId,
+    uint256 typeId,
     uint256 volume,
     EntityRecordOffchainTableData memory offchainData,
     string memory tokenCid
