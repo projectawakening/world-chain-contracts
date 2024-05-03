@@ -8,7 +8,7 @@
     "deploy": "forge script script/Deploy.s.sol:DeployScript --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast",
     "callWorld": "source .env && FORWARDER_ADDRESS=$FORWARDER_ADDRESS; WORLD_ADDRESS=$WORLD_ADDRESS; forge script script/CallWorld.s.sol:CallWorld --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvvv",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier --write './src/**/*.sol' './script/**/*.sol' './test/*.sol' --ignore-path ./.prettierignore",
+    "prettier": "prettier --check './src/**/*.sol' './script/**/*.sol' './test/*.sol' --ignore-path ./.prettierignore",
     "solhint": "solhint --config ./.solhint.json 'src/*.sol' './src/interfaces/*.sol' './test/*.sol'",
     "test": "forge test -vvv",
     "prepare": "husky"
@@ -36,3 +36,4 @@
     "solhint-plugin-prettier": "^0.1.0"
   }
 }
+

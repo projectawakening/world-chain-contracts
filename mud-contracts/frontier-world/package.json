@@ -12,7 +12,7 @@
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --write",
+    "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --check",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
     "test": "tsc --noEmit && forge test -vvv"
   },

@@ -13,7 +13,7 @@
     "setForwarder": "WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier 'src/**/*.sol' './*.ts' --write",
+    "prettier": "prettier 'src/**/*.sol' './*.ts' --check",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
     "test": "tsc --noEmit && mud test"
   },
@@ -36,3 +36,4 @@
     "typescript": "^5.4.5"
   }
 }
+
