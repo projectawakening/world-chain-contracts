@@ -19,8 +19,8 @@ contract CreateERC20 is Script {
 
     // Private Key loaded from environment
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    
-    // Test parameters hardcoded 
+
+    // Test parameters hardcoded
     // TODO accept as parameters to the run method for test reproducability
     string memory namespace = "myfakeerc20";
     // Namespace must be <14chars and unique
@@ -35,7 +35,7 @@ contract CreateERC20 is Script {
     erc20Token = registerERC20(
       world,
       stringToBytes14(namespace),
-      ERC20MetadataData({ decimals: decimals, name: name, symbol: symbol})
+      ERC20MetadataData({ decimals: decimals, name: name, symbol: symbol })
     );
 
     console.log("Deploying ERC20 token with address: ", address(erc20Token));
@@ -43,18 +43,18 @@ contract CreateERC20 is Script {
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {
-        bytes memory tempBytes = bytes(str);
+    bytes memory tempBytes = bytes(str);
 
-        // Ensure the bytes array is not longer than 14 bytes.
-        // If it is, this will truncate the array to the first 14 bytes.
-        // If it's shorter, it will be padded with zeros.
-        require(tempBytes.length <= 14, "String too long");
+    // Ensure the bytes array is not longer than 14 bytes.
+    // If it is, this will truncate the array to the first 14 bytes.
+    // If it's shorter, it will be padded with zeros.
+    require(tempBytes.length <= 14, "String too long");
 
-        bytes14 converted;
-        for (uint i = 0; i < tempBytes.length; i++) {
-            converted |= bytes14(tempBytes[i] & 0xFF) >> (i * 8);
-        }
-
-        return converted;
+    bytes14 converted;
+    for (uint i = 0; i < tempBytes.length; i++) {
+      converted |= bytes14(tempBytes[i] & 0xFF) >> (i * 8);
     }
+
+    return converted;
+  }
 }

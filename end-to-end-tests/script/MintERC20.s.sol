@@ -14,20 +14,19 @@ import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-p
 
 contract MintERC20 is Script {
   function run(address worldAddress) external {
-    // Private key for the ERC20 Contract owner/deployer loaded from ENV  
+    // Private key for the ERC20 Contract owner/deployer loaded from ENV
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    // Test parameters hardcoded 
+    // Test parameters hardcoded
     // TODO accept as parameters to the run method for test reproducability
-    // Contract address for the deployed token to be minted  
+    // Contract address for the deployed token to be minted
     address erc20Address = address(0x0670500CBCD4010A801E803dC0b6c0806838b43C);
 
     // The address of the recipient
     address destinationAddress = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
-    uint256 amount =  1000000000000;
+    uint256 amount = 1000000000000;
 
     StoreSwitch.setStoreAddress(worldAddress);
     IBaseWorld world = IBaseWorld(worldAddress);
-
 
     vm.startBroadcast(deployerPrivateKey);
     // TODO: Need to make a ERC20 Factory that feeds into the static data module
