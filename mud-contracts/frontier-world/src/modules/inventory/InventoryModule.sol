@@ -2,9 +2,12 @@
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
+import { System } from "@latticexyz/world/src/System.sol";
 
 import { INVENTORY_MODULE_NAME as MODULE_NAME, INVENTORY_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { InventoryTable } from "../../codegen/tables/InventoryTable.sol";
@@ -21,7 +24,7 @@ import { Utils } from "./Utils.sol";
 contract InventoryModule is Module {
   error InventoryModule_InvalidNamespace(bytes14 namespace);
 
-  address immutable registrationLibrary = address(new InventoryModuleRegistration());
+  address immutable registrationLibrary = address(new InventoryModuleRegistrationLibrary());
 
   function getName() public pure returns (bytes16) {
     return MODULE_NAME;
@@ -35,12 +38,17 @@ contract InventoryModule is Module {
     //Require other dependant modules to be registered
   }
 
+  // TODO: right now it needs to receive each system address as parameters (because of contract size limit), but there is no type checking
+  // fix it
   function install(bytes memory encodeArgs) public {
     //Require the module to be installed with the args
     requireNotInstalled(__self, encodeArgs);
 
     //Extract args
-    bytes14 namespace = abi.decode(encodeArgs, (bytes14));
+    (bytes14 namespace, address inventorySystem, address ephemeralInventory) = abi.decode(
+      encodeArgs,
+      (bytes14, address, address)
+    );
 
     //Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -53,9 +61,12 @@ contract InventoryModule is Module {
     //Register Inventory module's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(InventoryModuleRegistration.register, (world, namespace))
+      abi.encodeCall(
+        InventoryModuleRegistrationLibrary.register,
+        (world, namespace, inventorySystem, ephemeralInventory)
+      )
     );
-    require(success, string(returnedData));
+    if (!success) revertWithBytes(returnedData);
 
     //Transfer the ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
@@ -67,22 +78,29 @@ contract InventoryModule is Module {
   }
 }
 
-contract InventoryModuleRegistration {
+contract InventoryModuleRegistrationLibrary {
   using Utils for bytes14;
 
-  function register(IBaseWorld world, bytes14 namespace) public {
+  function register(IBaseWorld world, bytes14 namespace, address inventorySystem, address ephemeralInventory) public {
     //Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     //Register the tables and systems for inventory namespace
-    InventoryTable.register(namespace.inventoryTableId());
-    InventoryItemTable.register(namespace.inventoryItemTableId());
-    EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
-    EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
-    ItemTransferOffchainTable.register(namespace.itemTransferTableId());
+    if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
+    if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
+      InventoryItemTable.register(namespace.inventoryItemTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))
+      EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
+      EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
+    if (!ResourceIds.getExists(namespace.itemTransferTableId()))
+      ItemTransferOffchainTable.register(namespace.itemTransferTableId());
 
     //Register the systems
-    world.registerSystem(namespace.inventorySystemId(), new Inventory(), true);
-    world.registerSystem(namespace.ephemeralInventorySystemId(), new EphemeralInventory(), true);
+    if (!ResourceIds.getExists(namespace.inventorySystemId()))
+      world.registerSystem(namespace.inventorySystemId(), System(inventorySystem), true);
+    if (!ResourceIds.getExists(namespace.ephemeralInventorySystemId()))
+      world.registerSystem(namespace.ephemeralInventorySystemId(), System(ephemeralInventory), true);
   }
 }

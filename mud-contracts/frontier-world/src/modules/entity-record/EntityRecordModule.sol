@@ -78,11 +78,15 @@ contract EntityRecordModuleRegistrationLibrary {
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    EntityRecordTable.register(namespace.entityRecordTableId());
-    EntityRecordOffchainTable.register(namespace.entityRecordOffchainTableId());
+    if (!ResourceIds.getExists(namespace.entityRecordTableId()))
+      EntityRecordTable.register(namespace.entityRecordTableId());
+    if (!ResourceIds.getExists(namespace.entityRecordOffchainTableId()))
+      EntityRecordOffchainTable.register(namespace.entityRecordOffchainTableId());
     // Register a new Systems suite
-    world.registerSystem(namespace.entityRecordSystemId(), new EntityRecord(), true);
+    if (!ResourceIds.getExists(namespace.entityRecordSystemId()))
+      world.registerSystem(namespace.entityRecordSystemId(), new EntityRecord(), true);
   }
 }

@@ -27,6 +27,10 @@ import { SmartObjectFrameworkModule } from "../src/SmartObjectFrameworkModule.so
 import { SmartObjectLib } from "../src/SmartObjectLib.sol";
 import { createCoreModule } from "./createCoreModule.sol";
 
+import { EntityCore } from "../src/systems/core/EntityCore.sol";
+import { HookCore } from "../src/systems/core/HookCore.sol";
+import { ModuleCore } from "../src/systems/core/ModuleCore.sol";
+
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as SMART_OBJ_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 // TODO: The tests showing as "[FAIL. Reason: call did not revert as expected]" are actually reverting as expected.
@@ -140,8 +144,15 @@ contract EveSystemTest is Test {
   function setUp() public {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJ_NAMESPACE));
     StoreSwitch.setStoreAddress(address(baseWorld));
+    // needs to manually deploy each System contracts
+    EntityCore entityCore = new EntityCore();
+    HookCore hookCore = new HookCore();
+    ModuleCore moduleCore = new ModuleCore();
+    baseWorld.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
+    );
     smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
 
     smartDeployableTestModule = new SmartDeployableTestModule();
@@ -151,6 +162,29 @@ contract EveSystemTest is Test {
   function testSetup() public {
     setUp();
     assertEq(address(smartObject.iface), address(baseWorld));
+  }
+
+  function testMultipleSOFModuleInstalls() public {
+    baseWorld = IBaseWorld(address(new World()));
+    baseWorld.initialize(createCoreModule());
+    // needs to manually deploy each System contracts
+    EntityCore entityCore = new EntityCore();
+    HookCore hookCore = new HookCore();
+    ModuleCore moduleCore = new ModuleCore();
+    baseWorld.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
+    );
+
+    SmartObjectFrameworkModule newModule = new SmartObjectFrameworkModule();
+    entityCore = new EntityCore();
+    hookCore = new HookCore();
+    moduleCore = new ModuleCore();
+    baseWorld.transferOwnership(WorldResourceIdLib.encodeNamespace(SMART_OBJ_NAMESPACE), address(newModule));
+    baseWorld.installModule(
+      newModule,
+      abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
+    );
   }
 
   function testWorldExists() public {

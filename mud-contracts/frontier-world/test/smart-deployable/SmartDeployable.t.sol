@@ -11,9 +11,15 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
+import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
+import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
 import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
@@ -46,30 +52,47 @@ contract smartDeployableTest is Test {
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld baseWorld;
+  IBaseWorld world;
   SmartDeployableLib.World smartDeployable;
-  SmartDeployableModule smartDeployableModule;
   IERC721Mintable erc721Token;
 
-  function setUp() public {
-    baseWorld = IBaseWorld(address(new World()));
-    baseWorld.initialize(createCoreModule());
+  bytes14 constant SMART_DEPLOYABLE_ERC721 = "ERC721Deployab";
 
-    baseWorld.installModule(new SmartObjectFrameworkModule(), abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new PuppetModule(), new bytes(0));
-    baseWorld.installModule(new StaticDataModule(), abi.encode(STATIC_DATA_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new EntityRecordModule(), abi.encode(ENTITY_RECORD_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new SmartDeployableModule(), abi.encode(DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new LocationModule(), abi.encode(LOCATION_DEPLOYMENT_NAMESPACE));
-    StoreSwitch.setStoreAddress(address(baseWorld));
+  function setUp() public {
+    world = IBaseWorld(address(new World()));
+    world.initialize(createCoreModule());
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
+
+    // installing SOF & other modules (SmartCharacterModule dependancies)
+    world.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
+
+    _installModule(new PuppetModule(), 0);
+    _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
+    _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
+    _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
     erc721Token = registerERC721(
-      baseWorld,
-      EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE,
+      world,
+      SMART_DEPLOYABLE_ERC721,
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
     );
 
-    smartDeployable = SmartDeployableLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+    // install SmartDeployableModule
+    SmartDeployableModule deployableModule = new SmartDeployableModule();
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(deployableModule));
+    world.installModule(deployableModule, abi.encode(DEPLOYMENT_NAMESPACE, new SmartDeployable()));
+    smartDeployable = SmartDeployableLib.World(world, DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721Token));
+  }
+
+  function _installModule(IModule module, bytes14 namespace) internal {
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace));
   }
 
   function testSetup() public {
@@ -98,6 +121,7 @@ contract smartDeployableTest is Test {
       updatedBlockNumber: block.number,
       updatedBlockTime: block.timestamp
     });
+    vm.assume(smartObjectData.owner != address(0));
 
     smartDeployable.registerDeployable(
       entityId,
@@ -387,6 +411,7 @@ contract smartDeployableTest is Test {
     uint256 fuelConsumption = timeElapsedBeforeOffline * (fuelConsumptionPerMinute / 60);
     fuelConsumption += timeElapsedAfterOffline * (fuelConsumptionPerMinute / 60);
     vm.assume(fuelUnitAmount * (10 ** FUEL_DECIMALS) > fuelConsumption); // this time we want to run out of fuel
+    vm.assume(smartObjectData.owner != address(0));
 
     // have to disable fuel max inventory because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]
     // error, since we're filtering quite a lot of possible input tuples

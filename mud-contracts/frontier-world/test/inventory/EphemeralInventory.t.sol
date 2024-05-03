@@ -10,8 +10,12 @@ import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { IModule } from "@latticexyz/world/src/IModule.sol";
 
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import "@eve/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -23,12 +27,29 @@ import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Util
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 
+import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
+import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
+import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
+
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
+import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
+import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
+import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
+import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
+import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
+
+import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
+
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 contract EphemeralInventoryTest is Test {
@@ -36,33 +57,87 @@ contract EphemeralInventoryTest is Test {
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
   using InventoryLib for InventoryLib.World;
+  using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld baseWorld;
+  IBaseWorld world;
+  IERC721Mintable erc721DeployableToken;
   InventoryLib.World ephemeralInventory;
+  SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
 
+  bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
+
   function setUp() public {
-    baseWorld = IBaseWorld(address(new World()));
-    baseWorld.initialize(createCoreModule());
+    world = IBaseWorld(address(new World()));
+    world.initialize(createCoreModule());
+    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
+    StoreSwitch.setStoreAddress(address(world));
 
-    baseWorld.installModule(new EntityRecordModule(), abi.encode(ENTITY_RECORD_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new SmartDeployableModule(), abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE));
-    baseWorld.installModule(new InventoryModule(), abi.encode(DEPLOYMENT_NAMESPACE));
+    // installing SOF & other modules (SmartCharacterModule dependancies)
+    world.installModule(
+      new SmartObjectFrameworkModule(),
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+    );
+    // install module dependancies
+    _installModule(new PuppetModule(), 0);
+    _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
+    _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
+    _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
 
-    StoreSwitch.setStoreAddress(address(baseWorld));
-    ephemeralInventory = InventoryLib.World(baseWorld, DEPLOYMENT_NAMESPACE);
+    erc721DeployableToken = registerERC721(
+      world,
+      ERC721_DEPLOYABLE,
+      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
+    );
+    // install SmartDeployableModule
+    SmartDeployableModule deployableModule = new SmartDeployableModule();
+    if (
+      NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE)) ==
+      address(this)
+    )
+      world.transferOwnership(
+        WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE),
+        address(deployableModule)
+      );
+    world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
+    smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    smartDeployable.registerDeployableToken(address(erc721DeployableToken));
+
+    // Inventory Module installation
+    inventoryModule = new InventoryModule();
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(
+        WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE),
+        address(inventoryModule)
+      );
+
+    world.installModule(
+      inventoryModule,
+      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory())
+    );
+
+    ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
     //Mock Item creation
+    // Note: this only works because the test contract currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
   }
 
+  // helper function to guard against multiple module registrations on the same namespace
+  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
+  function _installModule(IModule module, bytes14 namespace) internal {
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace));
+  }
+
   function testSetup() public {
-    address EpheremalSystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId());
+    address EpheremalSystem = Systems.getSystem(INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId());
     ResourceId ephemeralInventorySystemId = SystemRegistry.get(EpheremalSystem);
-    assertEq(ephemeralInventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
+    assertEq(ephemeralInventorySystemId.getNamespace(), INVENTORY_DEPLOYMENT_NAMESPACE);
   }
 
   function testSetEphemeralInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
@@ -77,7 +152,11 @@ contract EphemeralInventoryTest is Test {
     );
     ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
     assertEq(
-      EphemeralInventoryTable.getCapacity(DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(), smartObjectId, owner),
+      EphemeralInventoryTable.getCapacity(
+        INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+        smartObjectId,
+        owner
+      ),
       storageCapacity
     );
   }
@@ -107,7 +186,7 @@ contract EphemeralInventoryTest is Test {
     testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
 
     EphemeralInventoryTableData memory inventoryTableData = EphemeralInventoryTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
       smartObjectId,
       owner
     );
@@ -117,7 +196,7 @@ contract EphemeralInventoryTest is Test {
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
 
     inventoryTableData = EphemeralInventoryTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
       smartObjectId,
       owner
     );
@@ -130,7 +209,7 @@ contract EphemeralInventoryTest is Test {
     }
 
     inventoryTableData = EphemeralInventoryTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
       smartObjectId,
       owner
     );
@@ -168,7 +247,7 @@ contract EphemeralInventoryTest is Test {
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
 
     EphemeralInventoryTableData memory inventoryTableData = EphemeralInventoryTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
       smartObjectId,
       owner
     );
@@ -184,7 +263,7 @@ contract EphemeralInventoryTest is Test {
     }
 
     inventoryTableData = EphemeralInventoryTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
       smartObjectId,
       owner
     );

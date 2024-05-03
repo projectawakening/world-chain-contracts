@@ -10,7 +10,7 @@
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL",
-    "setForwarder": "WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
+    "setForwarder": "WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' './*.ts' --write",

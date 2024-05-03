@@ -78,11 +78,14 @@ contract SmartCharacterModuleRegistrationLibrary {
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    CharactersTable.register(namespace.charactersTableId());
-    CharactersConstantsTable.register(namespace.charactersConstantsTableId());
+    if (!ResourceIds.getExists(namespace.charactersTableId())) CharactersTable.register(namespace.charactersTableId());
+    if (!ResourceIds.getExists(namespace.charactersConstantsTableId()))
+      CharactersConstantsTable.register(namespace.charactersConstantsTableId());
     // Register a new Systems suite
-    world.registerSystem(namespace.smartCharacterSystemId(), new SmartCharacter(), true);
+    if (!ResourceIds.getExists(namespace.smartCharacterSystemId()))
+      world.registerSystem(namespace.smartCharacterSystemId(), new SmartCharacter(), true);
   }
 }

@@ -6,6 +6,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { System } from "@latticexyz/world/src/System.sol";
 
 import { SMART_DEPLOYABLE_MODULE_NAME as MODULE_NAME, SMART_DEPLOYABLE_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./Utils.sol";
@@ -44,7 +45,7 @@ contract SmartDeployableModule is Module {
     requireNotInstalled(__self, encodedArgs);
 
     // Extract args
-    bytes14 namespace = abi.decode(encodedArgs, (bytes14));
+    (bytes14 namespace, address smartDeployable) = abi.decode(encodedArgs, (bytes14, address));
 
     // Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -57,7 +58,7 @@ contract SmartDeployableModule is Module {
     // Register the smart deployable's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(SmartDeployableModuleRegistrationLibrary.register, (world, namespace))
+      abi.encodeCall(SmartDeployableModuleRegistrationLibrary.register, (world, namespace, smartDeployable))
     );
     require(success, string(returnedData));
 
@@ -78,15 +79,22 @@ contract SmartDeployableModuleRegistrationLibrary {
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */
-  function register(IBaseWorld world, bytes14 namespace) public {
+  function register(IBaseWorld world, bytes14 namespace, address smartDeployable) public {
     // Register the namespace
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
+      world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    GlobalDeployableState.register(namespace.globalStateTableId());
-    DeployableState.register(namespace.deployableStateTableId());
-    DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
-    DeployableTokenTable.register(namespace.deployableTokenTableId());
+    if (!ResourceIds.getExists(namespace.globalStateTableId()))
+      GlobalDeployableState.register(namespace.globalStateTableId());
+    if (!ResourceIds.getExists(namespace.deployableStateTableId()))
+      DeployableState.register(namespace.deployableStateTableId());
+    if (!ResourceIds.getExists(namespace.deployableTokenTableId()))
+      DeployableTokenTable.register(namespace.deployableTokenTableId());
+    if (!ResourceIds.getExists(namespace.deployableFuelBalanceTableId()))
+      DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
+
     // Register a new Systems suite
-    world.registerSystem(namespace.smartDeployableSystemId(), new SmartDeployable(), true);
+    if (!ResourceIds.getExists(namespace.smartDeployableSystemId()))
+      world.registerSystem(namespace.smartDeployableSystemId(), System(smartDeployable), true);
   }
 }
