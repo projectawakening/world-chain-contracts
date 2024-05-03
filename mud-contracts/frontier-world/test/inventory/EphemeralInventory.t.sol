@@ -39,6 +39,7 @@ import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
@@ -89,7 +90,11 @@ contract EphemeralInventoryTest is Test {
       ERC721_DEPLOYABLE,
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
     );
-    _installModule(new SmartDeployableModule(), SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    // install SmartDeployableModule
+    SmartDeployableModule deployableModule = new SmartDeployableModule();
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE), address(deployableModule));
+    world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 

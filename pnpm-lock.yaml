@@ -152,9 +152,6 @@ importers:
       '@eve/frontier-smart-object-framework':
         specifier: 0.0.0
         version: link:../smart-object-framework
-      '@eve/frontier-world':
-        specifier: 0.0.0
-        version: 'link:'
       '@latticexyz/cli':
         specifier: 2.0.0-next.16
         version: 2.0.0-next.16(google-protobuf@3.21.2)

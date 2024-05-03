@@ -38,8 +38,9 @@ import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.s
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
-import { LocationModule } from "../../src/modules/location/LocationModule.sol";
+import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
@@ -98,7 +99,11 @@ contract SmartStorageUnitTest is Test {
       ERC721_DEPLOYABLE,
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
     );
-    _installModule(new SmartDeployableModule(), SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    // install SmartDeployableModule
+    SmartDeployableModule deployableModule = new SmartDeployableModule();
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE), address(deployableModule));
+    world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 

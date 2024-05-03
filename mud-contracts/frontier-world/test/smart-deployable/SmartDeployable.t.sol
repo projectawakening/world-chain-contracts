@@ -82,7 +82,10 @@ contract smartDeployableTest is Test {
     );
 
     // install SmartDeployableModule
-    _installModule(new SmartDeployableModule(), DEPLOYMENT_NAMESPACE);
+    SmartDeployableModule deployableModule = new SmartDeployableModule();
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(deployableModule));
+    world.installModule(deployableModule, abi.encode(DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721Token));
   }

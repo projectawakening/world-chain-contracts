@@ -28,12 +28,13 @@ import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.so
 import { LocationModule } from "../src/modules/location/LocationModule.sol";
 import { SmartCharacterModule } from "../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartDeployableModule } from "../src/modules/smart-deployable/SmartDeployableModule.sol";
+import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
-import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -56,13 +57,11 @@ contract PostDeploy is Script {
     _installModule(world, deployer, new EntityRecordModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(world, deployer, new LocationModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(world, deployer, new SmartCharacterModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, new SmartDeployableModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(world, deployer, new SmartDeployableModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new SmartDeployable()));
     _installModule(world, deployer, new InventoryModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new Inventory()), address(new EphemeralInventory()));
     _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initERC721(world, baseURI);
-
     vm.stopBroadcast();
   }
 
@@ -75,21 +74,24 @@ contract PostDeploy is Script {
   }
 
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace) internal {
-    StoreSwitch.setStoreAddress(address(world));
     if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace));
   }
 
+  function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1) internal {
+    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
+      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
+    world.installModule(module, abi.encode(namespace, system1));
+  }
+
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1, address system2) internal {
-    StoreSwitch.setStoreAddress(address(world));
     if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1, system2));
   }
 
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1, address system2, address system3) internal {
-    StoreSwitch.setStoreAddress(address(world));
     if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1, system2, system3));

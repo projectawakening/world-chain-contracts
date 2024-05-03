@@ -1,3 +1,3 @@
 #!/bin/bash
 # Start an anvil development node
-anvil --block-time 1 --block-base-fee-per-gas 0 --gas-limit 1000000000
+anvil --block-time 1 --block-base-fee-per-gas 0 --gas-limit 3000000000
