@@ -4,10 +4,10 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
-    "@latticexyz/cli": "2.0.0-next.16",
-    "@latticexyz/schema-type": "2.0.0-next.16",
-    "@latticexyz/store": "2.0.0-next.16",
-    "@latticexyz/world": "2.0.0-next.16",
-    "@latticexyz/world-modules": "2.0.0-next.16"
+    "@latticexyz/cli": "transaction-context",
+    "@latticexyz/schema-type": "transaction-context",
+    "@latticexyz/store": "transaction-context",
+    "@latticexyz/world": "transaction-context",
+    "@latticexyz/world-modules": "transaction-context"
   }
 }
