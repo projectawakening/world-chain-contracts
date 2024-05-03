@@ -25,7 +25,8 @@
     "depositToEphemeral:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY forge script script/DepositToEphemeral.s.sol:DepositToEphemeral --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "depositToEphemeral:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/DepositToEphemeral.s.sol:DepositToEphemeral --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier '**/*.sol' --check",
+    "prettier": "prettier '**/*.sol' --plugin=prettier-plugin-solidity --check",
+    "fixFormat": "prettier '**/*.sol' ---plugin=prettier-plugin-solidity -write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'"
   },
   "dependencies": {
