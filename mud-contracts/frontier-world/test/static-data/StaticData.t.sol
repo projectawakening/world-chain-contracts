@@ -58,8 +58,8 @@ contract StaticDataTest is Test {
 
   // helper function to guard against multiple module registrations on the same namespace
   // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
-  function _installModule(IModule module, bytes14 namespace) internal{
-    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
+  function _installModule(IModule module, bytes14 namespace) internal {
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace));
   }

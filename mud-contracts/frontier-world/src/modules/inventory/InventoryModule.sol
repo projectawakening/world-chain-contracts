@@ -61,7 +61,10 @@ contract InventoryModule is Module {
     //Register Inventory module's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(InventoryModuleRegistrationLibrary.register, (world, namespace, inventorySystem, ephemeralInventory))
+      abi.encodeCall(
+        InventoryModuleRegistrationLibrary.register,
+        (world, namespace, inventorySystem, ephemeralInventory)
+      )
     );
     if (!success) revertWithBytes(returnedData);
 
@@ -84,8 +87,7 @@ contract InventoryModuleRegistrationLibrary {
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     //Register the tables and systems for inventory namespace
-    if (!ResourceIds.getExists(namespace.inventoryTableId()))
-      InventoryTable.register(namespace.inventoryTableId());
+    if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
     if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
       InventoryItemTable.register(namespace.inventoryItemTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))

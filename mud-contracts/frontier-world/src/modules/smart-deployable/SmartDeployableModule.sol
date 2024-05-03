@@ -91,7 +91,7 @@ contract SmartDeployableModuleRegistrationLibrary {
     if (!ResourceIds.getExists(namespace.deployableTokenTableId()))
       DeployableTokenTable.register(namespace.deployableTokenTableId());
     if (!ResourceIds.getExists(namespace.deployableFuelBalanceTableId()))
-    DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
+      DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartDeployableSystemId()))
