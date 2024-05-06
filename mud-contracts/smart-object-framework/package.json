@@ -12,7 +12,8 @@
     "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --write",
+    "prettier": "prettier 'src/**/*.sol' --plugin=prettier-plugin-solidity --check",
+    "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
     "test": "tsc --noEmit && mud test"
   },
