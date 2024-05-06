@@ -6,7 +6,7 @@ This repository contains the smart contract code supporting Project Awakening an
 
 # Quickstart
 
-To start developing against the world and all of the CCP modules run:
+To start developing against the frontier world, run:
 
 ```
 pnpm run dev
