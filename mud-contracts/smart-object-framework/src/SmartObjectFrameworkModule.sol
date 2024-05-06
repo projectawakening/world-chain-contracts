@@ -6,15 +6,17 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 
-import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
+import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE, CLASS, OBJECT } from "./constants.sol";
 import { Utils } from "./utils.sol";
 
 import { EntityCore } from "./systems/core/EntityCore.sol";
 import { ModuleCore } from "./systems/core/ModuleCore.sol";
 import { HookCore } from "./systems/core/HookCore.sol";
+import { SmartObjectLib } from "./SmartObjectLib.sol";
 
 import { EntityAssociation } from "./codegen/tables/EntityAssociation.sol";
 import { EntityMap } from "./codegen/tables/EntityMap.sol";
@@ -94,7 +96,7 @@ contract SmartObjectFrameworkModule is Module {
 
 contract SmartObjectFrameworkModuleRegistrationLibrary {
   using Utils for bytes14;
-
+  using SmartObjectLib for SmartObjectLib.World;
   /**
    * Register systems and tables for a new smart object framework in a given namespace
    */
@@ -132,5 +134,22 @@ contract SmartObjectFrameworkModuleRegistrationLibrary {
       world.registerSystem(namespace.moduleCoreSystemId(), System(moduleCore), true);
     if (!ResourceIds.getExists(namespace.hookCoreSystemId()))
       world.registerSystem(namespace.hookCoreSystemId(), System(hookCore), true);
+    
+    // we can just forward this as-is since ModuleCore already handles re-registration errors
+    ResourceId[] memory systemIds = new ResourceId[](3);
+    systemIds[0] = namespace.entityCoreSystemId();
+    systemIds[1] = namespace.moduleCoreSystemId();
+    systemIds[2] = namespace.hookCoreSystemId();
+
+    SmartObjectLib.World memory smartObject = SmartObjectLib.World({namespace: namespace, iface: world});
+    smartObject.registerEVEModules(
+      uint256(ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, MODULE_NAME))), //moduleId
+      MODULE_NAME,
+      systemIds
+    );
+    // setting up basic entity types
+    smartObject.registerEntityType(CLASS, "Class");
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
   }
 }
