@@ -20,16 +20,23 @@ library SOFInitializationLibrary {
   using SOFUtils for bytes14;
 
   function initSOF(IBaseWorld world) internal {
-        // TODO: decouple this
+    // TODO: decouple this
     // we can just forward this as-is since ModuleCore already handles re-registration errors
     ResourceId[] memory systemIds = new ResourceId[](3);
     systemIds[0] = SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityCoreSystemId();
     systemIds[1] = SMART_OBJECT_DEPLOYMENT_NAMESPACE.moduleCoreSystemId();
     systemIds[2] = SMART_OBJECT_DEPLOYMENT_NAMESPACE.hookCoreSystemId();
 
-    SmartObjectLib.World memory smartObject = SmartObjectLib.World({ namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE, iface: world });
+    SmartObjectLib.World memory smartObject = SmartObjectLib.World({
+      namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE,
+      iface: world
+    });
     smartObject.registerEVEModules(
-      uint256(ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_OBJECT_MODULE_NAME))), //moduleId
+      uint256(
+        ResourceId.unwrap(
+          WorldResourceIdLib.encode(RESOURCE_SYSTEM, SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_OBJECT_MODULE_NAME)
+        )
+      ), //moduleId
       SMART_OBJECT_MODULE_NAME,
       systemIds
     );

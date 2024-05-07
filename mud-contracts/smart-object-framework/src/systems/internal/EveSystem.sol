@@ -42,10 +42,7 @@ contract EveSystem is System {
    * @param entityId is the id of an object or class
    * @param systemId is the systemId of the originating call
    */
-  modifier onlyAssociatedModule(
-    uint256 entityId,
-    ResourceId systemId
-  ) {
+  modifier onlyAssociatedModule(uint256 entityId, ResourceId systemId) {
     _requireEntityRegistered(entityId);
     _requireSystemAssociatedWithModule(entityId, systemId);
     _;
@@ -83,10 +80,7 @@ contract EveSystem is System {
   }
 
   //TODO optimize this function by removing array concatenation
-  function _requireSystemAssociatedWithModule(
-    uint256 entityId,
-    ResourceId systemId
-  ) internal view {
+  function _requireSystemAssociatedWithModule(uint256 entityId, ResourceId systemId) internal view {
     //Get the moduleIds for the entity
     uint256[] memory moduleIds = _getModuleIds(entityId);
 

@@ -36,8 +36,6 @@ library ModulesInitializationLibrary {
   using InventoryUtils for bytes14;
   using SSUUtils for bytes14;
 
-
-
   function initEntityRecord(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME),
@@ -47,7 +45,10 @@ library ModulesInitializationLibrary {
   }
 
   function associateEntityRecord(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME)
+    );
   }
 
   function initStaticData(IBaseWorld world) internal {
@@ -59,7 +60,10 @@ library ModulesInitializationLibrary {
   }
 
   function associateStaticData(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME)
+    );
   }
 
   function initLocation(IBaseWorld world) internal {
@@ -71,7 +75,10 @@ library ModulesInitializationLibrary {
   }
 
   function associateLocation(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME)
+    );
   }
 
   function initSmartCharacter(IBaseWorld world) internal {
@@ -83,7 +90,10 @@ library ModulesInitializationLibrary {
   }
 
   function associateSmartCharacter(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_MODULE_NAME)
+    );
   }
 
   function initSmartDeployable(IBaseWorld world) internal {
@@ -95,7 +105,10 @@ library ModulesInitializationLibrary {
   }
 
   function associateSmartDeployable(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME)
+    );
   }
 
   function initInventory(IBaseWorld world) internal {
@@ -110,7 +123,10 @@ library ModulesInitializationLibrary {
   }
 
   function associateInventory(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME)
+    );
   }
 
   function initSSU(IBaseWorld world) internal {
@@ -122,10 +138,16 @@ library ModulesInitializationLibrary {
   }
 
   function associateSSU(IBaseWorld world, uint256 entityId) internal {
-    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(entityId, _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME));
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME)
+    );
   }
 
-  function registerAndAssociateTypeIdToDeployable(IBaseWorld world, uint256 frontierTypeId) internal returns (uint256 classId) {
+  function registerAndAssociateTypeIdToDeployable(
+    IBaseWorld world,
+    uint256 frontierTypeId
+  ) internal returns (uint256 classId) {
     uint256[] memory moduleIds = new uint256[](4);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
     moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
@@ -144,7 +166,10 @@ library ModulesInitializationLibrary {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 
-  function registerAndAssociateTypeIdToSSU(IBaseWorld world, uint256 frontierTypeId) internal returns (uint256 classId) {
+  function registerAndAssociateTypeIdToSSU(
+    IBaseWorld world,
+    uint256 frontierTypeId
+  ) internal returns (uint256 classId) {
     uint256[] memory moduleIds = new uint256[](5);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
     moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
@@ -165,12 +190,11 @@ library ModulesInitializationLibrary {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 
-
-  function _sofLib(IBaseWorld world, bytes14 namespace) internal pure returns(SmartObjectLib.World memory) {
-    return SmartObjectLib.World({namespace: namespace, iface: world});
+  function _sofLib(IBaseWorld world, bytes14 namespace) internal pure returns (SmartObjectLib.World memory) {
+    return SmartObjectLib.World({ namespace: namespace, iface: world });
   }
 
-  function _moduleId(bytes14 moduleNamespace, bytes16 moduleName) internal pure returns(uint256) {
+  function _moduleId(bytes14 moduleNamespace, bytes16 moduleName) internal pure returns (uint256) {
     return uint256(ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, moduleNamespace, moduleName)));
   }
 
@@ -193,7 +217,7 @@ library ModulesInitializationLibrary {
     uint256 k = len;
     j = _i;
     while (j != 0) {
-      bstr[--k] = bytes1(uint8(48 + j % 10));
+      bstr[--k] = bytes1(uint8(48 + (j % 10)));
       j /= 10;
     }
     return string(bstr);
