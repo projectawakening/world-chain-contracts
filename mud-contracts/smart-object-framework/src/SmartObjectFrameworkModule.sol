@@ -135,22 +135,5 @@ contract SmartObjectFrameworkModuleRegistrationLibrary {
       world.registerSystem(namespace.moduleCoreSystemId(), System(moduleCore), true);
     if (!ResourceIds.getExists(namespace.hookCoreSystemId()))
       world.registerSystem(namespace.hookCoreSystemId(), System(hookCore), true);
-
-    // we can just forward this as-is since ModuleCore already handles re-registration errors
-    ResourceId[] memory systemIds = new ResourceId[](3);
-    systemIds[0] = namespace.entityCoreSystemId();
-    systemIds[1] = namespace.moduleCoreSystemId();
-    systemIds[2] = namespace.hookCoreSystemId();
-
-    SmartObjectLib.World memory smartObject = SmartObjectLib.World({ namespace: namespace, iface: world });
-    smartObject.registerEVEModules(
-      uint256(ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, MODULE_NAME))), //moduleId
-      MODULE_NAME,
-      systemIds
-    );
-    // setting up basic entity types
-    smartObject.registerEntityType(CLASS, "Class");
-    smartObject.registerEntityType(OBJECT, "Object");
-    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
   }
 }

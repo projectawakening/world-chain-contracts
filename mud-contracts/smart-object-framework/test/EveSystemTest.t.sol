@@ -28,6 +28,8 @@ import { SmartObjectFrameworkModule } from "../src/SmartObjectFrameworkModule.so
 import { SmartObjectLib } from "../src/SmartObjectLib.sol";
 import { createCoreModule } from "./createCoreModule.sol";
 
+import { SOFInitializationLibrary } from "../src/SOFInitializationLibrary.sol";
+
 import { EntityCore } from "../src/systems/core/EntityCore.sol";
 import { HookCore } from "../src/systems/core/HookCore.sol";
 import { ModuleCore } from "../src/systems/core/ModuleCore.sol";
@@ -149,6 +151,7 @@ contract EveSystemTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
     );
+    SOFInitializationLibrary.init(baseWorld, SMART_OBJ_NAMESPACE);
     smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
 
     smartDeployableTestModule = new SmartDeployableTestModule();
