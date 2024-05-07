@@ -2,7 +2,7 @@
 
 ![Project Awakening cover logo](./ProjectAwakeningCover.png)
 
-This repository contains the smart contract code supporting Project Awakening and targeted for deployment on the world chain. It contains of two separate code paths. The standard contracts are plain solidity contracts intended as support structure. The mud contracts are the functionality or *business logic* itself. 
+This repository contains the smart contract code supporting Project Awakening and targeted for deployment to the world chain. It contains of two separate code paths. The standard contracts are plain solidity contracts intended as support structure. The mud contracts are the functionality or *business logic* itself.
 
 # Quickstart
 
