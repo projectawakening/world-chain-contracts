@@ -12,7 +12,7 @@ interface IERC721 is IERC721Events, IERC721Errors {
   /**
    * @dev Returns the number of tokens in ``owner``'s account.
    */
-  function balanceOf(address owner) external view returns (uint256 balance);
+  function balanceOf(address owner) external returns (uint256 balance);
 
   /**
    * @dev Returns the owner of the `tokenId` token.
@@ -21,7 +21,7 @@ interface IERC721 is IERC721Events, IERC721Errors {
    *
    * - `tokenId` must exist.
    */
-  function ownerOf(uint256 tokenId) external view returns (address owner);
+  function ownerOf(uint256 tokenId) external returns (address owner);
 
   /**
    * @dev Safely transfers `tokenId` token from `from` to `to`.

@@ -35,7 +35,6 @@ import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralI
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../src/codegen/tables/ItemTransferOffchainTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 
