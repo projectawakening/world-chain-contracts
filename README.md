@@ -1,8 +1,8 @@
-# Game Chain Contracts
+# World Chain Contracts
 
-*Disclaimer: This is very much a work in progess.*
+![Project Awakening cover logo](./ProjectAwakeningCover.png)
 
-This repository contains the smart contract code supporting Project Awakening and targeted for deployment on the game chain. It contains of two separate code paths. The standard contracts are plain solidity contracts intended as support structure. The mud contracts are the functionality or *business logic* itself. 
+This repository contains the smart contract code supporting Project Awakening and targeted for deployment on the world chain. It contains of two separate code paths. The standard contracts are plain solidity contracts intended as support structure. The mud contracts are the functionality or *business logic* itself. 
 
 # Quickstart
 
@@ -35,3 +35,7 @@ We are running the anvil node explicitly ourselves for three reasons:
 - Making the development environment as similar to live ones as possible
 - Decoupling from MUD's opinionated dev tools
 - Having a stand alone development node allows us to deploy modules in a deterministic an selective manner
+
+# License 
+
+The contents of this repository are open-source software under the [MIT license](./LICENSE).
