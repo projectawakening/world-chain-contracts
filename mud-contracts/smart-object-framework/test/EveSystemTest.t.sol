@@ -45,20 +45,20 @@ contract SmartDeployableTestSystem is EveSystem {
     uint256 _value
   )
     public
-    onlyAssociatedModule(_value, SYSTEM_ID, getFunctionSelector(SYSTEM_ID, "echoSmartDeployable(uint256)"))
+    onlyAssociatedModule(_value, SYSTEM_ID)
     hookable(_value, SYSTEM_ID)
     returns (uint256)
   {
     return _value;
   }
 
-  function getFunctionSelector(
-    ResourceId systemId,
-    string memory systemFunctionSignature
-  ) public pure returns (bytes4 worldFunctionSelector) {
-    bytes memory worldFunctionSignature = abi.encodePacked("deployable", "__", systemFunctionSignature);
-    worldFunctionSelector = bytes4(keccak256(worldFunctionSignature));
-  }
+  // function getFunctionSelector(
+  //   ResourceId systemId,
+  //   string memory systemFunctionSignature
+  // ) public pure returns (bytes4 worldFunctionSelector) {
+  //   bytes memory worldFunctionSignature = abi.encodePacked("deployable", "__", systemFunctionSignature);
+  //   worldFunctionSelector = bytes4(keccak256(worldFunctionSignature));
+  // }
 }
 
 contract SampleHook is EveSystem {
@@ -151,7 +151,7 @@ contract EveSystemTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
     );
-    SOFInitializationLibrary.init(baseWorld, SMART_OBJ_NAMESPACE);
+    SOFInitializationLibrary.initSOF(baseWorld);
     smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
 
     smartDeployableTestModule = new SmartDeployableTestModule();

@@ -20,6 +20,9 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
@@ -46,8 +49,10 @@ contract EntityRecordTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    SOFInitializationLibrary.initSOF(world);
 
     _installModule(new EntityRecordModule(), DEPLOYMENT_NAMESPACE);
+    ModulesInitializationLibrary.initEntityRecord(world);
 
     entityRecord = EntityRecordLib.World(world, DEPLOYMENT_NAMESPACE);
   }
