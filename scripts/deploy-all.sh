@@ -12,6 +12,15 @@ print_instruction() {
     echo -e "===================================================================================================="
 }
 
+# Function to get chain ID from RPC URL
+get_chain_id() {
+    local rpc_url=$1
+    local chain_id_hex=$(curl -s -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' -H "Content-Type: application/json" $rpc_url | jq -r '.result')
+     # Remove the '0x' prefix if present and convert hex to decimal
+    local chain_id_decimal=$(echo "$chain_id_hex" | sed 's/0x//')
+    echo "$((16#$chain_id_decimal))"
+}
+
 # Export local env variables for local dev
 
 rpc_url=""
@@ -35,6 +44,16 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+
+if [ -z "$rpc_url" ]; then
+    echo "RPC URL must be provided with --rpc-url"
+    exit 1
+fi
+
+# Fetch and export the chain ID
+chain_id=$(get_chain_id "$rpc_url")
+echo "Using chain ID: $chain_id"
+
 # Export assigned parameters to RPC_URL and PRIVATE_KEY variables
 export RPC_URL="$rpc_url"
 export PRIVATE_KEY="$private_key"
@@ -51,7 +70,7 @@ echo "------------------------- Deploying forwarder contract -------------------
 pnpm nx run @eve/frontier-standard-contracts:deploy
 wait
 
-export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/31337/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/$chain_id/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
 echo "==================== Forwarder contract deployed ===================="
 echo "Forwarder Address: $FORWARDER_ADDRESS"
@@ -62,7 +81,7 @@ echo "------------------------- Deploying world core ---------------------"
 # pnpm nx run-many -t deploy --projects "standard-contracts/**"
 pnpm nx deploy @eve/frontier-world-core
 wait
-export WORLD_ADDRESS=$(cat ./mud-contracts/core/deploys/31337/latest.json | jq '.worldAddress' | tr -d \")
+export WORLD_ADDRESS=$(cat ./mud-contracts/core/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
 
 echo "==================== World Core deployed ===================="
 echo "World Address: $WORLD_ADDRESS"
@@ -84,4 +103,3 @@ pnpm nx deploy @eve/frontier-world --worldAddress '${WORLD_ADDRESS}'
 
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
-
