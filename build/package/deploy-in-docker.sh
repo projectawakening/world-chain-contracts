@@ -35,8 +35,24 @@ show_progress() {
 # Function to get chain ID from RPC URL
 get_chain_id() {
     local rpc_url=$1
-    local chain_id_hex=$(curl -s -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' -H "Content-Type: application/json" $rpc_url | jq -r '.result')
-     # Remove the '0x' prefix if present and convert hex to decimal
+    # Perform the curl request and check if it was successful
+    local response=$(curl -s -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' -H "Content-Type: application/json" $rpc_url)
+    local success=$?
+
+    # Check if curl command was successful (exit code 0)
+    if [ $success -ne 0 ]; then
+        echo "Error: Failed to fetch chain ID from RPC URL: $rpc_url"
+        return 1
+    fi
+
+    # Extract the result and handle the case where no result is found
+    local chain_id_hex=$(echo "$response" | jq -r '.result')
+    if [ "$chain_id_hex" = "null" ] || [ -z "$chain_id_hex" ]; then
+        echo "Error: No valid chain ID returned from the RPC URL: $rpc_url"
+        return 1
+    fi
+
+    # Remove the '0x' prefix if present and convert hex to decimal
     local chain_id_decimal=$(echo "$chain_id_hex" | sed 's/0x//')
     echo "$((16#$chain_id_decimal))"
 }
