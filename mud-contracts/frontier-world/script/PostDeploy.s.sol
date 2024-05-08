@@ -23,6 +23,11 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
+import { ModulesInitializationLibrary } from "../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
+
 import { EntityRecordModule } from "../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../src/modules/location/LocationModule.sol";
@@ -37,12 +42,18 @@ import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
 
 contract PostDeploy is Script {
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
+  using SmartObjectLib for SmartObjectLib.World;
   using SmartCharacterLib for SmartCharacterLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
 
+  IBaseWorld world;
+  SmartObjectLib.World smartObject;
+
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
-    IBaseWorld world = IBaseWorld(worldAddress);
+    world = IBaseWorld(worldAddress);
     string memory baseURI = vm.envString("BASE_URI");
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address deployer = vm.addr(deployerPrivateKey);
@@ -61,8 +72,31 @@ contract PostDeploy is Script {
     _installModule(world, deployer, new InventoryModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new Inventory()), address(new EphemeralInventory()));
     _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
+    _initModules();
     _initERC721(world, baseURI);
     vm.stopBroadcast();
+  }
+
+  function _initModules() internal {
+    world.initSOF();
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
+    world.initEntityRecord();
+    world.initLocation();
+    world.initSmartCharacter();
+    world.initSmartDeployable();
+    world.initInventory();
+    world.initSSU();
+
+    smartObject.registerEntity(SMART_CHARACTER_CLASS_ID, CLASS);
+    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
+    smartObject.registerEntity(SSU_CLASS_ID, CLASS);
+    world.associateClassIdToSmartCharacter(SMART_CHARACTER_CLASS_ID);
+    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
+    world.associateClassIdToSSU(SSU_CLASS_ID);
+
+    uint256 smartDeplFrontierClassId = world.registerAndAssociateTypeIdToSSU(SMART_DEPLOYABLE_FRONTIER_TYPE_ID);
+    console.log("Smart Deployable - classId: ", smartDeplFrontierClassId);
   }
 
   function _installPuppet(IBaseWorld world, address deployer) internal {

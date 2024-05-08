@@ -27,6 +27,11 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
+
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { InventoryItemTableData, InventoryItemTable } from "../../src/codegen/tables/InventoryItemTable.sol";
@@ -42,6 +47,8 @@ import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployabl
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
+import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
+import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
 
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
@@ -52,6 +59,7 @@ import { EphemeralInventory } from "../../src/modules/inventory/systems/Ephemera
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
+import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
@@ -141,19 +149,33 @@ contract VendingMachineTestSystem is System {
 
 contract InteractTest is Test {
   using Utils for bytes14;
+  using CoreUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
+  using SmartObjectLib for SmartObjectLib.World;
+  using EntityRecordLib for EntityRecordLib.World;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
+  SmartObjectLib.World smartObject;
+  EntityRecordLib.World entityRecord;
   InventoryLib.World inventory;
   SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
   IERC721Mintable erc721DeployableToken;
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
+  uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+  uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
+  uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
+  EntityRecordTableData entity1 = EntityRecordTableData({ typeId: 1, itemId: 2345, volume: 100 });
+  EntityRecordTableData entity2 = EntityRecordTableData({ typeId: 45, itemId: 1, volume: 50 });
+  EntityRecordTableData entity3 = EntityRecordTableData({ typeId: 46, itemId: 2, volume: 70 });
+
 
   VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
   bytes16 constant SYSTEM_NAME = bytes16("System");
@@ -171,11 +193,17 @@ contract InteractTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
     // install module dependancies
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
+    world.initEntityRecord();
+    world.initLocation();
+    entityRecord = EntityRecordLib.World(world, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
 
     erc721DeployableToken = registerERC721(
       world,
@@ -194,6 +222,10 @@ contract InteractTest is Test {
         address(deployableModule)
       );
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
+    world.initSmartDeployable();
+
+    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
+    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 
@@ -202,6 +234,7 @@ contract InteractTest is Test {
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
     world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+    world.initInventory();
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
     // Vending Machine registration
@@ -210,36 +243,7 @@ contract InteractTest is Test {
     // Register system's functions
     world.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactHandler(uint256, address, uint256)");
 
-    //Mock Smart Storage Unit data
-    EntityRecordTableData memory entity1 = EntityRecordTableData({ typeId: 1, itemId: 2345, volume: 100 });
-    EntityRecordTableData memory entity2 = EntityRecordTableData({ typeId: 45, itemId: 1, volume: 50 });
-    EntityRecordTableData memory entity3 = EntityRecordTableData({ typeId: 46, itemId: 2, volume: 70 });
-
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-    uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-
-    EntityRecordTable.set(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      smartObjectId,
-      entity1.itemId,
-      entity1.typeId,
-      entity1.volume
-    );
-    EntityRecordTable.set(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      itemObjectId1,
-      entity2.itemId,
-      entity2.typeId,
-      entity2.volume
-    );
-    EntityRecordTable.set(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      itemObjectId2,
-      entity3.itemId,
-      entity3.typeId,
-      entity3.volume
-    );
+    _createMockItems();
     uint256 storageCapacity = 5000;
     address inventoryOwner = address(1);
     address ephItemOwner = address(0);
@@ -260,6 +264,37 @@ contract InteractTest is Test {
 
     inventory.depositToInventory(smartObjectId, invItems);
     inventory.depositToEphemeralInventory(smartObjectId, inventoryOwner, ephInvItems);
+  }
+
+  function _createMockItems() internal {
+    //Mock Smart Storage Unit data
+
+    smartObject.registerEntity(smartObjectId, OBJECT);
+    world.associateEntityRecord(smartObjectId);
+    world.associateInventory(smartObjectId);
+    smartObject.registerEntity(itemObjectId1, OBJECT);
+    world.associateEntityRecord(itemObjectId1);
+    smartObject.registerEntity(itemObjectId2, OBJECT);
+    world.associateEntityRecord(itemObjectId2);
+
+    entityRecord.createEntityRecord(
+      smartObjectId,
+      entity1.itemId,
+      entity1.typeId,
+      entity1.volume
+    );
+    entityRecord.createEntityRecord(
+      itemObjectId1,
+      entity2.itemId,
+      entity2.typeId,
+      entity2.volume
+    );
+    entityRecord.createEntityRecord(
+      itemObjectId2,
+      entity3.itemId,
+      entity3.typeId,
+      entity3.volume
+    );
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -285,9 +320,6 @@ contract InteractTest is Test {
   }
 
   function testInteractHandler() public {
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-    uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
     address inventoryOwner = address(1);
     address ephItemOwner = address(0);
     uint256 quantity = 2;

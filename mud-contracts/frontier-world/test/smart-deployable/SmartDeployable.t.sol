@@ -23,6 +23,7 @@ import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 
 import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eve/common-constants/src/constants.sol";
 
+import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { State, SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
@@ -48,10 +49,12 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../src/code
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../src/codegen/tables/DeployableFuelBalance.sol";
 import { LocationTable, LocationTableData } from "../../src/codegen/tables/LocationTable.sol";
+import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
 
 import { FUEL_DECIMALS } from "../../src/modules/smart-deployable/constants.sol";
 
 contract smartDeployableTest is Test {
+  using CoreUtils for bytes14;
   using Utils for bytes14;
   using LocationUtils for bytes14;
   using ModulesInitializationLibrary for IBaseWorld;
@@ -133,7 +136,7 @@ contract smartDeployableTest is Test {
     smartDeployable.globalOffline();
     smartDeployable.globalOnline();
 
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
     vm.assume(fuelMaxCapacity != 0);
@@ -145,7 +148,6 @@ contract smartDeployableTest is Test {
     });
     vm.assume(smartObjectData.owner != address(0));
 
-    // Tagging that entityId as a "SmartDeployable" class
     smartObject.registerEntity(entityId, OBJECT);
 
     smartDeployable.registerDeployable(
@@ -182,7 +184,7 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
     testRegisterDeployable(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
 
     smartDeployable.anchor(entityId, location);
@@ -202,7 +204,7 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
 
     testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     vm.assume(fuelUnitVolume < type(uint64).max / 2);
@@ -223,7 +225,7 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
 
     testBringOnline(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.bringOffline(entityId);
@@ -241,7 +243,7 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
 
     testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.unanchor(entityId);
@@ -259,7 +261,7 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
 
     testUnanchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.destroyDeployable(entityId);
@@ -292,7 +294,7 @@ contract smartDeployableTest is Test {
     LocationTableData memory location,
     uint256 fuelUnitAmount
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
     vm.assume(fuelUnitAmount != 0);
     vm.assume(fuelUnitAmount < type(uint64).max);
     vm.assume(fuelUnitVolume < type(uint64).max);
@@ -430,7 +432,7 @@ contract smartDeployableTest is Test {
     uint256 globalOfflineDuration,
     uint256 timeElapsedAfterOffline
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
     vm.assume(fuelUnitAmount < type(uint32).max);
     vm.assume(fuelUnitVolume < type(uint128).max);
     vm.assume(fuelConsumptionPerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision

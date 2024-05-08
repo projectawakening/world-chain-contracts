@@ -290,12 +290,13 @@ library ModulesInitializationLibrary {
     IBaseWorld world,
     uint256 frontierTypeId
   ) internal returns (uint256 classId) {
-    uint256[] memory moduleIds = new uint256[](5);
+    uint256[] memory moduleIds = new uint256[](6);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
     moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
     moduleIds[2] = _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME);
     moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
-    moduleIds[3] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
+    moduleIds[4] = _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME);
+    moduleIds[5] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
     classId = _typeIdToClassId(frontierTypeId);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(classId, CLASS);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
@@ -308,12 +309,13 @@ library ModulesInitializationLibrary {
    * @param classId we want to associate SSU modules and its dependencies to
    */
   function associateClassIdToSSU(IBaseWorld world, uint256 classId) internal {
-    uint256[] memory moduleIds = new uint256[](5);
+    uint256[] memory moduleIds = new uint256[](6);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
     moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
     moduleIds[2] = _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME);
     moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
-    moduleIds[3] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
+    moduleIds[4] = _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME);
+    moduleIds[5] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 

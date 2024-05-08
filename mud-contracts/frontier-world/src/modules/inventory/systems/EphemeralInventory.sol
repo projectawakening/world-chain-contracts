@@ -76,7 +76,7 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address inventoryOwner,
     uint256 ephemeralStorageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
@@ -100,7 +100,12 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address inventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
+  )
+    public
+    onlyAssociatedModule(smartObjectId, _systemId())
+    hookable(smartObjectId, _systemId())
+    onlyOnline(smartObjectId)
+  {
     uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
       _namespace().ephemeralInventoryTableId(),
       smartObjectId,
@@ -115,11 +120,10 @@ contract EphemeralInventory is EveSystem {
 
     for (uint256 i = 0; i < itemsLength; i++) {
       //Revert if the items to deposit is not created on-chain
-      EntityRecordTableData memory entityRecord = EntityRecordTable.get(
+      if (EntityRecordTable.get(
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
         items[i].inventoryItemId
-      );
-      if (entityRecord.itemId == 0) {
+      ).itemId == 0) {
         revert IInventoryErrors.Inventory_InvalidItem(
           "InventoryEphemeralSystem: item is not created on-chain",
           items[i].typeId
@@ -147,7 +151,12 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address inventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
+  )
+    public
+    onlyAssociatedModule(smartObjectId, _systemId())
+    hookable(smartObjectId, _systemId())
+    beyondAnchored(smartObjectId)
+  {
     uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
       _namespace().ephemeralInventoryTableId(),
       smartObjectId,
@@ -177,7 +186,12 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address owner,
     bytes memory interactionParams
-  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
+  )
+    public
+    onlyAssociatedModule(smartObjectId, _systemId())
+    hookable(smartObjectId, _systemId())
+    onlyOnline(smartObjectId)
+  {
     //Function for external hook implementation
   }
 

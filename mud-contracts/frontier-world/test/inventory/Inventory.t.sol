@@ -24,6 +24,13 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
+import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
+
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { InventoryTable } from "../../src/codegen/tables/InventoryTable.sol";
@@ -39,6 +46,7 @@ import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Util
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 
+import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
@@ -59,13 +67,20 @@ import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 contract InventoryTest is Test {
   using Utils for bytes14;
+  using CoreUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
+  using SmartObjectLib for SmartObjectLib.World;
+  using EntityRecordLib for EntityRecordLib.World;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
   using SmartDeployableLib for SmartDeployableLib.World;
 
   IBaseWorld world;
+  SmartObjectLib.World smartObject;
+  EntityRecordLib.World entityRecord;
   InventoryLib.World inventory;
   SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
@@ -84,11 +99,18 @@ contract InventoryTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
+
     // install module dependancies
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
+    world.initEntityRecord();
+    world.initLocation();
+    entityRecord = EntityRecordLib.World(world, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
 
     erc721DeployableToken = registerERC721(
       world,
@@ -107,6 +129,10 @@ contract InventoryTest is Test {
         address(deployableModule)
       );
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
+    world.initSmartDeployable();
+
+    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
+    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 
@@ -115,12 +141,24 @@ contract InventoryTest is Test {
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
     world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+    world.initInventory();
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
     //Mock Item creation
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
+    _createMockItems();
+  }
+
+  function _createMockItems() internal {
+    //Mock Item creation
+    smartObject.registerEntity(4235, OBJECT);
+    world.associateEntityRecord(4235);
+    entityRecord.createEntityRecord(4235, 4235, 12, 100);
+    smartObject.registerEntity(4236, OBJECT);
+    world.associateEntityRecord(4236);
+    entityRecord.createEntityRecord(4236, 4236, 12, 200);
+    smartObject.registerEntity(4237, OBJECT);
+    world.associateEntityRecord(4237);
+    entityRecord.createEntityRecord(4237, 4237, 12, 150);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -138,8 +176,11 @@ contract InventoryTest is Test {
   }
 
   function testSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0);
+    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
     vm.assume(storageCapacity != 0);
+
+    smartObject.registerEntity(smartObjectId, OBJECT);
+    world.associateInventory(smartObjectId);
 
     DeployableState.setState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -151,7 +192,11 @@ contract InventoryTest is Test {
   }
 
   function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
+    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
     vm.assume(storageCapacity == 0);
+
+    smartObject.registerEntity(smartObjectId, OBJECT);
+    world.associateInventory(smartObjectId);
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidCapacity.selector,
@@ -162,7 +207,7 @@ contract InventoryTest is Test {
   }
 
   function testDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0);
+    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
     vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
@@ -194,7 +239,7 @@ contract InventoryTest is Test {
   }
 
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0);
+    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);
