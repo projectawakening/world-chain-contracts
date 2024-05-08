@@ -95,7 +95,10 @@ contract SmartStorageUnit is EveSystem {
    * @param smartObjectId The smart object id
    * @param items The item to store in a inventory
    */
-  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) public onlyAssociatedModule(smartObjectId, _systemId()) {
+  function createAndDepositItemsToInventory(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) {
     for (uint256 i = 0; i < items.length; i++) {
       //Check if the item exists on-chain if not Create entityRecord
       _entityRecordLib().createEntityRecord(

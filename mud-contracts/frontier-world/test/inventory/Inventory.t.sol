@@ -176,7 +176,10 @@ contract InventoryTest is Test {
   }
 
   function testSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     vm.assume(storageCapacity != 0);
 
     smartObject.registerEntity(smartObjectId, OBJECT);
@@ -192,7 +195,10 @@ contract InventoryTest is Test {
   }
 
   function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     vm.assume(storageCapacity == 0);
 
     smartObject.registerEntity(smartObjectId, OBJECT);
@@ -207,7 +213,10 @@ contract InventoryTest is Test {
   }
 
   function testDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
@@ -239,7 +248,10 @@ contract InventoryTest is Test {
   }
 
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);

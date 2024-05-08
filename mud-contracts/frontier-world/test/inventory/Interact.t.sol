@@ -176,7 +176,6 @@ contract InteractTest is Test {
   EntityRecordTableData entity2 = EntityRecordTableData({ typeId: 45, itemId: 1, volume: 50 });
   EntityRecordTableData entity3 = EntityRecordTableData({ typeId: 46, itemId: 2, volume: 70 });
 
-
   VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
   bytes16 constant SYSTEM_NAME = bytes16("System");
   ResourceId constant VENDING_MACHINE_SYSTEM_ID =
@@ -277,24 +276,9 @@ contract InteractTest is Test {
     smartObject.registerEntity(itemObjectId2, OBJECT);
     world.associateEntityRecord(itemObjectId2);
 
-    entityRecord.createEntityRecord(
-      smartObjectId,
-      entity1.itemId,
-      entity1.typeId,
-      entity1.volume
-    );
-    entityRecord.createEntityRecord(
-      itemObjectId1,
-      entity2.itemId,
-      entity2.typeId,
-      entity2.volume
-    );
-    entityRecord.createEntityRecord(
-      itemObjectId2,
-      entity3.itemId,
-      entity3.typeId,
-      entity3.volume
-    );
+    entityRecord.createEntityRecord(smartObjectId, entity1.itemId, entity1.typeId, entity1.volume);
+    entityRecord.createEntityRecord(itemObjectId1, entity2.itemId, entity2.typeId, entity2.volume);
+    entityRecord.createEntityRecord(itemObjectId2, entity3.itemId, entity3.typeId, entity3.volume);
   }
 
   // helper function to guard against multiple module registrations on the same namespace

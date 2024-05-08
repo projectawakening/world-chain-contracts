@@ -136,7 +136,9 @@ contract smartDeployableTest is Test {
     smartDeployable.globalOffline();
     smartDeployable.globalOnline();
 
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
     vm.assume(fuelMaxCapacity != 0);
@@ -184,7 +186,9 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     testRegisterDeployable(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
 
     smartDeployable.anchor(entityId, location);
@@ -204,7 +208,9 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
 
     testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     vm.assume(fuelUnitVolume < type(uint64).max / 2);
@@ -225,7 +231,9 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
 
     testBringOnline(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.bringOffline(entityId);
@@ -243,7 +251,9 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
 
     testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.unanchor(entityId);
@@ -261,7 +271,9 @@ contract smartDeployableTest is Test {
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
 
     testUnanchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.destroyDeployable(entityId);
@@ -294,7 +306,9 @@ contract smartDeployableTest is Test {
     LocationTableData memory location,
     uint256 fuelUnitAmount
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(fuelUnitAmount != 0);
     vm.assume(fuelUnitAmount < type(uint64).max);
     vm.assume(fuelUnitVolume < type(uint64).max);
@@ -432,7 +446,9 @@ contract smartDeployableTest is Test {
     uint256 globalOfflineDuration,
     uint256 timeElapsedAfterOffline
   ) public {
-    vm.assume(entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId));
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(fuelUnitAmount < type(uint32).max);
     vm.assume(fuelUnitVolume < type(uint128).max);
     vm.assume(fuelConsumptionPerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision

@@ -120,10 +120,11 @@ contract EphemeralInventory is EveSystem {
 
     for (uint256 i = 0; i < itemsLength; i++) {
       //Revert if the items to deposit is not created on-chain
-      if (EntityRecordTable.get(
-        ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-        items[i].inventoryItemId
-      ).itemId == 0) {
+      if (
+        EntityRecordTable
+          .get(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), items[i].inventoryItemId)
+          .itemId == 0
+      ) {
         revert IInventoryErrors.Inventory_InvalidItem(
           "InventoryEphemeralSystem: item is not created on-chain",
           items[i].typeId

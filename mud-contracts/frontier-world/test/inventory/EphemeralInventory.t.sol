@@ -176,7 +176,10 @@ contract EphemeralInventoryTest is Test {
   }
 
   function testSetEphemeralInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     vm.assume(storageCapacity != 0);
     vm.assume(owner != address(0));
 
@@ -201,7 +204,10 @@ contract EphemeralInventoryTest is Test {
 
   function testRevertSetInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
     vm.assume(storageCapacity == 0);
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
 
     smartObject.registerEntity(smartObjectId, OBJECT);
     world.associateInventory(smartObjectId);
@@ -216,7 +222,10 @@ contract EphemeralInventoryTest is Test {
   }
 
   function testDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
-    vm.assume(smartObjectId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId));
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
 
