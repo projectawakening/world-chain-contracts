@@ -22,6 +22,8 @@ import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
 import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
 
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
@@ -33,10 +35,14 @@ import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../
 contract EntityRecordTest is Test {
   using Utils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   EntityRecordLib.World entityRecord;
+  SmartObjectLib.World smartObject;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -49,12 +55,13 @@ contract EntityRecordTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    SOFInitializationLibrary.initSOF(world);
+    world.initSOF();
 
     _installModule(new EntityRecordModule(), DEPLOYMENT_NAMESPACE);
-    ModulesInitializationLibrary.initEntityRecord(world);
+    world.initEntityRecord();
 
     entityRecord = EntityRecordLib.World(world, DEPLOYMENT_NAMESPACE);
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -74,6 +81,10 @@ contract EntityRecordTest is Test {
   function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
     EntityRecordTableData memory data = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume });
+
+    // SOF entity registration
+    smartObject.registerEntity(entityId, OBJECT);
+    world.associateEntityRecord(entityId);
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(
@@ -101,6 +112,10 @@ contract EntityRecordTest is Test {
       dappURL: dappURL,
       description: description
     });
+
+    // SOF entity registration
+    smartObject.registerEntity(entityId, OBJECT);
+    world.associateEntityRecord(entityId);
 
     entityRecord.createEntityRecordOffchain(entityId, name, dappURL, description);
     EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(

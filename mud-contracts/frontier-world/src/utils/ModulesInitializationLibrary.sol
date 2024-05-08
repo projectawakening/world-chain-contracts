@@ -251,7 +251,7 @@ library ModulesInitializationLibrary {
    * @param frontierTypeId the frontier typeId we want to create a SOF class for
    * @return classId created
    */
-  function registerAndAssociateTypeIdToDeployable(
+  function registerAndAssociateTypeIdToSmartDeployable(
     IBaseWorld world,
     uint256 frontierTypeId
   ) internal returns (uint256 classId) {
@@ -271,7 +271,7 @@ library ModulesInitializationLibrary {
    * @param world interface
    * @param classId we want to associate Deployable modules and its dependencies to
    */
-  function associateClassIdToDeployable(IBaseWorld world, uint256 classId) internal {
+  function associateClassIdToSmartDeployable(IBaseWorld world, uint256 classId) internal {
     uint256[] memory moduleIds = new uint256[](4);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
     moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);

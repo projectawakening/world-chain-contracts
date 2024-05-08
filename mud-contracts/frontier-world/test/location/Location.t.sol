@@ -14,13 +14,16 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { LOCATION_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { LOCATION_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
 
 import { Utils } from "../../src/modules/location/Utils.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
@@ -31,10 +34,14 @@ import { LocationTable, LocationTableData } from "../../src/codegen/tables/Locat
 contract LocationTest is Test {
   using Utils for bytes14;
   using LocationLib for LocationLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   LocationLib.World location;
+  SmartObjectLib.World smartObject;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -47,10 +54,13 @@ contract LocationTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
 
     _installModule(new LocationModule(), DEPLOYMENT_NAMESPACE);
+    world.initLocation();
 
     location = LocationLib.World(world, DEPLOYMENT_NAMESPACE);
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -70,6 +80,10 @@ contract LocationTest is Test {
   function testCreateLocation(uint256 entityId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(entityId != 0);
     LocationTableData memory locationData = LocationTableData({ solarSystemId: solarSystemId, x: x, y: y, z: z });
+
+    // SOF entity registration
+    smartObject.registerEntity(entityId, OBJECT);
+    world.associateLocation(entityId);
 
     location.saveLocation(entityId, locationData);
 
