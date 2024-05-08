@@ -149,13 +149,18 @@ contract Inventory is EveSystem {
         usedCapacity + reqCapacity
       );
     }
+    uint256 quantity = InventoryItemTable.getQuantity(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId
+    );
 
     InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
     InventoryItemTable.set(
       _namespace().inventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.quantity,
+      quantity + item.quantity,
       index
     );
 

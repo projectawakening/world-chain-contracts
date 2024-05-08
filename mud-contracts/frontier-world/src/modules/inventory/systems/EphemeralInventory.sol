@@ -203,6 +203,13 @@ contract EphemeralInventory is EveSystem {
       );
     }
 
+    uint256 quantity = EphemeralInvItemTable.getQuantity(
+      _namespace().ephemeralInventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      item.owner
+    );
+
     EphemeralInventoryTable.pushItems(
       _namespace().ephemeralInventoryTableId(),
       smartObjectId,
@@ -214,7 +221,7 @@ contract EphemeralInventory is EveSystem {
       smartObjectId,
       item.inventoryItemId,
       item.owner,
-      item.quantity,
+      quantity + item.quantity,
       index
     );
     return usedCapacity + reqCapacity;

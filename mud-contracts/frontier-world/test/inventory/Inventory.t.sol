@@ -193,6 +193,50 @@ contract InventoryTest is Test {
     assert(capacityBeforeDeposit < capacityAfterDeposit);
   }
 
+  function testInventoryItemQuantityIncrease(uint256 smartObjectId, uint256 storageCapacity) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
+    inventory.depositToInventory(smartObjectId, items);
+
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, items[0].quantity);
+    assertEq(inventoryItem2.quantity, items[1].quantity);
+
+    //check the increase in quantity
+    inventory.depositToInventory(smartObjectId, items);
+    inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, items[0].quantity * 2);
+    assertEq(inventoryItem2.quantity, items[1].quantity * 2);
+  }
+
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);

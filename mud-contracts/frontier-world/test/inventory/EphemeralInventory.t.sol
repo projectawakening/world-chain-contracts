@@ -21,7 +21,7 @@ import { DeployableState, DeployableStateData } from "../../src/codegen/tables/D
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { EphemeralInventoryTable } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
 import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
-
+import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
@@ -216,6 +216,49 @@ contract EphemeralInventoryTest is Test {
     assert(capacityBeforeDeposit < capacityAfterDeposit);
   }
 
+  function testEphemeralInventoryItemQuantityIncrease(
+    uint256 smartObjectId,
+    uint256 storageCapacity,
+    address owner
+  ) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(owner != address(0));
+    vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+
+    testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
+
+    //check the increase in quantity
+    ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
+    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, items[0].quantity * 2);
+    assertEq(inventoryItem2.quantity, items[1].quantity * 2);
+    assertEq(inventoryItem3.quantity, items[2].quantity * 2);
+  }
+
   function testRevertDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
     vm.assume(smartObjectId != 0);
     vm.assume(owner != address(0));
@@ -273,6 +316,29 @@ contract EphemeralInventoryTest is Test {
     assertEq(existingItems.length, 2);
     assertEq(existingItems[0], items[0].inventoryItemId);
     assertEq(existingItems[1], items[2].inventoryItemId);
+
+    //Check weather the items quantity is reduced
+    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, 2);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 1);
   }
 
   function testRevertWithdrawFromEphemeralInventory(
