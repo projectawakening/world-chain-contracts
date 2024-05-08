@@ -107,7 +107,7 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_NAMESPACE);
     world.initStaticData();
-    
+
     // Register a new ERC721 token
     token = registerERC721(
       world,

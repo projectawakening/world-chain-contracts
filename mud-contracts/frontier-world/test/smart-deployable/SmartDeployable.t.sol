@@ -21,7 +21,7 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID} from "@eve/common-constants/src/constants.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
@@ -96,7 +96,7 @@ contract smartDeployableTest is Test {
     );
 
     // install SmartDeployableModule
-    SmartDeployableModule deployableModule = new SmartDeployableModule();    
+    SmartDeployableModule deployableModule = new SmartDeployableModule();
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(deployableModule));
     world.installModule(deployableModule, abi.encode(DEPLOYMENT_NAMESPACE, new SmartDeployable()));
@@ -132,7 +132,7 @@ contract smartDeployableTest is Test {
     smartDeployable.globalOnline();
     smartDeployable.globalOffline();
     smartDeployable.globalOnline();
-    
+
     vm.assume(entityId != 0);
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
