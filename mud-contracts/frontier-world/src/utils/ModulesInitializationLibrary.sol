@@ -25,6 +25,7 @@ import { Utils as SSUUtils } from "../modules/smart-storage-unit/Utils.sol";
 import { SMART_STORAGE_MODULE_NAME } from "../modules/smart-storage-unit/constants.sol";
 
 import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS } from "@eve/frontier-smart-object-framework/src/constants.sol";
 
 library ModulesInitializationLibrary {
   using SmartObjectLib for SmartObjectLib.World;
@@ -36,6 +37,12 @@ library ModulesInitializationLibrary {
   using InventoryUtils for bytes14;
   using SSUUtils for bytes14;
 
+  /**
+   * @notice registers the Entity Record module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * or both
+   * @param world interface
+   */
   function initEntityRecord(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME),
@@ -44,6 +51,14 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Entity Record module
+   * @dev entity needs to be registered first, and Entity Record module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above.
+   * Ideally, only use this on Object entities, not Classes
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateEntityRecord(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -51,6 +66,11 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice registers the Static Data module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
   function initStaticData(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME),
@@ -59,6 +79,14 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Static Data module
+   * @dev entity needs to be registered first, and StaticData module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateStaticData(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -66,6 +94,11 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice registers the Location module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
   function initLocation(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME),
@@ -74,6 +107,14 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Location module
+   * @dev entity needs to be registered first, and Location module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateLocation(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -81,6 +122,11 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice registers the Smart Character module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
   function initSmartCharacter(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_MODULE_NAME),
@@ -89,6 +135,16 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Smart Character module
+   * @dev entity needs to be registered first, and Smart Character module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * Note: this only associates the Smart Character module; to fully work, the entity needs to be also
+   * associated to Entity Record and Static Data modules.
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateSmartCharacter(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -96,6 +152,11 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice registers the Smart Deployable module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
   function initSmartDeployable(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME),
@@ -104,6 +165,16 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Smart Deployable module
+   * @dev entity needs to be registered first, and Deployable module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * Note: this only associates the Smart Character module; to fully work, the entity needs to be also
+   * associated to Entity Record, Static Data and Location modules.
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateSmartDeployable(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -111,6 +182,11 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice registers the Inventory module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
   function initInventory(IBaseWorld world) internal {
     ResourceId[] memory systemIds = new ResourceId[](2);
     systemIds[0] = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
@@ -122,6 +198,16 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Inventory module
+   * @dev entity needs to be registered first, and Inventory module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * Note: this only associates the Inventory module; to fully work, the entity needs to be also
+   * associated to all modules related to Smart Deployables.
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateInventory(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -129,6 +215,11 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice registers the Smart Storage Unit module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
   function initSSU(IBaseWorld world) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
       _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME),
@@ -137,6 +228,16 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice associates an entity to the Smart Storage Unit module
+   * @dev entity needs to be registered first, and Smart Storage Unit module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * Note: this only associates the Smart Storage Unit module; to fully work, the entity needs to be also
+   * associated to all modules related to Smart Deployables and Inventory.
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
   function associateSSU(IBaseWorld world, uint256 entityId) internal {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
@@ -144,6 +245,12 @@ library ModulesInitializationLibrary {
     );
   }
 
+  /**
+   * @notice creates a class from a given Frontier Type ID and associates all modules related to Smart Deployables to it
+   * @param world interface
+   * @param frontierTypeId the frontier typeId we want to create a SOF class for
+   * @return classId created
+   */
   function registerAndAssociateTypeIdToDeployable(
     IBaseWorld world,
     uint256 frontierTypeId
@@ -154,9 +261,16 @@ library ModulesInitializationLibrary {
     moduleIds[2] = _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME);
     moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
     classId = _typeIdToClassId(frontierTypeId);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(classId, CLASS);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 
+  /**
+   * @notice associates all modules related to Smart Deployables to a classId
+   * @dev the class entity needs to be registered in the SOF prior to calling this
+   * @param world interface
+   * @param classId we want to associate Deployable modules and its dependencies to
+   */
   function associateClassIdToDeployable(IBaseWorld world, uint256 classId) internal {
     uint256[] memory moduleIds = new uint256[](4);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
@@ -166,6 +280,12 @@ library ModulesInitializationLibrary {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 
+  /**
+   * @notice creates a class from a given Frontier Type ID and associates all modules related to Smart Storage Unit to it
+   * @param world interface
+   * @param frontierTypeId the frontier typeId we want to create a SOF class for
+   * @return classId created
+   */
   function registerAndAssociateTypeIdToSSU(
     IBaseWorld world,
     uint256 frontierTypeId
@@ -177,9 +297,16 @@ library ModulesInitializationLibrary {
     moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
     moduleIds[3] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
     classId = _typeIdToClassId(frontierTypeId);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(classId, CLASS);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 
+  /**
+   * @notice associates all modules related to Smart Storage Unit to a classId
+   * @dev the class entity needs to be registered in the SOF prior to calling this
+   * @param world interface
+   * @param classId we want to associate SSU modules and its dependencies to
+   */
   function associateClassIdToSSU(IBaseWorld world, uint256 classId) internal {
     uint256[] memory moduleIds = new uint256[](5);
     moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
@@ -190,14 +317,63 @@ library ModulesInitializationLibrary {
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 
+  /**
+   * @notice creates a class from a given Frontier Type ID and associates all modules related to Smart Character to it
+   * @param world interface
+   * @param frontierTypeId the frontier typeId we want to create a SOF class for
+   * @return classId created
+   */
+  function registerAndAssociateTypeIdToSmartCharacter(
+    IBaseWorld world,
+    uint256 frontierTypeId
+  ) internal returns (uint256 classId) {
+    uint256[] memory moduleIds = new uint256[](3);
+    moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
+    moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
+    moduleIds[2] = _moduleId(SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_MODULE_NAME);
+    classId = _typeIdToClassId(frontierTypeId);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(classId, CLASS);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
+  }
+
+  /**
+   * @notice associates all modules related to Smart Character to a classId
+   * @dev the class entity needs to be registered in the SOF prior to calling this
+   * @param world interface
+   * @param classId we want to associate Smart Character modules and its dependencies to
+   */
+  function associateClassIdToSmartCharacter(IBaseWorld world, uint256 classId) internal {
+    uint256[] memory moduleIds = new uint256[](3);
+    moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
+    moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
+    moduleIds[2] = _moduleId(SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_MODULE_NAME);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
+  }
+
+  /**
+   * @notice helper function that returns a valid Library instance to call SOF methods
+   * @param world interface
+   * @param namespace where the SOF has been deployed
+   * @return a `SmartObjectLib.World` structure
+   */
   function _sofLib(IBaseWorld world, bytes14 namespace) internal pure returns (SmartObjectLib.World memory) {
     return SmartObjectLib.World({ namespace: namespace, iface: world });
   }
 
+  /**
+   * @notice helper function to calculate SOF moduleIds
+   * @param moduleNamespace the namespace that module is deployed to
+   * @param moduleName name of the module
+   * @return the resourceId of that module, unwrapped into an uint256 variable
+   */
   function _moduleId(bytes14 moduleNamespace, bytes16 moduleName) internal pure returns (uint256) {
     return uint256(ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, moduleNamespace, moduleName)));
   }
 
+  /**
+   * @notice returns a consumable SOF classId, corresponding to `uint256(keccak256("item:{frontierTypeId}"))`
+   * @param frontierTypeId the value of the frontier's entity type id
+   */
   function _typeIdToClassId(uint256 frontierTypeId) internal pure returns (uint256) {
     return uint256(keccak256(abi.encodePacked("item:", _uintToStr(frontierTypeId))));
   }

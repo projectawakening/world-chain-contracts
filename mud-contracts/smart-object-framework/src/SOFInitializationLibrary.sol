@@ -19,6 +19,12 @@ library SOFInitializationLibrary {
   using SmartObjectLib for SmartObjectLib.World;
   using SOFUtils for bytes14;
 
+  /**
+   * @notice registers and initialize the Smart Object Framework module. `CLASS` and `OBJECT` entityTypeIds are initialized too
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * or both
+   * @param world interface
+   */
   function initSOF(IBaseWorld world) internal {
     // TODO: decouple this
     // we can just forward this as-is since ModuleCore already handles re-registration errors
