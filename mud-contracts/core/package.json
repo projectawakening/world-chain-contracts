@@ -23,7 +23,9 @@
     "@latticexyz/schema-type": "transaction-context",
     "@latticexyz/store": "transaction-context",
     "@latticexyz/world": "transaction-context",
-    "@latticexyz/world-modules": "transaction-context"
+    "@latticexyz/world-modules": "transaction-context",
+    "@eve/frontier-smart-object-framework": "0.0.0",
+    "@eve/common-constants": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
