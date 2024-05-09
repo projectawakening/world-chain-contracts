@@ -21,6 +21,7 @@
     "SMART_DEPLOYABLE": "SmartDeployable",
     "SMART_STORAGE_UNIT": "SmartStorageUnit",
     "INVENTORY": "Inventory",
-    "EPHEMERAL_INVENTORY": "EphemeralInv"
+    "EPHEMERAL_INVENTORY": "EphemeralInv",
+    "INVENTORY_INTERACT": "InventoryInterac"
   }
 }

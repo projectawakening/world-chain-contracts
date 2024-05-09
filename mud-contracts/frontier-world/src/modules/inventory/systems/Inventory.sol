@@ -14,12 +14,12 @@ import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/table
 import { State } from "../../../codegen/common.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
+import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 
 import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
-import { IInventoryErrors } from "../IInventoryErrors.sol";
 
 contract Inventory is EveSystem {
   using Utils for bytes14;

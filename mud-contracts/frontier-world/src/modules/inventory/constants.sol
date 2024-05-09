@@ -13,6 +13,7 @@ ResourceId constant INVENTORY_NAMESPACE_ID = ResourceId.wrap(
 
 bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
+bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
 
 bytes16 constant INVENTORY_TABLE_NAME = "InventoryTable";
 bytes16 constant INVENTORY_ITEM_TABLE_NAME = "InventoryItemTab";

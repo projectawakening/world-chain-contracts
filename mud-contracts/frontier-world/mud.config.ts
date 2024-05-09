@@ -39,6 +39,10 @@ export default mudConfig({
       name: constants.systemName.EPHEMERAL_INVENTORY,
       openAccess: true,
     },
+    InventoryInteract: {
+      name: constants.systemName.INVENTORY_INTERACT,
+      openAccess: true,
+    }
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],

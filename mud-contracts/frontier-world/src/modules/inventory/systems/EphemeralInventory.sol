@@ -14,10 +14,10 @@ import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableS
 import { State } from "../../../codegen/common.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
+import { IInventoryErrors } from "../IInventoryErrors.sol";
+
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
-
-import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils } from "../Utils.sol";
 import { InventoryItem } from "../types.sol";
 
@@ -162,21 +162,6 @@ contract EphemeralInventory is EveSystem {
       ephemeralInventoryOwner,
       usedCapacity
     );
-  }
-
-  /**
-   * @notice Interact with the inventory
-   * @dev Function for external hook implementation
-   * @param smartObjectId The smart object id
-   * @param owner The owner of the inventory
-   * @param interactionParams The interaction data
-   */
-  function interact(
-    uint256 smartObjectId,
-    address owner,
-    bytes memory interactionParams
-  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
-    //Function for external hook implementation
   }
 
   function _systemId() internal view returns (ResourceId) {
