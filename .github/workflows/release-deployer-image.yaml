@@ -7,9 +7,6 @@ on:
     workflows: [Build]
     types:
       - completed
-  pull_request:
-    branches:
-      - "*"
   push:
     branches:
         - "*"
