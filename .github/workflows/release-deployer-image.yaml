@@ -51,7 +51,6 @@ jobs:
           context: .
           platforms: |
             linux/amd64
-          target: release-stage
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Generate artifact attestation
