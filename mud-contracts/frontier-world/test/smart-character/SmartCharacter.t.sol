@@ -108,7 +108,8 @@ contract SmartCharacterTest is Test {
     EntityRecordTableData memory entityRecordData = EntityRecordTableData({
       itemId: itemId,
       typeId: typeId,
-      volume: volume
+      volume: volume,
+      doesExists: true
     });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,

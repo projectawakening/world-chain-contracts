@@ -68,7 +68,12 @@ contract EntityRecordTest is Test {
 
   function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
-    EntityRecordTableData memory data = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume });
+    EntityRecordTableData memory data = EntityRecordTableData({
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      doesExists: true
+    });
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(

@@ -207,9 +207,24 @@ contract InteractTest is Test {
     world.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactHandler(uint256, address, uint256)");
 
     //Mock Smart Storage Unit data
-    EntityRecordTableData memory entity1 = EntityRecordTableData({ typeId: 1, itemId: 2345, volume: 100 });
-    EntityRecordTableData memory entity2 = EntityRecordTableData({ typeId: 45, itemId: 1, volume: 50 });
-    EntityRecordTableData memory entity3 = EntityRecordTableData({ typeId: 46, itemId: 2, volume: 70 });
+    EntityRecordTableData memory entity1 = EntityRecordTableData({
+      typeId: 1,
+      itemId: 2345,
+      volume: 100,
+      doesExists: true
+    });
+    EntityRecordTableData memory entity2 = EntityRecordTableData({
+      typeId: 45,
+      itemId: 1,
+      volume: 50,
+      doesExists: true
+    });
+    EntityRecordTableData memory entity3 = EntityRecordTableData({
+      typeId: 46,
+      itemId: 2,
+      volume: 70,
+      doesExists: true
+    });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
@@ -220,21 +235,24 @@ contract InteractTest is Test {
       smartObjectId,
       entity1.itemId,
       entity1.typeId,
-      entity1.volume
+      entity1.volume,
+      true
     );
     EntityRecordTable.set(
       ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
       itemObjectId1,
       entity2.itemId,
       entity2.typeId,
-      entity2.volume
+      entity2.volume,
+      true
     );
     EntityRecordTable.set(
       ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
       itemObjectId2,
       entity3.itemId,
       entity3.typeId,
-      entity3.volume
+      entity3.volume,
+      true
     );
     uint256 storageCapacity = 5000;
     address inventoryOwner = address(1);
