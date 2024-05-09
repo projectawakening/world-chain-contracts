@@ -112,12 +112,12 @@ contract SmartStorageUnit is EveSystem {
    * //TODO only server account can create items on-chain
    * //TODO Represent item as a ERC1155 asset with ownership on-chain
    * @param smartObjectId The smart object id
-   * @param inventoryOwner The owner of the inventory
+   * @param ephemeralInventoryOwner The owner of the inventory
    * @param items The item to store in a inventory
    */
   function createAndDepositItemsToEphemeralInventory(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public {
     //Check if the item exists on-chain if not Create entityRecord
@@ -131,7 +131,7 @@ contract SmartStorageUnit is EveSystem {
     }
     //Deposit item to the ephemeral inventory
     // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
-    _inventoryLib().depositToEphemeralInventory(smartObjectId, inventoryOwner, items);
+    _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
 
   /**

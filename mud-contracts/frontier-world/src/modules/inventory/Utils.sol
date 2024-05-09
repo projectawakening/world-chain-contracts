@@ -32,7 +32,16 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: INVENTORY_ITEM_TABLE_NAME });
   }
 
-  function ephemeralInventoryTableId(bytes14 namespace) internal pure returns (ResourceId) {
+  function ephemeralInvCapacityTableId(bytes14 namespace) internal pure returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: namespace,
+        name: EPHEMERAL_INVENTORY_CAPACITY_TABLE_NAME
+      });
+  }
+
+  function EphemeralInvTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: EPHEMERAL_INVENTORY_TABLE_NAME });
   }

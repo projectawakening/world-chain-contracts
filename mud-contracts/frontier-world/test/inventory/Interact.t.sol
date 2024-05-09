@@ -20,36 +20,26 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
-import "@eve/common-constants/src/constants.sol";
-
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
+import "@eve/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { InventoryItemTableData, InventoryItemTable } from "../../src/codegen/tables/InventoryItemTable.sol";
-import { EphemeralInventoryTable } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
-import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
+import { EphemeralInvTable } from "../../src/codegen/tables/EphemeralInvTable.sol";
+import { EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../src/codegen/tables/ItemTransferOffchainTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
-
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-
-import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
-import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
-import { State } from "../../src/modules/smart-deployable/types.sol";
-import { Utils } from "../../src/modules/inventory/Utils.sol";
-
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
-
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
-
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
@@ -58,8 +48,13 @@ import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartD
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
+import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
-import { InventoryItem } from "../../src/modules/inventory/types.sol";
+
+import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
+import { State } from "../../src/modules/smart-deployable/types.sol";
+import { Utils } from "../../src/modules/inventory/Utils.sol";
 
 contract VendingMachineTestSystem is System {
   using InventoryLib for InventoryLib.World;

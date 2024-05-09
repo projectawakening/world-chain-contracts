@@ -28,8 +28,9 @@ import { LocationTable, LocationTableData } from "../../src/codegen/tables/Locat
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { InventoryTable, InventoryTableData } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryItemTable, InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTable.sol";
-import { EphemeralInventoryTable, EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
+import { EphemeralInvTable, EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
+import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInvCapacityTable.sol";
 
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -210,7 +211,7 @@ contract SmartStorageUnitTest is Test {
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
-      owner: address(2),
+      ephemeralInventoryOwner: address(2),
       itemId: 12,
       typeId: 3,
       volume: 10,
@@ -244,7 +245,7 @@ contract SmartStorageUnitTest is Test {
     address inventoryOwner = address(1);
     items[0] = InventoryItem({
       inventoryItemId: 456,
-      owner: address(2),
+      ephemeralInventoryOwner: address(2),
       itemId: 45,
       typeId: 6,
       volume: 10,
@@ -252,21 +253,27 @@ contract SmartStorageUnitTest is Test {
     });
     smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, inventoryOwner, items);
 
-    EphemeralInventoryTableData memory ephemeralInventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
       smartObjectId,
       inventoryOwner
     );
 
     uint256 useCapacity = items[0].volume * items[0].quantity;
-    assertEq(ephemeralInventoryTableData.capacity, ephemeralStorageCapacity);
-    assertEq(ephemeralInventoryTableData.usedCapacity, useCapacity);
+    assertEq(
+      EphemeralInvCapacityTable.getCapacity(
+        INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvCapacityTableId(),
+        smartObjectId
+      ),
+      ephemeralStorageCapacity
+    );
+    assertEq(ephemeralInvTableData.usedCapacity, useCapacity);
 
     EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
-      items[0].owner
+      items[0].ephemeralInventoryOwner
     );
 
     assertEq(ephemeralInvItemTableData.quantity, items[0].quantity);

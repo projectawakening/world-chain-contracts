@@ -21,7 +21,7 @@ interface ISmartStorageUnit {
 
   function createAndDepositItemsToEphemeralInventory(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) external;
 

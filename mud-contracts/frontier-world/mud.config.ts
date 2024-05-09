@@ -245,28 +245,40 @@ export default mudConfig({
     },
     //EPHEMERAL INVENTORY MODULE
     /**
-     * Used to store the inventory details of a in-game smart storage unit
+     * Used to Store Ephemeral Capacity by smartObjectId
      */
-    EphemeralInventoryTable: {
+    EphemeralInvCapacityTable: {
       keySchema: {
         smartObjectId: "uint256",
-        owner: "address",
       },
       valueSchema: {
         capacity: "uint256",
+      },
+      tableIdArgument: true,
+    },
+    /**
+     * Used to store the ephemeral inventory details of a in-game smart storage unit
+     * Each user has a separate ephemeral inventory capacity 
+     */
+    EphemeralInvTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+        ephemeralInvOwner: "address",
+      },
+      valueSchema: {
         usedCapacity: "uint256",
         items: "uint256[]",
       },
       tableIdArgument: true,
     },
     /**
-     * Used to store the inventory items of a in-game smart storage unit
+     * Used to store the ephemeral inventory items details of a in-game smart storage unit
      */
     EphemeralInvItemTable: {
       keySchema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
-        owner: "address",
+        ephemeralInvItemOwner: "address",
       },
       valueSchema: {
         quantity: "uint256",
@@ -289,7 +301,7 @@ export default mudConfig({
         updatedAt: "uint256",
       },
       tableIdArgument: true,
-      offchainOnly: true,
+      // offchainOnly: true,
     },
 
     /************************

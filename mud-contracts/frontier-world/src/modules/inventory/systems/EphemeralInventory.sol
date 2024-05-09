@@ -5,9 +5,9 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
-import { EphemeralInventoryTable } from "../../../codegen/tables/EphemeralInventoryTable.sol";
-import { EphemeralInvItemTable } from "../../../codegen/tables/EphemeralInvItemTable.sol";
-import { EphemeralInvItemTableData } from "../../../codegen/tables/EphemeralInvItemTable.sol";
+import { EphemeralInvTable } from "../../../codegen/tables/EphemeralInvTable.sol";
+import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../../codegen/tables/EphemeralInvItemTable.sol";
+import { EphemeralInvCapacityTable } from "../../../codegen/tables/EphemeralInvCapacityTable.sol";
 import { DeployableState } from "../../../codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
@@ -69,21 +69,20 @@ contract EphemeralInventory is EveSystem {
    * @dev Set the ephemeral inventory capacity by smart storage unit id
    * //TODO Only owner of the smart storage unit can set the capacity
    * @param smartObjectId The smart storage unit id
-   * @param inventoryOwner The owner of the inventory
+   * @param ephemeralInventoryOwner The owner of the inventory
    * @param ephemeralStorageCapacity The storage capacity
    */
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     uint256 ephemeralStorageCapacity
   ) public hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
-    EphemeralInventoryTable.setCapacity(
-      _namespace().ephemeralInventoryTableId(),
+    EphemeralInvCapacityTable.setCapacity(
+      _namespace().ephemeralInvCapacityTableId(),
       smartObjectId,
-      inventoryOwner,
       ephemeralStorageCapacity
     );
   }
@@ -93,23 +92,22 @@ contract EphemeralInventory is EveSystem {
    * @dev Deposit items to the ephemeral inventory by smart storage unit id
    * //TODO msg.sender should be the item owner
    * @param smartObjectId The smart storage unit id
-   * @param inventoryOwner The owner of the inventory
+   * @param ephemeralInventoryOwner The owner of the inventory
    * @param items The items to deposit to the inventory
    */
   function depositToEphemeralInventory(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
-    uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
-      _namespace().ephemeralInventoryTableId(),
+    uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner
+      ephemeralInventoryOwner
     );
-    uint256 maxCapacity = EphemeralInventoryTable.getCapacity(
-      _namespace().ephemeralInventoryTableId(),
-      smartObjectId,
-      inventoryOwner
+    uint256 maxCapacity = EphemeralInvCapacityTable.getCapacity(
+      _namespace().ephemeralInvCapacityTableId(),
+      smartObjectId
     );
     uint256 itemsLength = items.length;
 
@@ -125,12 +123,12 @@ contract EphemeralInventory is EveSystem {
           items[i].typeId
         );
       }
-      usedCapacity = processItemDeposit(smartObjectId, inventoryOwner, items[i], usedCapacity, maxCapacity, i);
+      usedCapacity = processItemDeposit(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity, maxCapacity, i);
     }
-    EphemeralInventoryTable.setUsedCapacity(
-      _namespace().ephemeralInventoryTableId(),
+    EphemeralInvTable.setUsedCapacity(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner,
+      ephemeralInventoryOwner,
       usedCapacity
     );
   }
@@ -140,28 +138,28 @@ contract EphemeralInventory is EveSystem {
    * @dev Withdraw items from the ephemeral inventory by smart storage unit id
    * //TODO msg.sender should be the item owner
    * @param smartObjectId The smart storage unit id
-   * @param inventoryOwner The owner of the inventory
+   * @param ephemeralInventoryOwner The owner of the inventory
    * @param items The items to withdraw from the inventory
    */
   function withdrawFromEphemeralInventory(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
-    uint256 usedCapacity = EphemeralInventoryTable.getUsedCapacity(
-      _namespace().ephemeralInventoryTableId(),
+    uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner
+      ephemeralInventoryOwner
     );
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
-      usedCapacity = processItemWithdrawal(smartObjectId, inventoryOwner, items[i], usedCapacity);
+      usedCapacity = processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
     }
-    EphemeralInventoryTable.setUsedCapacity(
-      _namespace().ephemeralInventoryTableId(),
+    EphemeralInvTable.setUsedCapacity(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner,
+      ephemeralInventoryOwner,
       usedCapacity
     );
   }
@@ -187,7 +185,7 @@ contract EphemeralInventory is EveSystem {
 
   function processItemDeposit(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem memory item,
     uint256 usedCapacity,
     uint256 maxCapacity,
@@ -207,20 +205,20 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.owner
+      item.ephemeralInventoryOwner
     );
 
-    EphemeralInventoryTable.pushItems(
-      _namespace().ephemeralInventoryTableId(),
+    EphemeralInvTable.pushItems(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner,
+      ephemeralInventoryOwner,
       item.inventoryItemId
     );
     EphemeralInvItemTable.set(
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.owner,
+      item.ephemeralInventoryOwner,
       quantity + item.quantity,
       index
     );
@@ -229,7 +227,7 @@ contract EphemeralInventory is EveSystem {
 
   function processItemWithdrawal(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
@@ -237,11 +235,11 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.owner
+      item.ephemeralInventoryOwner
     );
 
     validateWithdrawal(item, itemData);
-    updateInventoryAfterWithdrawal(smartObjectId, inventoryOwner, item, itemData);
+    updateInventoryAfterWithdrawal(smartObjectId, ephemeralInventoryOwner, item, itemData);
 
     return usedCapacity - (item.volume * item.quantity);
   }
@@ -258,18 +256,18 @@ contract EphemeralInventory is EveSystem {
 
   function updateInventoryAfterWithdrawal(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem memory item,
     EphemeralInvItemTableData memory itemData
   ) internal {
     if (item.quantity == itemData.quantity) {
-      removeItemFromInventory(smartObjectId, inventoryOwner, item, itemData);
+      removeItemFromInventory(smartObjectId, ephemeralInventoryOwner, item, itemData);
     } else {
       EphemeralInvItemTable.set(
         _namespace().ephemeralInventoryItemTableId(),
         smartObjectId,
         item.inventoryItemId,
-        item.owner,
+        item.ephemeralInventoryOwner,
         itemData.quantity - item.quantity,
         itemData.index
       );
@@ -278,30 +276,30 @@ contract EphemeralInventory is EveSystem {
 
   function removeItemFromInventory(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem memory item,
     EphemeralInvItemTableData memory itemData
   ) internal {
-    uint256[] memory inventoryItems = EphemeralInventoryTable.getItems(
-      _namespace().ephemeralInventoryTableId(),
+    uint256[] memory inventoryItems = EphemeralInvTable.getItems(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner
+      ephemeralInventoryOwner
     );
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
-    EphemeralInventoryTable.updateItems(
-      _namespace().ephemeralInventoryTableId(),
+    EphemeralInvTable.updateItems(
+      _namespace().EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner,
+      ephemeralInventoryOwner,
       itemData.index,
       lastElement
     );
-    EphemeralInventoryTable.popItems(_namespace().ephemeralInventoryTableId(), smartObjectId, inventoryOwner);
+    EphemeralInvTable.popItems(_namespace().EphemeralInvTableId(), smartObjectId, ephemeralInventoryOwner);
 
     EphemeralInvItemTable.deleteRecord(
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.owner
+      item.ephemeralInventoryOwner
     );
   }
 }

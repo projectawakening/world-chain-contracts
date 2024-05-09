@@ -12,7 +12,7 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { INVENTORY_MODULE_NAME as MODULE_NAME, INVENTORY_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { InventoryTable } from "../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../codegen/tables/InventoryItemTable.sol";
-import { EphemeralInventoryTable } from "../../codegen/tables/EphemeralInventoryTable.sol";
+import { EphemeralInvTable } from "../../codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable } from "../../codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../codegen/tables/ItemTransferOffchainTable.sol";
 
@@ -90,8 +90,10 @@ contract InventoryModuleRegistrationLibrary {
     if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
     if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
       InventoryItemTable.register(namespace.inventoryItemTableId());
-    if (!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))
-      EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInvCapacityTableId()))
+      EphemeralInvTable.register(namespace.ephemeralInvCapacityTableId());
+    if (!ResourceIds.getExists(namespace.EphemeralInvTableId()))
+      EphemeralInvTable.register(namespace.EphemeralInvTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
       EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
     if (!ResourceIds.getExists(namespace.itemTransferTableId()))
