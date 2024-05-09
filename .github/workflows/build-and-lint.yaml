@@ -1,4 +1,4 @@
-name: "Build and lint the smart contracts affected by changes committed."
+name: Build
 run-name: "${{ github.triggering_actor }} building the game chain smart contracts"
 
 on:

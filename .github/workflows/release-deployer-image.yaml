@@ -1,9 +1,11 @@
-name: Release (push) the world chain deployer image.
+name: Release
+run-name : Release (push) the world chain deployer image.
 
 on:
-    push:
-      branches:
-          - '*'
+  workflow_run:
+    workflows: [Build]
+    types:
+      - completed
 # on:
 #   push:
 #     branches:
