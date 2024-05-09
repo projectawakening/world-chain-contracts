@@ -44,7 +44,7 @@ jobs:
             type=sha,prefix=${{ env.IMAGE_NAME }}
       - name: Build the release stage
         uses: docker/build-push-action@v5
-        if: github.event_name == 'push' && github.ref_name == 'main'
+        # if: github.event_name == 'push' && github.ref_name == 'main'
         with:
           push: true
           file: build/package/frontier-world.dockerfile
