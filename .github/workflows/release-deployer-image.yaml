@@ -1,9 +1,9 @@
 name: Release (push) the world chain deployer image.
 
 on:
-  push:
-    branches:
-      - '*'
+    push:
+      branches:
+          - '*'
 # on:
 #   push:
 #     branches:
@@ -24,6 +24,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
