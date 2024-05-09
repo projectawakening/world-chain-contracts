@@ -263,14 +263,7 @@ contract EphemeralInventory is EveSystem {
     if (item.quantity == itemData.quantity) {
       removeItemFromInventory(smartObjectId, ephemeralInventoryOwner, item, itemData);
     } else {
-      EphemeralInvItemTable.set(
-        _namespace().ephemeralInventoryItemTableId(),
-        smartObjectId,
-        item.inventoryItemId,
-        item.ephemeralInventoryOwner,
-        itemData.quantity - item.quantity,
-        itemData.index
-      );
+      reduceItemQuantity(smartObjectId, item, itemData);
     }
   }
 
@@ -300,6 +293,21 @@ contract EphemeralInventory is EveSystem {
       smartObjectId,
       item.inventoryItemId,
       item.ephemeralInventoryOwner
+    );
+  }
+
+  function reduceItemQuantity(
+    uint256 smartObjectId,
+    InventoryItem memory item,
+    EphemeralInvItemTableData memory itemData
+  ) internal {
+    EphemeralInvItemTable.set(
+      _namespace().ephemeralInventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      item.ephemeralInventoryOwner,
+      itemData.quantity - item.quantity,
+      itemData.index
     );
   }
 }

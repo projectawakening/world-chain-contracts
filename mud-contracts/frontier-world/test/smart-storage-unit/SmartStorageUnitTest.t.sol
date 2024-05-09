@@ -242,7 +242,7 @@ contract SmartStorageUnitTest is Test {
   function testCreateAndDepositItemsToEphemeralInventory(uint256 smartObjectId) public {
     testCreateAndAnchorSmartStorageUnit(smartObjectId);
     InventoryItem[] memory items = new InventoryItem[](1);
-    address inventoryOwner = address(1);
+    address ephemeralInventoryOwner = address(1);
     items[0] = InventoryItem({
       inventoryItemId: 456,
       ephemeralInventoryOwner: address(2),
@@ -251,12 +251,12 @@ contract SmartStorageUnitTest is Test {
       volume: 10,
       quantity: 5
     });
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, inventoryOwner, items);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
 
     EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
       smartObjectId,
-      inventoryOwner
+      ephemeralInventoryOwner
     );
 
     uint256 useCapacity = items[0].volume * items[0].quantity;

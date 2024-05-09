@@ -101,7 +101,7 @@ contract Inventory is EveSystem {
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
         items[i].inventoryItemId
       );
-      if (entityRecord.itemId == 0) {
+      if (entityRecord.doesExists == false) {
         revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
       }
       usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
