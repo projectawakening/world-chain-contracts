@@ -39,6 +39,7 @@ import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -197,7 +198,10 @@ contract InteractTest is Test {
     inventoryModule = new InventoryModule();
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
-    world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+    world.installModule(
+      inventoryModule,
+      abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
+    );
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
     // Vending Machine registration

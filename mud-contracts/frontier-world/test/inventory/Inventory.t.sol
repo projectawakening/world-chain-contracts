@@ -44,6 +44,7 @@ import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC7
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
@@ -109,7 +110,10 @@ contract InventoryTest is Test {
     inventoryModule = new InventoryModule();
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
-    world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+    world.installModule(
+      inventoryModule,
+      abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
+    );
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
     //Mock Item creation

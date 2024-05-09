@@ -30,6 +30,7 @@ import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/code
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
@@ -110,7 +111,7 @@ contract EphemeralInventoryTest is Test {
 
     world.installModule(
       inventoryModule,
-      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory())
+      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
 
     ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);

@@ -45,6 +45,7 @@ import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 
 import { Utils as SmartStorageUnitUtils } from "../../src/modules/smart-storage-unit/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
@@ -124,7 +125,7 @@ contract SmartStorageUnitTest is Test {
 
     world.installModule(
       inventoryModule,
-      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory())
+      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
 
     // SmartStorageUnitModule installation
