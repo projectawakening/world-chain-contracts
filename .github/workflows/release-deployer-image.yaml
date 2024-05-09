@@ -49,6 +49,7 @@ jobs:
         # if: github.event_name == 'push' && github.ref_name == 'main'
         with:
           push: true
+          load: true
           file: build/package/frontier-world.dockerfile
           context: .
           platforms: |
