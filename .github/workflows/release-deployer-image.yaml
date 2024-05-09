@@ -46,20 +46,21 @@ jobs:
             type=ref,event=branch
             type=sha
       - name: Build and push deployer image
+        id: build_and_push
         uses: docker/build-push-action@v5
         # if: github.event_name == 'push' && github.ref_name == 'main'
         with:
-          push: false
-          load: true
+          push: true
           file: build/package/frontier-world.dockerfile
           context: .
           platforms: |
             linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=docker
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: $${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-digest: ${{ steps.build_and_push.outputs.digest }}
           push-to-registry: true
