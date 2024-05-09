@@ -2,10 +2,10 @@ name: Release
 run-name : Release (push) the world chain deployer image.
 
 on:
-  workflow_run:
-    workflows: [Build]
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: [Build]
+  #   types:
+  #     - completed
   pull_request:
     branches:
       - "develop"
