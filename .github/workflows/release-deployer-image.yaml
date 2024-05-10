@@ -4,12 +4,13 @@ run-name : Release (push) the world chain deployer image.
 
 on:
   workflow_run:
-    workflows: [Build]
+    workflows: ["Build"]
     types:
       - completed
   push:
     branches:
         - "develop"
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
@@ -23,6 +24,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
