@@ -6,6 +6,8 @@ on:
     workflows: [Build]
     types:
       - completed
+    branches:
+      - "*"
 
 permissions:
   id-token: write # This is required for requesting the JWT
