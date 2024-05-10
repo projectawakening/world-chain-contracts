@@ -2,9 +2,6 @@ name: SmokeTest
 
 
 on:
-  push:
-    branches:
-      - "*"
   workflow_run:
     workflows: [Build]
     types:
