@@ -32,6 +32,7 @@ library Utils {
         name: INVENTORY_INTERACT_SYSTEM_NAME
       });
   }
+
   function inventoryTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: INVENTORY_TABLE_NAME });
   }

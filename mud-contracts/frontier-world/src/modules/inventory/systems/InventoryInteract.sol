@@ -53,7 +53,7 @@ contract InventoryInteract is EveSystem {
         smartObjectId,
         item.inventoryItemId,
         owner,
-        msg.sender,
+        _msgSender(),
         item.quantity,
         block.timestamp
       );

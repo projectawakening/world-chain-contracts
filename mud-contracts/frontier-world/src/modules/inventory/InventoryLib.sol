@@ -50,10 +50,7 @@ library InventoryLib {
   ) internal {
     world.iface.call(
       world.namespace.ephemeralInventorySystemId(),
-      abi.encodeCall(
-        IEphemeralInventory.setEphemeralInventoryCapacity,
-        (smartObjectId, ephemeralStorageCapacity)
-      )
+      abi.encodeCall(IEphemeralInventory.setEphemeralInventoryCapacity, (smartObjectId, ephemeralStorageCapacity))
     );
   }
 

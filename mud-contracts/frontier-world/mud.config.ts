@@ -42,7 +42,7 @@ export default mudConfig({
     InventoryInteract: {
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
-    }
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
@@ -263,7 +263,7 @@ export default mudConfig({
     },
     /**
      * Used to store the ephemeral inventory details of a in-game smart storage unit
-     * Each user has a separate ephemeral inventory capacity 
+     * Each user has a separate ephemeral inventory capacity
      */
     EphemeralInvTable: {
       keySchema: {
