@@ -5,7 +5,7 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { InventoryItem } from "@eve/frontier-world/src/modules/smart-storage-unit/types.sol";
+import { InventoryItem } from "@eve/frontier-world/src/modules/inventory/types.sol";
 import { SmartStorageUnitLib } from "@eve/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 
 contract DepositToEphemeral is Script {

@@ -7,7 +7,7 @@ pragma solidity >=0.8.20;
  */
 struct InventoryItem {
   uint256 inventoryItemId;
-  address ephemeralInventoryOwner;
+  address owner;
   uint256 itemId;
   uint256 typeId;
   uint256 volume;

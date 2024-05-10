@@ -213,7 +213,7 @@ contract SmartStorageUnitTest is Test {
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
-      ephemeralInventoryOwner: address(2),
+      owner: address(2),
       itemId: 12,
       typeId: 3,
       volume: 10,
@@ -247,7 +247,7 @@ contract SmartStorageUnitTest is Test {
     address ephemeralInventoryOwner = address(1);
     items[0] = InventoryItem({
       inventoryItemId: 456,
-      ephemeralInventoryOwner: address(2),
+      owner: address(2),
       itemId: 45,
       typeId: 6,
       volume: 10,
@@ -275,7 +275,7 @@ contract SmartStorageUnitTest is Test {
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
-      items[0].ephemeralInventoryOwner
+      items[0].owner
     );
 
     assertEq(ephemeralInvItemTableData.quantity, items[0].quantity);

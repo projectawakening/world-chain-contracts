@@ -188,7 +188,7 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.ephemeralInventoryOwner
+      item.owner
     );
 
     EphemeralInvTable.pushItems(
@@ -201,7 +201,7 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.ephemeralInventoryOwner,
+      item.owner,
       quantity + item.quantity,
       index
     );
@@ -218,7 +218,7 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.ephemeralInventoryOwner
+      item.owner
     );
 
     validateWithdrawal(item, itemData);
@@ -275,7 +275,7 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.ephemeralInventoryOwner
+      item.owner
     );
   }
 
@@ -288,7 +288,7 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
-      item.ephemeralInventoryOwner,
+      item.owner,
       itemData.quantity - item.quantity,
       itemData.index
     );

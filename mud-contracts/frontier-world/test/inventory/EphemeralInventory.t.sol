@@ -235,19 +235,19 @@ contract EphemeralInventoryTest is Test {
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
-      items[0].ephemeralInventoryOwner
+      items[0].owner
     );
     EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[1].inventoryItemId,
-      items[1].ephemeralInventoryOwner
+      items[1].owner
     );
     EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[2].inventoryItemId,
-      items[2].ephemeralInventoryOwner
+      items[2].owner
     );
     assertEq(inventoryItem1.quantity, items[0].quantity * 2);
     assertEq(inventoryItem2.quantity, items[1].quantity * 2);
@@ -317,19 +317,19 @@ contract EphemeralInventoryTest is Test {
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
-      items[0].ephemeralInventoryOwner
+      items[0].owner
     );
     EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[1].inventoryItemId,
-      items[1].ephemeralInventoryOwner
+      items[1].owner
     );
     EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[2].inventoryItemId,
-      items[2].ephemeralInventoryOwner
+      items[2].owner
     );
     assertEq(inventoryItem1.quantity, 2);
     assertEq(inventoryItem2.quantity, 0);
