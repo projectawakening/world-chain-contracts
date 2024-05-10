@@ -2,9 +2,9 @@ name: SmokeTest
 
 
 on:
-  # push:
-  #   branches:
-  #     - "develop"
+  push:
+    branches:
+      - "*"
   workflow_run:
     workflows: ["Build"]
     types:
