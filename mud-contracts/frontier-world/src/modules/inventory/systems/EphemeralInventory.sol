@@ -99,7 +99,7 @@ contract EphemeralInventory is EveSystem {
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner
     );
@@ -124,7 +124,7 @@ contract EphemeralInventory is EveSystem {
       usedCapacity = processItemDeposit(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity, maxCapacity, i);
     }
     EphemeralInvTable.setUsedCapacity(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner,
       usedCapacity
@@ -145,7 +145,7 @@ contract EphemeralInventory is EveSystem {
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner
     );
@@ -155,7 +155,7 @@ contract EphemeralInventory is EveSystem {
       usedCapacity = processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
     }
     EphemeralInvTable.setUsedCapacity(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner,
       usedCapacity
@@ -192,7 +192,7 @@ contract EphemeralInventory is EveSystem {
     );
 
     EphemeralInvTable.pushItems(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner,
       item.inventoryItemId
@@ -257,19 +257,19 @@ contract EphemeralInventory is EveSystem {
     EphemeralInvItemTableData memory itemData
   ) internal {
     uint256[] memory inventoryItems = EphemeralInvTable.getItems(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner
     );
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
     EphemeralInvTable.updateItems(
-      _namespace().EphemeralInvTableId(),
+      _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner,
       itemData.index,
       lastElement
     );
-    EphemeralInvTable.popItems(_namespace().EphemeralInvTableId(), smartObjectId, ephemeralInventoryOwner);
+    EphemeralInvTable.popItems(_namespace().ephemeralInvTableId(), smartObjectId, ephemeralInventoryOwner);
 
     EphemeralInvItemTable.deleteRecord(
       _namespace().ephemeralInventoryItemTableId(),

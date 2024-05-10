@@ -98,8 +98,8 @@ contract InventoryModuleRegistrationLibrary {
       InventoryItemTable.register(namespace.inventoryItemTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInvCapacityTableId()))
       EphemeralInvTable.register(namespace.ephemeralInvCapacityTableId());
-    if (!ResourceIds.getExists(namespace.EphemeralInvTableId()))
-      EphemeralInvTable.register(namespace.EphemeralInvTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInvTableId()))
+      EphemeralInvTable.register(namespace.ephemeralInvTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
       EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
     if (!ResourceIds.getExists(namespace.itemTransferTableId()))

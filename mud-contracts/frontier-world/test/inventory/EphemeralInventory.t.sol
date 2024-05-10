@@ -181,7 +181,7 @@ contract EphemeralInventoryTest is Test {
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
     EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -191,7 +191,7 @@ contract EphemeralInventoryTest is Test {
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
 
     inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -204,7 +204,7 @@ contract EphemeralInventoryTest is Test {
     }
 
     inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -285,7 +285,7 @@ contract EphemeralInventoryTest is Test {
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
 
     EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -301,7 +301,7 @@ contract EphemeralInventoryTest is Test {
     }
 
     inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );

@@ -256,7 +256,7 @@ contract SmartStorageUnitTest is Test {
     smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
 
     EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner
     );

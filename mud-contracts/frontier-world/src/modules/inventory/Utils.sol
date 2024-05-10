@@ -50,7 +50,7 @@ library Utils {
       });
   }
 
-  function EphemeralInvTableId(bytes14 namespace) internal pure returns (ResourceId) {
+  function ephemeralInvTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: EPHEMERAL_INVENTORY_TABLE_NAME });
   }
