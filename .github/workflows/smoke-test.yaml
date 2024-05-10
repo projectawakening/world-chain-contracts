@@ -6,7 +6,7 @@ on:
     branches:
       - "*"
   workflow_run:
-    workflows: ["Build"]
+    workflows: [Build]
     types:
       - completed
 

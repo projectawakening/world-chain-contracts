@@ -4,7 +4,7 @@ run-name : Release (push) the world chain deployer image.
 
 on:
   workflow_run:
-    workflows: ["Build"]
+    workflows: [Build]
     types:
       - completed
   push:
