@@ -18,7 +18,7 @@ contract CreateMintERC20 is Script {
     IBaseWorld world = IBaseWorld(worldAddress);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    string memory namespace = "Test Namespace";
+    string memory namespace = "Test";
     string memory name = "Test Token";
     string memory symbol = "TEST";
     uint8 decimals = uint8(18);
@@ -31,7 +31,7 @@ contract CreateMintERC20 is Script {
     StoreSwitch.setStoreAddress(address(world));
     erc20Token = registerERC20(
       world,
-      stringToBytes14(namespace),
+      stringToBytes14(namespace + "ERC20"),
       ERC20MetadataData({ decimals: decimals, name: name, symbol: symbol })
     );
 

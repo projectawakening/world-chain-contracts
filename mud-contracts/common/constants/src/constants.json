@@ -1,14 +1,14 @@
 {
   "namespace": {
-    "FRONTIER_WORLD_DEPLOYMENT": "frontier",
-    "SMART_OBJECT_DEPLOYMENT": "frontier",
-    "ACCESS_CONTROL_DEPLOYMENT": "frontier",
-    "ENTITY_RECORD_DEPLOYMENT": "frontier",
-    "STATIC_DATA_DEPLOYMENT": "frontier",
-    "LOCATION_DEPLOYMENT_NAMESPACE": "frontier",
-    "SMART_CHARACTER_DEPLOYMENT": "frontier",
-    "EVE_ERC721_PUPPET_DEPLOYMENT": "frontier",
-    "SMART_DEPLOYABLE_DEPLOYMENT": "frontier"
+    "FRONTIER_WORLD_DEPLOYMENT": "eveworld",
+    "SMART_OBJECT_DEPLOYMENT": "eveworld",
+    "ACCESS_CONTROL_DEPLOYMENT": "eveworld",
+    "ENTITY_RECORD_DEPLOYMENT": "eveworld",
+    "STATIC_DATA_DEPLOYMENT": "eveworld",
+    "LOCATION_DEPLOYMENT_NAMESPACE": "eveworld",
+    "SMART_CHARACTER_DEPLOYMENT": "eveworld",
+    "EVE_ERC721_PUPPET_DEPLOYMENT": "eveworld",
+    "SMART_DEPLOYABLE_DEPLOYMENT": "eveworld"
   },
   "systemName": {
     "ENTITY_CORE": "EntityCore",
