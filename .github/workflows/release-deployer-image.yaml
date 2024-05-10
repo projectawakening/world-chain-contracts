@@ -17,10 +17,7 @@ permissions:
   attestations: write # This is required to publish to github package repository
 
 env:
-  APP: world-chain-deployer-image
-  BUILD_COMMIT: ${{ github.sha }}
   REGISTRY: ghcr.io
-  REPO: ${{ github.repository }}
   IMAGE_NAME: world-chain-deployer-image
 
 jobs:
@@ -48,7 +45,6 @@ jobs:
       - name: Build and push deployer image
         id: build_and_push
         uses: docker/build-push-action@v5
-        # if: github.event_name == 'push' && github.ref_name == 'main'
         with:
           push: true
           file: build/package/frontier-world.dockerfile
