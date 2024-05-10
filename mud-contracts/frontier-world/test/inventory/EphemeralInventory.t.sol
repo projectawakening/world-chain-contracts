@@ -137,17 +137,16 @@ contract EphemeralInventoryTest is Test {
     assertEq(ephemeralInventorySystemId.getNamespace(), INVENTORY_DEPLOYMENT_NAMESPACE);
   }
 
-  function testSetEphemeralInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
+  function testSetEphemeralInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
 
     DeployableState.setState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId,
       State.ONLINE
     );
-    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
     assertEq(
       EphemeralInvCapacityTable.getCapacity(
         INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvCapacityTableId(),
@@ -157,7 +156,7 @@ contract EphemeralInventoryTest is Test {
     );
   }
 
-  function testRevertSetInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
+  function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(storageCapacity == 0);
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -165,7 +164,7 @@ contract EphemeralInventoryTest is Test {
         "InventoryEphemeralSystem: storage capacity cannot be 0"
       )
     );
-    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
   }
 
   function testDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
@@ -179,7 +178,7 @@ contract EphemeralInventoryTest is Test {
     items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
-    testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
     EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.EphemeralInvTableId(),
@@ -227,7 +226,7 @@ contract EphemeralInventoryTest is Test {
     items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
-    testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
 
     //check the increase in quantity
@@ -259,7 +258,7 @@ contract EphemeralInventoryTest is Test {
     vm.assume(smartObjectId != 0);
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
-    testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);

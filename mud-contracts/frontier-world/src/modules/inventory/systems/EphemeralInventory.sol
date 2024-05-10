@@ -69,12 +69,10 @@ contract EphemeralInventory is EveSystem {
    * @dev Set the ephemeral inventory capacity by smart storage unit id
    * //TODO Only owner of the smart storage unit can set the capacity
    * @param smartObjectId The smart storage unit id
-   * @param ephemeralInventoryOwner The owner of the inventory
    * @param ephemeralStorageCapacity The storage capacity
    */
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
-    address ephemeralInventoryOwner,
     uint256 ephemeralStorageCapacity
   ) public hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {

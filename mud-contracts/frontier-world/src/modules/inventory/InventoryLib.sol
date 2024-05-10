@@ -46,14 +46,13 @@ library InventoryLib {
   function setEphemeralInventoryCapacity(
     World memory world,
     uint256 smartObjectId,
-    address owner,
     uint256 ephemeralStorageCapacity
   ) internal {
     world.iface.call(
       world.namespace.ephemeralInventorySystemId(),
       abi.encodeCall(
         IEphemeralInventory.setEphemeralInventoryCapacity,
-        (smartObjectId, owner, ephemeralStorageCapacity)
+        (smartObjectId, ephemeralStorageCapacity)
       )
     );
   }
@@ -107,11 +106,12 @@ library InventoryLib {
   function ephemeralToInventoryTransfer(
     World memory world,
     uint256 smartObjectId,
+    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) internal {
     world.iface.call(
       world.namespace.inventoryInteractSystemId(),
-      abi.encodeCall(IInventoryInteract.ephemeralToInventoryTransfer, (smartObjectId, items))
+      abi.encodeCall(IInventoryInteract.ephemeralToInventoryTransfer, (smartObjectId, ephemeralInventoryOwner, items))
     );
   }
 }

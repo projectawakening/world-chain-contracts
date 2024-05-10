@@ -12,7 +12,6 @@ import { InventoryItem } from "../types.sol";
 interface IEphemeralInventory {
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
-    address owner,
     uint256 ephemeralStorageCapacity
   ) external;
 

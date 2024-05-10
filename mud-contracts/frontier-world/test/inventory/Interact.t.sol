@@ -19,7 +19,7 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
@@ -47,15 +47,19 @@ import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
+import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
+import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
-import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
+
+import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
+import { createCoreModule } from "../CreateCoreModule.sol";
 
 contract VendingMachineTestSystem is System {
   using InventoryLib for InventoryLib.World;
@@ -77,7 +81,7 @@ contract VendingMachineTestSystem is System {
     uint256 inItemId = uint256(keccak256(abi.encode("item:46")));
     uint256 outItemId = uint256(keccak256(abi.encode("item:45")));
     uint256 ratio = 1;
-    address ephItemOwner = address(0); //Ideally this should the msg.sender
+    address ephItemOwner = address(2); //Ideally this should the msg.sender
 
     //Below Data should be stored in a table and fetched from there
     InventoryItem[] memory inItems = new InventoryItem[](1);
@@ -86,47 +90,11 @@ contract VendingMachineTestSystem is System {
     InventoryItem[] memory outItems = new InventoryItem[](1);
     outItems[0] = InventoryItem(outItemId, inventoryOwner, 45, 1, 50, quantity * ratio);
 
-    // Check the player has enough items in the ephemeral inventory to exchange
-    EphemeralInvItemTableData memory ephemeralInvItem = EphemeralInvItemTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
-      smartObjectId,
-      inItemId,
-      ephItemOwner
-    );
-    if (ephemeralInvItem.quantity < quantity) {
-      revert("Not enough item quantity to exchange");
-    }
-
-    //Check if there is enough items in the inventory
+    //Withdraw from inventory and deposit to ephemeral inventory
+    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, outItems);
 
     //Withdraw from ephemeralnventory and deposit to inventory
-    _inventoryLib().withdrawFromEphemeralInventory(smartObjectId, inventoryOwner, inItems);
-    _inventoryLib().depositToInventory(smartObjectId, inItems);
-
-    //Withdraw from inventory and deposit to ephemeral inventory
-    _inventoryLib().withdrawFromInventory(smartObjectId, outItems);
-    _inventoryLib().depositToEphemeralInventory(smartObjectId, inventoryOwner, outItems);
-
-    //In Item owner change
-    ItemTransferOffchainTable.set(
-      DEPLOYMENT_NAMESPACE.itemTransferTableId(),
-      smartObjectId,
-      inItemId,
-      ephItemOwner,
-      inventoryOwner,
-      inItems[0].quantity,
-      block.timestamp
-    );
-    //Out Item owner change
-    ItemTransferOffchainTable.set(
-      DEPLOYMENT_NAMESPACE.itemTransferTableId(),
-      smartObjectId,
-      outItemId,
-      inventoryOwner,
-      ephItemOwner,
-      outItems[0].quantity,
-      block.timestamp
-    );
+    _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, ephItemOwner, inItems);
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {
@@ -142,6 +110,7 @@ contract InteractTest is Test {
   using EntityRecordUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
@@ -149,6 +118,7 @@ contract InteractTest is Test {
   SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
   IERC721Mintable erc721DeployableToken;
+  SmartStorageUnitLib.World smartStorageUnit;
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
 
@@ -204,6 +174,11 @@ contract InteractTest is Test {
     );
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
+    // Smart Storage Module installation
+    // SmartStorageUnitModule installation
+    _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+    smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+
     // Vending Machine registration
     world.registerSystem(VENDING_MACHINE_SYSTEM_ID, vendingMachineSystem, true);
 
@@ -211,73 +186,40 @@ contract InteractTest is Test {
     world.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactHandler(uint256, address, uint256)");
 
     //Mock Smart Storage Unit data
-    EntityRecordTableData memory entity1 = EntityRecordTableData({
-      typeId: 1,
-      itemId: 2345,
-      volume: 100,
-      doesExists: true
-    });
-    EntityRecordTableData memory entity2 = EntityRecordTableData({
-      typeId: 45,
-      itemId: 1,
-      volume: 50,
-      doesExists: true
-    });
-    EntityRecordTableData memory entity3 = EntityRecordTableData({
-      typeId: 46,
-      itemId: 2,
-      volume: 70,
-      doesExists: true
-    });
+    EntityRecordData memory entity1 = EntityRecordData({ typeId: 1, itemId: 2345, volume: 10 });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
+    WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
     uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-
-    EntityRecordTable.set(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      smartObjectId,
-      entity1.itemId,
-      entity1.typeId,
-      entity1.volume,
-      true
-    );
-    EntityRecordTable.set(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      itemObjectId1,
-      entity2.itemId,
-      entity2.typeId,
-      entity2.volume,
-      true
-    );
-    EntityRecordTable.set(
-      ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      itemObjectId2,
-      entity3.itemId,
-      entity3.typeId,
-      entity3.volume,
-      true
-    );
-    uint256 storageCapacity = 5000;
+    uint256 storageCapacity = 100000;
+    uint256 ephemeralStorageCapacity = 100000;
     address inventoryOwner = address(1);
-    address ephItemOwner = address(0);
+    address ephItemOwner = address(2);
 
-    DeployableState.setState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+    smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
-      State.ONLINE
+      entity1,
+      smartObjectData,
+      worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
     );
-    inventory.setInventoryCapacity(smartObjectId, storageCapacity);
-    inventory.setEphemeralInventoryCapacity(smartObjectId, inventoryOwner, storageCapacity);
+    smartDeployable.depositFuel(smartObjectId, 100000);
+    smartDeployable.bringOnline(smartObjectId);
 
     InventoryItem[] memory invItems = new InventoryItem[](1);
-    invItems[0] = InventoryItem(itemObjectId1, inventoryOwner, entity2.typeId, entity2.itemId, 50, 10);
+    invItems[0] = InventoryItem(itemObjectId1, inventoryOwner, 45, 1, 50, 10);
 
     InventoryItem[] memory ephInvItems = new InventoryItem[](1);
-    ephInvItems[0] = InventoryItem(itemObjectId2, ephItemOwner, entity3.typeId, entity3.itemId, 70, 10);
+    ephInvItems[0] = InventoryItem(itemObjectId2, ephItemOwner, 46, 2, 70, 10);
 
-    inventory.depositToInventory(smartObjectId, invItems);
-    inventory.depositToEphemeralInventory(smartObjectId, inventoryOwner, ephInvItems);
+    smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, invItems);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephItemOwner, ephInvItems);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -307,7 +249,7 @@ contract InteractTest is Test {
     uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
     uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
     address inventoryOwner = address(1);
-    address ephItemOwner = address(0);
+    address ephItemOwner = address(2);
     uint256 quantity = 2;
 
     InventoryItemTableData memory inventoryItem = InventoryItemTable.get(

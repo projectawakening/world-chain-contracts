@@ -12,7 +12,11 @@ import { InventoryItem } from "../types.sol";
 interface IInventoryInteract {
   function inventoryToEphemeralTransfer(uint256 smartObjectId, InventoryItem[] memory items) external;
 
-  function ephemeralToInventoryTransfer(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function ephemeralToInventoryTransfer(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) external;
 
   function configureInteractionHandler(uint256 smartObjectId, bytes memory interactionParams) external;
 }

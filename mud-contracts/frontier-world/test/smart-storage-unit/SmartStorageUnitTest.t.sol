@@ -53,6 +53,7 @@ import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployabl
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";

@@ -7,7 +7,6 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
 import { EntityRecordData, WorldPosition } from "../types.sol";
-import { InventoryItem } from "../../inventory/types.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
@@ -24,6 +23,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils } from "../Utils.sol";
 
 import { SmartObjectData } from "../../smart-deployable/types.sol";
+import { InventoryItem } from "../../inventory/types.sol";
 
 contract SmartStorageUnit is EveSystem {
   using WorldResourceIdInstance for ResourceId;
@@ -81,7 +81,7 @@ contract SmartStorageUnit is EveSystem {
     _smartDeployableLib().anchor(smartObjectId, locationData);
 
     _inventoryLib().setInventoryCapacity(smartObjectId, storageCapacity);
-    _inventoryLib().setEphemeralInventoryCapacity(smartObjectId, smartObjectData.owner, ephemeralStorageCapacity);
+    _inventoryLib().setEphemeralInventoryCapacity(smartObjectId, ephemeralStorageCapacity);
   }
 
   /**
