@@ -6,7 +6,6 @@ on:
     branches:
       - "*"
   workflow_dispatch:
-  create:
 
 env:
   AWS_REGION: eu-west-1
