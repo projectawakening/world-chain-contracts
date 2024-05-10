@@ -21,7 +21,7 @@ env:
   IMAGE_NAME: world-chain-deployer-image
 
 jobs:
-  release:
+  smoke-test:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
