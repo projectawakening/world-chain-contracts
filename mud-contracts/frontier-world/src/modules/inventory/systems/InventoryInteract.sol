@@ -14,6 +14,7 @@ import { InventoryItemTable } from "../../../codegen/tables/InventoryItemTable.s
 
 import { Utils as InventoryUtils } from "../../../modules/inventory/Utils.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils } from "../Utils.sol";
 
 import { InventoryLib } from "../InventoryLib.sol";
@@ -41,12 +42,16 @@ contract InventoryInteract is EveSystem {
 
     for (uint i = 0; i < items.length; i++) {
       InventoryItem memory item = items[i];
-      require(
-        InventoryItemTable.get(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId).quantity >=
-          item.quantity,
-        "InventoryInteract: Not enough items to transfer"
-      );
-
+      if (
+        InventoryItemTable.get(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId).quantity <=
+        item.quantity
+      ) {
+        revert IInventoryErrors.Inventory_InvalidItemQuantity(
+          "InventoryInteract: Not enough items to transfer",
+          item.inventoryItemId,
+          item.quantity
+        );
+      }
       //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
       ItemTransferOffchainTable.set(
         _namespace().itemTransferTableId(),
@@ -84,7 +89,8 @@ contract InventoryInteract is EveSystem {
     //check the caller of this function has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
       InventoryItem memory item = items[i];
-      require(
+
+      if (
         EphemeralInvItemTable
           .get(
             _namespace().ephemeralInventoryItemTableId(),
@@ -92,9 +98,14 @@ contract InventoryInteract is EveSystem {
             item.inventoryItemId,
             ephemeralInventoryOwner
           )
-          .quantity >= item.quantity,
-        "InventoryInteract: Not enough items to transfer"
-      );
+          .quantity <= item.quantity
+      ) {
+        revert IInventoryErrors.Inventory_InvalidItemQuantity(
+          "InventoryInteract: Not enough items to transfer",
+          item.inventoryItemId,
+          item.quantity
+        );
+      }
 
       //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
       ItemTransferOffchainTable.set(
