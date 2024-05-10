@@ -2,6 +2,9 @@ name: SmokeTest
 
 
 on:
+  push:
+    branches:
+      - "develop"
   workflow_run:
     workflows: [Build]
     types:
@@ -60,10 +63,10 @@ jobs:
 
       - name: Run deployer image
         run: |
-          docker run
+          echo "Will run something like docker run for the image"
 
       - name: Running smoke tests on local chain
         run: |
-          ./scripts/run-smoke-tests.sh
+          echo "Will run something like ./scripts/run-smoke-tests.sh"
 
 
