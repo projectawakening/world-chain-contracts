@@ -1,6 +1,4 @@
-
 name: SmokeTest
-run-name : Release (push) the world chain deployer image.
 
 
 on:
