@@ -117,7 +117,8 @@ contract smartDeployableTest is Test {
     vm.assume(fuelMaxCapacity != 0);
     DeployableStateData memory data = DeployableStateData({
       createdAt: block.timestamp,
-      state: State.UNANCHORED,
+      previousState: State.NULL,
+      currentState: State.UNANCHORED,
       updatedBlockNumber: block.number,
       updatedBlockTime: block.timestamp
     });
@@ -134,7 +135,7 @@ contract smartDeployableTest is Test {
     DeployableStateData memory tableData = DeployableState.get(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId);
 
     assertEq(data.createdAt, tableData.createdAt);
-    assertEq(uint8(data.state), uint8(tableData.state));
+    assertEq(uint8(data.currentState), uint8(tableData.currentState));
     assertEq(data.updatedBlockNumber, tableData.updatedBlockNumber);
   }
 
@@ -186,7 +187,7 @@ contract smartDeployableTest is Test {
     smartDeployable.bringOnline(entityId);
     assertEq(
       uint8(State.ONLINE),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -204,7 +205,7 @@ contract smartDeployableTest is Test {
     smartDeployable.bringOffline(entityId);
     assertEq(
       uint8(State.ANCHORED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -222,7 +223,7 @@ contract smartDeployableTest is Test {
     smartDeployable.unanchor(entityId);
     assertEq(
       uint8(State.UNANCHORED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -236,11 +237,11 @@ contract smartDeployableTest is Test {
   ) public {
     vm.assume(entityId != 0);
 
-    testUnanchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.destroyDeployable(entityId);
     assertEq(
       uint8(State.DESTROYED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -387,7 +388,7 @@ contract smartDeployableTest is Test {
     assertEq(data.lastUpdatedAt, block.timestamp);
     assertEq(
       uint8(State.ANCHORED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -446,7 +447,7 @@ contract smartDeployableTest is Test {
     assertEq(data.lastUpdatedAt, block.timestamp);
     assertEq(
       uint8(State.ONLINE),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 }

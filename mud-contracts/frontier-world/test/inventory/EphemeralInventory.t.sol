@@ -141,7 +141,7 @@ contract EphemeralInventoryTest is Test {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
 
-    DeployableState.setState(
+    DeployableState.setCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId,
       State.ONLINE

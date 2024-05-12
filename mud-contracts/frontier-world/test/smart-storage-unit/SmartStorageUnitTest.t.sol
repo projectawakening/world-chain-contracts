@@ -169,7 +169,7 @@ contract SmartStorageUnitTest is Test {
     smartDeployable.depositFuel(smartObjectId, 100000);
     smartDeployable.bringOnline(smartObjectId);
 
-    State currentState = DeployableState.getState(
+    State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
     );

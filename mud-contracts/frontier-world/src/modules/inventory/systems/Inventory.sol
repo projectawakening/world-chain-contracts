@@ -31,7 +31,7 @@ contract Inventory is EveSystem {
    * @param smartObjectId is the smart deployable id
    */
   modifier onlyOnline(uint256 smartObjectId) {
-    State currentState = DeployableState.getState(
+    State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
     );
@@ -50,7 +50,7 @@ contract Inventory is EveSystem {
    * @param smartObjectId is the smart deployable id
    */
   modifier beyondAnchored(uint256 smartObjectId) {
-    State currentState = DeployableState.getState(
+    State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
     );
@@ -161,7 +161,8 @@ contract Inventory is EveSystem {
       smartObjectId,
       item.inventoryItemId,
       quantity + item.quantity,
-      index
+      index,
+      true
     );
 
     return usedCapacity + reqCapacity;
@@ -228,7 +229,8 @@ contract Inventory is EveSystem {
       smartObjectId,
       item.inventoryItemId,
       itemData.quantity - item.quantity,
-      itemData.index
+      itemData.index,
+      true
     );
   }
 }

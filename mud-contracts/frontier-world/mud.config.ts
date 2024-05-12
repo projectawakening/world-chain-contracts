@@ -188,7 +188,8 @@ export default mudConfig({
       },
       valueSchema: {
         createdAt: "uint256",
-        state: "State",
+        previousState: "State",
+        currentState: "State",
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },
@@ -245,6 +246,7 @@ export default mudConfig({
       valueSchema: {
         quantity: "uint256",
         index: "uint256",
+        isValid: "bool",
       },
       tableIdArgument: true,
     },
@@ -288,6 +290,7 @@ export default mudConfig({
       valueSchema: {
         quantity: "uint256",
         index: "uint256",
+        isValid: "bool",
       },
       tableIdArgument: true,
     },
