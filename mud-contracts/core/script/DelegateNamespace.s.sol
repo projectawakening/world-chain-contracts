@@ -7,7 +7,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { validateNamespace } from "@latticexyz/world/src/validateNamespace.sol";
+import { requireNamespace } from "@latticexyz/world/src/requireNamespace.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { AccessControl } from "@latticexyz/world/src/AccessControl.sol";
 
@@ -24,7 +24,7 @@ contract DelegateNamespace is Script {
     ResourceId NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, DEPLOYMENT_NAMESPACE)));
 
     vm.startBroadcast(deployerPrivateKey);
-    validateNamespace(NAMESPACE_ID);
+    requireNamespace(NAMESPACE_ID);
     console.log(NamespaceOwner.get(NAMESPACE_ID));
 
     DelegationControlSystem delegationControl = new DelegationControlSystem();

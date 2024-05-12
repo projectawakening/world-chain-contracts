@@ -52,7 +52,7 @@ contract CallWorld is Script {
       cid
     );
     ResourceId systemId = smartCharacterSystemId();
-    bytes memory callData = abi.encodeWithSelector(IWorldCall.call.selector, systemId, data);
+    bytes memory callData = abi.encodeWithSelector(IWorldCall.callFrom.selector, _signer, systemId, data);
 
     ERC2771Forwarder.ForwardRequest memory req = ERC2771Forwarder.ForwardRequest({
       from: _signer,
