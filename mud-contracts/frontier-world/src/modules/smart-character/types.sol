@@ -9,3 +9,9 @@ struct SmartObjectData {
   address owner;
   string tokenURI;
 }
+
+struct EntityRecordData {
+  uint256 typeId;
+  uint256 itemId;
+  uint256 volume;
+}
