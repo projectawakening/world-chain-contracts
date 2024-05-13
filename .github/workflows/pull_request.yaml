@@ -19,5 +19,5 @@ jobs:
           fetch-depth: 0 # This is required for git show-ref to work
 
       - name: Build and lint
-        uses: .github/actions/build-and-lint.yaml
+        uses: .github/actions/build-and-lint
 

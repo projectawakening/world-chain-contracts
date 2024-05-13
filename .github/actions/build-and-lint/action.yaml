@@ -7,18 +7,11 @@ on:
   workflow_call:
 
 
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    using: composite
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # This is required for git show-ref to work
-
       - uses: pnpm/action-setup@v2
         with:
           version: 8.11.x
