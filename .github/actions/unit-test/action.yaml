@@ -27,6 +27,13 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
+
+    - name: Restore Nx cache directory
+      uses: actions/cache@v2
+      with:
+        path: ~/.nx
+        key: ${{ runner.os }}-nx-${{ hashFiles('**/nx.json') }}
+
     - name: Install Foundry
       uses: foundry-rs/foundry-toolchain@v1
 
