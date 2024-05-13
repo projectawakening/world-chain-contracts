@@ -1,15 +1,11 @@
 name: Build
 run-name: Build
 
-on:
-  push:
-    branches:
-      - "*"
-  workflow_dispatch:
 
-env:
-  AWS_REGION: eu-west-1
-  BUCKET_NAME: ${{ vars.BUCKET_NAME}}
+on: 
+  workflow_dispatch:
+  workflow_call:
+
 
 permissions:
   id-token: write # This is required for requesting the JWT
