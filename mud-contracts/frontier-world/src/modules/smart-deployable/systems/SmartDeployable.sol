@@ -7,7 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { LOCATION_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { LocationLib } from "../../location/LocationLib.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
@@ -16,17 +16,19 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codeg
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
-import { State } from "../types.sol";
-import { State, SmartObjectData } from "../types.sol";
-import { Utils } from "../Utils.sol";
-import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
+import { InventoryLib } from "../../inventory/InventoryLib.sol";
+
+import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
+import { State, SmartObjectData } from "../types.sol";
 import { FUEL_DECIMALS } from "../constants.sol";
+import { Utils } from "../Utils.sol";
 
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using LocationLib for LocationLib.World;
+  using InventoryLib for InventoryLib.World;
 
   // TODO: is `supportInterface` working properly here ?
 
@@ -111,7 +113,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function destroyDeployable(
     uint256 entityId
   ) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
-    // TODO: figure out how to delete inventory in the case of smart storage units
+    _inventoryLib().invalidateInvItems(entityId);
     _setDeployableState(entityId, State.ANCHORED, State.DESTROYED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
@@ -158,7 +160,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId entityId
    */
   function unanchor(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
-    // TODO: figure out how to delete inventory in the case of smart storage units
+    _inventoryLib().invalidateInvItems(entityId);
     _setDeployableState(entityId, State.ANCHORED, State.UNANCHORED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
@@ -369,6 +371,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   // TODO: this is kinda dirty.
   function _locationLib() internal view returns (LocationLib.World memory) {
     return LocationLib.World({ iface: IBaseWorld(_world()), namespace: LOCATION_DEPLOYMENT_NAMESPACE });
+  }
+
+  function _inventoryLib() internal view returns (InventoryLib.World memory) {
+    return InventoryLib.World({ iface: IBaseWorld(_world()), namespace: INVENTORY_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal view returns (ResourceId) {

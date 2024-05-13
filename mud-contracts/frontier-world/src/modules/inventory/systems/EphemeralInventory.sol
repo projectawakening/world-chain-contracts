@@ -121,7 +121,14 @@ contract EphemeralInventory is EveSystem {
           items[i].typeId
         );
       }
-      usedCapacity = processItemDeposit(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity, maxCapacity, i);
+      usedCapacity = _processItemDeposit(
+        smartObjectId,
+        ephemeralInventoryOwner,
+        items[i],
+        usedCapacity,
+        maxCapacity,
+        i
+      );
     }
     EphemeralInvTable.setUsedCapacity(
       _namespace().ephemeralInvTableId(),
@@ -152,7 +159,7 @@ contract EphemeralInventory is EveSystem {
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
-      usedCapacity = processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
+      usedCapacity = _processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
     }
     EphemeralInvTable.setUsedCapacity(
       _namespace().ephemeralInvTableId(),
@@ -162,11 +169,44 @@ contract EphemeralInventory is EveSystem {
     );
   }
 
+  /**
+   * @notice Invalidate items from the ephemeral inventory when the ssu is destroyed or unanchored
+   * @dev Invalidate items from the ephemeral inventory by smart storage unit id
+   * //TODO only game server should be able to access this function
+   * @param smartObjectId The smart storage unit id
+   * @param ephemeralInventoryOwner The owner of the inventory
+   * @param items The items to invalidate from the inventory
+   */
+  function invalidateEphemeralItems(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) {
+    uint256 itemsLength = items.length;
+    for (uint256 i = 0; i < itemsLength; i++) {
+      EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
+        _namespace().ephemeralInventoryItemTableId(),
+        smartObjectId,
+        items[i].inventoryItemId,
+        ephemeralInventoryOwner
+      );
+      if (itemData.isValid) {
+        EphemeralInvItemTable.setIsValid(
+          _namespace().ephemeralInventoryItemTableId(),
+          smartObjectId,
+          items[i].inventoryItemId,
+          ephemeralInventoryOwner,
+          false
+        );
+      }
+    }
+  }
+
   function _systemId() internal view returns (ResourceId) {
     return _namespace().ephemeralInventorySystemId();
   }
 
-  function processItemDeposit(
+  function _processItemDeposit(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
@@ -209,7 +249,7 @@ contract EphemeralInventory is EveSystem {
     return usedCapacity + reqCapacity;
   }
 
-  function processItemWithdrawal(
+  function _processItemWithdrawal(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
@@ -222,13 +262,13 @@ contract EphemeralInventory is EveSystem {
       item.owner
     );
 
-    validateWithdrawal(item, itemData);
-    updateInventoryAfterWithdrawal(smartObjectId, ephemeralInventoryOwner, item, itemData);
+    _validateWithdrawal(item, itemData);
+    _updateInventoryAfterWithdrawal(smartObjectId, ephemeralInventoryOwner, item, itemData);
 
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function validateWithdrawal(InventoryItem memory item, EphemeralInvItemTableData memory itemData) internal pure {
+  function _validateWithdrawal(InventoryItem memory item, EphemeralInvItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert IInventoryErrors.Inventory_InvalidQuantity(
         "InventoryEphemeralSystem: invalid quantity",
@@ -238,20 +278,20 @@ contract EphemeralInventory is EveSystem {
     }
   }
 
-  function updateInventoryAfterWithdrawal(
+  function _updateInventoryAfterWithdrawal(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
     EphemeralInvItemTableData memory itemData
   ) internal {
     if (item.quantity == itemData.quantity) {
-      removeItemFromInventory(smartObjectId, ephemeralInventoryOwner, item, itemData);
+      _removeItemFromInventory(smartObjectId, ephemeralInventoryOwner, item, itemData);
     } else {
-      reduceItemQuantity(smartObjectId, item, itemData);
+      _reduceItemQuantity(smartObjectId, item, itemData);
     }
   }
 
-  function removeItemFromInventory(
+  function _removeItemFromInventory(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
@@ -280,7 +320,7 @@ contract EphemeralInventory is EveSystem {
     );
   }
 
-  function reduceItemQuantity(
+  function _reduceItemQuantity(
     uint256 smartObjectId,
     InventoryItem memory item,
     EphemeralInvItemTableData memory itemData

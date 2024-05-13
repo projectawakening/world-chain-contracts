@@ -17,4 +17,6 @@ interface IEphemeralInventory {
   function withdrawFromEphemeralInventory(uint256 smartObjectId, address owner, InventoryItem[] memory items) external;
 
   function interact(uint256 smartObjectId, address owner, bytes memory interactionParams) external;
+
+  function invalidateEphemeralItems(uint256 smartObjectId, address owner, InventoryItem[] memory items) external;
 }

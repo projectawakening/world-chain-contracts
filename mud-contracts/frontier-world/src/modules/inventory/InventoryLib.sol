@@ -43,6 +43,13 @@ library InventoryLib {
     );
   }
 
+  function invalidateInvItems(World memory world, uint256 smartObjectId) internal {
+    world.iface.call(
+      world.namespace.inventorySystemId(),
+      abi.encodeCall(IInventory.invalidateInvItems, (smartObjectId))
+    );
+  }
+
   function setEphemeralInventoryCapacity(
     World memory world,
     uint256 smartObjectId,
@@ -75,6 +82,18 @@ library InventoryLib {
     world.iface.call(
       world.namespace.ephemeralInventorySystemId(),
       abi.encodeCall(IEphemeralInventory.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+  }
+
+  function invalidateEphemeralItems(
+    World memory world,
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IEphemeralInventory.invalidateEphemeralItems, (smartObjectId, ephemeralInventoryOwner, items))
     );
   }
 

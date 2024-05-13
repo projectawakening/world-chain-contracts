@@ -104,7 +104,7 @@ contract Inventory is EveSystem {
       if (entityRecord.doesExists == false) {
         revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
       }
-      usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
+      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
     }
 
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
@@ -125,21 +125,42 @@ contract Inventory is EveSystem {
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
-      usedCapacity = processItemWithdrawal(smartObjectId, items[i], usedCapacity);
+      usedCapacity = _processItemWithdrawal(smartObjectId, items[i], usedCapacity);
     }
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
+  }
+
+  /**
+   * @notice Invalidate items in the inventory
+   * @dev Invalidate items in the inventory by smart storage unit id
+   * //TODO Only owner(msg.sender) of the smart storage unit can invalidate items in the inventory
+   * @param smartObjectId The smart storage unit id
+   */
+  function invalidateInvItems(uint256 smartObjectId) public hookable(smartObjectId, _systemId()) {
+    uint256[] memory items = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId);
+    uint256 itemsLength = items.length;
+    for (uint256 i = 0; i < itemsLength; i++) {
+      InventoryItemTableData memory itemData = InventoryItemTable.get(
+        _namespace().inventoryItemTableId(),
+        smartObjectId,
+        items[i]
+      );
+      if (itemData.isValid) {
+        InventoryItemTable.setIsValid(_namespace().inventoryItemTableId(), smartObjectId, items[i], false);
+      }
+    }
   }
 
   function _systemId() internal view returns (ResourceId) {
     return _namespace().inventorySystemId();
   }
 
-  function processItemDeposit(
+  function _processItemDeposit(
     uint256 smartObjectId,
     InventoryItem memory item,
     uint256 usedCapacity,
     uint256 maxCapacity,
-    uint256 index
+    uint256 itemIndex
   ) internal returns (uint256) {
     uint256 reqCapacity = item.volume * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
@@ -149,26 +170,48 @@ contract Inventory is EveSystem {
         usedCapacity + reqCapacity
       );
     }
-    uint256 quantity = InventoryItemTable.getQuantity(
+
+    _updateInventoryAfterDeposit(smartObjectId, item, itemIndex);
+    return usedCapacity + reqCapacity;
+  }
+
+  function _updateInventoryAfterDeposit(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
+    InventoryItemTableData memory itemData = InventoryItemTable.get(
       _namespace().inventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId
     );
 
     InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
-    InventoryItemTable.set(
-      _namespace().inventoryItemTableId(),
-      smartObjectId,
-      item.inventoryItemId,
-      quantity + item.quantity,
-      index,
-      true
-    );
-
-    return usedCapacity + reqCapacity;
+    //If the item is invalid, it means it was unanchored before
+    if (itemData.isValid == false) {
+      //Reset the item quantity instead of incrementing it
+      InventoryItemTable.set(
+        _namespace().inventoryItemTableId(),
+        smartObjectId,
+        item.inventoryItemId,
+        item.quantity,
+        itemIndex,
+        true
+      );
+    } else {
+      uint256 quantity = InventoryItemTable.getQuantity(
+        _namespace().inventoryItemTableId(),
+        smartObjectId,
+        item.inventoryItemId
+      );
+      InventoryItemTable.set(
+        _namespace().inventoryItemTableId(),
+        smartObjectId,
+        item.inventoryItemId,
+        quantity + item.quantity,
+        itemIndex,
+        true
+      );
+    }
   }
 
-  function processItemWithdrawal(
+  function _processItemWithdrawal(
     uint256 smartObjectId,
     InventoryItem memory item,
     uint256 usedCapacity
@@ -178,14 +221,14 @@ contract Inventory is EveSystem {
       smartObjectId,
       item.inventoryItemId
     );
-    validateWithdrawal(item, itemData);
+    _validateWithdrawal(item, itemData);
 
-    updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
+    _updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
 
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
+  function _validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert IInventoryErrors.Inventory_InvalidQuantity(
         "Inventory: invalid quantity",
@@ -195,19 +238,19 @@ contract Inventory is EveSystem {
     }
   }
 
-  function updateInventoryAfterWithdrawal(
+  function _updateInventoryAfterWithdrawal(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
   ) internal {
     if (item.quantity == itemData.quantity) {
-      removeItemCompletely(smartObjectId, item, itemData);
+      _removeItemCompletely(smartObjectId, item, itemData);
     } else {
-      reduceItemQuantity(smartObjectId, item, itemData);
+      _reduceItemQuantity(smartObjectId, item, itemData);
     }
   }
 
-  function removeItemCompletely(
+  function _removeItemCompletely(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
@@ -219,7 +262,7 @@ contract Inventory is EveSystem {
     InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
   }
 
-  function reduceItemQuantity(
+  function _reduceItemQuantity(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
