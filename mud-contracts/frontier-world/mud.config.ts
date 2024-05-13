@@ -285,7 +285,7 @@ export default mudConfig({
      */
     EphemeralInvOwnerTable: {
       keySchema: {
-        smartObjectId: "uint256"
+        smartObjectId: "uint256",
       },
       valueSchema: {
         ephemeralInvOwner: "address[]",
