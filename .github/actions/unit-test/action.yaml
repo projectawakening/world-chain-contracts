@@ -50,18 +50,18 @@ runs:
       run: |
         pnpm audit
 
-    - name: Build feature branch
+    - name: Test feature branch
       if: github.ref_name != 'develop' #only build on feature branches
       shell: bash
       run: |
         MAIN_HEAD=$(git rev-parse origin/main)
-        pnpm nx affected -t test --base=$MAIN_HEAD --verbose
+        pnpm nx affected -t test --base=$MAIN_HEAD --verbose --parallel=false
 
-    - name: Build on DEVELOP
+    - name: Test on DEVELOP
       shell: bash
       if: github.ref_name == 'develop' #only build on default branch
       run: |
         git show-ref
         THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
         echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
-        pnpm nx affected -t test --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
+        pnpm nx affected -t test --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose --parallel=false
