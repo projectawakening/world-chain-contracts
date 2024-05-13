@@ -27,8 +27,8 @@ contract CreateSmartCharacter is Script {
     uint256 typeId = 123;
     uint256 itemId = 234;
     uint256 volume = 100;
-    string memory cid = "azerty";
-    string memory characterName = "awesome-o";
+    string memory cid = "azert";
+    string memory characterName = "awesome character";
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);

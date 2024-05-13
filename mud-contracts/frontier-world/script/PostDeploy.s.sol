@@ -150,7 +150,7 @@ contract PostDeploy is Script {
 
     IERC721Mintable erc721CharacterToken = registerERC721(
       world,
-      "smartChar",
+      "erc721Charactr",
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
     );
     console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));

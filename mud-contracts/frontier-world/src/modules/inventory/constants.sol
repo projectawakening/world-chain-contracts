@@ -17,8 +17,8 @@ bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
 
 bytes16 constant INVENTORY_TABLE_NAME = "InventoryTable";
 bytes16 constant INVENTORY_ITEM_TABLE_NAME = "InventoryItemTab";
-bytes16 constant EPHEMERAL_INVENTORY_TABLE_NAME = "EphemeralInvento";
+bytes16 constant EPHEMERAL_INVENTORY_TABLE_NAME = "EphemeralInvTable";
 bytes16 constant EPHEMERAL_INVENTORY_CAPACITY_TABLE_NAME = "EphemeralInvCapa";
 bytes16 constant EPHEMERAL_INVENTORY_ITEM_TABLE_NAME = "EphemeralInvItem";
-bytes16 constant EPHEMERAL_INVENTORY_OWNER_TABLE_NAME = "EphemeralInvOwnr";
+bytes16 constant EPHEMERAL_INVENTORY_OWNER_TABLE_NAME = "EphemeralInvOwne";
 bytes16 constant ITEM_TRANSFER_TABLE_NAME = "ItemTransferOffc";
