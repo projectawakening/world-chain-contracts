@@ -102,7 +102,7 @@ export default mudConfig({
         itemId: "uint256",
         typeId: "uint256",
         volume: "uint256",
-        doesExists: "bool",
+        recordExists: "bool",
       },
       tableIdArgument: true,
     },

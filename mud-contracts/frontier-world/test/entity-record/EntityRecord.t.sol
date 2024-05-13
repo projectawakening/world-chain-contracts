@@ -72,7 +72,7 @@ contract EntityRecordTest is Test {
       itemId: itemId,
       typeId: typeId,
       volume: volume,
-      doesExists: true
+      recordExists: true
     });
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);

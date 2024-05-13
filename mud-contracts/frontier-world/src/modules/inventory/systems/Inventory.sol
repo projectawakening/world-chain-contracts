@@ -101,7 +101,7 @@ contract Inventory is EveSystem {
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
         items[i].inventoryItemId
       );
-      if (entityRecord.doesExists == false) {
+      if (entityRecord.recordExists == false) {
         revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
       }
       usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
@@ -133,7 +133,7 @@ contract Inventory is EveSystem {
   /**
    * @notice Invalidate items in the inventory
    * @dev Invalidate items in the inventory by smart storage unit id
-   * //TODO Only owner(msg.sender) of the smart storage unit can invalidate items in the inventory
+   * //TODO Add access permissions
    * @param smartObjectId The smart storage unit id
    */
   function invalidateInvItems(uint256 smartObjectId) public hookable(smartObjectId, _systemId()) {
