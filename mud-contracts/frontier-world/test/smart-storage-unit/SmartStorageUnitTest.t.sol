@@ -287,14 +287,26 @@ contract SmartStorageUnitTest is Test {
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
-      owner: address(2),
+      owner: address(1),
       itemId: 12,
       typeId: 3,
       volume: 10,
       quantity: 5
     });
 
+    InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
+    address ephemeralInventoryOwner = address(2);
+    ephemeralItems[0] = InventoryItem({
+      inventoryItemId: 456,
+      owner: address(2),
+      itemId: 45,
+      typeId: 6,
+      volume: 10,
+      quantity: 5
+    });
+
     testCreateAndDepositItemsToInventory(smartObjectId);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
 
     smartDeployable.bringOffline(smartObjectId);
     smartDeployable.unanchor(smartObjectId);
@@ -315,11 +327,22 @@ contract SmartStorageUnitTest is Test {
     assertEq(inventoryItemTableData.isValid, false);
     assertEq(inventoryItemTableData.quantity, items[0].quantity);
 
+    EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      ephemeralItems[0].inventoryItemId,
+      ephemeralItems[0].owner
+    );
+
+    assertEq(ephemeralInvItemTableData.quantity, ephemeralItems[0].quantity);
+    assertEq(ephemeralInvItemTableData.isValid, false);
+
     LocationTableData memory location = LocationTableData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
     smartDeployable.anchor(smartObjectId, location);
     smartDeployable.bringOnline(smartObjectId);
 
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
 
     currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -337,14 +360,15 @@ contract SmartStorageUnitTest is Test {
     assertEq(inventoryItemTableData.isValid, true);
     assertEq(inventoryItemTableData.quantity, items[0].quantity);
 
-    // EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
-    //   INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
-    //   smartObjectId,
-    //   456,
-    //   address(1)
-    // );
+    ephemeralInvItemTableData = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      ephemeralItems[0].inventoryItemId,
+      ephemeralItems[0].owner
+    );
 
-    // assertEq(ephemeralInvItemTableData.quantity, 0);
+    assertEq(ephemeralInvItemTableData.quantity, ephemeralItems[0].quantity);
+    assertEq(ephemeralInvItemTableData.isValid, true);
   }
 
   function testDestroyAndInvalidateInventoryItems(uint256 smartObjectId) public {
@@ -359,6 +383,7 @@ contract SmartStorageUnitTest is Test {
     });
 
     testCreateAndDepositItemsToInventory(smartObjectId);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, items[0].owner, items);
 
     smartDeployable.bringOffline(smartObjectId);
     smartDeployable.destroyDeployable(smartObjectId);
@@ -378,6 +403,16 @@ contract SmartStorageUnitTest is Test {
 
     assertEq(inventoryItemTableData.isValid, false);
     assertEq(inventoryItemTableData.quantity, items[0].quantity);
+
+    EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+
+    assertEq(ephemeralInvItemTableData.quantity, items[0].quantity);
+    assertEq(ephemeralInvItemTableData.isValid, false);
   }
 
   function testDestroyAndRevertDepositItems(uint256 smartObjectId) public {
