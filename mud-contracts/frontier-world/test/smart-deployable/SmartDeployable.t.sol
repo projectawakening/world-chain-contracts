@@ -21,10 +21,11 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
+import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { State, SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
@@ -32,9 +33,13 @@ import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartD
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
+import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
@@ -49,6 +54,7 @@ import { FUEL_DECIMALS } from "../../src/modules/smart-deployable/constants.sol"
 contract smartDeployableTest is Test {
   using Utils for bytes14;
   using LocationUtils for bytes14;
+  using InventoryUtils for bytes14;
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
@@ -87,6 +93,19 @@ contract smartDeployableTest is Test {
     world.installModule(deployableModule, abi.encode(DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721Token));
+
+    // Inventory module installation
+    InventoryModule inventoryModule = new InventoryModule();
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE)) == address(this))
+      world.transferOwnership(
+        WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE),
+        address(inventoryModule)
+      );
+
+    world.installModule(
+      inventoryModule,
+      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
+    );
   }
 
   function _installModule(IModule module, bytes14 namespace) internal {
