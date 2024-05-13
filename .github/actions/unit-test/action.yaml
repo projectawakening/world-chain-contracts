@@ -55,7 +55,7 @@ runs:
       shell: bash
       run: |
         MAIN_HEAD=$(git rev-parse origin/main)
-        pnpm nx affected -t test --base=$MAIN_HEAD --verbose --parallel=false
+        pnpm nx affected -t test --base=$MAIN_HEAD --verbose --parallel=0
 
     - name: Test on DEVELOP
       shell: bash
@@ -64,4 +64,4 @@ runs:
         git show-ref
         THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
         echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
-        pnpm nx affected -t test --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose --parallel=false
+        pnpm nx affected -t test --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose --parallel=0
