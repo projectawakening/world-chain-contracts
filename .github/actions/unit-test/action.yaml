@@ -1,0 +1,57 @@
+name: Unit test
+description: Runs unit test for projects in the
+
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8.11.x
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - uses: actions/cache@v3
+      name: Setup pnpm cache
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+
+    - name: Install packages
+      shell: bash
+      run: |
+        pnpm install
+
+    - name: Audit packages
+      shell: bash
+      run: |
+        pnpm audit
+
+    - name: Build feature branch
+      if: github.ref_name != 'develop' #only build on feature branches
+      shell: bash
+      run: |
+        MAIN_HEAD=$(git rev-parse origin/main)
+        pnpm nx affected -t test --base=$MAIN_HEAD --verbose
+
+    - name: Build on DEVELOP
+      shell: bash
+      if: github.ref_name == 'develop' #only build on default branch
+      run: |
+        git show-ref
+        THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
+        echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
+        pnpm nx affected -t test --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
