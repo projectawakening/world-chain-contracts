@@ -14,7 +14,7 @@ env:
   BUILD_COMMIT: ${{ github.sha }}
   REGISTRY: ghcr.io
   REPO: ${{ github.repository }}
-  IMAGE_NAME: world-chain-deployer-image
+  IMAGE_NAME: world-chain-deployer-image-TEST
 
 jobs:
   smoke-test:
@@ -30,7 +30,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: meta
         with:
-          images: test-${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
 
       - name: Build and load deployer image
         id: build_and_load
