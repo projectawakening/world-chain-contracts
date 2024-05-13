@@ -30,10 +30,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha
+          images: test-${{ env.IMAGE_NAME }}
 
       - name: Build and load deployer image
         id: build_and_load
