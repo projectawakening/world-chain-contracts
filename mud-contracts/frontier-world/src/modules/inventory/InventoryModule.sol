@@ -14,6 +14,7 @@ import { InventoryTable } from "../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../codegen/tables/InventoryItemTable.sol";
 import { EphemeralInvTable } from "../../codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable } from "../../codegen/tables/EphemeralInvItemTable.sol";
+import { EphemeralInvOwnerTable } from "../../codegen/tables/EphemeralInvOwnerTable.sol";
 import { ItemTransferOffchainTable } from "../../codegen/tables/ItemTransferOffchainTable.sol";
 
 import { Inventory } from "./systems/Inventory.sol";
@@ -102,6 +103,8 @@ contract InventoryModuleRegistrationLibrary {
       EphemeralInvTable.register(namespace.ephemeralInvTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
       EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInventoryOwnerTableId()))
+      EphemeralInvOwnerTable.register(namespace.ephemeralInventoryOwnerTableId());
     if (!ResourceIds.getExists(namespace.itemTransferTableId()))
       ItemTransferOffchainTable.register(namespace.itemTransferTableId());
 

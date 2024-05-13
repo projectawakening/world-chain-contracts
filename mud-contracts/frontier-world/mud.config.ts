@@ -196,7 +196,7 @@ export default mudConfig({
       tableIdArgument: true,
     },
     /**
-     *
+     * Used to store the fuel balance of a deployable
      */
     DeployableFuelBalance: {
       keySchema: {
@@ -211,7 +211,9 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
-
+    /**
+     * Used to store the deployable details of a in-game entity
+     */
     DeployableTokenTable: {
       keySchema: {},
       valueSchema: {
@@ -275,6 +277,18 @@ export default mudConfig({
       valueSchema: {
         usedCapacity: "uint256",
         items: "uint256[]",
+      },
+      tableIdArgument: true,
+    },
+    /**
+     * Used to store the ephemeral inventory owner details
+     */
+    EphemeralInvOwnerTable: {
+      keySchema: {
+        smartObjectId: "uint256"
+      },
+      valueSchema: {
+        ephemeralInvOwner: "address[]",
       },
       tableIdArgument: true,
     },

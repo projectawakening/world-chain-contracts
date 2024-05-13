@@ -85,15 +85,10 @@ library InventoryLib {
     );
   }
 
-  function invalidateEphemeralItems(
-    World memory world,
-    uint256 smartObjectId,
-    address ephemeralInventoryOwner,
-    InventoryItem[] memory items
-  ) internal {
+  function invalidateEphemeralItems(World memory world, uint256 smartObjectId) internal {
     world.iface.call(
-      world.namespace.inventoryInteractSystemId(),
-      abi.encodeCall(IEphemeralInventory.invalidateEphemeralItems, (smartObjectId, ephemeralInventoryOwner, items))
+      world.namespace.ephemeralInventorySystemId(),
+      abi.encodeCall(IEphemeralInventory.invalidateEphemeralItems, (smartObjectId))
     );
   }
 

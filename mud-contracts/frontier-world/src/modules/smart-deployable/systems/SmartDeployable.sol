@@ -114,6 +114,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     uint256 entityId
   ) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
     _inventoryLib().invalidateInvItems(entityId);
+    _inventoryLib().invalidateEphemeralItems(entityId);
     _setDeployableState(entityId, State.ANCHORED, State.DESTROYED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
@@ -161,6 +162,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    */
   function unanchor(uint256 entityId) public hookable(entityId, _systemId()) onlyState(entityId, State.ANCHORED) {
     _inventoryLib().invalidateInvItems(entityId);
+    _inventoryLib().invalidateEphemeralItems(entityId);
     _setDeployableState(entityId, State.ANCHORED, State.UNANCHORED);
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);

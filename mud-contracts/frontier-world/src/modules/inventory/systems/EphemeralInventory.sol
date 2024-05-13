@@ -11,6 +11,7 @@ import { EphemeralInvCapacityTable } from "../../../codegen/tables/EphemeralInvC
 import { DeployableState } from "../../../codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
+import { EphemeralInvOwnerTable } from "../../../codegen/tables/EphemeralInvOwnerTable.sol";
 import { State } from "../../../codegen/common.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
@@ -172,32 +173,40 @@ contract EphemeralInventory is EveSystem {
   /**
    * @notice Invalidate items from the ephemeral inventory when the ssu is destroyed or unanchored
    * @dev Invalidate items from the ephemeral inventory by smart storage unit id
+   * This is a gas heavy operation and should be refactored to be called externally by passing owner parameter
    * //TODO only game server should be able to access this function
    * @param smartObjectId The smart storage unit id
-   * @param ephemeralInventoryOwner The owner of the inventory
-   * @param items The items to invalidate from the inventory
    */
-  function invalidateEphemeralItems(
-    uint256 smartObjectId,
-    address ephemeralInventoryOwner,
-    InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) {
-    uint256 itemsLength = items.length;
-    for (uint256 i = 0; i < itemsLength; i++) {
-      EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
-        _namespace().ephemeralInventoryItemTableId(),
+  function invalidateEphemeralItems(uint256 smartObjectId) public hookable(smartObjectId, _systemId()) {
+    address[] memory ephermeralOwners = EphemeralInvOwnerTable.getEphemeralInvOwner(
+      _namespace().ephemeralInventoryOwnerTableId(),
+      smartObjectId
+    );
+    uint256 ownersLength = ephermeralOwners.length;
+    for (uint256 i = 0; i < ownersLength; i++) {
+      uint256[] memory items = EphemeralInvTable.getItems(
+        _namespace().ephemeralInvTableId(),
         smartObjectId,
-        items[i].inventoryItemId,
-        ephemeralInventoryOwner
+        ephermeralOwners[i]
       );
-      if (itemData.isValid) {
-        EphemeralInvItemTable.setIsValid(
+
+      uint256 itemsLength = items.length;
+      for (uint256 j = 0; j < itemsLength; j++) {
+        EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
           _namespace().ephemeralInventoryItemTableId(),
           smartObjectId,
-          items[i].inventoryItemId,
-          ephemeralInventoryOwner,
-          false
+          items[j],
+          ephermeralOwners[i]
         );
+        if (itemData.isValid) {
+          EphemeralInvItemTable.setIsValid(
+            _namespace().ephemeralInventoryItemTableId(),
+            smartObjectId,
+            items[j],
+            ephermeralOwners[i],
+            false
+          );
+        }
       }
     }
   }
@@ -223,8 +232,17 @@ contract EphemeralInventory is EveSystem {
         usedCapacity + reqCapacity
       );
     }
+    _updateEphemeralInvAfterDeposit(smartObjectId, ephemeralInventoryOwner, item, index);
+    return usedCapacity + reqCapacity;
+  }
 
-    uint256 quantity = EphemeralInvItemTable.getQuantity(
+  function _updateEphemeralInvAfterDeposit(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem memory item,
+    uint256 index
+  ) internal {
+    EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
@@ -237,16 +255,36 @@ contract EphemeralInventory is EveSystem {
       ephemeralInventoryOwner,
       item.inventoryItemId
     );
-    EphemeralInvItemTable.set(
-      _namespace().ephemeralInventoryItemTableId(),
-      smartObjectId,
-      item.inventoryItemId,
-      item.owner,
-      quantity + item.quantity,
-      index,
-      true
-    );
-    return usedCapacity + reqCapacity;
+    EphemeralInvOwnerTable.push(_namespace().ephemeralInventoryOwnerTableId(), smartObjectId, ephemeralInventoryOwner);
+
+    if (itemData.isValid == false) {
+      EphemeralInvItemTable.set(
+        _namespace().ephemeralInventoryItemTableId(),
+        smartObjectId,
+        item.inventoryItemId,
+        item.owner,
+        item.quantity,
+        index,
+        true
+      );
+    } else {
+      uint256 quantity = EphemeralInvItemTable.getQuantity(
+        _namespace().ephemeralInventoryItemTableId(),
+        smartObjectId,
+        item.inventoryItemId,
+        item.owner
+      );
+
+      EphemeralInvItemTable.set(
+        _namespace().ephemeralInventoryItemTableId(),
+        smartObjectId,
+        item.inventoryItemId,
+        item.owner,
+        quantity + item.quantity,
+        index,
+        true
+      );
+    }
   }
 
   function _processItemWithdrawal(
