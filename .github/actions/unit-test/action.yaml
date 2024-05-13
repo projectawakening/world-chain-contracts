@@ -31,6 +31,12 @@ runs:
         path: ~/.nx
         key: ${{ runner.os }}-nx-${{ hashFiles('**/nx.json') }}
 
+    - name: Restore cached codegen directory
+      uses: actions/cache@v2
+      with:
+        path: ./**/src/codegen
+        key: ${{ runner.os }}-codegen-${{ hashFiles('./**/**/src/codegen/**') }}
+
     - name: Install Foundry
       uses: foundry-rs/foundry-toolchain@v1
 
