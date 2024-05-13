@@ -2,11 +2,9 @@ name: SmokeTest
 
 
 on:
-  workflow_run:
-    workflows: [Build]
-    types:
-      - completed
-    branches: []
+  push:
+    branches:
+      - "*"
 
 permissions:
   id-token: write # This is required for requesting the JWT
