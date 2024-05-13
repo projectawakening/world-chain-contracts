@@ -1,75 +1,74 @@
 name: Build
-run-name: Build
+description: Builds the monorepo based on changes
 
 
-on: 
-  workflow_dispatch:
-  workflow_call:
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8.11.x
 
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    using: composite
-    steps:
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8.11.x
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    - uses: actions/cache@v3
+      name: Setup pnpm cache
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
 
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+    - name: Install packages
+      shell: bash
+      run: |
+        pnpm install
 
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+    - name: Audit packages
+      shell: bash
+      run: |
+        pnpm audit
 
-      - name: Install packages
-        run: |
-          pnpm install
+    - name: Build feature branch
+      if: github.ref_name != 'develop' #only build on feature branches
+      shell: bash
+      run: |
+        MAIN_HEAD=$(git rev-parse origin/main)
+        pnpm nx affected -t build --base=$MAIN_HEAD --verbose
 
-      - name: Audit packages
-        run: |
-          pnpm audit
+    - name: Build on DEVELOP
+      shell: bash
+      if: github.ref_name == 'develop' #only build on default branch
+      run: |
+        git show-ref
+        THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
+        echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
+        pnpm nx affected -t build --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
 
-      - name: Build feature branch
-        if: github.ref_name != 'develop' #only build on feature branches
-        run: |
-          MAIN_HEAD=$(git rev-parse origin/main)
-          pnpm nx affected -t build --base=$MAIN_HEAD --verbose
+    - name: Lint on feature branch
+      shell: bash
+      if: github.ref_name != 'develop' #only build on feature branches
+      run: |
+        MAIN_HEAD=$(git rev-parse origin/main)
+        pnpm nx affected -t lint --base=$MAIN_HEAD --verbose
 
-      - name: Build on DEVELOP
-        if: github.ref_name == 'develop' #only build on default branch
-        run: |
-          git show-ref
-          THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
-          echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
-          pnpm nx affected -t build --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
-
-      - name: Lint on feature branch
-        if: github.ref_name != 'develop' #only build on feature branches
-        run: |
-          MAIN_HEAD=$(git rev-parse origin/main)
-          pnpm nx affected -t lint --base=$MAIN_HEAD --verbose
-
-      - name: Lint project on DEVELOP
-        if: github.ref_name == 'develop' #only build on main branch
-        run: |
-          git show-ref
-          THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
-          echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
-          pnpm nx affected -t lint --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
+    - name: Lint project on DEVELOP
+      shell: bash
+      if: github.ref_name == 'develop' #only build on main branch
+      run: |
+        git show-ref
+        THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
+        echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
+        pnpm nx affected -t lint --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
 
