@@ -76,6 +76,11 @@ jobs:
           echo "WORLD_ADDRESS=$(jq -r '.WORLD_ADDRESS' docker_run_env.json)" >> $GITHUB_ENV
           echo "FORWARDER_ADDRESS=$(jq -r '.FORWARDER_ADDRESS' docker_run_env.json)" >> $GITHUB_ENV
 
+      - name: Install packages
+        shell: bash
+        run: |
+          pnpm install
+
       - name: Running smoke tests on local chain
         run: |
           export WORLD_ADDRESS
