@@ -244,7 +244,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel in full units
    */
-  function depositFuel(uint256 entityId, uint256 unitAmount) public onlyAssociatedModule(entityId, _systemId()) {
+  function depositFuel(
+    uint256 entityId,
+    uint256 unitAmount
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     if (
       (
@@ -277,7 +280,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function withdrawFuel(uint256 entityId, uint256 unitAmount) public onlyAssociatedModule(entityId, _systemId()) {
+  function withdrawFuel(
+    uint256 entityId,
+    uint256 unitAmount
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
@@ -297,7 +303,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * or that compose with it
    * @param entityId to update
    */
-  function updateFuel(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) {
+  function updateFuel(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     _updateFuel(entityId);
   }
 

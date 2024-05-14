@@ -25,7 +25,7 @@ contract EntityRecord is EveSystem {
     uint256 itemId,
     uint256 typeId,
     uint256 volume
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     EntityRecordTable.set(_namespace().entityRecordTableId(), entityId, itemId, typeId, volume, true);
   }
 
@@ -42,7 +42,7 @@ contract EntityRecord is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
   }
 
@@ -60,7 +60,7 @@ contract EntityRecord is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
   }
 
@@ -74,7 +74,7 @@ contract EntityRecord is EveSystem {
   function setName(
     uint256 entityId,
     string memory name
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.setName(_namespace().entityRecordOffchainTableId(), entityId, name);
   }
 
@@ -88,7 +88,7 @@ contract EntityRecord is EveSystem {
   function setDappURL(
     uint256 entityId,
     string memory dappURL
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.setDappURL(_namespace().entityRecordOffchainTableId(), entityId, dappURL);
   }
 
@@ -102,7 +102,7 @@ contract EntityRecord is EveSystem {
   function setDescription(
     uint256 entityId,
     string memory description
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.setDescription(_namespace().entityRecordOffchainTableId(), entityId, description);
   }
 

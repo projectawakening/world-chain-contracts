@@ -35,7 +35,7 @@ contract InventoryInteract is EveSystem {
   function inventoryToEphemeralTransfer(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
@@ -81,7 +81,7 @@ contract InventoryInteract is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
@@ -134,7 +134,7 @@ contract InventoryInteract is EveSystem {
   function configureInteractionHandler(
     uint256 smartObjectId,
     bytes memory interactionParams
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     //TODO configure the interaction handler
   }
 
