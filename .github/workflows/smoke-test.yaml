@@ -15,8 +15,8 @@ env:
   REGISTRY: ghcr.io
   REPO: ${{ github.repository }}
   IMAGE_NAME: world-chain-deployer-image-TEST
-  RPC_URL: http://127.0.0.1:8545
-  PRIVATE_KEY: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+  TEST_RPC_URL: http://127.0.0.1:8545
+  TEST_PRIVATE_KEY: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
 
 
 jobs:
@@ -25,6 +25,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.11.x
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -63,7 +67,7 @@ jobs:
 
       - name: Run deployer image
         run: |
-          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url $RPC_URL --private-key $PRIVATE_KEY
+          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
           docker container logs world-chain-deployer-image-TEST
           docker cp world-chain-deployer-image-TEST:/monorepo/run_env.json ./docker_run_env.json
 
@@ -72,18 +76,12 @@ jobs:
           echo "WORLD_ADDRESS=$(jq -r '.WORLD_ADDRESS' docker_run_env.json)" >> $GITHUB_ENV
           echo "FORWARDER_ADDRESS=$(jq -r '.FORWARDER_ADDRESS' docker_run_env.json)" >> $GITHUB_ENV
 
-      - name: Use Environment Variables
-        run: |
-          echo "World Address: $WORLD_ADDRESS"
-          echo "Forwarder Address: $FORWARDER_ADDRESS"
-          echo "RPC URL: $RPC_URL"
-
       - name: Running smoke tests on local chain
         run: |
           export WORLD_ADDRESS
           export FORWARDER_ADDRESS
-          export RPC_URL
-          export PRIVATE_KEY
+          export RPC_URL=$TEST_RPC_URL
+          export PRIVATE_KEY=$TEST_PRIVATE_KEY
           pnpm nx run createSmartCharacter:local end-to-end-tests
 
 
