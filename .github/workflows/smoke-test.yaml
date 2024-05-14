@@ -82,13 +82,20 @@ jobs:
           pnpm install
           pnpm nx run-many -t build
 
-      - name: Running smoke tests on local chain
+      - name: Testing Smart Character creation
         run: |
           export WORLD_ADDRESS
           export FORWARDER_ADDRESS
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
           pnpm nx createSmartCharacter:local end-to-end-tests
+
+      - name: Testing ERC20 creation and minting
+        run: |
+          export WORLD_ADDRESS
+          export FORWARDER_ADDRESS
+          export RPC_URL=$TEST_RPC_URL
+          export PRIVATE_KEY=$TEST_PRIVATE_KEY
           pnpm nx createMintERC20:local end-to-end-tests
 
 
