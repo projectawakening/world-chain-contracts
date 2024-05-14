@@ -162,6 +162,6 @@ jq 'map((.name? |= gsub("^frontier__"; "")) // .)' "abis/frontier-world/IWorld-v
 show_progress 6 6
 
 echo '{"WORLD_ADDRESS":"'$WORLD_ADDRESS'", "FORWARDER_ADDRESS":"'$FORWARDER_ADDRESS'"}' > run_env.json
-
+cat run_env.json
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
