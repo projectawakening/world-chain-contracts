@@ -61,7 +61,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     uint256 fuelMaxCapacityInWei
   ) public hookable(entityId, _systemId()) onlyGlobalOnline {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
-    if (previousState != State.NULL) {
+    if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
