@@ -89,5 +89,6 @@ jobs:
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
           pnpm nx createSmartCharacter:local end-to-end-tests
+          pnpm nx createMintERC20:local end-to-end-tests
 
 
