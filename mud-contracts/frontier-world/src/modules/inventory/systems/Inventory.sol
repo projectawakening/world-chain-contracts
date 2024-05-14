@@ -153,10 +153,7 @@ contract Inventory is EveSystem {
       smartObjectId
     );
 
-    if (deployableStateData.isValid == false) {
-      //Deploybable is currently UNANCHORED or DESTORYED
-      revert IInventoryErrors.Inventory_InvalidDeployable("Inventory: invalid deployable", smartObjectId);
-    } else {
+    if (deployableStateData.isValid == true) {
       //Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
       if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
         //Item does not exist in the inventory
@@ -239,7 +236,7 @@ contract Inventory is EveSystem {
       smartObjectId
     );
 
-    if (deployableStateData.isValid == false || itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
+    if (itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
       //Disable withdraw if
       //Deploybable is currently UNANCHORED or DESTORYED or
       //or its has been re-anchored
