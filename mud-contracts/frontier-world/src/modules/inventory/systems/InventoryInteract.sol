@@ -125,11 +125,17 @@ contract InventoryInteract is EveSystem {
     _inventoryLib().depositToInventory(smartObjectId, items);
   }
 
+  /**
+   * @notice Configure the interaction handler to restrict access
+   * @dev configure the interaction handler by systemId and smartObject to interact with this system
+   * @param smartObjectId is the smart object id
+   * @param interactionParams is the interaction params
+   */
   function configureInteractionHandler(
     uint256 smartObjectId,
     bytes memory interactionParams
   ) public hookable(smartObjectId, _systemId()) {
-    //configure the interaction handler
+    //TODO configure the interaction handler
   }
 
   function _systemId() internal view returns (ResourceId) {
