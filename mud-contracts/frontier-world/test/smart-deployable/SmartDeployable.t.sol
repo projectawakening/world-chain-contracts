@@ -138,6 +138,8 @@ contract smartDeployableTest is Test {
       createdAt: block.timestamp,
       previousState: State.NULL,
       currentState: State.UNANCHORED,
+      isValid: true,
+      validityStateUpdatedAt: block.timestamp,
       updatedBlockNumber: block.number,
       updatedBlockTime: block.timestamp
     });
@@ -187,6 +189,10 @@ contract smartDeployableTest is Test {
     assertEq(location.x, tableData.x);
     assertEq(location.y, tableData.y);
     assertEq(location.z, tableData.z);
+    assertEq(
+      uint8(State.ANCHORED),
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+    );
   }
 
   function testBringOnline(

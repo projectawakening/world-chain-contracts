@@ -27,40 +27,12 @@ contract EphemeralInventory is EveSystem {
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
 
-  /**
-   * modifier to enforce online state for an smart deployable
-   * @param smartObjectId is the smart deployable id
+  /*
+   * modifier to enforce deployable state changes can happen only when the global state is online
    */
-  modifier onlyOnline(uint256 smartObjectId) {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (
-      GlobalDeployableState.getGlobalState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.globalStateTableId()) == State.OFFLINE
-    ) {
+  modifier onlyGlobalOnline() {
+    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
       revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
-    } else if (currentState != State.ONLINE) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
-    }
-    _;
-  }
-
-  /**
-   * modifier to enforce any state above anchored state for an smart deployable
-   * @param smartObjectId is the smart deployable id
-   */
-  modifier beyondAnchored(uint256 smartObjectId) {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (
-      GlobalDeployableState.getGlobalState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.globalStateTableId()) == State.OFFLINE
-    ) {
-      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
-    } else if (currentState == State.NULL || currentState == State.UNANCHORED || currentState == State.DESTROYED) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ANCHORED, currentState);
     }
     _;
   }
@@ -98,7 +70,15 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
+  ) public hookable(smartObjectId, _systemId()) onlyGlobalOnline {
+    State currentState = DeployableState.getCurrentState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    if (currentState != State.ONLINE) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    }
+
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
       _namespace().ephemeralInvTableId(),
       smartObjectId,
@@ -151,7 +131,15 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
+  ) public hookable(smartObjectId, _systemId()) onlyGlobalOnline {
+    State currentState = DeployableState.getCurrentState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    }
+
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
       _namespace().ephemeralInvTableId(),
       smartObjectId,

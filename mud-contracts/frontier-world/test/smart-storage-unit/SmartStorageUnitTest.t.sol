@@ -451,7 +451,6 @@ contract SmartStorageUnitTest is Test {
       abi.encodeWithSelector(
         SmartDeployableErrors.SmartDeployable_IncorrectState.selector,
         smartObjectId,
-        State.UNANCHORED,
         State.DESTROYED
       )
     );

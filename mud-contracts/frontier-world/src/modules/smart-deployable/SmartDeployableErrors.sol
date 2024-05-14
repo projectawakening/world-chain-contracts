@@ -4,7 +4,7 @@ pragma solidity >=0.8.21;
 import { State } from "./types.sol";
 
 interface SmartDeployableErrors {
-  error SmartDeployable_IncorrectState(uint256 entityId, State requiredState, State currentState);
+  error SmartDeployable_IncorrectState(uint256 entityId, State currentState);
   error SmartDeployable_GloballyOffline();
   error SmartDeployable_TooMuchFuelDeposited(uint256 entityId, uint256 amountDeposited);
   error SmartDeployableERC721AlreadyInitialized();
