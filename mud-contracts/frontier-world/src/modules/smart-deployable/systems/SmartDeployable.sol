@@ -108,7 +108,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev destroys a smart deployable
    * @param entityId entityId
    */
-  function destroyDeployable(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
+  function destroyDeployable(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -123,7 +125,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
    */
-  function bringOnline(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+  function bringOnline(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.ANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -137,7 +141,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings offline smart deployable (must have been online first)
    * @param entityId entityId
    */
-  function bringOffline(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+  function bringOffline(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.ONLINE) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -168,7 +174,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev unanchors a smart deployable (must have been offline first)
    * @param entityId entityId
    */
-  function unanchor(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+  function unanchor(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);

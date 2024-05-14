@@ -208,7 +208,10 @@ contract InteractTest is Test {
     inventoryModule = new InventoryModule();
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
-    world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract()));
+    world.installModule(
+      inventoryModule,
+      abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
+    );
     world.initInventory();
 
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);

@@ -126,7 +126,12 @@ contract SmartCharacterTest is Test {
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
-    EntityRecordTableData memory entityRecordData = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume, recordExists: true });
+    EntityRecordTableData memory entityRecordData = EntityRecordTableData({
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      recordExists: true
+    });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
       createdAt: block.timestamp
