@@ -126,7 +126,7 @@ contract smartDeployableTest is Test {
       previousState: State.NULL,
       currentState: State.UNANCHORED,
       isValid: true,
-      validityStateUpdatedAt: block.timestamp,
+      anchoredAt: block.timestamp,
       updatedBlockNumber: block.number,
       updatedBlockTime: block.timestamp
     });

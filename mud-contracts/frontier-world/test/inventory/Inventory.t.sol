@@ -148,7 +148,7 @@ contract InventoryTest is Test {
         previousState: State.ANCHORED,
         currentState: State.ONLINE,
         isValid: true,
-        validityStateUpdatedAt: block.timestamp,
+        anchoredAt: block.timestamp,
         updatedBlockNumber: block.number,
         updatedBlockTime: block.timestamp
       })

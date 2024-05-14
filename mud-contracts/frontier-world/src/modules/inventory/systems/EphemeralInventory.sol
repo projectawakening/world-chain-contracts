@@ -200,15 +200,13 @@ contract EphemeralInventory is EveSystem {
       smartObjectId
     );
 
-    if (deployableStateData.isValid == true) {
-      //Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
-      if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
-        //Item does not exist in the inventory
-        _depositNewItem(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
-      } else {
-        //Deployable is valid and item exists in the inventory
-        _increaseItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
-      }
+    //Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
+    if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.anchoredAt) {
+      //Item does not exist in the inventory
+      _depositNewItem(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
+    } else {
+      //Deployable is valid and item exists in the inventory
+      _increaseItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
     }
   }
 
@@ -299,10 +297,8 @@ contract EphemeralInventory is EveSystem {
       smartObjectId
     );
 
-    if (itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
-      //Disable withdraw if
-      //Deploybable is currently UNANCHORED or DESTORYED or
-      //or its has been re-anchored
+    if (itemData.stateUpdate < deployableStateData.anchoredAt) {
+      //Disable withdraw if its has been re-anchored
       revert IInventoryErrors.Inventory_InvalidItemQuantity(
         "Inventory: invalid quantity",
         smartObjectId,

@@ -191,7 +191,7 @@ export default mudConfig({
         previousState: "State",
         currentState: "State",
         isValid: "bool",
-        validityStateUpdatedAt: "uint256",
+        anchoredAt: "uint256",
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },

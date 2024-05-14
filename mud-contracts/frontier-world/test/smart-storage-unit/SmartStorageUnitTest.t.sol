@@ -333,7 +333,7 @@ contract SmartStorageUnitTest is Test {
       items[0].inventoryItemId
     );
     assertEq(inventoryItemTableData.quantity, items[0].quantity);
-    assertEq(deployableStateData.validityStateUpdatedAt >= inventoryItemTableData.stateUpdate, true);
+    assertEq(deployableStateData.anchoredAt >= inventoryItemTableData.stateUpdate, true);
 
     EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
@@ -343,7 +343,7 @@ contract SmartStorageUnitTest is Test {
     );
 
     assertEq(ephemeralInvItemTableData.quantity, ephemeralItems[0].quantity);
-    assertEq(deployableStateData.validityStateUpdatedAt >= ephemeralInvItemTableData.stateUpdate, true);
+    assertEq(deployableStateData.anchoredAt >= ephemeralInvItemTableData.stateUpdate, true);
 
     vm.warp(block.timestamp + 10);
     LocationTableData memory location = LocationTableData({ solarSystemId: 1, x: 1, y: 1, z: 1 });

@@ -73,7 +73,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         previousState: previousState,
         currentState: State.UNANCHORED,
         isValid: false,
-        validityStateUpdatedAt: block.timestamp,
+        anchoredAt: 0,
         updatedBlockNumber: block.number,
         updatedBlockTime: block.timestamp
       })
@@ -112,7 +112,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
 
     _setDeployableState(entityId, previousState, State.DESTROYED);
     DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, false);
-    DeployableState.setValidityStateUpdatedAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -158,7 +157,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     _setDeployableState(entityId, previousState, State.ANCHORED);
     _locationLib().saveLocation(entityId, locationData);
     DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, true);
-    DeployableState.setValidityStateUpdatedAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setAnchoredAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -174,7 +173,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     _setDeployableState(entityId, previousState, State.UNANCHORED);
     _locationLib().saveLocation(entityId, LocationTableData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
     DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, false);
-    DeployableState.setValidityStateUpdatedAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
