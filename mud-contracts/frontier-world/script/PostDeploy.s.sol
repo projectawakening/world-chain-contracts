@@ -64,7 +64,6 @@ contract PostDeploy is Script {
     vm.startBroadcast(deployerPrivateKey);
     // installing all modules sequentially
     _installModule(
-      world,
       deployer,
       new SmartObjectFrameworkModule(),
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
@@ -72,20 +71,18 @@ contract PostDeploy is Script {
       address(new HookCore()),
       address(new ModuleCore())
     );
-    _installPuppet(world, deployer);
-    _installModule(world, deployer, new StaticDataModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, new EntityRecordModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, new LocationModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, new SmartCharacterModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installPuppet(deployer);
+    _installModule(deployer, new StaticDataModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(deployer, new EntityRecordModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(deployer, new LocationModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(deployer, new SmartCharacterModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(
-      world,
       deployer,
       new SmartDeployableModule(),
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
       address(new SmartDeployable())
     );
     _installModule(
-      world,
       deployer,
       new InventoryModule(),
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
@@ -93,10 +90,10 @@ contract PostDeploy is Script {
       address(new EphemeralInventory()),
       address(new InventoryInteract())
     );
-    _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initModules();
-    _initERC721(world, baseURI);
+    _initERC721(baseURI);
     vm.stopBroadcast();
   }
 
@@ -122,7 +119,7 @@ contract PostDeploy is Script {
     console.log("Smart Deployable - classId: ", smartDeplFrontierClassId);
   }
 
-  function _installPuppet(IBaseWorld world, address deployer) internal {
+  function _installPuppet(address deployer) internal {
     StoreSwitch.setStoreAddress(address(world));
     // creating all module contracts
     PuppetModule puppetModule = new PuppetModule();
@@ -130,14 +127,13 @@ contract PostDeploy is Script {
     world.installModule(puppetModule, new bytes(0));
   }
 
-  function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace) internal {
+  function _installModule(address deployer, IModule module, bytes14 namespace) internal {
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace));
   }
 
   function _installModule(
-    IBaseWorld world,
     address deployer,
     IModule module,
     bytes14 namespace,
@@ -149,7 +145,6 @@ contract PostDeploy is Script {
   }
 
   function _installModule(
-    IBaseWorld world,
     address deployer,
     IModule module,
     bytes14 namespace,
@@ -162,7 +157,6 @@ contract PostDeploy is Script {
   }
 
   function _installModule(
-    IBaseWorld world,
     address deployer,
     IModule module,
     bytes14 namespace,
@@ -175,7 +169,7 @@ contract PostDeploy is Script {
     world.installModule(module, abi.encode(namespace, system1, system2, system3));
   }
 
-  function _initERC721(IBaseWorld world, string memory baseURI) internal {
+  function _initERC721(string memory baseURI) internal {
     IERC721Mintable erc721SmartDeployableToken = registerERC721(
       world,
       "erc721deploybl",

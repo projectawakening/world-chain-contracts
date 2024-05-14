@@ -19,7 +19,7 @@ import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable
 import { EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 import { Utils } from "../Utils.sol";
-import { EntityRecordData } from "../types.sol";
+import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 
 contract SmartCharacter is EveSystem {
   using WorldResourceIdInstance for ResourceId;
@@ -41,7 +41,7 @@ contract SmartCharacter is EveSystem {
   function createCharacter(
     uint256 characterId,
     address characterAddress,
-    EntityRecordData memory entityRecord,
+    EntityRecordTableData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
   ) public {

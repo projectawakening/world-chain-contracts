@@ -38,12 +38,13 @@ import { Utils as SmartCharacterUtils } from "../../src/modules/smart-character/
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { SmartCharacterModule } from "../../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
-import { SmartObjectData, EntityRecordData } from "../../src/modules/smart-character/types.sol";
+import { SmartObjectData } from "../../src/modules/smart-character/types.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract SmartCharacterTest is Test {
@@ -125,7 +126,7 @@ contract SmartCharacterTest is Test {
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
-    EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
+    EntityRecordTableData memory entityRecordData = EntityRecordTableData({ itemId: itemId, typeId: typeId, volume: volume, recordExists: true });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
       createdAt: block.timestamp

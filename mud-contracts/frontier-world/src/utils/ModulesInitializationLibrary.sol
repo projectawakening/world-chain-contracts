@@ -188,9 +188,10 @@ library ModulesInitializationLibrary {
    * @param world interface
    */
   function initInventory(IBaseWorld world) internal {
-    ResourceId[] memory systemIds = new ResourceId[](2);
+    ResourceId[] memory systemIds = new ResourceId[](3);
     systemIds[0] = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
     systemIds[1] = INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId();
+    systemIds[2] = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModules(
       _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME),
       INVENTORY_MODULE_NAME,

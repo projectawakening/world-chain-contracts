@@ -165,6 +165,11 @@ contract SmartStorageUnitTest is Test {
     smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
     world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable.globalResume();
+
+    smartObject.registerEntity(123, OBJECT);
+    world.associateEntityRecord(123);
+    smartObject.registerEntity(456, OBJECT);
+    world.associateEntityRecord(456);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -184,7 +189,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndAnchorSmartStorageUnit(uint256 smartObjectId) public {
-    EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
+    EntityRecordTableData memory entityRecordData = EntityRecordTableData({ typeId: 12345, itemId: 45, volume: 10, recordExists: true });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
     vm.assume(
@@ -259,8 +264,6 @@ contract SmartStorageUnitTest is Test {
       volume: 10,
       quantity: 5
     });
-    smartObject.registerEntity(123, OBJECT);
-    world.associateEntityRecord(123);
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(
@@ -294,9 +297,7 @@ contract SmartStorageUnitTest is Test {
       volume: 10,
       quantity: 5
     });
-    smartObject.registerEntity(456, OBJECT);
-    world.associateEntityRecord(456);
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, inventoryOwner, items);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
 
     EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),

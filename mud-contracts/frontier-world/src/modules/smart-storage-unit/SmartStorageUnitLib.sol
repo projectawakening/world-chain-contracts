@@ -5,7 +5,8 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { Utils } from "./Utils.sol";
 import { ISmartStorageUnit } from "./interfaces/ISmartStorageUnit.sol";
-import { EntityRecordData, SmartObjectData, WorldPosition } from "./types.sol";
+import { SmartObjectData, WorldPosition } from "./types.sol";
+import { EntityRecordTableData } from "../../codegen/tables/EntityRecordTable.sol";
 import { InventoryItem } from "../inventory/types.sol";
 
 /**
@@ -25,7 +26,7 @@ library SmartStorageUnitLib {
   function createAndAnchorSmartStorageUnit(
     World memory world,
     uint256 smartObjectId,
-    EntityRecordData memory entityRecordData,
+    EntityRecordTableData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,

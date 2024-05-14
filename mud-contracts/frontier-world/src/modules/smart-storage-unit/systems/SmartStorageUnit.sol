@@ -6,7 +6,9 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
-import { EntityRecordData, WorldPosition } from "../types.sol";
+import { WorldPosition } from "../types.sol";
+import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SSU_CLASS_ID } from "@eve/common-constants/src/constants.sol";
@@ -50,7 +52,7 @@ contract SmartStorageUnit is EveSystem {
    */
   function createAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    EntityRecordData memory entityRecordData,
+    EntityRecordTableData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,

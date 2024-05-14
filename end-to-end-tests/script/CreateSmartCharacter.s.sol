@@ -5,7 +5,8 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { SmartObjectData, EntityRecordData } from "@eve/frontier-world/src/modules/smart-character/types.sol";
+import { SmartObjectData } from "@eve/frontier-world/src/modules/smart-character/types.sol";
+import { EntityRecordTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordTable.sol";
 import { SmartCharacterLib } from "@eve/frontier-world/src/modules/smart-character/SmartCharacterLib.sol";
 import { EntityRecordOffchainTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
@@ -40,7 +41,7 @@ contract CreateSmartCharacter is Script {
     smartCharacter.createCharacter(
       characterId,
       characterAddress,
-      EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume }),
+      EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume, recordExists: true }),
       EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
       cid
     );

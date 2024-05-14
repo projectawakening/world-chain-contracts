@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { EntityRecordData, SmartObjectData, WorldPosition } from "../types.sol";
+import { SmartObjectData, WorldPosition } from "../types.sol";
+import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
 interface ISmartStorageUnit {
   function createAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    EntityRecordData memory entityRecordData,
+    EntityRecordTableData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,

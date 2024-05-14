@@ -5,7 +5,8 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "@eve/frontier-world/src/modules/smart-storage-unit/types.sol";
+import { SmartObjectData, WorldPosition, Coord } from "@eve/frontier-world/src/modules/smart-storage-unit/types.sol";
+import { EntityRecordTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordTable.sol";
 import { SmartStorageUnitLib } from "@eve/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
@@ -34,7 +35,7 @@ contract CreateAndAnchor is Script {
 
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
-      EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 }),
+      EntityRecordTableData({ typeId: 7888, itemId: 111, volume: 10, recordExists: true }),
       SmartObjectData({ owner: player, tokenURI: "test" }),
       WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) }),
       1e18, // fuelUnitVolume,

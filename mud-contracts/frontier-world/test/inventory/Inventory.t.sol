@@ -154,13 +154,13 @@ contract InventoryTest is Test {
     //Mock Item creation
     smartObject.registerEntity(4235, OBJECT);
     world.associateEntityRecord(4235);
-    entityRecord.createEntityRecord(4235, 4235, 12, 100, true);
+    entityRecord.createEntityRecord(4235, 4235, 12, 100);
     smartObject.registerEntity(4236, OBJECT);
     world.associateEntityRecord(4236);
-    entityRecord.createEntityRecord(4236, 4236, 12, 200, true);
+    entityRecord.createEntityRecord(4236, 4236, 12, 200);
     smartObject.registerEntity(4237, OBJECT);
     world.associateEntityRecord(4237);
-    entityRecord.createEntityRecord(4237, 4237, 12, 150, true);
+    entityRecord.createEntityRecord(4237, 4237, 12, 150);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -205,7 +205,7 @@ contract InventoryTest is Test {
     smartObject.registerEntity(smartObjectId, OBJECT);
     world.associateInventory(smartObjectId);
 
-    DeployableState.setState(
+    DeployableState.setCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId,
       State.ONLINE
