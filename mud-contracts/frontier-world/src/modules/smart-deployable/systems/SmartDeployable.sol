@@ -72,7 +72,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         createdAt: block.timestamp,
         previousState: previousState,
         currentState: State.UNANCHORED,
-        isValid: true,
+        isValid: false,
         validityStateUpdatedAt: block.timestamp,
         updatedBlockNumber: block.number,
         updatedBlockTime: block.timestamp
@@ -104,7 +104,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev destroys a smart deployable
    * @param entityId entityId
    */
-  function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
