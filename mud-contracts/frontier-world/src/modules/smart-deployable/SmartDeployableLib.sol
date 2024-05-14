@@ -80,12 +80,12 @@ library SmartDeployableLib {
     world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.unanchor, (entityId)));
   }
 
-  function globalOffline(World memory world) internal {
-    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOffline, ()));
+  function globalPause(World memory world) internal {
+    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalPause, ()));
   }
 
-  function globalOnline(World memory world) internal {
-    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalOnline, ()));
+  function globalResume(World memory world) internal {
+    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalResume, ()));
   }
 
   function setFuelConsumptionPerMinute(

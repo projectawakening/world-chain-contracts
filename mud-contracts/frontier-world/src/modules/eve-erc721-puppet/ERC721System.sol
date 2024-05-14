@@ -41,7 +41,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-balanceOf}.
    */
-  function balanceOf(address owner) public view virtual returns (uint256) {
+  function balanceOf(address owner) public virtual returns (uint256) {
     if (owner == address(0)) {
       revert ERC721InvalidOwner(address(0));
     }
@@ -51,28 +51,28 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-ownerOf}.
    */
-  function ownerOf(uint256 tokenId) public view virtual returns (address) {
+  function ownerOf(uint256 tokenId) public virtual returns (address) {
     return _requireOwned(tokenId);
   }
 
   /**
    * @dev See {IERC721Metadata-name}.
    */
-  function name() public view virtual returns (string memory) {
+  function name() public virtual returns (string memory) {
     return StaticDataGlobalTable.getName(_systemId(), _staticDataNamespace().staticDataGlobalTableId());
   }
 
   /**
    * @dev See {IERC721Metadata-symbol}.
    */
-  function symbol() public view virtual returns (string memory) {
+  function symbol() public virtual returns (string memory) {
     return StaticDataGlobalTable.getSymbol(_systemId(), _staticDataNamespace().staticDataGlobalTableId());
   }
 
   /**
    * @dev See {IERC721Metadata-tokenURI}.
    */
-  function tokenURI(uint256 tokenId) public view virtual returns (string memory) {
+  function tokenURI(uint256 tokenId) public virtual returns (string memory) {
     _requireOwned(tokenId);
 
     string memory baseURI = _baseURI();
@@ -93,7 +93,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
    * token will be the concatenation of the `baseURI` and the `tokenId`.
    */
-  function _baseURI() internal view virtual returns (string memory) {
+  function _baseURI() internal virtual returns (string memory) {
     return
       StaticDataGlobalTable.getBaseURI(_staticDataNamespace().staticDataGlobalTableId(), _namespace().erc721SystemId());
   }
@@ -108,7 +108,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-getApproved}.
    */
-  function getApproved(uint256 tokenId) public view virtual returns (address) {
+  function getApproved(uint256 tokenId) public virtual returns (address) {
     _requireOwned(tokenId);
 
     return _getApproved(tokenId);
@@ -124,7 +124,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-isApprovedForAll}.
    */
-  function isApprovedForAll(address owner, address operator) public view virtual returns (bool) {
+  function isApprovedForAll(address owner, address operator) public virtual returns (bool) {
     return OperatorApproval.get(_namespace().operatorApprovalTableId(), owner, operator);
   }
 
@@ -222,14 +222,14 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * consistent with ownership. The invariant to preserve is that for any address `a` the value returned by
    * `balanceOf(a)` must be equal to the number of tokens such that `_ownerOf(tokenId)` is `a`.
    */
-  function _ownerOf(uint256 tokenId) internal view virtual returns (address) {
+  function _ownerOf(uint256 tokenId) internal virtual returns (address) {
     return Owners.get(_namespace().ownersTableId(), tokenId);
   }
 
   /**
    * @dev Returns the approved address for `tokenId`. Returns 0 if `tokenId` is not minted.
    */
-  function _getApproved(uint256 tokenId) internal view virtual returns (address) {
+  function _getApproved(uint256 tokenId) internal virtual returns (address) {
     return TokenApproval.get(_namespace().tokenApprovalTableId(), tokenId);
   }
 
@@ -240,7 +240,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * WARNING: This function assumes that `owner` is the actual owner of `tokenId` and does not verify this
    * assumption.
    */
-  function _isAuthorized(address owner, address spender, uint256 tokenId) internal view virtual returns (bool) {
+  function _isAuthorized(address owner, address spender, uint256 tokenId) internal virtual returns (bool) {
     return
       spender != address(0) &&
       (owner == spender || isApprovedForAll(owner, spender) || _getApproved(tokenId) == spender);
@@ -254,7 +254,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * WARNING: This function assumes that `owner` is the actual owner of `tokenId` and does not verify this
    * assumption.
    */
-  function _checkAuthorized(address owner, address spender, uint256 tokenId) internal view virtual {
+  function _checkAuthorized(address owner, address spender, uint256 tokenId) internal virtual {
     if (!_isAuthorized(owner, spender, tokenId)) {
       if (owner == address(0)) {
         revert ERC721NonexistentToken(tokenId);
@@ -504,7 +504,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Overrides to ownership logic should be done to {_ownerOf}.
    */
-  function _requireOwned(uint256 tokenId) internal view returns (address) {
+  function _requireOwned(uint256 tokenId) internal returns (address) {
     address owner = _ownerOf(tokenId);
     if (owner == address(0)) {
       revert ERC721NonexistentToken(tokenId);
@@ -540,12 +540,12 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     }
   }
 
-  function _requireOwner() internal view {
+  function _requireOwner() internal {
     AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   }
 
   // TODO: this is kinda dirty.
-  function _staticDataLib() internal view returns (StaticDataLib.World memory) {
+  function _staticDataLib() internal returns (StaticDataLib.World memory) {
     return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
   }
 
@@ -554,7 +554,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     return STATIC_DATA_DEPLOYMENT_NAMESPACE;
   }
 
-  function _systemId() internal view returns (ResourceId) {
+  function _systemId() internal returns (ResourceId) {
     return _namespace().erc721SystemId();
   }
 }
