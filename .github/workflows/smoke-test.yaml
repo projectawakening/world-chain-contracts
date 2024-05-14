@@ -59,7 +59,7 @@ jobs:
       - name: Run deployer image
         run: |
           echo "Will run something like docker run for the image"
-          docker run --name world-chain-deployer-image-TEST -i  ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url http://host.docker.internal:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+            docker run --name world-chain-deployer-image-TEST -i --network="host" ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 
       - name: Running smoke tests on local chain
         run: |
