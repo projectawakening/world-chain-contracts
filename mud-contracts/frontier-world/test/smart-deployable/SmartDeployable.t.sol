@@ -114,9 +114,9 @@ contract smartDeployableTest is Test {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
   ) public {
-    smartDeployable.globalOnline();
-    smartDeployable.globalOffline();
-    smartDeployable.globalOnline();
+    smartDeployable.globalResume();
+    smartDeployable.globalPause();
+    smartDeployable.globalResume();
     vm.assume(entityId != 0);
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
@@ -426,6 +426,7 @@ contract smartDeployableTest is Test {
     vm.assume(fuelUnitAmount * (10 ** FUEL_DECIMALS) > fuelConsumption); // this time we want to run out of fuel
     vm.assume(smartObjectData.owner != address(0));
 
+    smartDeployable.globalResume();
     // have to disable fuel max inventory because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]
     // error, since we're filtering quite a lot of possible input tuples
     smartDeployable.registerDeployable(
@@ -444,9 +445,9 @@ contract smartDeployableTest is Test {
     smartDeployable.anchor(entityId, location);
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsedBeforeOffline);
-    smartDeployable.globalOffline();
+    smartDeployable.globalPause();
     vm.warp(block.timestamp + globalOfflineDuration);
-    smartDeployable.globalOnline();
+    smartDeployable.globalResume();
     vm.warp(block.timestamp + timeElapsedAfterOffline);
 
     smartDeployable.updateFuel(entityId);

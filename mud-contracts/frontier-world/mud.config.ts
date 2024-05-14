@@ -45,7 +45,7 @@ export default mudConfig({
     },
   },
   enums: {
-    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
+    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -173,7 +173,7 @@ export default mudConfig({
       keySchema: {},
       valueSchema: {
         updatedBlockNumber: "uint256",
-        globalState: "State",
+        isPaused: "bool",
         lastGlobalOffline: "uint256",
         lastGlobalOnline: "uint256",
       },

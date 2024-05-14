@@ -100,6 +100,7 @@ contract EphemeralInventoryTest is Test {
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
+    smartDeployable.globalResume();
 
     // Inventory Module installation
     inventoryModule = new InventoryModule();

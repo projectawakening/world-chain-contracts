@@ -26,12 +26,12 @@ contract Inventory is EveSystem {
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
 
-  /*
-   * modifier to enforce deployable state changes can happen only when the global state is online
+  /**
+   * modifier to enforce deployable state changes can happen only when the game server is running
    */
-  modifier onlyGlobalOnline() {
-    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
-      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
+  modifier onlyActive() {
+    if (GlobalDeployableState.getIsPaused(_namespace().globalStateTableId()) == false) {
+      revert SmartDeployableErrors.SmartDeployable_StateTransitionPaused();
     }
     _;
   }
@@ -62,7 +62,7 @@ contract Inventory is EveSystem {
   function depositToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyGlobalOnline {
+  ) public hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
@@ -100,7 +100,7 @@ contract Inventory is EveSystem {
   function withdrawFromInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyGlobalOnline {
+  ) public hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
@@ -240,7 +240,11 @@ contract Inventory is EveSystem {
       //Disable withdraw if
       //Deploybable is currently UNANCHORED or DESTORYED or
       //or its has been re-anchored
-      revert IInventoryErrors.Inventory_InvalidItemQuantity("Inventory: invalid quantity", smartObjectId, quantity);
+      revert IInventoryErrors.Inventory_InvalidItemQuantity(
+        "Inventory: invalid quantity",
+        smartObjectId,
+        item.quantity
+      );
     } else {
       //Deployable is valid and item exists in the inventory
       if (item.quantity == itemData.quantity) {

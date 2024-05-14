@@ -162,5 +162,9 @@ contract PostDeploy is Script {
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .registerDeployableToken(address(erc721SmartDeployableToken));
+
+    SmartDeployableLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .globalResume();
   }
 }

@@ -139,6 +139,7 @@ contract SmartStorageUnitTest is Test {
     // SmartStorageUnitModule installation
     _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
     smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+    smartDeployable.globalResume();
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -173,6 +174,7 @@ contract SmartStorageUnitTest is Test {
       storageCapacity,
       ephemeralStorageCapacity
     );
+
     smartDeployable.depositFuel(smartObjectId, 100000);
     smartDeployable.bringOnline(smartObjectId);
 
@@ -467,18 +469,20 @@ contract SmartStorageUnitTest is Test {
 
     vm.expectRevert(
       abi.encodeWithSelector(
-        IInventoryErrors.Inventory_InvalidDeployable.selector,
-        "Inventory: invalid deployable",
-        smartObjectId
+        IInventoryErrors.Inventory_InvalidItemQuantity.selector,
+        "Inventory: invalid quantity",
+        smartObjectId,
+        items[0].quantity
       )
     );
 
     inventory.withdrawFromInventory(smartObjectId, items);
     vm.expectRevert(
       abi.encodeWithSelector(
-        IInventoryErrors.Inventory_InvalidDeployable.selector,
-        "Inventory: invalid deployable",
-        smartObjectId
+        IInventoryErrors.Inventory_InvalidItemQuantity.selector,
+        "Inventory: invalid quantity",
+        smartObjectId,
+        ephemeralItems[0].quantity
       )
     );
     inventory.withdrawFromEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
