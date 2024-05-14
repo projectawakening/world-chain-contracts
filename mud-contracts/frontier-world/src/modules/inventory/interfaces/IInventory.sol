@@ -15,6 +15,4 @@ interface IInventory {
   function depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
 
   function withdrawFromInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
-
-  function invalidateInvItems(uint256 smartObjectId) external;
 }

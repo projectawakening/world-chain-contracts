@@ -15,6 +15,4 @@ interface IEphemeralInventory {
   function depositToEphemeralInventory(uint256 smartObjectId, address owner, InventoryItem[] memory items) external;
 
   function withdrawFromEphemeralInventory(uint256 smartObjectId, address owner, InventoryItem[] memory items) external;
-
-  function invalidateEphemeralItems(uint256 smartObjectId) external;
 }
