@@ -137,6 +137,24 @@ contract EphemeralInventoryTest is Test {
     assertEq(ephemeralInventorySystemId.getNamespace(), INVENTORY_DEPLOYMENT_NAMESPACE);
   }
 
+  function testSetDeployableStateToValid(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
+
+    DeployableState.set(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId,
+      DeployableStateData({
+        createdAt: block.timestamp,
+        previousState: State.ANCHORED,
+        currentState: State.ONLINE,
+        isValid: true,
+        validityStateUpdatedAt: block.timestamp,
+        updatedBlockNumber: block.number,
+        updatedBlockTime: block.timestamp
+      })
+    );
+  }
+
   function testSetEphemeralInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
@@ -172,11 +190,12 @@ contract EphemeralInventoryTest is Test {
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
 
+    testSetDeployableStateToValid(smartObjectId);
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(2), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(3), 4237, 0, 150, 2);
 
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
@@ -220,11 +239,12 @@ contract EphemeralInventoryTest is Test {
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
 
+    testSetDeployableStateToValid(smartObjectId);
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
 
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
@@ -261,7 +281,7 @@ contract EphemeralInventoryTest is Test {
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -280,9 +300,9 @@ contract EphemeralInventoryTest is Test {
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 1);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 1);
 
     EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
@@ -344,7 +364,7 @@ contract EphemeralInventoryTest is Test {
     testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(

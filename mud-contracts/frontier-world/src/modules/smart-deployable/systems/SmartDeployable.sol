@@ -17,8 +17,6 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
 
-import { InventoryLib } from "../../inventory/InventoryLib.sol";
-
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 import { State, SmartObjectData } from "../types.sol";
 import { FUEL_DECIMALS } from "../constants.sol";
@@ -28,7 +26,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using LocationLib for LocationLib.World;
-  using InventoryLib for InventoryLib.World;
 
   // TODO: is `supportInterface` working properly here ?
 
@@ -113,11 +110,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
-    _inventoryLib().invalidateInvItems(entityId);
-    _inventoryLib().invalidateEphemeralItems(entityId);
     _setDeployableState(entityId, previousState, State.DESTROYED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, false);
+    DeployableState.setValidityStateUpdatedAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -132,8 +127,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     }
     _updateFuel(entityId);
     _setDeployableState(entityId, previousState, State.ONLINE);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
     DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
 
@@ -163,9 +156,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
     _setDeployableState(entityId, previousState, State.ANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
     _locationLib().saveLocation(entityId, locationData);
+    DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, true);
+    DeployableState.setValidityStateUpdatedAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -177,12 +170,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
-    _inventoryLib().invalidateInvItems(entityId);
-    _inventoryLib().invalidateEphemeralItems(entityId);
+
     _setDeployableState(entityId, previousState, State.UNANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
     _locationLib().saveLocation(entityId, LocationTableData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
+    DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, false);
+    DeployableState.setValidityStateUpdatedAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
@@ -304,20 +296,31 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   /********************
    * INTERNAL METHODS *
    ********************/
-
-  function _setDeployableState(uint256 entityId, State previousState, State currentState) internal {
-    DeployableState.setPreviousState(_namespace().deployableStateTableId(), entityId, previousState);
-    DeployableState.setCurrentState(_namespace().deployableStateTableId(), entityId, currentState);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
-  }
-
   /**
    * @dev brings offline smart deployable (internal method)
    * @param entityId entityId
    */
   function _bringOffline(uint256 entityId, State previousState) internal {
     _setDeployableState(entityId, previousState, State.ANCHORED);
+  }
+
+  /**
+   * @dev internal method to set the state of a deployable
+   * @param entityId to update
+   * @param previousState to set
+   * @param currentState to set
+   */
+  function _setDeployableState(uint256 entityId, State previousState, State currentState) internal {
+    DeployableState.setPreviousState(_namespace().deployableStateTableId(), entityId, previousState);
+    DeployableState.setCurrentState(_namespace().deployableStateTableId(), entityId, currentState);
+    _updateBlockInfo(entityId);
+  }
+
+  /**
+   * @dev update block information for a given entity
+   * @param entityId to update
+   */
+  function _updateBlockInfo(uint256 entityId) internal {
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
@@ -386,10 +389,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   // TODO: this is kinda dirty.
   function _locationLib() internal view returns (LocationLib.World memory) {
     return LocationLib.World({ iface: IBaseWorld(_world()), namespace: LOCATION_DEPLOYMENT_NAMESPACE });
-  }
-
-  function _inventoryLib() internal view returns (InventoryLib.World memory) {
-    return InventoryLib.World({ iface: IBaseWorld(_world()), namespace: INVENTORY_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal view returns (ResourceId) {

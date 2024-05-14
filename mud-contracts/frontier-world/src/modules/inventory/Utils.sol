@@ -64,15 +64,6 @@ library Utils {
       });
   }
 
-  function ephemeralInventoryOwnerTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: EPHEMERAL_INVENTORY_OWNER_TABLE_NAME
-      });
-  }
-
   function itemTransferTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ITEM_TRANSFER_TABLE_NAME });
   }

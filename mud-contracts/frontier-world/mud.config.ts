@@ -250,7 +250,7 @@ export default mudConfig({
       valueSchema: {
         quantity: "uint256",
         index: "uint256",
-        isValid: "bool",
+        stateUpdate: "uint256",
       },
       tableIdArgument: true,
     },
@@ -283,18 +283,6 @@ export default mudConfig({
       tableIdArgument: true,
     },
     /**
-     * Used to store the ephemeral inventory owner details
-     */
-    EphemeralInvOwnerTable: {
-      keySchema: {
-        smartObjectId: "uint256",
-      },
-      valueSchema: {
-        ephemeralInvOwner: "address[]",
-      },
-      tableIdArgument: true,
-    },
-    /**
      * Used to store the ephemeral inventory items details of a in-game smart storage unit
      */
     EphemeralInvItemTable: {
@@ -306,7 +294,7 @@ export default mudConfig({
       valueSchema: {
         quantity: "uint256",
         index: "uint256",
-        isValid: "bool",
+        stateUpdate: "uint256",
       },
       tableIdArgument: true,
     },

@@ -21,7 +21,7 @@ import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/cor
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
@@ -93,19 +93,6 @@ contract smartDeployableTest is Test {
     world.installModule(deployableModule, abi.encode(DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721Token));
-
-    // Inventory module installation
-    InventoryModule inventoryModule = new InventoryModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE)) == address(this))
-      world.transferOwnership(
-        WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE),
-        address(inventoryModule)
-      );
-
-    world.installModule(
-      inventoryModule,
-      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
-    );
   }
 
   function _installModule(IModule module, bytes14 namespace) internal {

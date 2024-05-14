@@ -117,27 +117,6 @@ contract Inventory is EveSystem {
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
   }
 
-  /**
-   * @notice Invalidate items in the inventory
-   * @dev Invalidate items in the inventory by smart storage unit id
-   * //TODO Add access permissions
-   * @param smartObjectId The smart storage unit id
-   */
-  function invalidateInvItems(uint256 smartObjectId) public hookable(smartObjectId, _systemId()) {
-    uint256[] memory items = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId);
-    uint256 itemsLength = items.length;
-    for (uint256 i = 0; i < itemsLength; i++) {
-      InventoryItemTableData memory itemData = InventoryItemTable.get(
-        _namespace().inventoryItemTableId(),
-        smartObjectId,
-        items[i]
-      );
-      if (itemData.isValid) {
-        InventoryItemTable.setIsValid(_namespace().inventoryItemTableId(), smartObjectId, items[i], false);
-      }
-    }
-  }
-
   function _systemId() internal view returns (ResourceId) {
     return _namespace().inventorySystemId();
   }
@@ -169,33 +148,58 @@ contract Inventory is EveSystem {
       item.inventoryItemId
     );
 
-    InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
-    //If the item is invalid, it means it was unanchored before
-    if (itemData.isValid == false) {
-      //Reset the item quantity instead of incrementing it
-      InventoryItemTable.set(
-        _namespace().inventoryItemTableId(),
-        smartObjectId,
-        item.inventoryItemId,
-        item.quantity,
-        itemIndex,
-        true
-      );
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    if (deployableStateData.isValid == false) {
+      //Deploybable is currently UNANCHORED or DESTORYED
+      revert IInventoryErrors.Inventory_InvalidDeployable("Inventory: invalid deployable", smartObjectId);
     } else {
-      uint256 quantity = InventoryItemTable.getQuantity(
-        _namespace().inventoryItemTableId(),
-        smartObjectId,
-        item.inventoryItemId
-      );
-      InventoryItemTable.set(
-        _namespace().inventoryItemTableId(),
-        smartObjectId,
-        item.inventoryItemId,
-        quantity + item.quantity,
-        itemIndex,
-        true
-      );
+      //Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
+      if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
+        //Item does not exist in the inventory
+        _depositNewItem(smartObjectId, item, itemIndex);
+      } else {
+        //Deployable is valid and item exists in the inventory
+        _increaseItemQuantity(smartObjectId, item, itemIndex);
+      }
     }
+  }
+
+  /**
+   * @notice Increase the quantity of an item in the inventory
+   * @dev Increase the quantity of an item in the inventory by smart storage unit id
+   * @param smartObjectId The smart storage unit id
+   * @param item The item to increase the quantity
+   */
+  function _increaseItemQuantity(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
+    uint256 quantity = InventoryItemTable.getQuantity(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId
+    );
+    InventoryItemTable.set(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      quantity + item.quantity,
+      itemIndex,
+      block.timestamp
+    );
+  }
+
+  function _depositNewItem(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
+    InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
+    InventoryItemTable.set(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      item.quantity,
+      itemIndex,
+      block.timestamp
+    );
   }
 
   function _processItemWithdrawal(
@@ -230,10 +234,23 @@ contract Inventory is EveSystem {
     InventoryItem memory item,
     InventoryItemTableData memory itemData
   ) internal {
-    if (item.quantity == itemData.quantity) {
-      _removeItemCompletely(smartObjectId, item, itemData);
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    if (deployableStateData.isValid == false || itemData.stateUpdate < deployableStateData.validityStateUpdatedAt) {
+      //Disable withdraw if
+      //Deploybable is currently UNANCHORED or DESTORYED or
+      //or its has been re-anchored
+      revert IInventoryErrors.Inventory_InvalidDeployable("Inventory: invalid deployable", smartObjectId);
     } else {
-      _reduceItemQuantity(smartObjectId, item, itemData);
+      //Deployable is valid and item exists in the inventory
+      if (item.quantity == itemData.quantity) {
+        _removeItemCompletely(smartObjectId, item, itemData);
+      } else if (item.quantity < itemData.quantity) {
+        _reduceItemQuantity(smartObjectId, item, itemData);
+      }
     }
   }
 
@@ -260,7 +277,7 @@ contract Inventory is EveSystem {
       item.inventoryItemId,
       itemData.quantity - item.quantity,
       itemData.index,
-      true
+      block.timestamp
     );
   }
 }

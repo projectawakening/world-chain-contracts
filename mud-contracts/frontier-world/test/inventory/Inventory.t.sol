@@ -136,6 +136,24 @@ contract InventoryTest is Test {
     assertEq(inventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
+  function testSetDeployableStateToValid(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
+
+    DeployableState.set(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId,
+      DeployableStateData({
+        createdAt: block.timestamp,
+        previousState: State.ANCHORED,
+        currentState: State.ONLINE,
+        isValid: true,
+        validityStateUpdatedAt: block.timestamp,
+        updatedBlockNumber: block.number,
+        updatedBlockTime: block.timestamp
+      })
+    );
+  }
+
   function testSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
@@ -171,6 +189,7 @@ contract InventoryTest is Test {
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
     testSetInventoryCapacity(smartObjectId, storageCapacity);
+    testSetDeployableStateToValid(smartObjectId);
     InventoryTableData memory inventoryTableData = InventoryTable.get(
       DEPLOYMENT_NAMESPACE.inventoryTableId(),
       smartObjectId
@@ -203,6 +222,7 @@ contract InventoryTest is Test {
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
     testSetInventoryCapacity(smartObjectId, storageCapacity);
+    testSetDeployableStateToValid(smartObjectId);
     inventory.depositToInventory(smartObjectId, items);
 
     InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
@@ -242,7 +262,7 @@ contract InventoryTest is Test {
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
-
+    testSetDeployableStateToValid(smartObjectId);
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InsufficientCapacity.selector,
