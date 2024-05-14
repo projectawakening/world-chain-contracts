@@ -87,6 +87,6 @@ jobs:
           export FORWARDER_ADDRESS
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
-          pnpm nx run createSmartCharacter:local end-to-end-tests
+          pnpm nx createSmartCharacter:local end-to-end-tests
 
 
