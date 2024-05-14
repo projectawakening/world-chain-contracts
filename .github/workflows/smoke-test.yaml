@@ -80,6 +80,7 @@ jobs:
         shell: bash
         run: |
           pnpm install
+          pnpm nx run-many -t build
 
       - name: Running smoke tests on local chain
         run: |
