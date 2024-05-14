@@ -15,6 +15,7 @@ env:
   REGISTRY: ghcr.io
   REPO: ${{ github.repository }}
   IMAGE_NAME: world-chain-deployer-image-TEST
+  RPC_URL: http://127.0.0.1:8545
 
 jobs:
   smoke-test:
@@ -58,8 +59,21 @@ jobs:
 
       - name: Run deployer image
         run: |
-          echo "Will run something like docker run for the image"
-            docker run --name world-chain-deployer-image-TEST -i --network="host" ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --world-address 0x972d93d791c137a5e962799f8287d0da05bf409b
+          docker run --name world-chain-deployer-image-TEST -i --network="host" ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url $RPC_URL --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 > output.txt
+
+      - name: Extract environment variables from docker run
+        run: |
+          # Use grep and sed to parse the output and set environment variables
+          WORLD_ADDRESS=$(grep -oP 'World address: \K.*' output.txt)
+          FORWARDER_ADDRESS=$(grep -oP 'Trusted forwarder address: \K.*' output.txt)
+          echo "WORLD_ADDRESS=${WORLD_ADDRESS}" >> $GITHUB_ENV
+          echo "FORWARDER_ADDRESS=${FORWARDER_ADDRESS}" >> $GITHUB_ENV
+
+      - name: Use Environment Variables
+        run: |
+          echo "World Address: $WORLD_ADDRESS"
+          echo "Forwarder Address: $FORWARDER_ADDRESS"
+          echo "RPC URL: $RPC_URL"
 
       - name: Running smoke tests on local chain
         run: |
