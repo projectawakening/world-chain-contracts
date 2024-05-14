@@ -38,7 +38,6 @@ jobs:
       - name: Build and load deployer image
         id: build_and_load
         uses: docker/build-push-action@v5
-        # if: github.event_name == 'push' && github.ref_name == 'main'
         with:
           push: false
           load: true
