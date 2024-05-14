@@ -3,13 +3,11 @@ pragma solidity >=0.8.21;
 
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-
-import { EntityRecordTableData } from "../../codegen/tables/EntityRecordTable.sol";
+import { ISmartCharacter } from "./interfaces/ISmartCharacter.sol";
 import { EntityRecordOffchainTableData } from "../../codegen/tables/EntityRecordOffchainTable.sol";
 
-import { SmartObjectData } from "./types.sol";
+import { SmartObjectData, EntityRecordData } from "./types.sol";
 import { Utils } from "./Utils.sol";
-import { ISmartCharacter } from "./interfaces/ISmartCharacter.sol";
 
 /**
  * @title Smart Character Library (makes interacting with the underlying Systems cleaner)
@@ -29,7 +27,7 @@ library SmartCharacterLib {
     World memory world,
     uint256 characterId,
     address characterAddress,
-    EntityRecordTableData memory entityRecord,
+    EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
   ) internal {

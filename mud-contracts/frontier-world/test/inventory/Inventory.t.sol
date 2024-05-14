@@ -17,12 +17,11 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
-import "@eve/common-constants/src/constants.sol";
-
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
+import "@eve/common-constants/src/constants.sol";
 
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
 import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
@@ -38,7 +37,6 @@ import { InventoryTableData } from "../../src/codegen/tables/InventoryTable.sol"
 import { InventoryItemTable } from "../../src/codegen/tables/InventoryItemTable.sol";
 import { InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
-
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
@@ -57,13 +55,16 @@ import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartD
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
-
-import { createCoreModule } from "../CreateCoreModule.sol";
-
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
-
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { createCoreModule } from "../CreateCoreModule.sol";
+
+import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
+import { State } from "../../src/modules/smart-deployable/types.sol";
+import { Utils } from "../../src/modules/inventory/Utils.sol";
 
 contract InventoryTest is Test {
   using Utils for bytes14;
@@ -135,12 +136,13 @@ contract InventoryTest is Test {
     world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
+    smartDeployable.globalResume();
 
     // Inventory Module installation
     inventoryModule = new InventoryModule();
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(inventoryModule));
-    world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory()));
+    world.installModule(inventoryModule, abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract()));
     world.initInventory();
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
@@ -152,13 +154,13 @@ contract InventoryTest is Test {
     //Mock Item creation
     smartObject.registerEntity(4235, OBJECT);
     world.associateEntityRecord(4235);
-    entityRecord.createEntityRecord(4235, 4235, 12, 100);
+    entityRecord.createEntityRecord(4235, 4235, 12, 100, true);
     smartObject.registerEntity(4236, OBJECT);
     world.associateEntityRecord(4236);
-    entityRecord.createEntityRecord(4236, 4236, 12, 200);
+    entityRecord.createEntityRecord(4236, 4236, 12, 200, true);
     smartObject.registerEntity(4237, OBJECT);
     world.associateEntityRecord(4237);
-    entityRecord.createEntityRecord(4237, 4237, 12, 150);
+    entityRecord.createEntityRecord(4237, 4237, 12, 150, true);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -173,6 +175,24 @@ contract InventoryTest is Test {
     address InventorySystemAddress = Systems.getSystem(DEPLOYMENT_NAMESPACE.inventorySystemId());
     ResourceId inventorySystemId = SystemRegistry.get(InventorySystemAddress);
     assertEq(inventorySystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
+  }
+
+  function testSetDeployableStateToValid(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
+
+    DeployableState.set(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId,
+      DeployableStateData({
+        createdAt: block.timestamp,
+        previousState: State.ANCHORED,
+        currentState: State.ONLINE,
+        isValid: true,
+        anchoredAt: block.timestamp,
+        updatedBlockNumber: block.number,
+        updatedBlockTime: block.timestamp
+      })
+    );
   }
 
   function testSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
@@ -226,6 +246,7 @@ contract InventoryTest is Test {
     items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
     testSetInventoryCapacity(smartObjectId, storageCapacity);
+    testSetDeployableStateToValid(smartObjectId);
     InventoryTableData memory inventoryTableData = InventoryTable.get(
       DEPLOYMENT_NAMESPACE.inventoryTableId(),
       smartObjectId
@@ -247,6 +268,51 @@ contract InventoryTest is Test {
     assert(capacityBeforeDeposit < capacityAfterDeposit);
   }
 
+  function testInventoryItemQuantityIncrease(uint256 smartObjectId, uint256 storageCapacity) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
+    testSetDeployableStateToValid(smartObjectId);
+    inventory.depositToInventory(smartObjectId, items);
+
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, items[0].quantity);
+    assertEq(inventoryItem2.quantity, items[1].quantity);
+
+    //check the increase in quantity
+    inventory.depositToInventory(smartObjectId, items);
+    inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, items[0].quantity * 2);
+    assertEq(inventoryItem2.quantity, items[1].quantity * 2);
+  }
+
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(
       smartObjectId != 0 &&
@@ -256,7 +322,7 @@ contract InventoryTest is Test {
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
-
+    testSetDeployableStateToValid(smartObjectId);
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InsufficientCapacity.selector,

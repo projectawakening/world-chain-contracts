@@ -26,6 +26,7 @@ import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION
 import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
+import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { State, SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
@@ -33,9 +34,13 @@ import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartD
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
+import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
@@ -60,6 +65,7 @@ contract smartDeployableTest is Test {
   using ModulesInitializationLibrary for IBaseWorld;
   using SOFInitializationLibrary for IBaseWorld;
   using SmartObjectLib for SmartObjectLib.World;
+  using InventoryUtils for bytes14;
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
@@ -131,11 +137,9 @@ contract smartDeployableTest is Test {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
   ) public {
-    // don't ask (actually it's to initialize the `lastUpdatedAt` and `lastGlobalOffline` timestamps)
-    smartDeployable.globalOnline();
-    smartDeployable.globalOffline();
-    smartDeployable.globalOnline();
-
+    smartDeployable.globalResume();
+    smartDeployable.globalPause();
+    smartDeployable.globalResume();
     vm.assume(
       entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
     );
@@ -144,7 +148,10 @@ contract smartDeployableTest is Test {
     vm.assume(fuelMaxCapacity != 0);
     DeployableStateData memory data = DeployableStateData({
       createdAt: block.timestamp,
-      state: State.UNANCHORED,
+      previousState: State.NULL,
+      currentState: State.UNANCHORED,
+      isValid: true,
+      anchoredAt: block.timestamp,
       updatedBlockNumber: block.number,
       updatedBlockTime: block.timestamp
     });
@@ -163,7 +170,7 @@ contract smartDeployableTest is Test {
     DeployableStateData memory tableData = DeployableState.get(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId);
 
     assertEq(data.createdAt, tableData.createdAt);
-    assertEq(uint8(data.state), uint8(tableData.state));
+    assertEq(uint8(data.currentState), uint8(tableData.currentState));
     assertEq(data.updatedBlockNumber, tableData.updatedBlockNumber);
   }
 
@@ -198,6 +205,10 @@ contract smartDeployableTest is Test {
     assertEq(location.x, tableData.x);
     assertEq(location.y, tableData.y);
     assertEq(location.z, tableData.z);
+    assertEq(
+      uint8(State.ANCHORED),
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+    );
   }
 
   function testBringOnline(
@@ -219,7 +230,7 @@ contract smartDeployableTest is Test {
     smartDeployable.bringOnline(entityId);
     assertEq(
       uint8(State.ONLINE),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -239,7 +250,7 @@ contract smartDeployableTest is Test {
     smartDeployable.bringOffline(entityId);
     assertEq(
       uint8(State.ANCHORED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -259,7 +270,7 @@ contract smartDeployableTest is Test {
     smartDeployable.unanchor(entityId);
     assertEq(
       uint8(State.UNANCHORED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -275,11 +286,11 @@ contract smartDeployableTest is Test {
       entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
     );
 
-    testUnanchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.destroyDeployable(entityId);
     assertEq(
       uint8(State.DESTROYED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -431,7 +442,7 @@ contract smartDeployableTest is Test {
     assertEq(data.lastUpdatedAt, block.timestamp);
     assertEq(
       uint8(State.ANCHORED),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 
@@ -463,6 +474,7 @@ contract smartDeployableTest is Test {
     // Tagging that entityId as a "SmartDeployable" class
     smartObject.registerEntity(entityId, OBJECT);
 
+    smartDeployable.globalResume();
     // have to disable fuel max inventory because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]
     // error, since we're filtering quite a lot of possible input tuples
     smartDeployable.registerDeployable(
@@ -481,9 +493,9 @@ contract smartDeployableTest is Test {
     smartDeployable.anchor(entityId, location);
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsedBeforeOffline);
-    smartDeployable.globalOffline();
+    smartDeployable.globalPause();
     vm.warp(block.timestamp + globalOfflineDuration);
-    smartDeployable.globalOnline();
+    smartDeployable.globalResume();
     vm.warp(block.timestamp + timeElapsedAfterOffline);
 
     smartDeployable.updateFuel(entityId);
@@ -496,7 +508,7 @@ contract smartDeployableTest is Test {
     assertEq(data.lastUpdatedAt, block.timestamp);
     assertEq(
       uint8(State.ONLINE),
-      uint8(DeployableState.getState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
+      uint8(DeployableState.getCurrentState(DEPLOYMENT_NAMESPACE.deployableStateTableId(), entityId))
     );
   }
 }

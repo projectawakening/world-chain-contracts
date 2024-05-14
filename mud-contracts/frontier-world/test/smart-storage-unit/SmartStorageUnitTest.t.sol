@@ -32,9 +32,10 @@ import { LocationTable, LocationTableData } from "../../src/codegen/tables/Locat
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { InventoryTable, InventoryTableData } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryItemTable, InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTable.sol";
-import { EphemeralInventoryTable, EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
+import { EphemeralInvTable, EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInvCapacityTable.sol";
 
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -45,10 +46,14 @@ import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mint
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
+import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
+import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
 import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
 import { Utils as SmartStorageUnitUtils } from "../../src/modules/smart-storage-unit/Utils.sol";
@@ -57,6 +62,7 @@ import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployabl
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
@@ -75,6 +81,7 @@ contract SmartStorageUnitTest is Test {
   using SmartObjectLib for SmartObjectLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
@@ -82,6 +89,8 @@ contract SmartStorageUnitTest is Test {
   IERC721Mintable erc721DeployableToken;
   SmartStorageUnitLib.World smartStorageUnit;
   SmartDeployableLib.World smartDeployable;
+  InventoryLib.World inventory;
+
   uint256 storageCapacity = 100000;
   uint256 ephemeralStorageCapacity = 100000;
 
@@ -140,9 +149,10 @@ contract SmartStorageUnitTest is Test {
 
     world.installModule(
       inventoryModule,
-      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory())
+      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
     world.initInventory();
+    inventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
     // SmartStorageUnitModule installation
     _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
@@ -154,6 +164,7 @@ contract SmartStorageUnitTest is Test {
 
     smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
     world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
+    smartDeployable.globalResume();
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -194,10 +205,11 @@ contract SmartStorageUnitTest is Test {
       storageCapacity,
       ephemeralStorageCapacity
     );
+
     smartDeployable.depositFuel(smartObjectId, 100000);
     smartDeployable.bringOnline(smartObjectId);
 
-    State currentState = DeployableState.getState(
+    State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
     );
@@ -273,10 +285,10 @@ contract SmartStorageUnitTest is Test {
   function testCreateAndDepositItemsToEphemeralInventory(uint256 smartObjectId) public {
     testCreateAndAnchorSmartStorageUnit(smartObjectId);
     InventoryItem[] memory items = new InventoryItem[](1);
-    address inventoryOwner = address(1);
+    address ephemeralInventoryOwner = address(1);
     items[0] = InventoryItem({
       inventoryItemId: 456,
-      owner: address(2),
+      owner: address(1),
       itemId: 45,
       typeId: 6,
       volume: 10,
@@ -286,15 +298,21 @@ contract SmartStorageUnitTest is Test {
     world.associateEntityRecord(456);
     smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, inventoryOwner, items);
 
-    EphemeralInventoryTableData memory ephemeralInventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
-      inventoryOwner
+      ephemeralInventoryOwner
     );
 
     uint256 useCapacity = items[0].volume * items[0].quantity;
-    assertEq(ephemeralInventoryTableData.capacity, ephemeralStorageCapacity);
-    assertEq(ephemeralInventoryTableData.usedCapacity, useCapacity);
+    assertEq(
+      EphemeralInvCapacityTable.getCapacity(
+        INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvCapacityTableId(),
+        smartObjectId
+      ),
+      ephemeralStorageCapacity
+    );
+    assertEq(ephemeralInvTableData.usedCapacity, useCapacity);
 
     EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
@@ -305,5 +323,273 @@ contract SmartStorageUnitTest is Test {
 
     assertEq(ephemeralInvItemTableData.quantity, items[0].quantity);
     assertEq(ephemeralInvItemTableData.index, 0);
+  }
+
+  function testUnanchorAndreAnchor(uint256 smartObjectId) public {
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(1),
+      itemId: 12,
+      typeId: 3,
+      volume: 10,
+      quantity: 5
+    });
+
+    InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
+    address ephemeralInventoryOwner = address(2);
+    ephemeralItems[0] = InventoryItem({
+      inventoryItemId: 456,
+      owner: address(2),
+      itemId: 45,
+      typeId: 6,
+      volume: 10,
+      quantity: 5
+    });
+
+    testCreateAndDepositItemsToInventory(smartObjectId);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+
+    smartDeployable.bringOffline(smartObjectId);
+    smartDeployable.unanchor(smartObjectId);
+
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    assertEq(uint8(deployableStateData.currentState), uint8(State.UNANCHORED));
+    assertEq(deployableStateData.isValid, false);
+
+    InventoryItemTableData memory inventoryItemTableData = InventoryItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    assertEq(inventoryItemTableData.quantity, items[0].quantity);
+    assertEq(deployableStateData.anchoredAt >= inventoryItemTableData.stateUpdate, true);
+
+    EphemeralInvItemTableData memory ephemeralInvItemTableData = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      ephemeralItems[0].inventoryItemId,
+      ephemeralItems[0].owner
+    );
+
+    assertEq(ephemeralInvItemTableData.quantity, ephemeralItems[0].quantity);
+    assertEq(deployableStateData.anchoredAt >= ephemeralInvItemTableData.stateUpdate, true);
+
+    vm.warp(block.timestamp + 10);
+    LocationTableData memory location = LocationTableData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
+    smartDeployable.anchor(smartObjectId, location);
+    smartDeployable.bringOnline(smartObjectId);
+
+    smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+
+    deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    assertEq(uint8(deployableStateData.currentState), uint8(State.ONLINE));
+    assertEq(deployableStateData.isValid, true);
+
+    inventoryItemTableData = InventoryItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    assertEq(inventoryItemTableData.quantity, items[0].quantity);
+
+    ephemeralInvItemTableData = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      ephemeralItems[0].inventoryItemId,
+      ephemeralItems[0].owner
+    );
+
+    assertEq(ephemeralInvItemTableData.quantity, ephemeralItems[0].quantity);
+  }
+
+  function testUnanchorDepositRevert(uint256 smartObjectId) public {
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(1),
+      itemId: 12,
+      typeId: 3,
+      volume: 10,
+      quantity: 5
+    });
+
+    InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
+    address ephemeralInventoryOwner = address(2);
+    ephemeralItems[0] = InventoryItem({
+      inventoryItemId: 456,
+      owner: address(2),
+      itemId: 45,
+      typeId: 6,
+      volume: 10,
+      quantity: 5
+    });
+
+    testCreateAndDepositItemsToInventory(smartObjectId);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+
+    smartDeployable.bringOffline(smartObjectId);
+    smartDeployable.unanchor(smartObjectId);
+
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    assertEq(uint8(deployableStateData.currentState), uint8(State.UNANCHORED));
+    assertEq(deployableStateData.isValid, false);
+
+    vm.warp(block.timestamp + 10);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartDeployableErrors.SmartDeployable_IncorrectState.selector,
+        smartObjectId,
+        State.UNANCHORED
+      )
+    );
+
+    smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartDeployableErrors.SmartDeployable_IncorrectState.selector,
+        smartObjectId,
+        State.UNANCHORED
+      )
+    );
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+  }
+
+  function testUnanchorWithdrawRevert(uint256 smartObjectId) public {
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(1),
+      itemId: 12,
+      typeId: 3,
+      volume: 10,
+      quantity: 5
+    });
+
+    InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
+    address ephemeralInventoryOwner = address(2);
+    ephemeralItems[0] = InventoryItem({
+      inventoryItemId: 456,
+      owner: address(2),
+      itemId: 45,
+      typeId: 6,
+      volume: 10,
+      quantity: 5
+    });
+
+    testCreateAndDepositItemsToInventory(smartObjectId);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+
+    smartDeployable.bringOffline(smartObjectId);
+    smartDeployable.unanchor(smartObjectId);
+    vm.warp(block.timestamp + 10);
+    LocationTableData memory location = LocationTableData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
+    smartDeployable.anchor(smartObjectId, location);
+    smartDeployable.bringOnline(smartObjectId);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InvalidItemQuantity.selector,
+        "Inventory: invalid quantity",
+        smartObjectId,
+        items[0].quantity
+      )
+    );
+
+    inventory.withdrawFromInventory(smartObjectId, items);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InvalidItemQuantity.selector,
+        "Inventory: invalid quantity",
+        smartObjectId,
+        ephemeralItems[0].quantity
+      )
+    );
+    inventory.withdrawFromEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+  }
+
+  function testDestroyAndRevertDepositItems(uint256 smartObjectId) public {
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(2),
+      itemId: 12,
+      typeId: 3,
+      volume: 10,
+      quantity: 5
+    });
+
+    testCreateAndDepositItemsToInventory(smartObjectId);
+
+    smartDeployable.bringOffline(smartObjectId);
+    smartDeployable.destroyDeployable(smartObjectId);
+
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    assertEq(uint8(deployableStateData.currentState), uint8(State.DESTROYED));
+    assertEq(deployableStateData.isValid, false);
+
+    InventoryItemTableData memory inventoryItemTableData = InventoryItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+
+    assertEq(inventoryItemTableData.stateUpdate >= block.timestamp, true);
+    assertEq(inventoryItemTableData.quantity, items[0].quantity);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartDeployableErrors.SmartDeployable_IncorrectState.selector,
+        smartObjectId,
+        State.DESTROYED
+      )
+    );
+    LocationTableData memory location = LocationTableData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
+    smartDeployable.anchor(smartObjectId, location);
+  }
+
+  function testDestroyAndRevertWithdrawItems(uint256 smartObjectId) public {
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(2),
+      itemId: 12,
+      typeId: 3,
+      volume: 10,
+      quantity: 5
+    });
+
+    testCreateAndDepositItemsToInventory(smartObjectId);
+
+    smartDeployable.bringOffline(smartObjectId);
+    smartDeployable.destroyDeployable(smartObjectId);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartDeployableErrors.SmartDeployable_IncorrectState.selector,
+        smartObjectId,
+        State.DESTROYED
+      )
+    );
+
+    inventory.withdrawFromInventory(smartObjectId, items);
   }
 }

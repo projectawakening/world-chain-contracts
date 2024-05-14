@@ -143,7 +143,7 @@ contract ERC2771Forwarder is EIP712, HashNonce {
    * NOTE: A request may return false here but it won't cause {executeBatch} to revert if a refund
    * receiver is provided.
    */
-  function verify(ForwardRequestData calldata request) public view virtual returns (bool) {
+  function verify(ForwardRequestData calldata request) public virtual returns (bool) {
     (bool isTrustedForwarder, bool active, bool signerMatch, ) = _validate(request);
     return isTrustedForwarder && active && signerMatch;
   }
@@ -239,7 +239,7 @@ contract ERC2771Forwarder is EIP712, HashNonce {
    */
   function _validate(
     ForwardRequestData calldata request
-  ) internal view virtual returns (bool isTrustedForwarder, bool active, bool signerMatch, address signer) {
+  ) internal virtual returns (bool isTrustedForwarder, bool active, bool signerMatch, address signer) {
     (bool isValid, address recovered) = _recoverForwardRequestSigner(request);
 
     return (
@@ -344,10 +344,22 @@ contract ERC2771Forwarder is EIP712, HashNonce {
   /**
    * @dev Returns whether the target trusts this forwarder.
    *
-   * This function performs a static call to the target contract calling the
+   * * This function performs a static call** to the target contract calling the
    * {ERC2771Context-isTrustedForwarder} function.
+   *
+   * **:
+   * TODO: as mentionned above, this has been changed to a non-view function.
+   * Furthermore, the assembly `staticcall` has been changed to a `call`: this is because `isTrustedForwarder` is not a view function anymore.
+   * ... even though it actually is. The problem is, with transaction context enabled in World, we use transient storage to keep track
+   * of the original msg.sender, and for some reason, the EVM treats `sload` as if it was a "real" write (which it ain't).
+   * All the while the compiler not considering `sload` as a write operation so tome extent. Anyways,
+   *
+   * It's buggy, and un-viewing this will make it a bit costlier to call. That's okay, though, because in our case we know for a fact that
+   * `isTrustedForwarder` is indeed not making any state change (that matters*, sload yadda yadda)
+   * so it's okay, in the end (albeit not exactly a good security practice),
+   * to execute this transaction with a low-level `call` instead of a low-level `static-code`. (don't try this at home)
    */
-  function _isTrustedByTarget(address target) private view returns (bool) {
+  function _isTrustedByTarget(address target) private returns (bool) {
     bytes memory encodedParams = abi.encodeCall(ERC2771Context.isTrustedForwarder, (address(this)));
 
     bool success;
@@ -360,7 +372,7 @@ contract ERC2771Forwarder is EIP712, HashNonce {
       // |-----------|----------|--------------------------------------------------------------------|
       // |           |          |                                                           result ↓ |
       // | 0x00:0x1F | selector | 0x0000000000000000000000000000000000000000000000000000000000000001 |
-      success := staticcall(gas(), target, add(encodedParams, 0x20), mload(encodedParams), 0, 0x20)
+      success := call(gas(), target, 0, add(encodedParams, 0x20), mload(encodedParams), 0, 0x20)
       returnSize := returndatasize()
       returnValue := mload(0)
     }

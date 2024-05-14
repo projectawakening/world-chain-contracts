@@ -12,7 +12,7 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { INVENTORY_MODULE_NAME as MODULE_NAME, INVENTORY_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { InventoryTable } from "../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable } from "../../codegen/tables/InventoryItemTable.sol";
-import { EphemeralInventoryTable } from "../../codegen/tables/EphemeralInventoryTable.sol";
+import { EphemeralInvTable } from "../../codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable } from "../../codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../codegen/tables/ItemTransferOffchainTable.sol";
 
@@ -45,9 +45,9 @@ contract InventoryModule is Module {
     requireNotInstalled(__self, encodeArgs);
 
     //Extract args
-    (bytes14 namespace, address inventorySystem, address ephemeralInventory) = abi.decode(
+    (bytes14 namespace, address inventorySystem, address ephemeralInventory, address inventoryInteract) = abi.decode(
       encodeArgs,
-      (bytes14, address, address)
+      (bytes14, address, address, address)
     );
 
     //Require the namespace to not be the module's namespace
@@ -63,7 +63,7 @@ contract InventoryModule is Module {
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
       abi.encodeCall(
         InventoryModuleRegistrationLibrary.register,
-        (world, namespace, inventorySystem, ephemeralInventory)
+        (world, namespace, inventorySystem, ephemeralInventory, inventoryInteract)
       )
     );
     if (!success) revertWithBytes(returnedData);
@@ -81,7 +81,13 @@ contract InventoryModule is Module {
 contract InventoryModuleRegistrationLibrary {
   using Utils for bytes14;
 
-  function register(IBaseWorld world, bytes14 namespace, address inventorySystem, address ephemeralInventory) public {
+  function register(
+    IBaseWorld world,
+    bytes14 namespace,
+    address inventorySystem,
+    address ephemeralInventory,
+    address inventoryInteract
+  ) public {
     //Register the namespace
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
@@ -90,8 +96,10 @@ contract InventoryModuleRegistrationLibrary {
     if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
     if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
       InventoryItemTable.register(namespace.inventoryItemTableId());
-    if (!ResourceIds.getExists(namespace.ephemeralInventoryTableId()))
-      EphemeralInventoryTable.register(namespace.ephemeralInventoryTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInvCapacityTableId()))
+      EphemeralInvTable.register(namespace.ephemeralInvCapacityTableId());
+    if (!ResourceIds.getExists(namespace.ephemeralInvTableId()))
+      EphemeralInvTable.register(namespace.ephemeralInvTableId());
     if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
       EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
     if (!ResourceIds.getExists(namespace.itemTransferTableId()))
@@ -102,5 +110,7 @@ contract InventoryModuleRegistrationLibrary {
       world.registerSystem(namespace.inventorySystemId(), System(inventorySystem), true);
     if (!ResourceIds.getExists(namespace.ephemeralInventorySystemId()))
       world.registerSystem(namespace.ephemeralInventorySystemId(), System(ephemeralInventory), true);
+    if (!ResourceIds.getExists(namespace.inventoryInteractSystemId()))
+      world.registerSystem(namespace.inventoryInteractSystemId(), System(inventoryInteract), true);
   }
 }

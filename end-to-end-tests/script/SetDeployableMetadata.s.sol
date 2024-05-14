@@ -6,6 +6,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
 import { SmartStorageUnitLib } from "@eve/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract SetDeployableMetadata is Script {
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
@@ -14,13 +15,12 @@ contract SetDeployableMetadata is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    address player = vm.addr(deployerPrivateKey);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
     SmartStorageUnitLib.World memory smartStorageUnit = SmartStorageUnitLib.World({
       iface: IBaseWorld(worldAddress),
-      namespace: "frontier"
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));

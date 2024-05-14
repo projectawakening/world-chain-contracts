@@ -7,7 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eve/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
 
 import { LocationLib } from "../../location/LocationLib.sol";
@@ -17,12 +17,11 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codeg
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
-import { State } from "../types.sol";
-import { State, SmartObjectData } from "../types.sol";
-import { Utils } from "../Utils.sol";
-import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 
+import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
+import { State, SmartObjectData } from "../types.sol";
 import { FUEL_DECIMALS } from "../constants.sol";
+import { Utils } from "../Utils.sol";
 
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
@@ -35,21 +34,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   // TODO: The fuel logic will need to be decoupled from here at some point, once we have the right tooling to do so
 
   /**
-   * modifier to enforce a certain state to be had by an entity
-   * @param entityId entityId of the object we test against
-   * @param reqState required State
+   * modifier to enforce deployable state changes can happen only when the game server is running
    */
-  modifier onlyState(uint256 entityId, State reqState) {
-    if (GlobalDeployableState.getGlobalState(_namespace().globalStateTableId()) == State.OFFLINE) {
-      revert SmartDeployable_GloballyOffline();
-    } else if (
-      uint256(DeployableState.getState(_namespace().deployableStateTableId(), entityId)) != uint256(reqState)
-    ) {
-      revert SmartDeployable_IncorrectState(
-        entityId,
-        reqState,
-        DeployableState.getState(_namespace().deployableStateTableId(), entityId)
-      );
+  modifier onlyActive() {
+    if (GlobalDeployableState.getIsPaused(_namespace().globalStateTableId()) == false) {
+      revert SmartDeployable_StateTransitionPaused();
     }
     _;
   }
@@ -72,13 +61,21 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     uint256 fuelUnitVolumeInWei,
     uint256 fuelConsumptionPerMinuteInWei,
     uint256 fuelMaxCapacityInWei
-  ) public hookable(entityId, _systemId()) onlyState(entityId, State.NULL) {
+  ) public hookable(entityId, _systemId()) onlyActive {
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+
     DeployableState.set(
       _namespace().deployableStateTableId(),
       entityId,
       DeployableStateData({
         createdAt: block.timestamp,
-        state: State.UNANCHORED,
+        previousState: previousState,
+        currentState: State.UNANCHORED,
+        isValid: false,
+        anchoredAt: 0,
         updatedBlockNumber: block.number,
         updatedBlockTime: block.timestamp
       })
@@ -111,20 +108,14 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev destroys a smart deployable
    * @param entityId entityId
    */
-  function destroyDeployable(
-    uint256 entityId
-  )
-    public
-    onlyAssociatedModule(entityId, _systemId())
-    hookable(entityId, _systemId())
-    onlyState(entityId, State.UNANCHORED)
-  {
-    // TODO: figure out how to delete inventory in the case of smart storage units
-    DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.DESTROYED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
+  function destroyDeployable(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
 
-    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).removeEntityTag(entityId, SMART_DEPLOYABLE_CLASS_ID);
+    _setDeployableState(entityId, previousState, State.DESTROYED);
+    DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, false);
   }
 
   /**
@@ -132,18 +123,13 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
    */
-  function bringOnline(
-    uint256 entityId
-  )
-    public
-    onlyAssociatedModule(entityId, _systemId())
-    hookable(entityId, _systemId())
-    onlyState(entityId, State.ANCHORED)
-  {
+  function bringOnline(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (previousState != State.ANCHORED) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
     _updateFuel(entityId);
-    DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ONLINE);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
+    _setDeployableState(entityId, previousState, State.ONLINE);
     DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
 
@@ -151,16 +137,13 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings offline smart deployable (must have been online first)
    * @param entityId entityId
    */
-  function bringOffline(
-    uint256 entityId
-  )
-    public
-    onlyAssociatedModule(entityId, _systemId())
-    hookable(entityId, _systemId())
-    onlyState(entityId, State.ONLINE)
-  {
+  function bringOffline(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (previousState != State.ONLINE) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
     _updateFuel(entityId);
-    _bringOffline(entityId);
+    _bringOffline(entityId, previousState);
   }
 
   /**
@@ -170,43 +153,38 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function anchor(
     uint256 entityId,
     LocationTableData memory locationData
-  )
-    public
-    onlyAssociatedModule(entityId, _systemId())
-    hookable(entityId, _systemId())
-    onlyState(entityId, State.UNANCHORED)
-  {
-    DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (previousState != State.UNANCHORED) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+    _setDeployableState(entityId, previousState, State.ANCHORED);
     _locationLib().saveLocation(entityId, locationData);
+    DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, true);
+    DeployableState.setAnchoredAt(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
 
   /**
    * @dev unanchors a smart deployable (must have been offline first)
    * @param entityId entityId
    */
-  function unanchor(
-    uint256 entityId
-  )
-    public
-    onlyAssociatedModule(entityId, _systemId())
-    hookable(entityId, _systemId())
-    onlyState(entityId, State.ANCHORED)
-  {
-    // TODO: figure out how to delete inventory in the case of smart storage units
-    DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.UNANCHORED);
-    DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
-    DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
+  function unanchor(uint256 entityId) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+
+    _setDeployableState(entityId, previousState, State.UNANCHORED);
     _locationLib().saveLocation(entityId, LocationTableData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
+    DeployableState.setIsValid(_namespace().deployableStateTableId(), entityId, false);
   }
 
   /**
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalOffline() public {
-    GlobalDeployableState.setGlobalState(_namespace().globalStateTableId(), State.OFFLINE);
+  function globalPause() public {
+    GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), false);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOffline(_namespace().globalStateTableId(), block.timestamp);
   }
@@ -215,8 +193,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalOnline() public {
-    GlobalDeployableState.setGlobalState(_namespace().globalStateTableId(), State.ONLINE);
+  function globalResume() public {
+    GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), true);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOnline(_namespace().globalStateTableId(), block.timestamp);
   }
@@ -328,13 +306,31 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   /********************
    * INTERNAL METHODS *
    ********************/
-
   /**
    * @dev brings offline smart deployable (internal method)
    * @param entityId entityId
    */
-  function _bringOffline(uint256 entityId) internal {
-    DeployableState.setState(_namespace().deployableStateTableId(), entityId, State.ANCHORED);
+  function _bringOffline(uint256 entityId, State previousState) internal {
+    _setDeployableState(entityId, previousState, State.ANCHORED);
+  }
+
+  /**
+   * @dev internal method to set the state of a deployable
+   * @param entityId to update
+   * @param previousState to set
+   * @param currentState to set
+   */
+  function _setDeployableState(uint256 entityId, State previousState, State currentState) internal {
+    DeployableState.setPreviousState(_namespace().deployableStateTableId(), entityId, previousState);
+    DeployableState.setCurrentState(_namespace().deployableStateTableId(), entityId, currentState);
+    _updateBlockInfo(entityId);
+  }
+
+  /**
+   * @dev update block information for a given entity
+   * @param entityId to update
+   */
+  function _updateBlockInfo(uint256 entityId) internal {
     DeployableState.setUpdatedBlockNumber(_namespace().deployableStateTableId(), entityId, block.number);
     DeployableState.setUpdatedBlockTime(_namespace().deployableStateTableId(), entityId, block.timestamp);
   }
@@ -345,11 +341,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    */
   function _updateFuel(uint256 entityId) internal {
     uint256 currentFuel = _currentFuelAmount(entityId);
-
-    if (
-      currentFuel == 0 && (DeployableState.getState(_namespace().deployableStateTableId(), entityId) == State.ONLINE)
-    ) {
-      _bringOffline(entityId);
+    State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
+    if (currentFuel == 0 && (previousState == State.ONLINE)) {
+      _bringOffline(entityId, previousState);
       DeployableFuelBalance.setFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId, 0);
     } else {
       DeployableFuelBalance.setFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId, currentFuel);
@@ -363,7 +357,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    */
   function _currentFuelAmount(uint256 entityId) internal view returns (uint256 amount) {
     // since we make sure the last time we interacted with an entity was when we set it online, it's fine
-    if (DeployableState.getState(_namespace().deployableStateTableId(), entityId) != State.ONLINE) {
+    if (DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId) != State.ONLINE) {
       return DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId);
     }
 
@@ -388,7 +382,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function _globalOfflineFuelRefund(uint256 entityId) internal view returns (uint256 refundAmount) {
     GlobalDeployableStateData memory globalData = GlobalDeployableState.get(_namespace().globalStateTableId());
     if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
-    if (DeployableState.getState(_namespace().deployableStateTableId(), entityId) != State.ONLINE) return 0; // no refunds if it's not running
+    if (DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId) != State.ONLINE) return 0; // no refunds if it's not running
 
     uint256 bringOnlineTimestamp = DeployableState.getUpdatedBlockTime(_namespace().deployableStateTableId(), entityId);
     if (bringOnlineTimestamp < globalData.lastGlobalOffline) bringOnlineTimestamp = globalData.lastGlobalOffline;
