@@ -240,7 +240,7 @@ contract Inventory is EveSystem {
       //Disable withdraw if
       //Deploybable is currently UNANCHORED or DESTORYED or
       //or its has been re-anchored
-      revert IInventoryErrors.Inventory_InvalidDeployable("Inventory: invalid deployable", smartObjectId);
+      revert IInventoryErrors.Inventory_InvalidItemQuantity("Inventory: invalid quantity", smartObjectId, quantity);
     } else {
       //Deployable is valid and item exists in the inventory
       if (item.quantity == itemData.quantity) {
