@@ -64,6 +64,7 @@ jobs:
           docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ghcr.io/projectawakening/world-chain-deployer-image-test:latest --rpc-url $RPC_URL --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
           docker container logs world-chain-deployer-image-TEST
           docker ps -a
+          docker exec world-chain-deployer-image-TEST ls /
           docker cp world-chain-deployer-image-TEST:run_env.json ./docker_run_env.json
 
       - name: Load Environment Variables from JSON
