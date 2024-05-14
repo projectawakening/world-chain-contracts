@@ -116,7 +116,7 @@ contract PostDeploy is Script {
     world.associateClassIdToSSU(SSU_CLASS_ID);
 
     uint256 smartDeplFrontierClassId = world.registerAndAssociateTypeIdToSSU(SMART_DEPLOYABLE_FRONTIER_TYPE_ID);
-    console.log("Smart Deployable - classId: ", smartDeplFrontierClassId);
+    console.log("Smart Deployable (Frontier TypeId: 77917) - classId: ", smartDeplFrontierClassId);
   }
 
   function _installPuppet(address deployer) internal {
