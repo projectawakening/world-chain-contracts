@@ -167,6 +167,7 @@ jobs:
           file: build/package/frontier-world.dockerfile
           context: .
           platforms: linux/arm64,linux/amd64
+          provinance: false
           build-args: |
             IMAGE_TAG=0.0.1
           tags: ${{ steps.meta.outputs.tags }}
