@@ -133,6 +133,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
     _updateFuel(entityId);
+    if (DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) == 0)
+      revert SmartDeployable_NoFuel(entityId);
     _setDeployableState(entityId, previousState, State.ONLINE);
     DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
@@ -264,7 +266,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      (_currentFuelAmount(entityId) + unitAmount * (10 ** FUEL_DECIMALS))
+      (DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
+        unitAmount *
+        (10 ** FUEL_DECIMALS))
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
