@@ -4,6 +4,7 @@ pragma solidity >=0.8.21;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { IInventory } from "./interfaces/IInventory.sol";
 import { IEphemeralInventory } from "./interfaces/IEphemeralInventory.sol";
+import { IInventoryInteract } from "./interfaces/IInventoryInteract.sol";
 import { Utils } from "./Utils.sol";
 import { InventoryItem } from "./types.sol";
 
@@ -45,15 +46,11 @@ library InventoryLib {
   function setEphemeralInventoryCapacity(
     World memory world,
     uint256 smartObjectId,
-    address owner,
     uint256 ephemeralStorageCapacity
   ) internal {
     world.iface.call(
       world.namespace.ephemeralInventorySystemId(),
-      abi.encodeCall(
-        IEphemeralInventory.setEphemeralInventoryCapacity,
-        (smartObjectId, owner, ephemeralStorageCapacity)
-      )
+      abi.encodeCall(IEphemeralInventory.setEphemeralInventoryCapacity, (smartObjectId, ephemeralStorageCapacity))
     );
   }
 
@@ -78,6 +75,40 @@ library InventoryLib {
     world.iface.call(
       world.namespace.ephemeralInventorySystemId(),
       abi.encodeCall(IEphemeralInventory.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+  }
+
+  function configureInteractionHandler(
+    World memory world,
+    uint256 smartObjectId,
+    bytes memory interactionParams
+  ) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IInventoryInteract.configureInteractionHandler, (smartObjectId, interactionParams))
+    );
+  }
+
+  function inventoryToEphemeralTransfer(
+    World memory world,
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IInventoryInteract.inventoryToEphemeralTransfer, (smartObjectId, items))
+    );
+  }
+
+  function ephemeralToInventoryTransfer(
+    World memory world,
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IInventoryInteract.ephemeralToInventoryTransfer, (smartObjectId, ephemeralInventoryOwner, items))
     );
   }
 }

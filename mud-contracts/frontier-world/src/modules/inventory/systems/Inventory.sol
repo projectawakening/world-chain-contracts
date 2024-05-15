@@ -14,12 +14,12 @@ import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/table
 import { State } from "../../../codegen/common.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
+import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 
 import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
-import { IInventoryErrors } from "../IInventoryErrors.sol";
 
 contract Inventory is EveSystem {
   using Utils for bytes14;
@@ -27,39 +27,11 @@ contract Inventory is EveSystem {
   using EntityRecordUtils for bytes14;
 
   /**
-   * modifier to enforce online state for an smart deployable
-   * @param smartObjectId is the smart deployable id
+   * modifier to enforce deployable state changes can happen only when the game server is running
    */
-  modifier onlyOnline(uint256 smartObjectId) {
-    State currentState = DeployableState.getState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (
-      GlobalDeployableState.getGlobalState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.globalStateTableId()) == State.OFFLINE
-    ) {
-      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
-    } else if (currentState != State.ONLINE) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.ONLINE, currentState);
-    }
-    _;
-  }
-
-  /**
-   * modifier to enforce any state above anchored state for an smart deployable
-   * @param smartObjectId is the smart deployable id
-   */
-  modifier beyondAnchored(uint256 smartObjectId) {
-    State currentState = DeployableState.getState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (
-      GlobalDeployableState.getGlobalState(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.globalStateTableId()) == State.OFFLINE
-    ) {
-      revert SmartDeployableErrors.SmartDeployable_GloballyOffline();
-    } else if (currentState == State.NULL || currentState == State.UNANCHORED || currentState == State.DESTROYED) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, State.NULL, currentState);
+  modifier onlyActive() {
+    if (GlobalDeployableState.getIsPaused(_namespace().globalStateTableId()) == false) {
+      revert SmartDeployableErrors.SmartDeployable_StateTransitionPaused();
     }
     _;
   }
@@ -90,7 +62,15 @@ contract Inventory is EveSystem {
   function depositToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyOnline(smartObjectId) {
+  ) public hookable(smartObjectId, _systemId()) onlyActive {
+    State currentState = DeployableState.getCurrentState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    if (currentState != State.ONLINE) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    }
+
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 itemsLength = items.length;
@@ -101,10 +81,10 @@ contract Inventory is EveSystem {
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
         items[i].inventoryItemId
       );
-      if (entityRecord.itemId == 0) {
+      if (entityRecord.recordExists == false) {
         revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
       }
-      usedCapacity = processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
+      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
     }
 
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
@@ -120,12 +100,19 @@ contract Inventory is EveSystem {
   function withdrawFromInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) beyondAnchored(smartObjectId) {
+  ) public hookable(smartObjectId, _systemId()) onlyActive {
+    State currentState = DeployableState.getCurrentState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+    if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    }
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
-      usedCapacity = processItemWithdrawal(smartObjectId, items[i], usedCapacity);
+      usedCapacity = _processItemWithdrawal(smartObjectId, items[i], usedCapacity);
     }
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
   }
@@ -134,12 +121,12 @@ contract Inventory is EveSystem {
     return _namespace().inventorySystemId();
   }
 
-  function processItemDeposit(
+  function _processItemDeposit(
     uint256 smartObjectId,
     InventoryItem memory item,
     uint256 usedCapacity,
     uint256 maxCapacity,
-    uint256 index
+    uint256 itemIndex
   ) internal returns (uint256) {
     uint256 reqCapacity = item.volume * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
@@ -150,19 +137,67 @@ contract Inventory is EveSystem {
       );
     }
 
+    _updateInventoryAfterDeposit(smartObjectId, item, itemIndex);
+    return usedCapacity + reqCapacity;
+  }
+
+  function _updateInventoryAfterDeposit(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
+    InventoryItemTableData memory itemData = InventoryItemTable.get(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId
+    );
+
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    //Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
+    if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.anchoredAt) {
+      //Item does not exist in the inventory
+      _depositNewItem(smartObjectId, item, itemIndex);
+    } else {
+      //Deployable is valid and item exists in the inventory
+      _increaseItemQuantity(smartObjectId, item, itemIndex);
+    }
+  }
+
+  /**
+   * @notice Increase the quantity of an item in the inventory
+   * @dev Increase the quantity of an item in the inventory by smart storage unit id
+   * @param smartObjectId The smart storage unit id
+   * @param item The item to increase the quantity
+   */
+  function _increaseItemQuantity(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
+    uint256 quantity = InventoryItemTable.getQuantity(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId
+    );
+    InventoryItemTable.set(
+      _namespace().inventoryItemTableId(),
+      smartObjectId,
+      item.inventoryItemId,
+      quantity + item.quantity,
+      itemIndex,
+      block.timestamp
+    );
+  }
+
+  function _depositNewItem(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
     InventoryTable.pushItems(_namespace().inventoryTableId(), smartObjectId, item.inventoryItemId);
     InventoryItemTable.set(
       _namespace().inventoryItemTableId(),
       smartObjectId,
       item.inventoryItemId,
       item.quantity,
-      index
+      itemIndex,
+      block.timestamp
     );
-
-    return usedCapacity + reqCapacity;
   }
 
-  function processItemWithdrawal(
+  function _processItemWithdrawal(
     uint256 smartObjectId,
     InventoryItem memory item,
     uint256 usedCapacity
@@ -172,14 +207,14 @@ contract Inventory is EveSystem {
       smartObjectId,
       item.inventoryItemId
     );
-    validateWithdrawal(item, itemData);
+    _validateWithdrawal(item, itemData);
 
-    updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
+    _updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
 
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
+  function _validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert IInventoryErrors.Inventory_InvalidQuantity(
         "Inventory: invalid quantity",
@@ -189,19 +224,34 @@ contract Inventory is EveSystem {
     }
   }
 
-  function updateInventoryAfterWithdrawal(
+  function _updateInventoryAfterWithdrawal(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
   ) internal {
-    if (item.quantity == itemData.quantity) {
-      removeItemCompletely(smartObjectId, item, itemData);
+    DeployableStateData memory deployableStateData = DeployableState.get(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
+    );
+
+    if (itemData.stateUpdate < deployableStateData.anchoredAt) {
+      //Disable withdraw if its has been re-anchored
+      revert IInventoryErrors.Inventory_InvalidItemQuantity(
+        "Inventory: invalid quantity",
+        smartObjectId,
+        item.quantity
+      );
     } else {
-      reduceItemQuantity(smartObjectId, item, itemData);
+      //Deployable is valid and item exists in the inventory
+      if (item.quantity == itemData.quantity) {
+        _removeItemCompletely(smartObjectId, item, itemData);
+      } else if (item.quantity < itemData.quantity) {
+        _reduceItemQuantity(smartObjectId, item, itemData);
+      }
     }
   }
 
-  function removeItemCompletely(
+  function _removeItemCompletely(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
@@ -213,7 +263,7 @@ contract Inventory is EveSystem {
     InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
   }
 
-  function reduceItemQuantity(
+  function _reduceItemQuantity(
     uint256 smartObjectId,
     InventoryItem memory item,
     InventoryItemTableData memory itemData
@@ -223,7 +273,8 @@ contract Inventory is EveSystem {
       smartObjectId,
       item.inventoryItemId,
       itemData.quantity - item.quantity,
-      itemData.index
+      itemData.index,
+      block.timestamp
     );
   }
 }

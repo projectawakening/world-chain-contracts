@@ -51,9 +51,13 @@ export default mudConfig({
       name: constants.systemName.EPHEMERAL_INVENTORY,
       openAccess: true,
     },
+    InventoryInteract: {
+      name: constants.systemName.INVENTORY_INTERACT,
+      openAccess: true,
+    },
   },
   enums: {
-    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "OFFLINE", "DESTROYED"],
+    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -190,6 +194,7 @@ export default mudConfig({
         itemId: "uint256",
         typeId: "uint256",
         volume: "uint256",
+        recordExists: "bool",
       },
       tableIdArgument: true,
     },
@@ -260,7 +265,7 @@ export default mudConfig({
       keySchema: {},
       valueSchema: {
         updatedBlockNumber: "uint256",
-        globalState: "State",
+        isPaused: "bool",
         lastGlobalOffline: "uint256",
         lastGlobalOnline: "uint256",
       },
@@ -275,14 +280,17 @@ export default mudConfig({
       },
       valueSchema: {
         createdAt: "uint256",
-        state: "State",
+        previousState: "State",
+        currentState: "State",
+        isValid: "bool",
+        anchoredAt: "uint256",
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },
       tableIdArgument: true,
     },
     /**
-     *
+     * Used to store the fuel balance of a deployable
      */
     DeployableFuelBalance: {
       keySchema: {
@@ -297,7 +305,9 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
-
+    /**
+     * Used to store the deployable details of a in-game entity
+     */
     DeployableTokenTable: {
       keySchema: {},
       valueSchema: {
@@ -332,37 +342,51 @@ export default mudConfig({
       valueSchema: {
         quantity: "uint256",
         index: "uint256",
+        stateUpdate: "uint256",
       },
       tableIdArgument: true,
     },
     // EPHEMERAL INVENTORY MODULE
     /**
-     * Used to store the inventory details of a in-game smart storage unit
+     * Used to Store Ephemeral Capacity by smartObjectId
      */
-    EphemeralInventoryTable: {
+    EphemeralInvCapacityTable: {
       keySchema: {
         smartObjectId: "uint256",
-        owner: "address",
       },
       valueSchema: {
         capacity: "uint256",
+      },
+      tableIdArgument: true,
+    },
+    /**
+     * Used to store the ephemeral inventory details of a in-game smart storage unit
+     * Each user has a separate ephemeral inventory capacity
+     */
+    EphemeralInvTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+        ephemeralInvOwner: "address",
+      },
+      valueSchema: {
         usedCapacity: "uint256",
         items: "uint256[]",
       },
       tableIdArgument: true,
     },
     /**
-     * Used to store the inventory items of a in-game smart storage unit
+     * Used to store the ephemeral inventory items details of a in-game smart storage unit
      */
     EphemeralInvItemTable: {
       keySchema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
-        owner: "address",
+        ephemeralInvItemOwner: "address",
       },
       valueSchema: {
         quantity: "uint256",
         index: "uint256",
+        stateUpdate: "uint256",
       },
       tableIdArgument: true,
     },
@@ -381,7 +405,7 @@ export default mudConfig({
         updatedAt: "uint256",
       },
       tableIdArgument: true,
-      offchainOnly: true,
+      // offchainOnly: true,
     },
 
     /************************

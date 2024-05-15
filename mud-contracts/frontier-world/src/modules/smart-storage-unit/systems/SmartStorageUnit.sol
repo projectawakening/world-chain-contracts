@@ -7,7 +7,6 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
 import { EntityRecordData, WorldPosition } from "../types.sol";
-import { InventoryItem } from "../../inventory/types.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
@@ -24,6 +23,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils } from "../Utils.sol";
 
 import { SmartObjectData } from "../../smart-deployable/types.sol";
+import { InventoryItem } from "../../inventory/types.sol";
 
 contract SmartStorageUnit is EveSystem {
   using WorldResourceIdInstance for ResourceId;
@@ -81,7 +81,7 @@ contract SmartStorageUnit is EveSystem {
     _smartDeployableLib().anchor(smartObjectId, locationData);
 
     _inventoryLib().setInventoryCapacity(smartObjectId, storageCapacity);
-    _inventoryLib().setEphemeralInventoryCapacity(smartObjectId, smartObjectData.owner, ephemeralStorageCapacity);
+    _inventoryLib().setEphemeralInventoryCapacity(smartObjectId, ephemeralStorageCapacity);
   }
 
   /**
@@ -112,12 +112,12 @@ contract SmartStorageUnit is EveSystem {
    * //TODO only server account can create items on-chain
    * //TODO Represent item as a ERC1155 asset with ownership on-chain
    * @param smartObjectId The smart object id
-   * @param inventoryOwner The owner of the inventory
+   * @param ephemeralInventoryOwner The owner of the inventory
    * @param items The item to store in a inventory
    */
   function createAndDepositItemsToEphemeralInventory(
     uint256 smartObjectId,
-    address inventoryOwner,
+    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public {
     //Check if the item exists on-chain if not Create entityRecord
@@ -131,7 +131,7 @@ contract SmartStorageUnit is EveSystem {
     }
     //Deposit item to the ephemeral inventory
     // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
-    _inventoryLib().depositToEphemeralInventory(smartObjectId, inventoryOwner, items);
+    _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
 
   /**

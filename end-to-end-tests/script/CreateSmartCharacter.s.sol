@@ -5,10 +5,10 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { SmartObjectData } from "@eve/frontier-world/src/modules/smart-character/types.sol";
-import { EntityRecordTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordTable.sol";
+import { SmartObjectData, EntityRecordData } from "@eve/frontier-world/src/modules/smart-character/types.sol";
 import { SmartCharacterLib } from "@eve/frontier-world/src/modules/smart-character/SmartCharacterLib.sol";
 import { EntityRecordOffchainTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract CreateSmartCharacter is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -27,20 +27,20 @@ contract CreateSmartCharacter is Script {
     uint256 typeId = 123;
     uint256 itemId = 234;
     uint256 volume = 100;
-    string memory cid = "azerty";
-    string memory characterName = "awesome-o";
+    string memory cid = "azert";
+    string memory characterName = "awesome character";
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
     SmartCharacterLib.World memory smartCharacter = SmartCharacterLib.World({
       iface: IBaseWorld(worldAddress),
-      namespace: "frontier"
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
     smartCharacter.createCharacter(
       characterId,
       characterAddress,
-      EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume }),
+      EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume }),
       EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
       cid
     );

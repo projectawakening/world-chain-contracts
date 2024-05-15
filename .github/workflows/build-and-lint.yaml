@@ -1,13 +1,10 @@
-name: "Build and lint the smart contracts affected by changes committed."
-run-name: "${{ github.triggering_actor }} building the game chain smart contracts"
+name: Build
+run-name: Build
 
 on:
   push:
     branches:
-      - "develop"
-  pull_request:
-    branches:
-      - "develop"
+      - "*"
   workflow_dispatch:
   create:
 
@@ -87,10 +84,4 @@ jobs:
           THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
           echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
           pnpm nx affected -t lint --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: build_outputs
 
