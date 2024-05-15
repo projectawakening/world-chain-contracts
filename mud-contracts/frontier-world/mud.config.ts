@@ -7,6 +7,18 @@ export default mudConfig({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
   excludeSystems: ["ERC721System"],
   systems: {
+    AccessControl: {
+      name: constants.systemName.ACCESS_CONTROL,
+      openAccess: true,
+    },
+    AccessRulesConfig: {
+      name: constants.systemName.ACCESS_RULES_CONFIG,
+      openAccess: true,
+    },
+    AccessRules: {
+      name: constants.systemName.ACCESS_RULES,
+      openAccess: true,
+    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
@@ -47,6 +59,86 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
+    
+    /*******************
+     * ACCESS CONTROL MODULE *
+     *******************/
+
+    /**
+     * Used to store role information
+     */
+    Role: {
+      keySchema: { roleId: "bytes32" },
+      valueSchema: {
+        exists: "bool",
+        name: "bytes32",
+        root: "bytes32",
+        admin: "bytes32",
+      },
+      tableIdArgument: true,
+    },
+    /**
+     * Used to store role membership information
+     */
+    HasRole: {
+      keySchema: { roleId: "bytes32", account: "address" },
+      valueSchema: { hasRole: "bool" },
+      tableIdArgument: true,
+    },
+    // Off-chain table event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdmin, bytes32 indexed newAdmin);
+    RoleAdminChanged: {
+      keySchema: { roleId: "bytes32" },
+      valueSchema: { 
+        previousAdmin: "bytes32",
+        newAdmin: "bytes32",
+      },
+      tableIdArgument: true,
+      offchainOnly: true,
+    },
+    // Off-chain table event RoleCreated(bytes32 indexed role, bytes32 indexed root, string name);
+    RoleCreated: {
+      keySchema: { roleId: "bytes32" },
+      valueSchema: {
+        name: "bytes32",
+        root: "bytes32",
+        admin: "bytes32",
+      },
+      tableIdArgument: true,
+      offchainOnly: true,
+    },
+    // Off-chain table event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
+    RoleGranted: {
+      keySchema: { roleId: "bytes32" },
+      valueSchema: { 
+        account: "address",
+        sender: "address"
+      },
+      tableIdArgument: true,
+      offchainOnly: true,
+    },
+    // Off-chain table event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
+    RoleRevoked: {
+      keySchema: { roleId: "bytes32" },
+      valueSchema: { 
+        account: "address",
+        sender: "address"
+      },
+      tableIdArgument: true,
+      offchainOnly: true,
+    },
+    /**
+     * Used to store access control enforcement and roles by context configuration (per entityId)
+     */
+    AccessConfig: {
+      keySchema: { entityId: "uint256", configId: "uint256" },
+      valueSchema: {
+        enforcementLevel: "uint8",
+        initialMsgSender: "bytes32[]",
+        mudMsgSender: "bytes32[]",
+        txOrigin: "bytes32[]",
+      },
+      tableIdArgument: true,
+    },
     /**********************
      * STATIC DATA MODULE *
      **********************/
@@ -243,7 +335,7 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
-    //EPHEMERAL INVENTORY MODULE
+    // EPHEMERAL INVENTORY MODULE
     /**
      * Used to store the inventory details of a in-game smart storage unit
      */
