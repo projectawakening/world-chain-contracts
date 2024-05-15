@@ -224,7 +224,9 @@ export default mudConfig({
       tableIdArgument: true,
     },
 
-    //INVENTORY MODULE
+    /********************
+     * INVENTORY MODULE *
+     ********************/
     /**
      * Used to store the inventory details of a in-game smart storage unit
      */
@@ -314,6 +316,24 @@ export default mudConfig({
       },
       tableIdArgument: true,
       // offchainOnly: true,
+    },
+
+    /**********************
+     * GATE KEEPER MODULE *
+     **********************/
+    /**
+     * Used to store the transfer details when a item is exchanged
+     */
+    GateKeeperTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        isGoalReached: "bool",
+        acceptedItemTypeId: "uint256",
+        targetQuantity: "uint256",
+      },
+      tableIdArgument: true,
     },
 
     /************************

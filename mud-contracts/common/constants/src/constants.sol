@@ -14,11 +14,13 @@ bytes14 constant EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant INVENTORY_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE = "eveworld";
+bytes14 constant GATE_KEEPER_DEPLOYMENT_NAMESPACE = "eveworld";
 
 // placeholder values
 uint256 constant SMART_CHARACTER_CLASS_ID = 123456;
 uint256 constant SMART_DEPLOYABLE_CLASS_ID = 1337;
 uint256 constant SSU_CLASS_ID = 5103412;
+uint256 constant GATE_KEEPER_CLASS_ID = 1234;
 
 //actual in-game value
 uint256 constant SMART_DEPLOYABLE_FRONTIER_TYPE_ID = 77917;
@@ -36,3 +38,4 @@ bytes16 constant SMART_STORAGE_UNIT_SYSTEM_NAME = "SmartStorageUnit";
 bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
+bytes16 constant GATE_KEEPER_SYSTEM_NAME = "GateKeeper";
