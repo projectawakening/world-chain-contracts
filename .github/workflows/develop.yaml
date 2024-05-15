@@ -102,7 +102,7 @@ jobs:
 
       - name: Run deployer image
         run: |
-          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.GITHUB_SHA }} --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
+          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${GITHUB_SHA} --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
           docker cp world-chain-deployer-image-TEST:/monorepo/run_env.json ./docker_run_env.json
 
       - name: Load Environment Variables from JSON
