@@ -80,8 +80,7 @@ jobs:
           load: true
           file: build/package/frontier-world.dockerfile
           context: .
-          platforms: |
-            linux/amd64
+          platforms: linux/amd64,linux/arm64
           build-args: |
             IMAGE_TAG=0.0.1
           tags: ${{ steps.meta.outputs.tags }}
@@ -158,8 +157,7 @@ jobs:
           push: true
           file: build/package/frontier-world.dockerfile
           context: .
-          platforms: |
-            linux/amd64
+          platforms: linux/arm64,linux/amd64
           build-args: |
             IMAGE_TAG=0.0.1
           tags: ${{ steps.meta.outputs.tags }}
