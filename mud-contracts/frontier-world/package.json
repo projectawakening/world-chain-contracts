@@ -18,12 +18,12 @@
     "test": "tsc --noEmit && forge test -vvv"
   },
   "dependencies": {
-    "@latticexyz/cli": "transaction-context",
-    "@latticexyz/schema-type": "transaction-context",
-    "@latticexyz/store": "transaction-context",
-    "@latticexyz/world": "transaction-context",
-    "@latticexyz/world-modules": "transaction-context",
-    "@latticexyz/gas-report": "transaction-context",
+    "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
     "@eve/frontier-smart-object-framework": "0.0.0",
     "@eve/common-constants": "0.0.0"
   },
@@ -36,8 +36,8 @@
     "prettier": "^2.6.2",
     "prettier-plugin-solidity": "1.1.3",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "transaction-context",
-    "solhint-plugin-mud": "transaction-context",
+    "solhint-config-mud": "2.0.0-transaction-context-98ef570f",
+    "solhint-plugin-mud": "2.0.0-transaction-context-98ef570f",
     "typescript": "^5.4.5"
   }
 }
