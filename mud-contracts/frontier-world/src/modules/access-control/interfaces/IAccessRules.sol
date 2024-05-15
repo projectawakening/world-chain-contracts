@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "../types.sol";
-
 /**
  * @dev Interface definitions for AccessRules.
  */interface IAccessRules {
