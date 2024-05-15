@@ -1,17 +1,17 @@
 name: Develop branch (default branch) workflow
 run-name: Develop
 
-# on:
-#   push:
-#     branches:
-#       - "*"
-
 on:
   push:
     branches:
       - "*"
-  pull_request:
-    types: [opened, reopened, synchronize]
+
+# on:
+#   push:
+#     branches:
+#       - "*"
+#   pull_request:
+#     types: [opened, reopened, synchronize]
 
 
 permissions:
@@ -25,7 +25,7 @@ env:
   IMAGE_NAME: world-chain-deployer-image
   TEST_RPC_URL: http://127.0.0.1:8545
   TEST_PRIVATE_KEY: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-  IMAGE_CANONICAL_URL: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+  IMAGE_CANONICAL_URL: $REGISTRY/${{ github.repository_owner }}/$IMAGE_NAME
 
 
 jobs:
@@ -112,7 +112,7 @@ jobs:
 
       - name: Run deployer image
         run: |
-          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ${{ env.IMAGE_CANONICAL_URL }}:${{ github.GITHUB_SHA }} --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
+          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" $IMAGE_CANONICAL_URL:${{ github.GITHUB_SHA }} --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
           docker cp world-chain-deployer-image-TEST:/monorepo/run_env.json ./docker_run_env.json
 
       - name: Load Environment Variables from JSON
