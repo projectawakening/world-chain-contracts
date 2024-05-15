@@ -12,15 +12,15 @@ interface IERC721Metadata is IERC721 {
   /**
    * @dev Returns the token collection name.
    */
-  function name() external view returns (string memory);
+  function name() external returns (string memory);
 
   /**
    * @dev Returns the token collection symbol.
    */
-  function symbol() external view returns (string memory);
+  function symbol() external returns (string memory);
 
   /**
    * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
    */
-  function tokenURI(uint256 tokenId) external view returns (string memory);
+  function tokenURI(uint256 tokenId) external returns (string memory);
 }

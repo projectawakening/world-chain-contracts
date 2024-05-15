@@ -35,6 +35,7 @@ import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacter
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../src/modules/inventory/systems/InventoryInteract.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
@@ -51,14 +52,36 @@ contract PostDeploy is Script {
 
     vm.startBroadcast(deployerPrivateKey);
     // installing all modules sequentially
-    _installModule(world, deployer, new SmartObjectFrameworkModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new EntityCore()), address(new HookCore()), address(new ModuleCore()));
+    _installModule(
+      world,
+      deployer,
+      new SmartObjectFrameworkModule(),
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+      address(new EntityCore()),
+      address(new HookCore()),
+      address(new ModuleCore())
+    );
     _installPuppet(world, deployer);
     _installModule(world, deployer, new StaticDataModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(world, deployer, new EntityRecordModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(world, deployer, new LocationModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(world, deployer, new SmartCharacterModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-    _installModule(world, deployer, new SmartDeployableModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new SmartDeployable()));
-    _installModule(world, deployer, new InventoryModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, address(new Inventory()), address(new EphemeralInventory()));
+    _installModule(
+      world,
+      deployer,
+      new SmartDeployableModule(),
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+      address(new SmartDeployable())
+    );
+    _installModule(
+      world,
+      deployer,
+      new InventoryModule(),
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+      address(new Inventory()),
+      address(new EphemeralInventory()),
+      address(new InventoryInteract())
+    );
     _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initERC721(world, baseURI);
@@ -68,31 +91,52 @@ contract PostDeploy is Script {
   function _installPuppet(IBaseWorld world, address deployer) internal {
     StoreSwitch.setStoreAddress(address(world));
     // creating all module contracts
-    PuppetModule puppetModule = new PuppetModule(); 
+    PuppetModule puppetModule = new PuppetModule();
     // puppetModule is conventionally installed as such
     world.installModule(puppetModule, new bytes(0));
   }
 
   function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace) internal {
-    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace));
   }
 
-  function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1) internal {
-    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
+  function _installModule(
+    IBaseWorld world,
+    address deployer,
+    IModule module,
+    bytes14 namespace,
+    address system1
+  ) internal {
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1));
   }
 
-  function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1, address system2) internal {
-    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
+  function _installModule(
+    IBaseWorld world,
+    address deployer,
+    IModule module,
+    bytes14 namespace,
+    address system1,
+    address system2
+  ) internal {
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1, system2));
   }
 
-  function _installModule(IBaseWorld world, address deployer, IModule module, bytes14 namespace, address system1, address system2, address system3) internal {
-    if(NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
+  function _installModule(
+    IBaseWorld world,
+    address deployer,
+    IModule module,
+    bytes14 namespace,
+    address system1,
+    address system2,
+    address system3
+  ) internal {
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == deployer)
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     world.installModule(module, abi.encode(namespace, system1, system2, system3));
   }
@@ -100,13 +144,13 @@ contract PostDeploy is Script {
   function _initERC721(IBaseWorld world, string memory baseURI) internal {
     IERC721Mintable erc721SmartDeployableToken = registerERC721(
       world,
-      "erc721Deploybl",
+      "erc721deploybl",
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
     );
 
     IERC721Mintable erc721CharacterToken = registerERC721(
       world,
-      "smartChar",
+      "erc721charactr",
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
     );
     console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));
@@ -118,5 +162,9 @@ contract PostDeploy is Script {
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .registerDeployableToken(address(erc721SmartDeployableToken));
+
+    SmartDeployableLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .globalResume();
   }
 }

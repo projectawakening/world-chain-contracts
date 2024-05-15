@@ -38,16 +38,3 @@ struct Coord {
   uint256 y;
   uint256 z;
 }
-
-/**
- * @notice Holds the data for an inventory item
- * @dev InventoryItem structure
- */
-struct InventoryItem {
-  uint256 inventoryItemId;
-  address owner;
-  uint256 itemId;
-  uint256 typeId;
-  uint256 volume;
-  uint256 quantity;
-}

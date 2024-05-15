@@ -11,6 +11,7 @@
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL",
     "setForwarder": "WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/SetForwarder.s.sol:SetForwarder --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "delegateNamespaceAccess": "WORLD_ADDRESS=$WORLD_ADDRESS FORWARDER_ADDRESS=$FORWARDER_ADDRESS forge script script/DelegateNamespace.s.sol:DelegateNamespace --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
@@ -23,7 +24,8 @@
     "@latticexyz/schema-type": "transaction-context",
     "@latticexyz/store": "transaction-context",
     "@latticexyz/world": "transaction-context",
-    "@latticexyz/world-modules": "transaction-context"
+    "@latticexyz/world-modules": "transaction-context",
+    "@eve/common-constants": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
