@@ -2,9 +2,9 @@ name: Develop branch (default branch) workflow
 run-name: Develop
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
-
+  push:
+    branches:
+      - "develop"
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -87,7 +87,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=docker
-
 
       - name: Run deployer image
         run: |
