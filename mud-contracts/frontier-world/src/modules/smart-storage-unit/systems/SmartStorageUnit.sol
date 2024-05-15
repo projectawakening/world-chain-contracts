@@ -172,6 +172,6 @@ contract SmartStorageUnit is EveSystem {
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().smartDeployableSystemId();
+    return _namespace().smartStorageUnitSystemId();
   }
 }
