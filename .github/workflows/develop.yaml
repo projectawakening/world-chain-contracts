@@ -17,7 +17,7 @@ env:
   IMAGE_NAME: world-chain-deployer-image
   TEST_RPC_URL: http://127.0.0.1:8545
   TEST_PRIVATE_KEY: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-  IMAGE_CANONICAL_URL: ${REGISTRY}/${{ github.repository_owner }}/$IMAGE_NAME
+  IMAGE_CANONICAL_URL: ${{ REGISTRY }}/${{ github.repository_owner }}/$IMAGE_NAME
 
 
 jobs:
