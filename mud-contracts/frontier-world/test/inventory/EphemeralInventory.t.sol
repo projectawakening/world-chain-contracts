@@ -16,23 +16,27 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import "@eve/common-constants/src/constants.sol";
-
-import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
-import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
-import { EphemeralInventoryTable } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
-import { EphemeralInventoryTableData } from "../../src/codegen/tables/EphemeralInventoryTable.sol";
-
-import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
-import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
-import { State } from "../../src/modules/smart-deployable/types.sol";
-import { Utils } from "../../src/modules/inventory/Utils.sol";
-
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
+import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
+import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
+import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EphemeralInvTable, EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
+import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInvCapacityTable.sol";
+import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
+import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
+import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
+import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
+import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
+import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { State } from "../../src/modules/smart-deployable/types.sol";
+import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -44,13 +48,6 @@ import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC7
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
-
-import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-
-import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
-import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
-
-import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 contract EphemeralInventoryTest is Test {
   using Utils for bytes14;
@@ -103,6 +100,7 @@ contract EphemeralInventoryTest is Test {
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
+    smartDeployable.globalResume();
 
     // Inventory Module installation
     inventoryModule = new InventoryModule();
@@ -114,16 +112,16 @@ contract EphemeralInventoryTest is Test {
 
     world.installModule(
       inventoryModule,
-      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory())
+      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
 
     ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
     //Mock Item creation
     // Note: this only works because the test contract currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150, true);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -140,28 +138,44 @@ contract EphemeralInventoryTest is Test {
     assertEq(ephemeralInventorySystemId.getNamespace(), INVENTORY_DEPLOYMENT_NAMESPACE);
   }
 
-  function testSetEphemeralInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
+  function testSetDeployableStateToValid(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
+
+    DeployableState.set(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId,
+      DeployableStateData({
+        createdAt: block.timestamp,
+        previousState: State.ANCHORED,
+        currentState: State.ONLINE,
+        isValid: true,
+        anchoredAt: block.timestamp,
+        updatedBlockNumber: block.number,
+        updatedBlockTime: block.timestamp
+      })
+    );
+  }
+
+  function testSetEphemeralInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
 
-    DeployableState.setState(
+    DeployableState.setCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId,
       State.ONLINE
     );
-    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
     assertEq(
-      EphemeralInventoryTable.getCapacity(
-        INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
-        smartObjectId,
-        owner
+      EphemeralInvCapacityTable.getCapacity(
+        INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvCapacityTableId(),
+        smartObjectId
       ),
       storageCapacity
     );
   }
 
-  function testRevertSetInventoryCapacity(uint256 smartObjectId, address owner, uint256 storageCapacity) public {
+  function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(storageCapacity == 0);
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -169,7 +183,7 @@ contract EphemeralInventoryTest is Test {
         "InventoryEphemeralSystem: storage capacity cannot be 0"
       )
     );
-    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
   }
 
   function testDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
@@ -177,16 +191,17 @@ contract EphemeralInventoryTest is Test {
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
 
+    testSetDeployableStateToValid(smartObjectId);
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(2), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(3), 4237, 0, 150, 2);
 
-    testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
-    EphemeralInventoryTableData memory inventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -195,8 +210,8 @@ contract EphemeralInventoryTest is Test {
 
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
 
-    inventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -208,22 +223,66 @@ contract EphemeralInventoryTest is Test {
       assertEq(inventoryTableData.items[i], items[i].inventoryItemId);
     }
 
-    inventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
     assert(capacityBeforeDeposit < capacityAfterDeposit);
   }
 
+  function testEphemeralInventoryItemQuantityIncrease(
+    uint256 smartObjectId,
+    uint256 storageCapacity,
+    address owner
+  ) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(owner != address(0));
+    vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
+
+    testSetDeployableStateToValid(smartObjectId);
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
+
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
+    ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
+
+    //check the increase in quantity
+    ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
+    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, items[0].quantity * 2);
+    assertEq(inventoryItem2.quantity, items[1].quantity * 2);
+    assertEq(inventoryItem3.quantity, items[2].quantity * 2);
+  }
+
   function testRevertDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
     vm.assume(smartObjectId != 0);
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
-    testSetEphemeralInventoryCapacity(smartObjectId, owner, storageCapacity);
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -242,12 +301,12 @@ contract EphemeralInventoryTest is Test {
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 1);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 1);
 
-    EphemeralInventoryTableData memory inventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -262,8 +321,8 @@ contract EphemeralInventoryTest is Test {
       capacityAfterWithdrawal += itemVolume;
     }
 
-    inventoryTableData = EphemeralInventoryTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryTableId(),
+    inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
       smartObjectId,
       owner
     );
@@ -273,6 +332,29 @@ contract EphemeralInventoryTest is Test {
     assertEq(existingItems.length, 2);
     assertEq(existingItems[0], items[0].inventoryItemId);
     assertEq(existingItems[1], items[2].inventoryItemId);
+
+    //Check weather the items quantity is reduced
+    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, 2);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 1);
   }
 
   function testRevertWithdrawFromEphemeralInventory(
@@ -283,7 +365,7 @@ contract EphemeralInventoryTest is Test {
     testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(

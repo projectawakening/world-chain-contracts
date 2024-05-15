@@ -27,9 +27,9 @@ interface ISmartDeployable {
 
   function unanchor(uint256 entityId) external;
 
-  function globalOffline() external;
+  function globalPause() external;
 
-  function globalOnline() external;
+  function globalResume() external;
 
   function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinute) external;
 

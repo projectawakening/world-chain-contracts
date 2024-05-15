@@ -6,6 +6,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
 import { SmartDeployableLib } from "@eve/frontier-world/src/modules/smart-deployable/SmartDeployableLib.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 
 contract BringOnline is Script {
   using SmartDeployableLib for SmartDeployableLib.World;
@@ -19,7 +20,7 @@ contract BringOnline is Script {
     vm.startBroadcast(deployerPrivateKey);
     SmartDeployableLib.World memory smartDeployable = SmartDeployableLib.World({
       iface: IBaseWorld(worldAddress),
-      namespace: "frontier"
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));

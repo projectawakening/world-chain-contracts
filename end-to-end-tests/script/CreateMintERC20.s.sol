@@ -18,7 +18,7 @@ contract CreateMintERC20 is Script {
     IBaseWorld world = IBaseWorld(worldAddress);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    string memory namespace = "Test Namespace";
+    string memory namespace = "TestERC20";
     string memory name = "Test Token";
     string memory symbol = "TEST";
     uint8 decimals = uint8(18);

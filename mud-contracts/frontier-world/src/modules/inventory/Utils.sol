@@ -24,6 +24,15 @@ library Utils {
       });
   }
 
+  function inventoryInteractSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_SYSTEM,
+        namespace: namespace,
+        name: INVENTORY_INTERACT_SYSTEM_NAME
+      });
+  }
+
   function inventoryTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: INVENTORY_TABLE_NAME });
   }
@@ -32,7 +41,16 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: INVENTORY_ITEM_TABLE_NAME });
   }
 
-  function ephemeralInventoryTableId(bytes14 namespace) internal pure returns (ResourceId) {
+  function ephemeralInvCapacityTableId(bytes14 namespace) internal pure returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: namespace,
+        name: EPHEMERAL_INVENTORY_CAPACITY_TABLE_NAME
+      });
+  }
+
+  function ephemeralInvTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: EPHEMERAL_INVENTORY_TABLE_NAME });
   }
