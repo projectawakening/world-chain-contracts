@@ -1,10 +1,14 @@
 name: Develop branch (default branch) workflow
 run-name: Develop
 
+# on:
+#   push:
+#     branches:
+#       - "develop"
+
 on:
-  push:
-    branches:
-      - "develop"
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 permissions:
   id-token: write # This is required for requesting the JWT
