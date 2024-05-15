@@ -219,7 +219,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function setFuelConsumptionPerMinute(
     uint256 entityId,
     uint256 fuelConsumptionPerMinuteInWei
-  ) public onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelConsumptionPerMinute(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
@@ -236,7 +236,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function setFuelMaxCapacity(
     uint256 entityId,
     uint256 capacityInWei
-  ) public onlyAssociatedModule(entityId, _systemId()) {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, capacityInWei);
   }
 
