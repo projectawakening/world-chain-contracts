@@ -1,14 +1,10 @@
 name: Develop branch (default branch) workflow
 run-name: Develop
 
-# on:
-#   push:
-#     branches:
-  #       - "develop"
-
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+  push:
+    branches:
+      - "develop"
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -171,9 +167,3 @@ jobs:
             IMAGE_TAG=0.0.1
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      # - name: Generate artifact attestation
-      #   uses: actions/attest-build-provenance@v1
-      #   with:
-      #     subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
-      #     subject-digest: ${{ steps.build_and_push.outputs.digest }}
-      #     push-to-registry: true
