@@ -15,3 +15,6 @@
 .nx/cache
 .DS_Store
 **/**/broadcast/
+
+#no npm package-locks needed
+**/package-lock.json
