@@ -1,6 +1,6 @@
 {
-  "name": "@eve/frontier-world",
-  "version": "0.0.0",
+  "name": "@eveworld/frontier-world",
+  "version": "0.0.1",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -24,8 +24,8 @@
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
-    "@eve/frontier-smart-object-framework": "0.0.0",
-    "@eve/common-constants": "0.0.0"
+    "@eveworld/frontier-smart-object-framework": "0.0.1",
+    "@eveworld/common-constants": "0.0.1"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",

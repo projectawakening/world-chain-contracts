@@ -19,12 +19,12 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
-import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
-import "@eve/common-constants/src/constants.sol";
+import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SmartObjectFrameworkModule } from "@eveworld/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { EntityCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
+import { HookCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/HookCore.sol";
+import { ModuleCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
+import "@eveworld/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";

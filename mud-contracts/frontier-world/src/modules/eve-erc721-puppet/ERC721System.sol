@@ -13,8 +13,8 @@ import { AccessControlLib } from "@latticexyz/world-modules/src/utils/AccessCont
 import { PuppetMaster } from "@latticexyz/world-modules/src/modules/puppet/PuppetMaster.sol";
 import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol";
 
-import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { EveSystem } from "@eveworld/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";

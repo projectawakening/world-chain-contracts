@@ -1,6 +1,6 @@
 import { mudConfig } from "@latticexyz/world/register";
 // this import statement doesnt support remappings for some reason
-import constants = require("./node_modules/@eve/common-constants/src/constants.json");
+import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
 export default mudConfig({
   //having a short namespace as the MUD Namespace must be <= 14 characters

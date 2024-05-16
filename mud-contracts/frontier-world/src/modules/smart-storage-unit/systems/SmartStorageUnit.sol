@@ -8,8 +8,8 @@ import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldReso
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
 import { EntityRecordData, WorldPosition } from "../types.sol";
 
-import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { EveSystem } from "@eveworld/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";

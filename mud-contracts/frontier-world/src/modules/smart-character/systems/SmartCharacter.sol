@@ -6,8 +6,8 @@ import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldReso
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { EveSystem } from "@eveworld/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
 import { registerERC721 } from "../../eve-erc721-puppet/registerERC721.sol";
