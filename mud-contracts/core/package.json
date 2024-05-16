@@ -1,6 +1,6 @@
 {
-  "name": "@eve/frontier-world-core",
-  "version": "0.0.0",
+  "name": "@eveworld/frontier-world-core",
+  "version": "0.0.1",
   "private": true,
   "license": "MIT",
   "scripts": {

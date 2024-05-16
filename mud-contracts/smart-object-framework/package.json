@@ -1,6 +1,6 @@
 {
-  "name": "@eve/frontier-smart-object-framework",
-  "version": "0.0.0",
+  "name": "@eveworld/frontier-smart-object-framework",
+  "version": "0.0.1",
   "private": true,
   "license": "MIT",
   "scripts": {
