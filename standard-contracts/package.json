@@ -29,7 +29,7 @@
     "@eve/frontier-world": "0.0.0",
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
-    "@eve/common-constants": "0.0.0"
+    "@eveworld/common-constants": "0.0.1"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
