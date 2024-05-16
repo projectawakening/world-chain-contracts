@@ -3,7 +3,8 @@ pragma solidity ^0.8.24;
 
 /**
  * @dev Interface definitions for AccessRules.
- */interface IAccessRules {
+ */
+ interface IAccessRules {
   /**
    * @dev All of the following accessRule implementations are hook based logic that implement access control
    *   rules enforcement.
@@ -14,9 +15,9 @@ pragma solidity ^0.8.24;
    *   context and that access context is configured to be enforced, then an {AccessRulesUnauthorizedAccount} error
    *   will be thrown.
    */
-  function accessControlRule1(bytes data) external;
-  function accessControlRule2(bytes data) external;
-  function accessControlRule3(bytes data) external;
-  function accessControlRule4(bytes data) external;
-  function accessControlRule5(bytes data) external;
+  function accessControlRule1(bytes calldata data) external;
+  function accessControlRule2(bytes calldata data) external;
+  function accessControlRule3(bytes calldata data) external;
+  function accessControlRule4(bytes calldata data) external;
+  function accessControlRule5(bytes calldata data) external;
 }

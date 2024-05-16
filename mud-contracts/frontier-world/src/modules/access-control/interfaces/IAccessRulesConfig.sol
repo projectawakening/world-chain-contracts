@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "../types.sol";
+import { RolesByContext, EnforcementLevel } from "../types.sol";
 
 /**
  * @dev Interface definitions for AccessRulesConfig
@@ -16,7 +16,7 @@ interface IAccessRulesConfig {
    *
    * Throws the error {AccessRulesConfigIdOutOfBounds} if `configId` is 0.
    */
-  function setAccessControlRoles(uint256 entityId, uint256 configId, RolesByContext rolesByContext) external;
+  function setAccessControlRoles(uint256 entityId, uint256 configId, RolesByContext calldata rolesByContext) external;
 
   /**
    * @dev Sets an enforcement level for a `configId`, defining which access contexts shoud be enforced for executions

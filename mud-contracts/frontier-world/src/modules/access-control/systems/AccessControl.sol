@@ -8,7 +8,7 @@ import { RoleAdminChanged } from "../../../codegen/tables/RoleAdminChanged.sol";
 import { RoleCreated } from "../../../codegen/tables/RoleCreated.sol";
 import { RoleGranted } from "../../../codegen/tables/RoleGranted.sol";
 import { RoleRevoked } from "../../../codegen/tables/RoleRevoked.sol";
-import { IAccessControl } from "../IAccessControl.sol";
+import { IAccessControl } from "../interfaces/IAccessControl.sol";
 import { IAccessControlErrors } from "../IAccessControlErrors.sol";
 import { Utils } from "../Utils.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
@@ -24,6 +24,8 @@ import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/inte
  */
 contract AccessControl is EveSystem {
   using Utils for bytes14;
+
+  bytes16 private constant HEX_DIGITS = "0123456789abcdef";
 
   /**
    * @dev Modifier that checks if `account` is a member of a specific role with `roleId`. Reverts
@@ -66,10 +68,10 @@ contract AccessControl is EveSystem {
     }
 
     bytes32 rootId = bytes32(uint256(uint160(callerConfirmation)));
-    string name = _toString(uint256(uint160(callerConfirmation)));
-    bytes32 roleId = keccak256(abi.encode(root, bytes32(name)));
+    string memory name = _toString(uint256(uint160(callerConfirmation)));
+    bytes32 roleId = keccak256(abi.encode(rootId, bytes32(bytes(name))));
 
-    _createRole(roleId, bytes32(name), rootId, roleId);
+    _createRole(roleId, bytes32(bytes(name)), rootId, roleId);
     _grantRole(roleId, callerConfirmation);
 
     return roleId;
@@ -100,7 +102,7 @@ contract AccessControl is EveSystem {
    * @param adminId - the admin role we want to assign for the created role.
    * @return - the generated roleId.
    */
-  function createRole(string name, bytes32 rootIdConfirmation, bytes32 adminId) 
+  function createRole(string calldata name, bytes32 rootIdConfirmation, bytes32 adminId) 
     external 
     onlyRole(adminId, world().initialMsgSender())
     returns(bytes32)
@@ -111,9 +113,9 @@ contract AccessControl is EveSystem {
       revert IAccessControlErrors.AccessControlRootAdminMismatch(rootIdConfirmation, adminRootId, adminId);
     }
 
-    bytes32 roleId = keccak256(abi.encode(rootIdConfirmation, bytes32(name)));
+    bytes32 roleId = keccak256(abi.encode(rootIdConfirmation, bytes32(bytes(name))));
 
-    _createRole(roleId, bytes32(name), rootIdConfirmation, adminId);
+    _createRole(roleId, bytes32(bytes(name)), rootIdConfirmation, adminId);
 
     return roleId;
   }
@@ -209,30 +211,22 @@ contract AccessControl is EveSystem {
    * @dev Returns the admin role that manages `roleId`. To change a role's admin, use {transferRoleAdmin}.
    */
   function getRoleAdmin(bytes32 roleId) external view returns (bytes32) {
-    return Role.getAdmin(_namespace().roleAdminTableId(), roleId);
+    return Role.getAdmin(_namespace().roleTableId(), roleId);
   }
 
   /**
    * @dev Returns a `roleId` given a `rootId` and a `name`.
    */
-  function getRoleIdByRootId(bytes32 rootId, string name) external view returns(bytes32) {
-    return keccak256(abi.encode(rootId, bytes32(name)));
+  function getRoleIdByRootId(bytes32 rootId, string calldata name) external pure returns(bytes32) {
+    return keccak256(abi.encode(rootId, bytes32(bytes(name))));
   }
 
   /**
    * @dev Returns a `roleId` given a root account address and a `name`.
    */
-  function getRoleIdByRootAcct(address rootAcct, string name) external view returns(bytes32) {
-    bytes32 rootId = bytes32(uint256(uint260(rootAcct)));
-    return keccak256(abi.encode(rootId, bytes32(name)));
-  }
-
-  /**
-   * @dev See {IERC165-supportsInterface}.
-   */
-  function supportsInterface(bytes4 interfaceId) public pure virtual override(WorldContextConsumer) returns (bool) {
-    return interfaceId == type(IAccessControl).interfaceId
-        || super.supportsInterface(interfaceId);
+  function getRoleIdByRootAcct(address rootAcct, string calldata name) external pure returns(bytes32) {
+    bytes32 rootId = bytes32(uint256(uint160(rootAcct)));
+    return keccak256(abi.encode(rootId, bytes32(bytes(name))));
   }
 
   /**
@@ -270,7 +264,7 @@ contract AccessControl is EveSystem {
     bytes32 previousAdminRole = Role.getAdmin(_namespace().roleTableId(), roleId);
 
     if(previousAdminRole == adminId) {
-      revert AccessControlAdminAlreadySet(roleId, adminId);
+      revert IAccessControlErrors.AccessControlAdminAlreadySet(roleId, adminId);
     }
     
     Role.setAdmin(_namespace().roleTableId(), roleId, adminId);

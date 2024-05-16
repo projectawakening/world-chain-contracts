@@ -1,11 +1,12 @@
 /// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { AcccessConfig, AccessConfigData } from "../../../codegen/tables/AccessConfig.sol";
-import { IAccessRulesConfig } from "../IAccessRulesConfig.sol";
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+import { AccessConfig, AccessConfigData } from "../../../codegen/tables/AccessConfig.sol";
+import { RolesByContext, EnforcementLevel } from "../types.sol";
+import { IAccessRulesConfig } from "../interfaces/IAccessRulesConfig.sol";
 import { IAccessRulesConfigErrors } from "../IAccessRulesConfigErrors.sol";
 import { AccessControlLib } from "../AccessControlLib.sol";
-import "../types.sol";
 import { Utils } from "../Utils.sol";
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 
@@ -23,7 +24,7 @@ contract AccessRulesConfig is EveSystem {
    * @dev Modifier that checks if `configId` is greater than zero. A zero value is dissallowed since it is ambiguous
    * as to whether or not the value has been set as zero or has never been set.
    */
-  modifier checkConfigId(uint256 configId) internal {
+  modifier checkConfigId(uint256 configId) {
     if(configId == 0) {
       revert IAccessRulesConfigErrors.AccessRulesConfigIdOutOfBounds();
       _;
@@ -58,11 +59,11 @@ contract AccessRulesConfig is EveSystem {
   function setAccessControlRoles(
     uint256 entityId,
     uint256 configId,
-    RolesByContext rolesByContext
+    RolesByContext calldata rolesByContext
   )
     external
     checkConfigId(configId)
-    hookable(entityId, _namespace().accessRulesConfigSystemId())
+    hookable(entityId, _systemId())
   {
     AccessConfig.setInitialMsgSender(_namespace().accessConfigTableId(), 
       entityId,
@@ -108,19 +109,16 @@ contract AccessRulesConfig is EveSystem {
   )
     external
     checkConfigId(configId)
-    hookable(entityId, _namespace().accessRulesConfigSystemId())
+    hookable(entityId, _systemId())
   {
     AccessConfig.setEnforcementLevel(_namespace().accessConfigTableId(), 
       entityId,
+      configId,
       uint8(enforcementLevel)
     );
   }
 
-  /**
-   * @dev See {IERC165-supportsInterface}.
-   */
-  function supportsInterface(bytes4 interfaceId) public pure virtual override(WorldContextConsumer) returns (bool) {
-    return interfaceId == type(IAccessRulesConfig).interfaceId
-        || super.supportsInterface(interfaceId);
+  function _systemId() internal view returns (ResourceId) {
+    return _namespace().accessRulesConfigSystemId();
   }
 }

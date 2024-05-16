@@ -29,7 +29,7 @@ interface IAccessControl {
    *   - `world().initialMsgSender` must be a member of `adminId`
    *   _ `rootIdConfirmation` must match the `rootId` of `adminId`
    */
-  function createRole(string name, bytes32 rootIdConfirmation, bytes32 adminId) external returns(bytes32);
+  function createRole(string calldata name, bytes32 rootIdConfirmation, bytes32 adminId) external returns(bytes32);
 
   /**
    * @dev Sets a new admin role for a role with given `roleId`.
@@ -94,16 +94,10 @@ interface IAccessControl {
   /**
    * @dev Returns a `roleId` given a `rootId` and a `name`.
    */
-  function getRoleIdByRootId(bytes32 rootId, string name) external view returns(bytes32);
+  function getRoleIdByRootId(bytes32 rootId, string calldata name) external view returns(bytes32);
 
   /**
    * @dev Returns a `roleId` given a root account address and a `name`.
    */
-  function getRoleIdByRootAcct(address rootAcct, string name) external view returns(bytes32);
-
-  /**
-   * @dev See {IERC165-supportsInterface}.
-   */
-  function supportsInterface(bytes4 interfaceId) external returns(bool);
-
+  function getRoleIdByRootAcct(address rootAcct, string calldata name) external view returns(bytes32);
 }
