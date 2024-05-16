@@ -53,4 +53,24 @@ library GateKeeperLib {
       )
     );
   }
+
+  function setAcceptedItemTypeId(World memory world, uint256 smartObjectId, uint256 entityTypeId) internal {
+    world.iface.call(
+      world.namespace.gateKeeperSystemId(),
+      abi.encodeCall(
+        IGateKeeper.setAcceptedItemTypeId,
+        (smartObjectId, entityTypeId)
+      )
+    );
+  }
+
+  function setTargetQuantity(World memory world, uint256 smartObjectId, uint256 targetItemQuantity) internal {
+    world.iface.call(
+      world.namespace.gateKeeperSystemId(),
+      abi.encodeCall(
+        IGateKeeper.setTargetQuantity,
+        (smartObjectId, targetItemQuantity)
+      )
+    );
+  }
 }

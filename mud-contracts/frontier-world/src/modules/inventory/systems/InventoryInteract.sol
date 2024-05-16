@@ -139,7 +139,7 @@ contract InventoryInteract is EveSystem {
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().ephemeralInventorySystemId();
+    return _namespace().inventoryInteractSystemId();
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {

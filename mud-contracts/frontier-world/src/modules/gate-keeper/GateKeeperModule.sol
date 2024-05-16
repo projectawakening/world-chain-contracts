@@ -7,14 +7,14 @@ import { Module } from "@latticexyz/world/src/Module.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { SMART_STORAGE_MODULE_NAME as MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
+import { GATE_KEEPER_MODULE_NAME as MODULE_NAME, GATE_KEEPER_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 
 import { GateKeeperTable } from "../../codegen/tables/GateKeeperTable.sol";
 
 import { GateKeeper } from "./systems/GateKeeper.sol";
 
-contract SmartStorageUnitModule is Module {
+contract GateKeeperModule is Module {
   error GateKeeperModule_InvalidNamespace(bytes14 namespace);
 
   address immutable registrationLibrary = address(new GateKeeperModuleRegistrationLibrary());

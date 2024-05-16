@@ -36,6 +36,7 @@ import { SmartDeployableModule } from "../src/modules/smart-deployable/SmartDepl
 import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
+import { GateKeeperModule } from "../src/modules/gate-keeper/GateKeeperModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
@@ -91,6 +92,7 @@ contract PostDeploy is Script {
       address(new InventoryInteract())
     );
     _installModule(deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(deployer, new GateKeeperModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initModules();
     _initERC721(baseURI);
@@ -107,13 +109,16 @@ contract PostDeploy is Script {
     world.initSmartDeployable();
     world.initInventory();
     world.initSSU();
+    world.initGateKeeper();
 
     smartObject.registerEntity(SMART_CHARACTER_CLASS_ID, CLASS);
     smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
     smartObject.registerEntity(SSU_CLASS_ID, CLASS);
+    smartObject.registerEntity(GATE_KEEPER_CLASS_ID, CLASS);
     world.associateClassIdToSmartCharacter(SMART_CHARACTER_CLASS_ID);
     world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     world.associateClassIdToSSU(SSU_CLASS_ID);
+    world.associateClassIdToGateKeeper(GATE_KEEPER_CLASS_ID);
 
     uint256 smartDeplFrontierClassId = world.registerAndAssociateTypeIdToSSU(SMART_DEPLOYABLE_FRONTIER_TYPE_ID);
     console.log("Smart Deployable (Frontier TypeId: 77917) - classId: ", smartDeplFrontierClassId);

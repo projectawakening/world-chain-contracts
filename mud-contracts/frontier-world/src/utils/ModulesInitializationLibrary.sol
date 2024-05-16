@@ -23,6 +23,8 @@ import { Utils as InventoryUtils } from "../modules/inventory/Utils.sol";
 import { INVENTORY_MODULE_NAME } from "../modules/inventory/constants.sol";
 import { Utils as SSUUtils } from "../modules/smart-storage-unit/Utils.sol";
 import { SMART_STORAGE_MODULE_NAME } from "../modules/smart-storage-unit/constants.sol";
+import { Utils as GateKeeperUtils } from "../modules/gate-keeper/Utils.sol";
+import { GATE_KEEPER_MODULE_NAME } from "../modules/gate-keeper/constants.sol";
 
 import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
 import { CLASS } from "@eve/frontier-smart-object-framework/src/constants.sol";
@@ -36,6 +38,7 @@ library ModulesInitializationLibrary {
   using SmartDeployableUtils for bytes14;
   using InventoryUtils for bytes14;
   using SSUUtils for bytes14;
+  using GateKeeperUtils for bytes14;
 
   /**
    * @notice registers the Entity Record module into Frontier's Smart Object Framework
@@ -247,6 +250,36 @@ library ModulesInitializationLibrary {
   }
 
   /**
+   * @notice registers the Gate Keeper module into Frontier's Smart Object Framework
+   * @dev module must first be registered into MUD through either `mud deploy` and/or a `__Module` contract
+   * @param world interface
+   */
+  function initGateKeeper(IBaseWorld world) internal {
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEVEModule(
+      _moduleId(GATE_KEEPER_DEPLOYMENT_NAMESPACE, GATE_KEEPER_MODULE_NAME),
+      GATE_KEEPER_MODULE_NAME,
+      GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId()
+    );
+  }
+
+  /**
+   * @notice associates an entity to the Gate Keeper module
+   * @dev entity needs to be registered first, and Gate Keeper module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above
+   * Ideally, only use this on Object entities, not Classes
+   * Note: this only associates the Gate Keeper module; to fully work, the entity needs to be also
+   * associated to all modules related to Smart Deployables and Inventory.
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
+  function associateGateKeeper(IBaseWorld world, uint256 entityId) internal {
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(GATE_KEEPER_DEPLOYMENT_NAMESPACE, GATE_KEEPER_MODULE_NAME)
+    );
+  }
+
+  /**
    * @notice creates a class from a given Frontier Type ID and associates all modules related to Smart Deployables to it
    * @param world interface
    * @param frontierTypeId the frontier typeId we want to create a SOF class for
@@ -317,6 +350,47 @@ library ModulesInitializationLibrary {
     moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
     moduleIds[4] = _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME);
     moduleIds[5] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
+  }
+
+  /**
+   * @notice creates a class from a given Frontier Type ID and associates all modules related to Gate Keeper to it
+   * @param world interface
+   * @param frontierTypeId the frontier typeId we want to create a SOF class for
+   * @return classId created
+   */
+  function registerAndAssociateTypeIdToGateKeeper(
+    IBaseWorld world,
+    uint256 frontierTypeId
+  ) internal returns (uint256 classId) {
+    uint256[] memory moduleIds = new uint256[](7);
+    moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
+    moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
+    moduleIds[2] = _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME);
+    moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
+    moduleIds[4] = _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME);
+    moduleIds[5] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
+    moduleIds[6] = _moduleId(GATE_KEEPER_DEPLOYMENT_NAMESPACE, GATE_KEEPER_MODULE_NAME);
+    classId = _typeIdToClassId(frontierTypeId);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(classId, CLASS);
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
+  }
+
+  /**
+   * @notice associates all modules related to Gate Keeper to a classId
+   * @dev the class entity needs to be registered in the SOF prior to calling this
+   * @param world interface
+   * @param classId we want to associate SSU modules and its dependencies to
+   */
+  function associateClassIdToGateKeeper(IBaseWorld world, uint256 classId) internal {
+    uint256[] memory moduleIds = new uint256[](7);
+    moduleIds[0] = _moduleId(STATIC_DATA_DEPLOYMENT_NAMESPACE, STATIC_DATA_MODULE_NAME);
+    moduleIds[1] = _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME);
+    moduleIds[2] = _moduleId(LOCATION_DEPLOYMENT_NAMESPACE, LOCATION_MODULE_NAME);
+    moduleIds[3] = _moduleId(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_MODULE_NAME);
+    moduleIds[4] = _moduleId(INVENTORY_DEPLOYMENT_NAMESPACE, INVENTORY_MODULE_NAME);
+    moduleIds[5] = _moduleId(SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_MODULE_NAME);
+    moduleIds[6] = _moduleId(GATE_KEEPER_DEPLOYMENT_NAMESPACE, GATE_KEEPER_MODULE_NAME);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModules(classId, moduleIds);
   }
 

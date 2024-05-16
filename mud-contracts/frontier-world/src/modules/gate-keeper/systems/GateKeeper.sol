@@ -63,7 +63,7 @@ contract GateKeeper is EveSystem , IGateKeeperErrors {
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) {
     SmartStorageUnitLib.World(IBaseWorld(_world()), _namespace())
       .createAndAnchorSmartStorageUnit(
         smartObjectId,
@@ -79,9 +79,37 @@ contract GateKeeper is EveSystem , IGateKeeperErrors {
     SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(smartObjectId, GATE_KEEPER_CLASS_ID);
   }
 
-  function ephemeralToInventoryTransferHook(
-    uint256 smartObjectId,
+  function setAcceptedItemTypeId(uint256 smartObjectId, uint256 entityTypeId) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
+    GateKeeperTable.setAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId, entityTypeId);
+  }
+
+  function setTargetQuantity(uint256 smartObjectId, uint256 targetItemQuantity) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
+    GateKeeperTable.setTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId, targetItemQuantity);
+  }
+
+  function ephemeralToInventoryTransferHook(uint256 smartObjectId,
     address ephemeralInventoryOwner,  // TODO that part is meant to be initialMsgSender()
+    InventoryItem[] memory items) public {
+    if(items.length != 1) revert GateKeeper_WrongItemArrayLength();
+
+    uint256 expectedItemTypeId = GateKeeperTable.getAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId);
+    if(items[0].typeId != expectedItemTypeId)
+      revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
+
+    uint256 storedQuantity = InventoryItemTable.getQuantity(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, items[0].typeId);
+    uint256 targetQuantity = GateKeeperTable.getTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId);
+    if (storedQuantity + items[0].quantity >  targetQuantity) {
+      revert GateKeeper_DepositOverTargetLimit();
+    } else if(storedQuantity + items[0].quantity == targetQuantity) {
+      GateKeeperTable.setIsGoalReached(_namespace().gateKeeperTableId(),smartObjectId, true);
+    }
+
+    // must be added as a BeforeHook to the related Inventory function, to GATE_KEEPER_CLASS_ID tagged entities
+    // _;
+  }
+
+  function depositToInventoryHook(
+    uint256 smartObjectId,
     InventoryItem[] memory items
   ) public {
     if(items.length != 1) revert GateKeeper_WrongItemArrayLength();

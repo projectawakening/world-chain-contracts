@@ -295,7 +295,9 @@ contract smartDeployableTest is Test {
   }
 
   function testSetFuelConsumptionPerMinute(uint256 entityId, uint256 rate) public {
-    vm.assume(entityId != 0);
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(rate != 0);
     // Tagging that entityId as a "SmartDeployable" class
     smartObject.registerEntity(entityId, OBJECT);
