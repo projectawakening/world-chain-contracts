@@ -11,7 +11,7 @@ import { requireNamespace } from "@latticexyz/world/src/requireNamespace.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { AccessControl } from "@latticexyz/world/src/AccessControl.sol";
 
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { IWorld } from "../src/codegen/world/IWorld.sol";
 import { DelegationControlSystem } from "../src/systems/DelegationControlSystem.sol";
 

@@ -1,5 +1,5 @@
 import { mudConfig } from "@latticexyz/world/register";
-import constants = require("./node_modules/@eve/common-constants/src/constants.json");
+import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
 export default mudConfig({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,

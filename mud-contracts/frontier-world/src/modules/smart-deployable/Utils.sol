@@ -7,7 +7,7 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { SMART_DEPLOYABLE_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+import { SMART_DEPLOYABLE_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
 
 import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME, DEPLOYABLE_TOKEN_TABLE_NAME, FUEL_BALANCE_TABLE_NAME } from "./constants.sol";
 

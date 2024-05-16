@@ -3,7 +3,7 @@ pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { EveSystem } from "@eveworld/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
 
 import { Utils } from "../Utils.sol";
 import { StaticDataTable } from "../../../codegen/tables/StaticDataTable.sol";
