@@ -24,9 +24,9 @@ import { HookCore } from "@eveworld/frontier-smart-object-framework/src/systems/
 import { ModuleCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
 import { ModulesInitializationLibrary } from "../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
+import { SOFInitializationLibrary } from "@eveworld/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eveworld/frontier-smart-object-framework/src/constants.sol";
 
 import { EntityRecordModule } from "../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.sol";

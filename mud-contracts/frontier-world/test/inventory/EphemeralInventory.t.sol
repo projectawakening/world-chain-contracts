@@ -22,9 +22,9 @@ import { HookCore } from "@eveworld/frontier-smart-object-framework/src/systems/
 import { ModuleCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
 
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
+import { SOFInitializationLibrary } from "@eveworld/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eveworld/frontier-smart-object-framework/src/constants.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
@@ -55,8 +55,8 @@ import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.s
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
-import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { Utils as CoreUtils } from "@eveworld/frontier-smart-object-framework/src/utils.sol";
+import { EntityTable } from "@eveworld/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
 
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
