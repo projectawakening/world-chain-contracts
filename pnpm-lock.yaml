@@ -31,23 +31,23 @@ importers:
         specifier: 0.0.0
         version: link:../mud-contracts/frontier-world
       '@latticexyz/cli':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(google-protobuf@3.21.2)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
       '@latticexyz/gas-report':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       '@latticexyz/schema-type':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world-modules':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
     devDependencies:
       '@types/debug':
         specifier: 4.1.7
@@ -74,29 +74,29 @@ importers:
         specifier: ^3.3.7
         version: 3.6.2(typescript@5.4.5)
       solhint-config-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       solhint-plugin-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
 
   mud-contracts/common/constants:
     dependencies:
       '@latticexyz/cli':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(google-protobuf@3.21.2)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
       '@latticexyz/schema-type':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world-modules':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
 
   mud-contracts/core:
     dependencies:
@@ -104,20 +104,20 @@ importers:
         specifier: 0.0.0
         version: link:../common/constants
       '@latticexyz/cli':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(google-protobuf@3.21.2)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
       '@latticexyz/schema-type':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world-modules':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
     devDependencies:
       '@types/node':
         specifier: ^18.15.11
@@ -138,11 +138,11 @@ importers:
         specifier: ^3.3.7
         version: 3.6.2(typescript@5.4.5)
       solhint-config-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       solhint-plugin-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -156,23 +156,23 @@ importers:
         specifier: 0.0.0
         version: link:../smart-object-framework
       '@latticexyz/cli':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(google-protobuf@3.21.2)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
       '@latticexyz/gas-report':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       '@latticexyz/schema-type':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world-modules':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
     devDependencies:
       '@types/debug':
         specifier: 4.1.7
@@ -199,11 +199,11 @@ importers:
         specifier: ^3.3.7
         version: 3.6.2(typescript@5.4.5)
       solhint-config-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       solhint-plugin-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -214,20 +214,20 @@ importers:
         specifier: 0.0.0
         version: link:../common/constants
       '@latticexyz/cli':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(google-protobuf@3.21.2)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
       '@latticexyz/schema-type':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world-modules':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
     devDependencies:
       '@types/debug':
         specifier: 4.1.7
@@ -254,11 +254,11 @@ importers:
         specifier: ^3.3.7
         version: 3.6.2(typescript@5.4.5)
       solhint-config-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       solhint-plugin-mud:
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-324984c5
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -272,14 +272,14 @@ importers:
         specifier: 0.0.0
         version: link:../mud-contracts/frontier-world
       '@latticexyz/schema-type':
-        specifier: transaction-context
+        specifier: 2.0.0-transaction-context-98ef570f
         version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@latticexyz/store':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-98ef570f
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       '@latticexyz/world':
-        specifier: transaction-context
-        version: 2.0.0-transaction-context-98ef570f
+        specifier: 2.0.0-transaction-context-98ef570f
+        version: 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       prettier-plugin-solidity:
         specifier: ^1.3.1
         version: 1.3.1(prettier@3.2.5)
@@ -960,10 +960,10 @@ packages:
       - zod
     dev: false
 
-  /@latticexyz/common@2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4):
-    resolution: {integrity: sha512-anoYoER78ClBAhN7WcwY6MemVI7RRGCGDWDY0oIkiMeBbq/WR9c/9n+YNYY8v4hqNBxSFjo3qR1l+HPrWPdOQw==}
+  /@latticexyz/common@2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4):
+    resolution: {integrity: sha512-2M37kWCgus4hiHuVljzOzZXr35/2ngg+0WriL+ipZ/YLncXEuS/pPiTFxQ8db7tTc0qI28DMhrZfvxguPr2oGA==}
     dependencies:
-      '@latticexyz/schema-type': 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
+      '@latticexyz/schema-type': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
       '@solidity-parser/parser': 0.16.2
       debug: 4.3.4(supports-color@8.1.1)
       execa: 7.2.0
@@ -980,8 +980,8 @@ packages:
       - zod
     dev: false
 
-  /@latticexyz/config@2.0.0-transaction-context-324984c5(typescript@5.1.6):
-    resolution: {integrity: sha512-CZhiHVGKEJdUFPBAMU2PESlMe9UyO4ftT3QJ6RY3ccV1zSII1WQKAIud9zVleyhKU4KkLx+3hM3Cfqepoel05A==}
+  /@latticexyz/config@2.0.0-transaction-context-98ef570f(typescript@5.1.6):
+    resolution: {integrity: sha512-BkIN5wEFgqEkudaS6xDmGsXK4598eWY/AvsdpyiHWx0/h4GV4pzpBNaSv3QNjLnt6MxPmD5xw94y5sX6Sd4hEg==}
     dependencies:
       '@latticexyz/common': 2.0.0-transaction-context-324984c5(typescript@5.1.6)(zod@3.22.4)
       '@latticexyz/schema-type': 2.0.0-transaction-context-324984c5(typescript@5.1.6)(zod@3.22.4)
@@ -1066,8 +1066,9 @@ packages:
       - zod
     dev: false
 
-  /@latticexyz/services@2.0.0-transaction-context-324984c5(google-protobuf@3.21.2):
-    resolution: {integrity: sha512-TXqUzYz/8WTN6z8hmmsR9grOHeRhn3tC9Q5ZRxSqATQIcpBwuNLJw8Ur8QQ12NqBJrMXP0vy9rmfXqi9Ikk3tA==}
+  /@latticexyz/services@2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2):
+    resolution: {integrity: sha512-C3BfUrsd+QyhOYpjWPNwPlcNRePip9psmIP7h0FTn+U9XF2MTCmBy0uj7x2lljvvMkGaUBazW92ylntx6qturQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     dependencies:
       long: 5.2.3
       nice-grpc-common: 2.0.2
@@ -1077,8 +1078,8 @@ packages:
       - google-protobuf
     dev: false
 
-  /@latticexyz/store@2.0.0-transaction-context-324984c5(typescript@5.1.6):
-    resolution: {integrity: sha512-hlxy/x4IdMtWklnMX9OA229kkDzM+NYTqeTr5dTcqVvz0JfR/0gGWZQCHGSs5sneXb+DJfYaFhQqhBZE9rtCUw==}
+  /@latticexyz/store@2.0.0-transaction-context-98ef570f(typescript@5.1.6):
+    resolution: {integrity: sha512-M8d3ADBU9IiqKvGo4sbJkD6uIAw/rxoNyWP8zxlURYHd2L1asG3ZTCD/jyLqtSqHGVC+dxcOYsPVH7AMe6CkqA==}
     dependencies:
       '@latticexyz/common': 2.0.0-transaction-context-324984c5(typescript@5.1.6)(zod@3.22.4)
       '@latticexyz/config': 2.0.0-transaction-context-324984c5(typescript@5.1.6)
@@ -1117,8 +1118,8 @@ packages:
       rxjs: 7.5.5
     dev: false
 
-  /@latticexyz/world-modules@2.0.0-transaction-context-324984c5(typescript@5.1.6):
-    resolution: {integrity: sha512-hiCy8UW2F/sEiIPmL+EP9lBRN7PJPO555yOdVHp1rTM+AP2Da2o/zNHUu5dhAJFG74UIGONfJm4VoJ7XLbm8Ow==}
+  /@latticexyz/world-modules@2.0.0-transaction-context-98ef570f(typescript@5.1.6):
+    resolution: {integrity: sha512-KBujk3Bm8422L/WAbXauZqJ+5UYI2REPLLc+59k7G1gJ4YosY2ujpCaUjf+xqlqWm5BgYf66wAf4e9OS42WOkw==}
     dependencies:
       '@latticexyz/common': 2.0.0-transaction-context-324984c5(typescript@5.1.6)(zod@3.22.4)
       '@latticexyz/config': 2.0.0-transaction-context-324984c5(typescript@5.1.6)
@@ -1136,11 +1137,11 @@ packages:
   /@latticexyz/world-modules@2.0.0-transaction-context-324984c5(typescript@5.4.5):
     resolution: {integrity: sha512-hiCy8UW2F/sEiIPmL+EP9lBRN7PJPO555yOdVHp1rTM+AP2Da2o/zNHUu5dhAJFG74UIGONfJm4VoJ7XLbm8Ow==}
     dependencies:
-      '@latticexyz/common': 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
-      '@latticexyz/config': 2.0.0-transaction-context-324984c5(typescript@5.4.5)
-      '@latticexyz/schema-type': 2.0.0-transaction-context-324984c5(typescript@5.4.5)(zod@3.22.4)
-      '@latticexyz/store': 2.0.0-transaction-context-324984c5(typescript@5.4.5)
-      '@latticexyz/world': 2.0.0-transaction-context-324984c5(typescript@5.4.5)
+      '@latticexyz/common': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
+      '@latticexyz/config': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
+      '@latticexyz/schema-type': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.22.4)
+      '@latticexyz/store': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
+      '@latticexyz/world': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
       zod: 3.22.4
     transitivePeerDependencies:
       - bufferutil
@@ -1149,8 +1150,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@latticexyz/world@2.0.0-transaction-context-324984c5(typescript@5.1.6):
-    resolution: {integrity: sha512-hYG0Dssy/f+wrZaAO5iPVpiwzIBGOLTiySrLvJ/RgKxHlCsw9Q/ws0PmhkwfjN/3rbvi+vWZP+E/dgu200iYGg==}
+  /@latticexyz/world@2.0.0-transaction-context-98ef570f(typescript@5.1.6):
+    resolution: {integrity: sha512-ykLWET1+gnnvOr83ILvA/jAwsNlg+v0Fr5ZOa4RgZ7ZFcJdN0LtRCz1ALUjYVqqOGIhq1Be45FHxLhD1Hddtag==}
     dependencies:
       '@latticexyz/common': 2.0.0-transaction-context-324984c5(typescript@5.1.6)(zod@3.22.4)
       '@latticexyz/config': 2.0.0-transaction-context-324984c5(typescript@5.1.6)

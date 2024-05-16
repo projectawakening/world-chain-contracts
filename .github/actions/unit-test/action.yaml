@@ -1,0 +1,67 @@
+name: Unit test
+description: Runs unit test for projects in the
+
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 8.11.x
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Restore pnpm cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: Restore Nx cache directory
+      uses: actions/cache@v2
+      with:
+        path: ~/.nx
+        key: ${{ runner.os }}-nx-${{ hashFiles('**/nx.json') }}
+
+    - name: Restore cached codegen directory
+      uses: actions/cache@v2
+      with:
+        path: ./**/src/codegen
+        key: ${{ runner.os }}-codegen-${{ hashFiles('./**/**/src/codegen/**') }}
+
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+
+    - name: Install packages
+      shell: bash
+      run: |
+        pnpm install
+
+    - name: Audit packages
+      shell: bash
+      run: |
+        pnpm audit
+
+    - name: Test feature branch
+      if: github.ref_name != 'develop' #only build on feature branches
+      shell: bash
+      run: |
+        MAIN_HEAD=$(git rev-parse origin/main)
+        pnpm nx affected -t test --base=$MAIN_HEAD --verbose --parallel=0
+
+    - name: Test on DEVELOP
+      shell: bash
+      if: github.ref_name == 'develop' #only build on default branch
+      run: |
+        git show-ref
+        THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
+        echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
+        pnpm nx affected -t test --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose --parallel=0

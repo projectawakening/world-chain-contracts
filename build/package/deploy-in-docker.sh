@@ -163,6 +163,7 @@ cp mud-contracts/frontier-world/out/IWorld.sol/IWorld.abi.json "abis/frontier-wo
 jq 'map((.name? |= gsub("^eveworld__"; "")) // .)' "abis/frontier-world/IWorld-v${IMAGE_TAG}.abi.json" > "abis/frontier-world/ERC2771IWorld-v${IMAGE_TAG}.abi.json"
 
 show_progress  7 7
+echo '{"WORLD_ADDRESS":"'$WORLD_ADDRESS'", "FORWARDER_ADDRESS":"'$FORWARDER_ADDRESS'"}' > run_env.json
 
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
