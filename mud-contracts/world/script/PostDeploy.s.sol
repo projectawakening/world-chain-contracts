@@ -18,10 +18,10 @@ import { StaticDataGlobalTableData } from "../src/codegen/tables/StaticDataGloba
 import { IERC721Mintable } from "../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 
 import "@eveworld/common-constants/src/constants.sol";
-import { SmartObjectFrameworkModule } from "@eveworld/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
+import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
+import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
+import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
 import { EntityRecordModule } from "../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.sol";
