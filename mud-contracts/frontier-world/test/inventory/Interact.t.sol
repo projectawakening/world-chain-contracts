@@ -266,15 +266,11 @@ contract InteractTest is Test {
   function _createMockItems() internal {
     //Mock Smart Storage Unit data
 
-    smartObject.registerEntity(smartObjectId, OBJECT);
-    world.associateEntityRecord(smartObjectId);
-    world.associateInventory(smartObjectId);
     smartObject.registerEntity(itemObjectId1, OBJECT);
     world.associateEntityRecord(itemObjectId1);
     smartObject.registerEntity(itemObjectId2, OBJECT);
     world.associateEntityRecord(itemObjectId2);
 
-    entityRecord.createEntityRecord(smartObjectId, entity1.itemId, entity1.typeId, entity1.volume);
     entityRecord.createEntityRecord(itemObjectId1, entity2.itemId, entity2.typeId, entity2.volume);
     entityRecord.createEntityRecord(itemObjectId2, entity3.itemId, entity3.typeId, entity3.volume);
   }

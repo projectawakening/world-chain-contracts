@@ -17,6 +17,8 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eve/frontier-smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
+import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EntityCore } from "@eve/frontier-smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eve/frontier-smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eve/frontier-smart-object-framework/src/systems/core/ModuleCore.sol";
@@ -50,6 +52,7 @@ import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRe
 contract SmartCharacterTest is Test {
   using SmartCharacterUtils for bytes14;
   using EntityRecordUtils for bytes14;
+  using CoreUtils for bytes14;
   using ModulesInitializationLibrary for IBaseWorld;
   using SOFInitializationLibrary for IBaseWorld;
   using SmartObjectLib for SmartObjectLib.World;
@@ -122,7 +125,9 @@ contract SmartCharacterTest is Test {
     EntityRecordOffchainTableData memory offchainData,
     string memory tokenCid
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
@@ -136,9 +141,6 @@ contract SmartCharacterTest is Test {
       characterAddress: characterAddress,
       createdAt: block.timestamp
     });
-
-    // registering a new entityId
-    smartObject.registerEntity(entityId, OBJECT);
 
     smartCharacter.createCharacter(entityId, characterAddress, entityRecordData, offchainData, tokenCid);
     CharactersTableData memory loggedCharactersData = CharactersTable.get(

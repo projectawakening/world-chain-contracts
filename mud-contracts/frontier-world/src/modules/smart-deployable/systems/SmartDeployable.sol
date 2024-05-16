@@ -7,6 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eve/common-constants/src/constants.sol";
 import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
 
@@ -91,8 +92,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         lastUpdatedAt: block.timestamp
       })
     );
-
-    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(entityId, SMART_DEPLOYABLE_CLASS_ID);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(entityId, OBJECT);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(entityId, SMART_DEPLOYABLE_CLASS_ID);
 
     IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
       smartObjectData.owner,

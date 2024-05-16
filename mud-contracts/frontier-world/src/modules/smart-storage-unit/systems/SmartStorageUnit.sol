@@ -60,7 +60,13 @@ contract SmartStorageUnit is EveSystem {
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public {
-    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(smartObjectId, SSU_CLASS_ID);
+    _smartDeployableLib().registerDeployable(
+      smartObjectId,
+      smartObjectData,
+      fuelUnitVolume,
+      fuelConsumptionPerMinute,
+      fuelMaxCapacity
+    );
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
       smartObjectId,
@@ -69,13 +75,7 @@ contract SmartStorageUnit is EveSystem {
       entityRecordData.volume
     );
 
-    _smartDeployableLib().registerDeployable(
-      smartObjectId,
-      smartObjectData,
-      fuelUnitVolume,
-      fuelConsumptionPerMinute,
-      fuelMaxCapacity
-    );
+    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(smartObjectId, SSU_CLASS_ID);
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
       x: worldPosition.position.x,

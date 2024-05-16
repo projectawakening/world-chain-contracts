@@ -7,6 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_CLASS_ID } from "@eve/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
@@ -48,8 +49,8 @@ contract SmartCharacter is EveSystem {
     // TODO: uncomment this if/when static data flows off-chain are ready
     // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
 
-    // only works if the entityId has been registered first
-    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(characterId, SMART_CHARACTER_CLASS_ID);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(characterId, OBJECT);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(characterId, SMART_CHARACTER_CLASS_ID);
 
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);

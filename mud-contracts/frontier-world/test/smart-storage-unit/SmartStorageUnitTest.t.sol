@@ -202,8 +202,6 @@ contract SmartStorageUnitTest is Test {
         !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
     );
 
-    smartObject.registerEntity(smartObjectId, OBJECT);
-
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
       entityRecordData,
