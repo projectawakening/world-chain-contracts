@@ -189,10 +189,10 @@ contract GateKeeperUnitTest is Test {
     smartObject.registerEntity(456, OBJECT);
     world.associateEntityRecord(456);
 
-ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
+    ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
     ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
-    
+
     _registerClassLevelHookGateKeeper();
   }
 
@@ -208,16 +208,25 @@ ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSyste
     ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
     ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
-    
+
     smartObject.registerHook(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector);
-    uint256 depositHookId = uint256(keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector)));
+    uint256 depositHookId = uint256(
+      keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector))
+    );
     smartObject.associateHook(GATE_KEEPER_CLASS_ID, depositHookId);
     smartObject.addHook(depositHookId, HookType.BEFORE, inventorySystemId, IInventory.depositToInventory.selector);
 
     smartObject.registerHook(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector);
-    uint256 transferHookId = uint256(keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector)));
+    uint256 transferHookId = uint256(
+      keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector))
+    );
     smartObject.associateHook(GATE_KEEPER_CLASS_ID, transferHookId);
-    smartObject.addHook(transferHookId, HookType.BEFORE, inventoryInteractSystemId, IInventoryInteract.ephemeralToInventoryTransfer.selector);
+    smartObject.addHook(
+      transferHookId,
+      HookType.BEFORE,
+      inventoryInteractSystemId,
+      IInventoryInteract.ephemeralToInventoryTransfer.selector
+    );
   }
 
   function testSetup() public {
@@ -315,7 +324,11 @@ ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSyste
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
   }
 
-  function testCreateAndDepositItemsToInventoryRevertTooMuchDeposited(uint256 smartObjectId, uint256 entityTypeId, uint256 quantity) public {
+  function testCreateAndDepositItemsToInventoryRevertTooMuchDeposited(
+    uint256 smartObjectId,
+    uint256 entityTypeId,
+    uint256 quantity
+  ) public {
     testCreateAndAnchorGateKeeper(smartObjectId);
     vm.assume(quantity < type(uint256).max);
     InventoryItem[] memory items = new InventoryItem[](1);
@@ -325,7 +338,7 @@ ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSyste
       itemId: 12,
       typeId: entityTypeId,
       volume: 10,
-      quantity: quantity+1
+      quantity: quantity + 1
     });
     gateKeeper.setAcceptedItemTypeId(smartObjectId, entityTypeId);
     gateKeeper.setTargetQuantity(smartObjectId, quantity);

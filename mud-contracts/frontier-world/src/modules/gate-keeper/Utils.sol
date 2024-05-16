@@ -12,20 +12,10 @@ import { GATE_KEEPER_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol
 
 library Utils {
   function gateKeeperTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: GATE_KEEPER_TABLE_NAME
-      });
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: GATE_KEEPER_TABLE_NAME });
   }
 
   function gateKeeperSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_SYSTEM,
-        namespace: namespace,
-        name: GATE_KEEPER_SYSTEM_NAME
-      });
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: GATE_KEEPER_SYSTEM_NAME });
   }
 }

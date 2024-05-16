@@ -34,7 +34,7 @@ import { InventoryItem } from "../../inventory/types.sol";
  * @notice contains hook logic that modifies a vanilla SSU into a GateKeep storage unit, war-effort-style
  * users can only deposit a pre-determined kind of items in it, no withdrawals are allowed (transaction)
  */
-contract GateKeeper is EveSystem , IGateKeeperErrors {
+contract GateKeeper is EveSystem, IGateKeeperErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
@@ -64,66 +64,76 @@ contract GateKeeper is EveSystem , IGateKeeperErrors {
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public hookable(smartObjectId, _systemId()) {
-    SmartStorageUnitLib.World(IBaseWorld(_world()), _namespace())
-      .createAndAnchorSmartStorageUnit(
-        smartObjectId,
-        entityRecordData,
-        smartObjectData,
-        worldPosition,
-        fuelUnitVolume,
-        fuelConsumptionPerMinute,
-        fuelMaxCapacity,
-        storageCapacity,
-        ephemeralStorageCapacity
-      );
+    SmartStorageUnitLib.World(IBaseWorld(_world()), _namespace()).createAndAnchorSmartStorageUnit(
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      fuelUnitVolume,
+      fuelConsumptionPerMinute,
+      fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
+    );
     SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(smartObjectId, GATE_KEEPER_CLASS_ID);
   }
 
-  function setAcceptedItemTypeId(uint256 smartObjectId, uint256 entityTypeId) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
+  function setAcceptedItemTypeId(
+    uint256 smartObjectId,
+    uint256 entityTypeId
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     GateKeeperTable.setAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId, entityTypeId);
   }
 
-  function setTargetQuantity(uint256 smartObjectId, uint256 targetItemQuantity) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
+  function setTargetQuantity(
+    uint256 smartObjectId,
+    uint256 targetItemQuantity
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     GateKeeperTable.setTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId, targetItemQuantity);
   }
 
-  function ephemeralToInventoryTransferHook(uint256 smartObjectId,
-    address ephemeralInventoryOwner,  // TODO that part is meant to be initialMsgSender()
-    InventoryItem[] memory items) public {
-    if(items.length != 1) revert GateKeeper_WrongItemArrayLength();
+  function ephemeralToInventoryTransferHook(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner, // TODO that part is meant to be initialMsgSender()
+    InventoryItem[] memory items
+  ) public {
+    if (items.length != 1) revert GateKeeper_WrongItemArrayLength();
 
     uint256 expectedItemTypeId = GateKeeperTable.getAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId);
-    if(items[0].typeId != expectedItemTypeId)
-      revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
+    if (items[0].typeId != expectedItemTypeId) revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
 
-    uint256 storedQuantity = InventoryItemTable.getQuantity(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, items[0].typeId);
+    uint256 storedQuantity = InventoryItemTable.getQuantity(
+      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].typeId
+    );
     uint256 targetQuantity = GateKeeperTable.getTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId);
-    if (storedQuantity + items[0].quantity >  targetQuantity) {
+    if (storedQuantity + items[0].quantity > targetQuantity) {
       revert GateKeeper_DepositOverTargetLimit();
-    } else if(storedQuantity + items[0].quantity == targetQuantity) {
-      GateKeeperTable.setIsGoalReached(_namespace().gateKeeperTableId(),smartObjectId, true);
+    } else if (storedQuantity + items[0].quantity == targetQuantity) {
+      GateKeeperTable.setIsGoalReached(_namespace().gateKeeperTableId(), smartObjectId, true);
     }
 
     // must be added as a BeforeHook to the related Inventory function, to GATE_KEEPER_CLASS_ID tagged entities
     // _;
   }
 
-  function depositToInventoryHook(
-    uint256 smartObjectId,
-    InventoryItem[] memory items
-  ) public {
-    if(items.length != 1) revert GateKeeper_WrongItemArrayLength();
+  function depositToInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) public {
+    if (items.length != 1) revert GateKeeper_WrongItemArrayLength();
 
     uint256 expectedItemTypeId = GateKeeperTable.getAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId);
-    if(items[0].typeId != expectedItemTypeId)
-      revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
+    if (items[0].typeId != expectedItemTypeId) revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
 
-    uint256 storedQuantity = InventoryItemTable.getQuantity(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, items[0].typeId);
+    uint256 storedQuantity = InventoryItemTable.getQuantity(
+      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].typeId
+    );
     uint256 targetQuantity = GateKeeperTable.getTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId);
-    if (storedQuantity + items[0].quantity >  targetQuantity) {
+    if (storedQuantity + items[0].quantity > targetQuantity) {
       revert GateKeeper_DepositOverTargetLimit();
-    } else if(storedQuantity + items[0].quantity == targetQuantity) {
-      GateKeeperTable.setIsGoalReached(_namespace().gateKeeperTableId(),smartObjectId, true);
+    } else if (storedQuantity + items[0].quantity == targetQuantity) {
+      GateKeeperTable.setIsGoalReached(_namespace().gateKeeperTableId(), smartObjectId, true);
     }
 
     // must be added as a BeforeHook to the related Inventory function, to GATE_KEEPER_CLASS_ID tagged entities

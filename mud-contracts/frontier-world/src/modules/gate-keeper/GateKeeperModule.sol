@@ -67,8 +67,7 @@ contract GateKeeperModuleRegistrationLibrary {
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     // Register the tables
-    if (!ResourceIds.getExists(namespace.gateKeeperTableId()))
-      GateKeeperTable.register(namespace.gateKeeperTableId());
+    if (!ResourceIds.getExists(namespace.gateKeeperTableId())) GateKeeperTable.register(namespace.gateKeeperTableId());
 
     //Register the systems
     if (!ResourceIds.getExists(namespace.gateKeeperSystemId()))
