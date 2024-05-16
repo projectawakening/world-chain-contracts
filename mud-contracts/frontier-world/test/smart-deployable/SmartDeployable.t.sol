@@ -338,7 +338,7 @@ contract smartDeployableTest is Test {
     vm.assume(fuelUnitVolume < type(uint64).max);
     vm.assume(fuelConsumptionPerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision
     vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
-    uint256 fuelConsumption = timeElapsed * (fuelConsumptionPerMinute / 60);
+    uint256 fuelConsumption = timeElapsed * (fuelConsumptionPerMinute / 60) + 1; // bringing online consumes exactly one wei's worth of gas for tick purposes
     vm.assume(fuelUnitAmount * (10 ** FUEL_DECIMALS) > fuelConsumption);
 
     testDepositFuel(
@@ -422,7 +422,7 @@ contract smartDeployableTest is Test {
     vm.assume(timeElapsedAfterOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
     vm.assume(globalOfflineDuration < 7 days); // Example constraint: timeElapsed is less than 7 days in seconds
     uint256 fuelConsumption = timeElapsedBeforeOffline * (fuelConsumptionPerMinute / 60);
-    fuelConsumption += timeElapsedAfterOffline * (fuelConsumptionPerMinute / 60);
+    fuelConsumption += timeElapsedAfterOffline * (fuelConsumptionPerMinute / 60) + 1;
     vm.assume(fuelUnitAmount * (10 ** FUEL_DECIMALS) > fuelConsumption); // this time we want to run out of fuel
     vm.assume(smartObjectData.owner != address(0));
 
