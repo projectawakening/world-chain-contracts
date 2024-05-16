@@ -50,7 +50,10 @@ contract SmartCharacter is EveSystem {
     // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
 
     SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(characterId, OBJECT);
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(characterId, SMART_CHARACTER_CLASS_ID);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
+      characterId,
+      SMART_CHARACTER_CLASS_ID
+    );
 
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);

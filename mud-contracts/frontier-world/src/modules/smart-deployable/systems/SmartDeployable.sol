@@ -93,7 +93,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       })
     );
     SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(entityId, OBJECT);
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(entityId, SMART_DEPLOYABLE_CLASS_ID);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
+      entityId,
+      SMART_DEPLOYABLE_CLASS_ID
+    );
 
     IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
       smartObjectData.owner,
