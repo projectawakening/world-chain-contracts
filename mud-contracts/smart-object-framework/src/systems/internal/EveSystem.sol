@@ -21,7 +21,7 @@ import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol"
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
 import { Utils } from "../../utils.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 /**
  * @title EveSystem

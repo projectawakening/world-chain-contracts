@@ -6,7 +6,7 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { SMART_STORAGE_UNIT_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+import { SMART_STORAGE_UNIT_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
 
 library Utils {
   function smartStorageUnitSystemId(bytes14 namespace) internal pure returns (ResourceId) {

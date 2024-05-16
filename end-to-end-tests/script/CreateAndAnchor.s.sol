@@ -4,11 +4,10 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { SmartObjectData, WorldPosition, Coord } from "@eve/frontier-world/src/modules/smart-storage-unit/types.sol";
-import { EntityRecordTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordTable.sol";
-import { SmartStorageUnitLib } from "@eve/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { IBaseWorld } from "@eveworld/frontier-world/src/codegen/world/IWorld.sol";
+import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "@eveworld/frontier-world/src/modules/smart-storage-unit/types.sol";
+import { SmartStorageUnitLib } from "@eveworld/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract CreateAndAnchor is Script {
   using SmartStorageUnitLib for SmartStorageUnitLib.World;

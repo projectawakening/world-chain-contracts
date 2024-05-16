@@ -16,7 +16,7 @@ import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 import { StaticDataLib } from "../static-data/StaticDataLib.sol";
 import { StaticDataGlobalTableData } from "../../codegen/tables/StaticDataGlobalTable.sol";
 
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { MODULE_NAMESPACE, MODULE_NAMESPACE_ID, ERC721_REGISTRY_TABLE_ID } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 import { ERC721System } from "./ERC721System.sol";

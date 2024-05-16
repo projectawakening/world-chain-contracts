@@ -21,14 +21,14 @@ importers:
 
   end-to-end-tests:
     dependencies:
-      '@eve/common-constants':
-        specifier: 0.0.0
+      '@eveworld/common-constants':
+        specifier: 0.0.1
         version: link:../mud-contracts/common/constants
-      '@eve/frontier-smart-object-framework':
-        specifier: 0.0.0
+      '@eveworld/frontier-smart-object-framework':
+        specifier: 0.0.1
         version: link:../mud-contracts/smart-object-framework
-      '@eve/frontier-world':
-        specifier: 0.0.0
+      '@eveworld/frontier-world':
+        specifier: 0.0.1
         version: link:../mud-contracts/frontier-world
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -100,8 +100,8 @@ importers:
 
   mud-contracts/core:
     dependencies:
-      '@eve/common-constants':
-        specifier: 0.0.0
+      '@eveworld/common-constants':
+        specifier: 0.0.1
         version: link:../common/constants
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -149,11 +149,11 @@ importers:
 
   mud-contracts/frontier-world:
     dependencies:
-      '@eve/common-constants':
-        specifier: 0.0.0
+      '@eveworld/common-constants':
+        specifier: 0.0.1
         version: link:../common/constants
-      '@eve/frontier-smart-object-framework':
-        specifier: 0.0.0
+      '@eveworld/frontier-smart-object-framework':
+        specifier: 0.0.1
         version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -210,8 +210,8 @@ importers:
 
   mud-contracts/smart-object-framework:
     dependencies:
-      '@eve/common-constants':
-        specifier: 0.0.0
+      '@eveworld/common-constants':
+        specifier: 0.0.1
         version: link:../common/constants
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -265,11 +265,11 @@ importers:
 
   standard-contracts:
     dependencies:
-      '@eve/common-constants':
-        specifier: 0.0.0
+      '@eveworld/common-constants':
+        specifier: 0.0.1
         version: link:../mud-contracts/common/constants
-      '@eve/frontier-world':
-        specifier: 0.0.0
+      '@eveworld/frontier-world':
+        specifier: 0.0.1
         version: link:../mud-contracts/frontier-world
       '@latticexyz/schema-type':
         specifier: 2.0.0-transaction-context-98ef570f

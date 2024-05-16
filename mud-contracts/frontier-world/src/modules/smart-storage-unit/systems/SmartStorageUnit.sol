@@ -9,9 +9,9 @@ import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../co
 import { WorldPosition } from "../types.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 
-import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SSU_CLASS_ID } from "@eve/common-constants/src/constants.sol";
-import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { EveSystem } from "@eveworld/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SSU_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";

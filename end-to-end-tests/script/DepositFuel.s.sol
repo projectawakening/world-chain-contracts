@@ -4,10 +4,10 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { InventoryItem } from "@eve/frontier-world/src/modules/inventory/types.sol";
-import { SmartDeployableLib } from "@eve/frontier-world/src/modules/smart-deployable/SmartDeployableLib.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { IBaseWorld } from "@eveworld/frontier-world/src/codegen/world/IWorld.sol";
+import { InventoryItem } from "@eveworld/frontier-world/src/modules/inventory/types.sol";
+import { SmartDeployableLib } from "@eveworld/frontier-world/src/modules/smart-deployable/SmartDeployableLib.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract DepositFuel is Script {
   using SmartDeployableLib for SmartDeployableLib.World;

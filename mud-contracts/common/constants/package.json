@@ -1,6 +1,6 @@
 {
-  "name": "@eve/common-constants",
-  "version": "0.0.0",
+  "name": "@eveworld/common-constants",
+  "version": "0.0.1",
   "private": true,
   "license": "MIT",
   "dependencies": {

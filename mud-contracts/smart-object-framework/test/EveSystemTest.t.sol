@@ -34,7 +34,7 @@ import { EntityCore } from "../src/systems/core/EntityCore.sol";
 import { HookCore } from "../src/systems/core/HookCore.sol";
 import { ModuleCore } from "../src/systems/core/ModuleCore.sol";
 
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as SMART_OBJ_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as SMART_OBJ_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 interface ISmartDeployableTestSystem {
   function echoSmartDeployable(uint256 _value) external view returns (uint256);

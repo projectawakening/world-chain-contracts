@@ -10,12 +10,12 @@ import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/world
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IWorldCall } from "@latticexyz/world/src/IWorldKernel.sol";
 
-import { ISmartCharacter } from "@eve/frontier-world/src/modules/smart-character/interfaces/ISmartCharacter.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_CHARACTER_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+import { ISmartCharacter } from "@eveworld/frontier-world/src/modules/smart-character/interfaces/ISmartCharacter.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_CHARACTER_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
 
-import { SmartObjectData, EntityRecordData } from "@eve/frontier-world/src/modules/smart-character/types.sol";
-import { EntityRecordOffchainTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
+import { SmartObjectData, EntityRecordData } from "@eveworld/frontier-world/src/modules/smart-character/types.sol";
+import { EntityRecordOffchainTableData } from "@eveworld/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract CallWorld is Script {
   ERC2771Forwarder internal _erc2771Forwarder;
