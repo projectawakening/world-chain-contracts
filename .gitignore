@@ -3,7 +3,6 @@
 
 # Directories of generated code for MUD projects
 **/out
-**/codegen
 **/deploys/**
 **/cache
 **/**/worlds.json
