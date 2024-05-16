@@ -3,7 +3,7 @@ pragma solidity >=0.8.21;
 
 import "forge-std/Test.sol";
 
-  import { World } from "@latticexyz/world/src/World.sol";
+import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";

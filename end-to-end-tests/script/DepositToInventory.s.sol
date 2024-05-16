@@ -6,7 +6,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eveworld/frontier-world/src/codegen/world/IWorld.sol";
 import { InventoryItem } from "@eveworld/frontier-world/src/modules/inventory/types.sol";
-  import { SmartStorageUnitLib } from "@eveworld/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartStorageUnitLib } from "@eveworld/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract DepositToInventory is Script {
