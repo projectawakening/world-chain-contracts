@@ -24,11 +24,11 @@ import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/Mo
 import "@eveworld/common-constants/src/constants.sol";
 
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eve/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { Utils as CoreUtils } from "@eve/frontier-smart-object-framework/src/utils.sol";
-import { EntityTable } from "@eve/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
-import { CLASS, OBJECT } from "@eve/frontier-smart-object-framework/src/constants.sol";
+import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";

@@ -7,9 +7,9 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 
-import { EveSystem } from "@eve/frontier-smart-object-framework/src/systems/internal/EveSystem.sol";
-import { INVENTORY_DEPLOYMENT_NAMESPACE, GATE_KEEPER_CLASS_ID } from "@eve/common-constants/src/constants.sol";
-import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
+import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
+import { INVENTORY_DEPLOYMENT_NAMESPACE, GATE_KEEPER_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { SmartStorageUnitLib } from "../../smart-storage-unit/SmartStorageUnitLib.sol";
 
 import { IGateKeeperErrors } from "../IGateKeeperErrors.sol";

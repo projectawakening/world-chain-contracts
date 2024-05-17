@@ -162,9 +162,6 @@ contract InteractTest is Test {
   ResourceId constant VENDING_MACHINE_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, SYSTEM_NAME))));
 
-  uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-  uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-  uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
   uint256 storageCapacity = 100000;
   uint256 ephemeralStorageCapacity = 100000;
   address inventoryOwner = address(1);
@@ -311,8 +308,6 @@ contract InteractTest is Test {
   }
 
   function testInteractHandler() public {
-    address inventoryOwner = address(1);
-    address ephItemOwner = address(2);
     uint256 quantity = 2;
 
     InventoryItemTableData memory inventoryItem = InventoryItemTable.get(

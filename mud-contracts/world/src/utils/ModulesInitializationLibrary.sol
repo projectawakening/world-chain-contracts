@@ -7,7 +7,7 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-import "@eve/common-constants/src/constants.sol";
+import "@eveworld/common-constants/src/constants.sol";
 
 import { Utils as EntityRecordUtils } from "../modules/entity-record/Utils.sol";
 import { ENTITY_RECORD_MODULE_NAME } from "../modules/entity-record/constants.sol";
@@ -26,8 +26,8 @@ import { SMART_STORAGE_MODULE_NAME } from "../modules/smart-storage-unit/constan
 import { Utils as GateKeeperUtils } from "../modules/gate-keeper/Utils.sol";
 import { GATE_KEEPER_MODULE_NAME } from "../modules/gate-keeper/constants.sol";
 
-import { SmartObjectLib } from "@eve/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS } from "@eve/frontier-smart-object-framework/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS } from "@eveworld/smart-object-framework/src/constants.sol";
 
 library ModulesInitializationLibrary {
   using SmartObjectLib for SmartObjectLib.World;

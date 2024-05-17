@@ -8,7 +8,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 
 import { GATE_KEEPER_TABLE_NAME } from "./constants.sol";
 
-import { GATE_KEEPER_SYSTEM_NAME } from "@eve/common-constants/src/constants.sol";
+import { GATE_KEEPER_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
 
 library Utils {
   function gateKeeperTableId(bytes14 namespace) internal pure returns (ResourceId) {
