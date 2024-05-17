@@ -4,12 +4,14 @@ pragma solidity >=0.8.24;
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-bytes16 constant ACCESS_CONTROL_NAME = "AccessControl";
-bytes14 constant ACCESS_CONTROL_MODULE_NAMESPACE = "eveworld";
+bytes16 constant ACCESS_CONTROL_MODULE_NAME = "AccessControlMod";
+bytes14 constant ACCESS_CONTROL_MODULE_NAMESPACE = "AccessControlM";
 
 ResourceId constant ACCESS_CONTROL_NAMESPACE_ID = ResourceId.wrap(
   bytes32(abi.encodePacked(RESOURCE_NAMESPACE, ACCESS_CONTROL_MODULE_NAMESPACE))
 );
+
+bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessContol";
 
 bytes16 constant ACCESS_RULES_CONFIG_SYSTEM_NAME = "AccessRulesConfi";
 

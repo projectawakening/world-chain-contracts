@@ -3,7 +3,9 @@ pragma solidity >=0.8.24;
 
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
+import { RootRoleData } from "./types.sol";
 import { IAccessControl } from "./interfaces/IAccessControl.sol";
+import { IAccessControlErrors } from "./IAccessControlErrors.sol";
 import { Utils } from "./Utils.sol";
 
 /**
@@ -19,21 +21,21 @@ library AccessControlLib {
     bytes14 namespace;
   }
 
-  function createRootRole(World memory world, address callerConfirmation) internal returns(bytes32) {
+  function createRootRole(World memory world, address callerConfirmation) internal returns(RootRoleData memory) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
       abi.encodeCall(IAccessControl.createRootRole,
         (callerConfirmation)
       )
     );
-    return abi.decode(returnData, (bytes32));
+    return abi.decode(returnData, (RootRoleData));
   }
 
-  function createRole(World memory world, string memory name, bytes32 rootIdConfirmation, bytes32 adminId) internal returns(bytes32) {
+  function createRole(World memory world, string memory name, address rootAcctConfirmation, bytes32 adminId) internal returns(bytes32) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
       abi.encodeCall(IAccessControl.createRole,
-        (name, rootIdConfirmation, adminId)
+        (name, rootAcctConfirmation, adminId)
       )
     );
     return abi.decode(returnData, (bytes32));
@@ -95,23 +97,33 @@ library AccessControlLib {
     return abi.decode(returnData, (bytes32));
   }
 
-  function getRoleIdByRootId(World memory world, bytes32 rootId, string memory name) internal returns (bytes32) {
+  function getRoleId(World memory world, address rootAcct, string memory name) internal returns (bytes32) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.getRoleIdByRootId,
-        (rootId, name)
+      abi.encodeCall(IAccessControl.getRoleId,
+        (rootAcct, name)
       )
     );
     return abi.decode(returnData, (bytes32));
   }
 
-  function getRoleIdByRootAcct(World memory world, address rootAcct, string memory name) internal returns (bytes32) {
+  function roleExists(World memory world, bytes32 roleId) internal returns (bool) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.getRoleIdByRootAcct,
-        (rootAcct, name)
+      abi.encodeCall(IAccessControl.roleExists,
+        (roleId)
       )
     );
-    return abi.decode(returnData, (bytes32));
+    return abi.decode(returnData, (bool));
+  }
+
+  function isRootRole(World memory world, bytes32 roleId) internal returns (bool) {
+    bytes memory returnData = world.iface.call(
+      world.namespace.accessControlSystemId(),
+      abi.encodeCall(IAccessControl.isRootRole,
+        (roleId)
+      )
+    );
+    return abi.decode(returnData, (bool));
   }
 }

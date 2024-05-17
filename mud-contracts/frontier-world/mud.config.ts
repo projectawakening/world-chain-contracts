@@ -76,7 +76,7 @@ export default mudConfig({
       valueSchema: {
         exists: "bool",
         name: "bytes32",
-        root: "bytes32",
+        root: "address",
         admin: "bytes32",
       },
       tableIdArgument: true,
@@ -104,7 +104,7 @@ export default mudConfig({
       keySchema: { roleId: "bytes32" },
       valueSchema: {
         name: "bytes32",
-        root: "bytes32",
+        root: "address",
         admin: "bytes32",
       },
       tableIdArgument: true,

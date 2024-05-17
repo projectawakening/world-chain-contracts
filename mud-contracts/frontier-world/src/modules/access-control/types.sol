@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+struct RootRoleData {
+  bytes32 nameBytes32;
+  address rootAcct;
+  bytes32 roleId;
+}
+
 struct RolesByContext {
   bytes32[] initialMsgSender;
   bytes32[] mudMsgSender;

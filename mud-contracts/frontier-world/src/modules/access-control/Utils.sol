@@ -13,11 +13,15 @@ library Utils {
   }
 
   function accessControlSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_CONTROL_NAME });
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_CONTROL_SYSTEM_NAME });
   }
 
   function accessRulesConfigSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_RULES_CONFIG_SYSTEM_NAME });
+  }
+
+  function accessRulesSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_RULES_SYSTEM_NAME });
   }
 
   function roleTableId(bytes14 namespace) internal pure returns (ResourceId) {

@@ -21,12 +21,12 @@ interface IAccessControlErrors {
   /**
    * @dev `roleId` with `name` under `root` already exists 
    */
-  error AccessControlRoleAlreadyCreated(bytes32 roleId, bytes32 name, bytes32 root);
+  error AccessControlRoleAlreadyCreated(bytes32 roleId, bytes32 name, address root);
 
   /**
-   * @dev 'rootIdConfirmation' does not match the `rootId` value of `adminId`
+   * @dev 'rootAcctConfirmation' does not match the `root` value of `adminId`
    */
-  error AccessControlRootAdminMismatch(bytes32 rootIdConfirmation, bytes32 rootId, bytes32 adminId);
+  error AccessControlRootAdminMismatch(address rootAcctConfirmation, address root, bytes32 adminId);
 
   /**
    * @dev `account` is not a member of the required `roleId`
