@@ -194,9 +194,9 @@ contract EphemeralInventoryTest is Test {
     testSetDeployableStateToValid(smartObjectId);
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(2), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(3), 4237, 0, 150, 2);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
 
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 

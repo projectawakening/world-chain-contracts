@@ -29,21 +29,24 @@ contract InventoryInteract is EveSystem {
   /**
    * @notice Transfer items from inventory to ephemeral
    * @dev transfer items from inventory to ephemeral
+   * //TODO this function should be restricted to be called by a systemId that is configured only the owner of the SSU
    * @param smartObjectId is the smart object id
-   * @param items is the array of items to transfer
+   * @param outItems is the array of items to transfer
    */
   function inventoryToEphemeralTransfer(
     uint256 smartObjectId,
-    InventoryItem[] memory items
+    InventoryItem[] memory outItems
   ) public hookable(smartObjectId, _systemId()) {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
+    address ephemeralInventoryOwner = _initialMsgSender();
+    InventoryItem[] memory inItems = new InventoryItem[](outItems.length);
 
-    for (uint i = 0; i < items.length; i++) {
-      InventoryItem memory item = items[i];
+    for (uint i = 0; i < outItems.length; i++) {
+      InventoryItem memory item = outItems[i];
       if (
-        InventoryItemTable.get(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId).quantity <=
+        InventoryItemTable.get(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId).quantity <
         item.quantity
       ) {
         revert IInventoryErrors.Inventory_InvalidItemQuantity(
@@ -52,39 +55,49 @@ contract InventoryInteract is EveSystem {
           item.quantity
         );
       }
+
+      //Ephemeral Inventory Owner is the address of the caller of this function to whom the items are being transferred
+      inItems[i] = InventoryItem({
+        inventoryItemId: item.inventoryItemId,
+        owner: ephemeralInventoryOwner,
+        itemId: item.itemId,
+        typeId: item.typeId,
+        volume: item.volume,
+        quantity: item.quantity
+      });
+
       //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
       ItemTransferOffchainTable.set(
         _namespace().itemTransferTableId(),
         smartObjectId,
         item.inventoryItemId,
         owner,
-        _msgSender(),
+        ephemeralInventoryOwner,
         item.quantity,
         block.timestamp
       );
     }
 
     //withdraw the items from inventory and deposit to ephemeral table
-    _inventoryLib().withdrawFromInventory(smartObjectId, items);
+    _inventoryLib().withdrawFromInventory(smartObjectId, outItems);
     //transfer the items to ephemeral owner who is the caller of this function
-    _inventoryLib().depositToEphemeralInventory(smartObjectId, owner, items);
+    _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, inItems);
   }
 
   /**
    * @notice Transfer items from ephemeral to inventory
    * @dev transfer items from ephemeral to inventory
    * @param smartObjectId is the smart object id
-   * @param ephemeralInventoryOwner is the ephemeral inventory owner //TODO this should be the caller of the function, add msg.sender when we have transient storage
    * @param items is the array of items to transfer
    */
   function ephemeralToInventoryTransfer(
     uint256 smartObjectId,
-    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
+    address ephemeralInventoryOwner = _initialMsgSender();
 
     //check the caller of this function has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
@@ -98,7 +111,7 @@ contract InventoryInteract is EveSystem {
             item.inventoryItemId,
             ephemeralInventoryOwner
           )
-          .quantity <= item.quantity
+          .quantity < item.quantity
       ) {
         revert IInventoryErrors.Inventory_InvalidItemQuantity(
           "InventoryInteract: Not enough items to transfer",
@@ -136,6 +149,8 @@ contract InventoryInteract is EveSystem {
     bytes memory interactionParams
   ) public hookable(smartObjectId, _systemId()) {
     //TODO configure the interaction handler
+    //Configure the systemId which is allowed to call the interaction handler
+    //TODO this should be restricted to the owner of the SSU
   }
 
   function _systemId() internal view returns (ResourceId) {

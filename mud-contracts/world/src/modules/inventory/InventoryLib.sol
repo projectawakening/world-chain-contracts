@@ -103,12 +103,11 @@ library InventoryLib {
   function ephemeralToInventoryTransfer(
     World memory world,
     uint256 smartObjectId,
-    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) internal {
     world.iface.call(
       world.namespace.inventoryInteractSystemId(),
-      abi.encodeCall(IInventoryInteract.ephemeralToInventoryTransfer, (smartObjectId, ephemeralInventoryOwner, items))
+      abi.encodeCall(IInventoryInteract.ephemeralToInventoryTransfer, (smartObjectId, items))
     );
   }
 }
