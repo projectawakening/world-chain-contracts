@@ -102,13 +102,13 @@ contract AccessControl is EveSystem {
    * @param adminId - the admin role we want to assign for the created role.
    * @return - the generated roleId.
    */
-  function createRole(string calldata name, address rootAcctConfirmation, bytes32 adminId) 
+  function createRole(string memory name, address rootAcctConfirmation, bytes32 adminId) 
     external 
     onlyRole(adminId, world().initialMsgSender())
     returns(bytes32)
   {
     address adminRootAcct = Role.getRoot(_namespace().roleTableId(), adminId);
-
+    
     if (rootAcctConfirmation != adminRootAcct) {
       revert IAccessControlErrors.AccessControlRootAdminMismatch(rootAcctConfirmation, adminRootAcct, adminId);
     }
@@ -218,7 +218,7 @@ contract AccessControl is EveSystem {
    * @dev Returns a `roleId` given a `rootAcct` and a `name`.
    */
   function getRoleId(address rootAcct, string calldata name) external pure returns(bytes32) {
-    return keccak256(abi.encode(rootAcct, bytes32(abi.encodePacked(name))));
+    return keccak256(abi.encodePacked(rootAcct, bytes32(abi.encodePacked(name))));
   }
 
 
@@ -234,7 +234,7 @@ contract AccessControl is EveSystem {
    */
   function isRootRole(bytes32 roleId) external view returns (bool) {
     RoleData memory roleData = Role.get(_namespace().roleTableId(), roleId);
-    bytes32 rootRoleId = keccak256(abi.encodePacked(roleData.root, abi.encodePacked(roleData.root)));
+    bytes32 rootRoleId = keccak256(abi.encodePacked(roleData.root, ROOT_NAME_BYTES32));
     if(roleData.exists == true && roleId == rootRoleId) {
       return true;
     } else {

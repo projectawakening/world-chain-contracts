@@ -20,7 +20,7 @@ library AccessRulesConfigLib {
     bytes14 namespace;
   }
 
-  function setAccessControlRoles(World memory world, uint256 entityId, uint256 configId, RolesByContext calldata rolesByContext) internal {
+  function setAccessControlRoles(World memory world, uint256 entityId, uint256 configId, RolesByContext memory rolesByContext) internal {
     world.iface.call(
       world.namespace.accessRulesConfigSystemId(),
       abi.encodeCall(IAccessRulesConfig.setAccessControlRoles,

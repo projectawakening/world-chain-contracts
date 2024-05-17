@@ -11,7 +11,7 @@ import { AccessConfig, AccessConfigData } from "../../../codegen/tables/AccessCo
 import "../types.sol";
 import { IAccessRulesConfigErrors } from "../IAccessRulesConfigErrors.sol";
 import { IAccessRulesErrors } from "../IAccessRulesErrors.sol";
-import { HasRoleLib } from "../HasRoleLib.sol";
+import { AccessControlLib } from "../AccessControlLib.sol";
 import { Utils } from "../Utils.sol";
 import { ACCESS_CONTROL_DEPLOYMENT_NAMESPACE as ACCESS_CONTROL } from "@eve/common-constants/src/constants.sol";
 
@@ -26,11 +26,11 @@ import { ACCESS_CONTROL_DEPLOYMENT_NAMESPACE as ACCESS_CONTROL } from "@eve/comm
  *   `entityId`.
  */
 contract AccessRules is System {
-  using HasRoleLib for HasRoleLib.World;
+  using AccessControlLib for AccessControlLib.World;
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
 
-  HasRoleLib.World HasRoleInterface = HasRoleLib.World({
+  AccessControlLib.World AccessControlInterface = AccessControlLib.World({
     iface: IBaseWorld(_world()),
     namespace: ACCESS_CONTROL
   });
@@ -105,7 +105,6 @@ contract AccessRules is System {
     uint256 length = accessConfigData.initialMsgSender.length;
 
     if (accessConfigData.mudMsgSender.length != length || accessConfigData.txOrigin.length != length) {
-      revert();
       revert IAccessRulesConfigErrors.AccessRulesConfigInvalidConfig(configId);
     }
 
@@ -120,7 +119,7 @@ contract AccessRules is System {
     if(uint8(configuredEnforcement) > 0) {
       if(configuredEnforcement == EnforcementLevel.TRANSIENT_ONLY) {
         for (uint256 i = 0; i < length; i++) {
-          if (HasRoleInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender())) {
+          if (AccessControlInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender())) {
             access = true;
             break;
           }
@@ -140,7 +139,7 @@ contract AccessRules is System {
         }
       } else if (configuredEnforcement == EnforcementLevel.MUD_ONLY) {
         for (uint256 i = 0; i < length; i++) {
-          if (HasRoleInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender())) {
+          if (AccessControlInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender())) {
             access = true;
             break;
           }
@@ -160,7 +159,7 @@ contract AccessRules is System {
         }
       } else if (configuredEnforcement == EnforcementLevel.ORIGIN_ONLY) {
         for (uint256 i = 0; i < length; i++) {
-          if (HasRoleInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
+          if (AccessControlInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
             access = true;
             break;
           }
@@ -181,8 +180,8 @@ contract AccessRules is System {
       } else if (configuredEnforcement == EnforcementLevel.TRANSIENT_AND_MUD) {
         for (uint256 i = 0; i < length; i++) {
           if (
-            HasRoleInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender()) ||
-            HasRoleInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender())) {
+            AccessControlInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender()) ||
+            AccessControlInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender())) {
             access = true;
             break;
           }
@@ -208,8 +207,8 @@ contract AccessRules is System {
       } else if (configuredEnforcement == EnforcementLevel.TRANSIENT_AND_ORIGIN) {
         for (uint256 i = 0; i < length; i++) {
           if (
-            HasRoleInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender()) ||
-            HasRoleInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
+            AccessControlInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender()) ||
+            AccessControlInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
             access = true;
             break;
           }
@@ -235,8 +234,8 @@ contract AccessRules is System {
       } else if (configuredEnforcement == EnforcementLevel.MUD_AND_ORIGIN) {
         for (uint256 i = 0; i < length; i++) {
           if (
-            HasRoleInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender()) ||
-            HasRoleInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
+            AccessControlInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender()) ||
+            AccessControlInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
             access = true;
             break;
           }
@@ -262,9 +261,9 @@ contract AccessRules is System {
       } else { // TRANSIENT_AND_MUD_AND_ORIGIN
         for (uint256 i = 0; i < length; i++) {
           if (
-            HasRoleInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender()) ||
-            HasRoleInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender()) ||
-            HasRoleInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
+            AccessControlInterface.hasRole(accessConfigData.initialMsgSender[i], world().initialMsgSender()) ||
+            AccessControlInterface.hasRole(accessConfigData.mudMsgSender[i], _msgSender()) ||
+            AccessControlInterface.hasRole(accessConfigData.txOrigin[i], tx.origin)) {
             access = true;
             break;
           }

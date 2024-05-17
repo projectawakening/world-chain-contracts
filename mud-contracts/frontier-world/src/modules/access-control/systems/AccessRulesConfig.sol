@@ -59,23 +59,26 @@ contract AccessRulesConfig is EveSystem {
   function setAccessControlRoles(
     uint256 entityId,
     uint256 configId,
-    RolesByContext calldata rolesByContext
+    RolesByContext memory rolesByContext
   )
     external
     checkConfigId(configId)
     hookable(entityId, _systemId())
   {
-    AccessConfig.setInitialMsgSender(_namespace().accessConfigTableId(), 
+    AccessConfig.setInitialMsgSender(
+      _namespace().accessConfigTableId(), 
       entityId,
       configId,
       rolesByContext.initialMsgSender
     );
-    AccessConfig.setMudMsgSender(_namespace().accessConfigTableId(), 
+    AccessConfig.setMudMsgSender(
+      _namespace().accessConfigTableId(), 
       entityId,
       configId,
       rolesByContext.mudMsgSender
     );
-    AccessConfig.setTxOrigin(_namespace().accessConfigTableId(), 
+    AccessConfig.setTxOrigin(
+      _namespace().accessConfigTableId(), 
       entityId,
       configId,
       rolesByContext.txOrigin
@@ -111,7 +114,8 @@ contract AccessRulesConfig is EveSystem {
     checkConfigId(configId)
     hookable(entityId, _systemId())
   {
-    AccessConfig.setEnforcementLevel(_namespace().accessConfigTableId(), 
+    AccessConfig.setEnforcementLevel(
+      _namespace().accessConfigTableId(), 
       entityId,
       configId,
       uint8(enforcementLevel)
