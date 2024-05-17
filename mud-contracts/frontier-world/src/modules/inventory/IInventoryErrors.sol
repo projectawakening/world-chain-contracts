@@ -8,4 +8,5 @@ interface IInventoryErrors {
   error Inventory_InvalidItem(string message, uint256 typeId);
   error Inventory_InvalidItemQuantity(string message, uint256 inventoryItemId, uint256 quantity);
   error Inventory_InvalidDeployable(string message, uint256 deployableId);
+  error Inventory_InvalidOwner(string message, address ephemeralInvOwner, address itemOwner);
 }

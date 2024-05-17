@@ -10,7 +10,11 @@ import { InventoryItem } from "../types.sol";
  * @dev This interface is to make interacting with the underlying system easier via worldCall.
  */
 interface IInventoryInteract {
-  function inventoryToEphemeralTransfer(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function inventoryToEphemeralTransfer(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) external;
 
   function ephemeralToInventoryTransfer(
     uint256 smartObjectId,

@@ -91,7 +91,7 @@ contract VendingMachineTestSystem is System {
     outItems[0] = InventoryItem(outItemId, inventoryOwner, 45, 1, 50, quantity * ratio);
 
     //Withdraw from inventory and deposit to ephemeral inventory
-    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, outItems);
+    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, ephItemOwner, outItems);
 
     //Withdraw from ephemeralnventory and deposit to inventory
     _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, ephItemOwner, inItems);
@@ -126,6 +126,14 @@ contract InteractTest is Test {
   bytes16 constant SYSTEM_NAME = bytes16("System");
   ResourceId constant VENDING_MACHINE_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, SYSTEM_NAME))));
+
+  uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+  uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
+  uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
+  uint256 storageCapacity = 100000;
+  uint256 ephemeralStorageCapacity = 100000;
+  address inventoryOwner = address(1);
+  address ephItemOwner = address(2);
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -190,14 +198,6 @@ contract InteractTest is Test {
     EntityRecordData memory entity1 = EntityRecordData({ typeId: 1, itemId: 2345, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
-
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-    uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-    uint256 storageCapacity = 100000;
-    uint256 ephemeralStorageCapacity = 100000;
-    address inventoryOwner = address(1);
-    address ephItemOwner = address(2);
 
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
@@ -276,6 +276,13 @@ contract InteractTest is Test {
     inventoryItem = InventoryItemTable.get(DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, itemObjectId1);
     assertEq(inventoryItem.quantity, 8);
 
+    InventoryItemTableData memory inventoryInItem = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      itemObjectId2
+    );
+    assertEq(inventoryInItem.quantity, 2);
+
     ephInvItem = EphemeralInvItemTable.get(
       DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
@@ -283,5 +290,13 @@ contract InteractTest is Test {
       ephItemOwner
     );
     assertEq(ephInvItem.quantity, 8);
+
+    EphemeralInvItemTableData memory ephInInvItem = EphemeralInvItemTable.get(
+      DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      itemObjectId1,
+      ephItemOwner
+    );
+    assertEq(ephInInvItem.quantity, 2);
   }
 }

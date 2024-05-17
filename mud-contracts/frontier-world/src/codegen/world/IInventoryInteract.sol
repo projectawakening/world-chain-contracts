@@ -10,7 +10,11 @@ import { InventoryItem } from "./../../modules/inventory/types.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IInventoryInteract {
-  function eveworld__inventoryToEphemeralTransfer(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function eveworld__inventoryToEphemeralTransfer(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory outItems
+  ) external;
 
   function eveworld__ephemeralToInventoryTransfer(
     uint256 smartObjectId,
