@@ -4,15 +4,15 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@eveworld/frontier-world/src/codegen/world/IWorld.sol";
-import { InventoryItemTableData, InventoryItemTable } from "@eveworld/frontier-world/src/codegen/tables/InventoryItemTable.sol";
-import { EphemeralInvItemTable, EphemeralInvItemTableData } from "@eveworld/frontier-world/src/codegen/tables/EphemeralInvItemTable.sol";
+import { IBaseWorld } from "@eveworld/world/src/codegen/world/IWorld.sol";
+import { InventoryItemTableData, InventoryItemTable } from "@eveworld/world/src/codegen/tables/InventoryItemTable.sol";
+import { EphemeralInvItemTable, EphemeralInvItemTableData } from "@eveworld/world/src/codegen/tables/EphemeralInvItemTable.sol";
 
-import { InventoryItem } from "@eveworld/frontier-world/src/modules/inventory/types.sol";
-import { Utils } from "@eveworld/frontier-world/src/modules/inventory/Utils.sol";
+import { InventoryItem } from "@eveworld/world/src/modules/inventory/types.sol";
+import { Utils } from "@eveworld/world/src/modules/inventory/Utils.sol";
 
-import { SmartStorageUnitLib } from "@eveworld/frontier-world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
-import { InventoryLib } from "@eveworld/frontier-world/src/modules/inventory/InventoryLib.sol";
+import { SmartStorageUnitLib } from "@eveworld/world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { InventoryLib } from "@eveworld/world/src/modules/inventory/InventoryLib.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract Transfer is Script {
