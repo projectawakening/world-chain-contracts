@@ -30,6 +30,7 @@ import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecord
 import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../../src/modules/smart-storage-unit/types.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract EntityRecordTest is Test {
@@ -80,11 +81,10 @@ contract EntityRecordTest is Test {
 
   function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
-    EntityRecordTableData memory data = EntityRecordTableData({
+    EntityRecordData memory data = EntityRecordData({
       itemId: itemId,
       typeId: typeId,
-      volume: volume,
-      recordExists: true
+      volume: volume
     });
 
     // SOF entity registration
@@ -100,6 +100,7 @@ contract EntityRecordTest is Test {
     assertEq(data.itemId, tableData.itemId);
     assertEq(data.typeId, tableData.typeId);
     assertEq(data.volume, tableData.volume);
+    assertEq(tableData.recordExists, true);
   }
 
   function testCreateEntityRecordOffchain(

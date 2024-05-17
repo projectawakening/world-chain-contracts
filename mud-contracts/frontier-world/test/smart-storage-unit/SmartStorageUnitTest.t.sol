@@ -189,11 +189,10 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndAnchorSmartStorageUnit(uint256 smartObjectId) public {
-    EntityRecordTableData memory entityRecordData = EntityRecordTableData({
+    EntityRecordData memory entityRecordData = EntityRecordData({
       typeId: 12345,
       itemId: 45,
-      volume: 10,
-      recordExists: true
+      volume: 10
     });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
@@ -231,6 +230,7 @@ contract SmartStorageUnitTest is Test {
     assertEq(entityRecordTableData.typeId, entityRecordData.typeId);
     assertEq(entityRecordTableData.itemId, entityRecordData.itemId);
     assertEq(entityRecordTableData.volume, entityRecordData.volume);
+    assertEq(entityRecordTableData.recordExists, true);
 
     LocationTableData memory locationTableData = LocationTable.get(
       LOCATION_DEPLOYMENT_NAMESPACE.locationTableId(),

@@ -7,7 +7,7 @@ import { EveSystem } from "@eveworld/frontier-smart-object-framework/src/systems
 import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
 
 import { Utils } from "../Utils.sol";
-import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+import { EntityRecordTable } from "../../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
 
 contract EntityRecord is EveSystem {

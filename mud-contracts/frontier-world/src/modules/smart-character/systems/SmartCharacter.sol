@@ -16,11 +16,10 @@ import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";
-import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 import { Utils } from "../Utils.sol";
-import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 
 contract SmartCharacter is EveSystem {
   using WorldResourceIdInstance for ResourceId;
@@ -42,7 +41,7 @@ contract SmartCharacter is EveSystem {
   function createCharacter(
     uint256 characterId,
     address characterAddress,
-    EntityRecordTableData memory entityRecord,
+    EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
   ) public {

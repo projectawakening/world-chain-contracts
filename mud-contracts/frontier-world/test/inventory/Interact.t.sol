@@ -147,9 +147,9 @@ contract InteractTest is Test {
   uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
   uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
   uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-  EntityRecordTableData entity1 = EntityRecordTableData({ typeId: 1, itemId: 2345, volume: 100, recordExists: true });
-  EntityRecordTableData entity2 = EntityRecordTableData({ typeId: 45, itemId: 1, volume: 50, recordExists: true });
-  EntityRecordTableData entity3 = EntityRecordTableData({ typeId: 46, itemId: 2, volume: 70, recordExists: true });
+  EntityRecordData entity1 = EntityRecordData({ typeId: 1, itemId: 2345, volume: 100 });
+  EntityRecordData entity2 = EntityRecordData({ typeId: 45, itemId: 1, volume: 50 });
+  EntityRecordData entity3 = EntityRecordData({ typeId: 46, itemId: 2, volume: 70 });
 
   VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
   bytes16 constant SYSTEM_NAME = bytes16("System");

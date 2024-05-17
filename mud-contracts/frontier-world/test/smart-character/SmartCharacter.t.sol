@@ -46,7 +46,7 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
-import { EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../../src/modules/smart-storage-unit/types.sol";
 import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract SmartCharacterTest is Test {
@@ -131,11 +131,10 @@ contract SmartCharacterTest is Test {
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
-    EntityRecordTableData memory entityRecordData = EntityRecordTableData({
+    EntityRecordData memory entityRecordData = EntityRecordData({
       itemId: itemId,
       typeId: typeId,
-      volume: volume,
-      recordExists: true
+      volume: volume
     });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,

@@ -8,7 +8,7 @@ import { IBaseWorld } from "@eveworld/frontier-world/src/codegen/world/IWorld.so
 import { SmartObjectData } from "@eveworld/frontier-world/src/modules/smart-character/types.sol";
 import { SmartCharacterLib } from "@eveworld/frontier-world/src/modules/smart-character/SmartCharacterLib.sol";
 import { EntityRecordOffchainTableData } from "@eveworld/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
-import { EntityRecordTableData } from "@eveworld/frontier-world/src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "@eveworld/frontier-world/src/modules/smart-storage-unit/types.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract CreateSmartCharacter is Script {
@@ -41,7 +41,7 @@ contract CreateSmartCharacter is Script {
     smartCharacter.createCharacter(
       characterId,
       characterAddress,
-      EntityRecordTableData({ typeId: typeId, itemId: itemId, volume: volume, recordExists: true }),
+      EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume }),
       EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
       cid
     );

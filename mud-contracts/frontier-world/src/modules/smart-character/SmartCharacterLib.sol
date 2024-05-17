@@ -5,7 +5,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ISmartCharacter } from "./interfaces/ISmartCharacter.sol";
 import { EntityRecordOffchainTableData } from "../../codegen/tables/EntityRecordOffchainTable.sol";
-import { EntityRecordTableData } from "../../codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../smart-storage-unit/types.sol";
 import { SmartObjectData } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
@@ -27,7 +27,7 @@ library SmartCharacterLib {
     World memory world,
     uint256 characterId,
     address characterAddress,
-    EntityRecordTableData memory entityRecord,
+    EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
   ) internal {
