@@ -25,7 +25,7 @@ import { Utils as SSUUtils } from "../modules/smart-storage-unit/Utils.sol";
 import { SMART_STORAGE_MODULE_NAME } from "../modules/smart-storage-unit/constants.sol";
 
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS } from "@eveworld/smart-object-framework/src/constants.sol";
+import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
 
 library ModulesInitializationLibrary {
   using SmartObjectLib for SmartObjectLib.World;
@@ -60,6 +60,22 @@ library ModulesInitializationLibrary {
    * @param entityId entityId of the object or class to associate to the module
    */
   function associateEntityRecord(IBaseWorld world, uint256 entityId) internal {
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
+      entityId,
+      _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME)
+    );
+  }
+
+   /**
+   * @notice associates an entity to the Entity Record module
+   * @dev entity needs to be registered first, and Entity Record module needs to be fully initialized
+   * Also, SOF needs to be initialized too before doing the steps above.
+   * Ideally, only use this on Object entities, not Classes
+   * @param world interface
+   * @param entityId entityId of the object or class to associate to the module
+   */
+  function createAndAssociateEntityRecord(IBaseWorld world, uint256 entityId) internal {
+    _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(entityId, OBJECT);
     _sofLib(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE).associateModule(
       entityId,
       _moduleId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_MODULE_NAME)
