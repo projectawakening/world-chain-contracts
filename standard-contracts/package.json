@@ -1,7 +1,7 @@
 {
-  "name": "@eveworld/frontier-standard-contracts",
+  "name": "@eveworld/standard-contracts",
   "version": "0.0.1",
-  "description": "eve frontier smart contracts",
+  "description": "Standard (non-MUD) smart contracts for the world",
   "main": "index.js",
   "scripts": {
     "build": "forge install && forge clean && forge build",
@@ -28,7 +28,7 @@
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
-    "@eveworld/frontier-world": "0.0.1",
+    "@eveworld/world": "0.0.1",
     "@eveworld/common-constants": "0.0.1"
   },
   "devDependencies": {
