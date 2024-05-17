@@ -16,6 +16,7 @@ contract DepositToInventory is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    address invOwner = vm.addr(deployerPrivateKey);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
@@ -26,14 +27,7 @@ contract DepositToInventory is Script {
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem({
-      inventoryItemId: 123,
-      owner: address(2),
-      itemId: 12,
-      typeId: 3,
-      volume: 10,
-      quantity: 5
-    });
+    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 12, typeId: 3, volume: 10, quantity: 5 });
 
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
 

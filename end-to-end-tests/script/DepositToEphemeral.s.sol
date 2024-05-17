@@ -16,7 +16,7 @@ contract DepositToEphemeral is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    address player = vm.addr(deployerPrivateKey);
+    address ephemeralInvOwner = address(0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
@@ -27,9 +27,16 @@ contract DepositToEphemeral is Script {
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem({ inventoryItemId: 345, owner: player, itemId: 22, typeId: 3, volume: 10, quantity: 3 });
+    items[0] = InventoryItem({
+      inventoryItemId: 345,
+      owner: ephemeralInvOwner,
+      itemId: 22,
+      typeId: 3,
+      volume: 10,
+      quantity: 3
+    });
 
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, player, items);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInvOwner, items);
 
     vm.stopBroadcast();
   }

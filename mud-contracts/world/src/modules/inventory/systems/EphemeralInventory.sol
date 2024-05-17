@@ -178,6 +178,13 @@ contract EphemeralInventory is EveSystem {
         usedCapacity + reqCapacity
       );
     }
+    if (ephemeralInventoryOwner != item.owner) {
+      revert IInventoryErrors.Inventory_InvalidOwner(
+        "InventoryEphemeralSystem: ephemeralInventoryOwner and item owner should be the same",
+        ephemeralInventoryOwner,
+        item.owner
+      );
+    }
     _updateEphemeralInvAfterDeposit(smartObjectId, ephemeralInventoryOwner, item, index);
     return usedCapacity + reqCapacity;
   }

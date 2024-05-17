@@ -38,6 +38,7 @@ import { EphemeralInvTable } from "../../src/codegen/tables/EphemeralInvTable.so
 import { EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../src/codegen/tables/ItemTransferOffchainTable.sol";
+import { DeployableTokenTable } from "../../src/codegen/tables/DeployableTokenTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
@@ -66,6 +67,7 @@ import { SmartDeployable } from "../../src/modules/smart-deployable/systems/Smar
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
+import { IERC721 } from "../../src/modules/eve-erc721-puppet/IERC721.sol";
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
 
@@ -80,6 +82,7 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 contract VendingMachineTestSystem is System {
   using InventoryLib for InventoryLib.World;
   using EntityRecordUtils for bytes14;
+  using SmartDeployableUtils for bytes14;
   using Utils for bytes14;
 
   /**
@@ -87,17 +90,20 @@ contract VendingMachineTestSystem is System {
    * @dev Ideally the ration can be configured in a seperate function and stored on-chain
    * //TODO this function needs to be authorized by the builder to access inventory functions through RBAC
    * @param smartObjectId The smart object id of the smart storage unit
-   * @param inventoryOwner The owner of the inventory
    * @param quantity is the quanity of the item to be exchanged
    */
-  function interactHandler(uint256 smartObjectId, address inventoryOwner, uint256 quantity) public {
+  function interactHandler(uint256 smartObjectId, uint256 quantity) public {
     //NOTE: Store the IN and OUT item details in table by configuring in a seperate function.
     //Its hardcoded only for testing purpose
     //Inventory Item IN data
     uint256 inItemId = uint256(keccak256(abi.encode("item:46")));
     uint256 outItemId = uint256(keccak256(abi.encode("item:45")));
     uint256 ratio = 1;
-    address ephItemOwner = address(2); //Ideally this should the msg.sender
+    address ephItemOwner = address(2);
+
+    address inventoryOwner = IERC721(
+      DeployableTokenTable.getErc721Address(DEPLOYMENT_NAMESPACE.deployableTokenTableId())
+    ).ownerOf(smartObjectId);
 
     //Below Data should be stored in a table and fetched from there
     InventoryItem[] memory inItems = new InventoryItem[](1);
@@ -110,7 +116,7 @@ contract VendingMachineTestSystem is System {
     _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, outItems);
 
     //Withdraw from ephemeralnventory and deposit to inventory
-    _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, ephItemOwner, inItems);
+    _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, inItems);
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {
@@ -155,6 +161,11 @@ contract InteractTest is Test {
   bytes16 constant SYSTEM_NAME = bytes16("System");
   ResourceId constant VENDING_MACHINE_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, SYSTEM_NAME))));
+
+  uint256 storageCapacity = 100000;
+  uint256 ephemeralStorageCapacity = 100000;
+  address inventoryOwner = address(1);
+  address ephItemOwner = address(2);
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -234,11 +245,6 @@ contract InteractTest is Test {
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
 
-    uint256 storageCapacity = 100000;
-    uint256 ephemeralStorageCapacity = 100000;
-    address inventoryOwner = address(1);
-    address ephItemOwner = address(2);
-
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
       entity1,
@@ -317,13 +323,22 @@ contract InteractTest is Test {
     );
     assertEq(ephInvItem.quantity, 10);
 
+    vm.startPrank(ephItemOwner);
+
     world.call(
       VENDING_MACHINE_SYSTEM_ID,
-      abi.encodeCall(VendingMachineTestSystem.interactHandler, (smartObjectId, inventoryOwner, quantity))
+      abi.encodeCall(VendingMachineTestSystem.interactHandler, (smartObjectId, quantity))
     );
 
     inventoryItem = InventoryItemTable.get(DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, itemObjectId1);
     assertEq(inventoryItem.quantity, 8);
+
+    InventoryItemTableData memory inventoryInItem = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      itemObjectId2
+    );
+    assertEq(inventoryInItem.quantity, 2);
 
     ephInvItem = EphemeralInvItemTable.get(
       DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
@@ -332,5 +347,14 @@ contract InteractTest is Test {
       ephItemOwner
     );
     assertEq(ephInvItem.quantity, 8);
+
+    EphemeralInvItemTableData memory ephInInvItem = EphemeralInvItemTable.get(
+      DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      itemObjectId1,
+      ephItemOwner
+    );
+    assertEq(ephInInvItem.quantity, 2);
+    vm.stopPrank();
   }
 }
