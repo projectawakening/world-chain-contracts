@@ -81,11 +81,7 @@ contract EntityRecordTest is Test {
 
   function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
-    EntityRecordData memory data = EntityRecordData({
-      itemId: itemId,
-      typeId: typeId,
-      volume: volume
-    });
+    EntityRecordData memory data = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
 
     // SOF entity registration
     smartObject.registerEntity(entityId, OBJECT);
