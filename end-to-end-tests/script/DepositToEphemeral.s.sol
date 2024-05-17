@@ -16,7 +16,7 @@ contract DepositToEphemeral is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    address ephemeralInvOwner = address(2);
+    address ephemeralInvOwner = address(0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);

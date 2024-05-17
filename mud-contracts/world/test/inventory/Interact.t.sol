@@ -33,6 +33,7 @@ import { EphemeralInvTable } from "../../src/codegen/tables/EphemeralInvTable.so
 import { EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../src/codegen/tables/ItemTransferOffchainTable.sol";
+import { DeployableTokenTable } from "../../src/codegen/tables/DeployableTokenTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
@@ -50,6 +51,7 @@ import { SmartDeployable } from "../../src/modules/smart-deployable/systems/Smar
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
+import { IERC721 } from "../../src/modules/eve-erc721-puppet/IERC721.sol";
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
 
@@ -64,6 +66,7 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 contract VendingMachineTestSystem is System {
   using InventoryLib for InventoryLib.World;
   using EntityRecordUtils for bytes14;
+  using SmartDeployableUtils for bytes14;
   using Utils for bytes14;
 
   /**
@@ -71,17 +74,20 @@ contract VendingMachineTestSystem is System {
    * @dev Ideally the ration can be configured in a seperate function and stored on-chain
    * //TODO this function needs to be authorized by the builder to access inventory functions through RBAC
    * @param smartObjectId The smart object id of the smart storage unit
-   * @param inventoryOwner The owner of the inventory
    * @param quantity is the quanity of the item to be exchanged
    */
-  function interactHandler(uint256 smartObjectId, address inventoryOwner, uint256 quantity) public {
+  function interactHandler(uint256 smartObjectId, uint256 quantity) public {
     //NOTE: Store the IN and OUT item details in table by configuring in a seperate function.
     //Its hardcoded only for testing purpose
     //Inventory Item IN data
     uint256 inItemId = uint256(keccak256(abi.encode("item:46")));
     uint256 outItemId = uint256(keccak256(abi.encode("item:45")));
     uint256 ratio = 1;
-    address ephItemOwner = address(2); //Ideally this should the msg.sender
+    address ephItemOwner = address(2);
+
+    address inventoryOwner = IERC721(
+      DeployableTokenTable.getErc721Address(DEPLOYMENT_NAMESPACE.deployableTokenTableId())
+    ).ownerOf(smartObjectId);
 
     //Below Data should be stored in a table and fetched from there
     InventoryItem[] memory inItems = new InventoryItem[](1);
@@ -91,10 +97,10 @@ contract VendingMachineTestSystem is System {
     outItems[0] = InventoryItem(outItemId, inventoryOwner, 45, 1, 50, quantity * ratio);
 
     //Withdraw from inventory and deposit to ephemeral inventory
-    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, ephItemOwner, outItems);
+    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, outItems);
 
     //Withdraw from ephemeralnventory and deposit to inventory
-    _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, ephItemOwner, inItems);
+    _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, inItems);
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {
@@ -268,9 +274,11 @@ contract InteractTest is Test {
     );
     assertEq(ephInvItem.quantity, 10);
 
+    vm.startPrank(ephItemOwner);
+
     world.call(
       VENDING_MACHINE_SYSTEM_ID,
-      abi.encodeCall(VendingMachineTestSystem.interactHandler, (smartObjectId, inventoryOwner, quantity))
+      abi.encodeCall(VendingMachineTestSystem.interactHandler, (smartObjectId, quantity))
     );
 
     inventoryItem = InventoryItemTable.get(DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, itemObjectId1);
@@ -298,5 +306,6 @@ contract InteractTest is Test {
       ephItemOwner
     );
     assertEq(ephInInvItem.quantity, 2);
+    vm.stopPrank();
   }
 }

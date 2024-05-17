@@ -29,18 +29,18 @@ contract InventoryInteract is EveSystem {
   /**
    * @notice Transfer items from inventory to ephemeral
    * @dev transfer items from inventory to ephemeral
+   * //TODO this function should be restricted to be called by a systemId that is configured only the owner of the SSU
    * @param smartObjectId is the smart object id
-   * @param ephemeralInventoryOwner is the owner address of the ephemeral inventory to be transferred to //TODO this should be the msg.sender who is the txn.origin
    * @param outItems is the array of items to transfer
    */
   function inventoryToEphemeralTransfer(
     uint256 smartObjectId,
-    address ephemeralInventoryOwner,
     InventoryItem[] memory outItems
   ) public hookable(smartObjectId, _systemId()) {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
+    address ephemeralInventoryOwner = _initialMsgSender();
     InventoryItem[] memory inItems = new InventoryItem[](outItems.length);
 
     for (uint i = 0; i < outItems.length; i++) {
@@ -56,6 +56,7 @@ contract InventoryInteract is EveSystem {
         );
       }
 
+      //Ephemeral Inventory Owner is the address of the caller of this function to whom the items are being transferred
       inItems[i] = InventoryItem({
         inventoryItemId: item.inventoryItemId,
         owner: ephemeralInventoryOwner,
@@ -87,17 +88,16 @@ contract InventoryInteract is EveSystem {
    * @notice Transfer items from ephemeral to inventory
    * @dev transfer items from ephemeral to inventory
    * @param smartObjectId is the smart object id
-   * @param ephemeralInventoryOwner is the ephemeral inventory owner //TODO this should be the caller of the function, add msg.sender when we have transient storage
    * @param items is the array of items to transfer
    */
   function ephemeralToInventoryTransfer(
     uint256 smartObjectId,
-    address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
+    address ephemeralInventoryOwner = _initialMsgSender();
 
     //check the caller of this function has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
@@ -149,6 +149,8 @@ contract InventoryInteract is EveSystem {
     bytes memory interactionParams
   ) public hookable(smartObjectId, _systemId()) {
     //TODO configure the interaction handler
+    //Configure the systemId which is allowed to call the interaction handler
+    //TODO this should be restricted to the owner of the SSU
   }
 
   function _systemId() internal view returns (ResourceId) {

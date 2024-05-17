@@ -252,4 +252,8 @@ contract EveSystem is System {
     ResourceId systemId = SystemRegistry.get(address(this));
     return systemId.getNamespace();
   }
+
+  function _initialMsgSender() internal view returns (address) {
+    return world().initialMsgSender();
+  }
 }

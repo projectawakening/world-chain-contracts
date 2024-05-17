@@ -31,8 +31,8 @@ contract Transfer is Script {
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
 
     // LOAD THE KEY THAT IS INTERACTING WITH THE TRANSFER FUNCTION
-    uint256 ephemeralPrivateKey = uint256(0xd91fe4a592c3c739c6d800eea076c87d1c5a84cfbb03d2e6a4d7b1e9a2d48979);
-    address ephemeralOwner = address(2);
+    uint256 ephemeralPrivateKey = uint256(0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d);
+    address ephemeralOwner = address(0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
 
     // LOAD THE KEY OF THE OWNER FOR THE SSU
     uint256 ownerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -84,8 +84,8 @@ contract Transfer is Script {
     console.log(invItem.quantity); //0
 
     // TRANSFER
-    inventory.inventoryToEphemeralTransfer(smartObjectId, ephemeralOwner, invItems);
-    inventory.ephemeralToInventoryTransfer(smartObjectId, ephemeralOwner, ephInvItems);
+    inventory.inventoryToEphemeralTransfer(smartObjectId, invItems);
+    inventory.ephemeralToInventoryTransfer(smartObjectId, ephInvItems);
 
     //After trasnfer 1 invItem should go into ephemeral and 1 ephInvItem should go into inventory
     //SSU owner should have 1 ephInvItem after transfer
