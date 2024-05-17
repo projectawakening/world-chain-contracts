@@ -14,8 +14,8 @@ import { IERC721Mintable } from "./IERC721Mintable.sol";
 import { Utils } from "./Utils.sol";
 
 import { ModulesInitializationLibrary } from "../../../src/utils/ModulesInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { OBJECT } from "@eveworld/frontier-smart-object-framework/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { StaticDataGlobalTableData } from "../../codegen/tables/StaticDataGlobalTable.sol";

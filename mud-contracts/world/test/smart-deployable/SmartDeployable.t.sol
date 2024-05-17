@@ -23,7 +23,7 @@ import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/Mo
 
 import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 
-import { Utils as CoreUtils } from "@eveworld/frontier-smart-object-framework/src/utils.sol";
+import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
@@ -44,9 +44,9 @@ import { InventoryInteract } from "../../src/modules/inventory/systems/Inventory
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eveworld/frontier-smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eveworld/frontier-smart-object-framework/src/constants.sol";
+import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -54,7 +54,7 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../src/code
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../src/codegen/tables/DeployableFuelBalance.sol";
 import { LocationTable, LocationTableData } from "../../src/codegen/tables/LocationTable.sol";
-import { EntityTable } from "@eveworld/frontier-smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 
 import { FUEL_DECIMALS } from "../../src/modules/smart-deployable/constants.sol";
 

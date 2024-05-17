@@ -24,8 +24,8 @@ import { INVENTORY_MODULE_NAME } from "../modules/inventory/constants.sol";
 import { Utils as SSUUtils } from "../modules/smart-storage-unit/Utils.sol";
 import { SMART_STORAGE_MODULE_NAME } from "../modules/smart-storage-unit/constants.sol";
 
-import { SmartObjectLib } from "@eveworld/frontier-smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS } from "@eveworld/frontier-smart-object-framework/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS } from "@eveworld/smart-object-framework/src/constants.sol";
 
 library ModulesInitializationLibrary {
   using SmartObjectLib for SmartObjectLib.World;
