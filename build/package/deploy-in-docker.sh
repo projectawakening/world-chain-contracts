@@ -27,7 +27,7 @@ show_progress() {
     printf "\rProgress : [${done_sub_bar}${todo_sub_bar}] ${percent}%%"
 
     if [ "$total" -eq "$current" ]; then
-        printf "\nSuccess: Frontier world deployed\n"
+        printf "\nSuccess: World deployed\n"
     fi
 }
 
@@ -98,7 +98,7 @@ show_progress 0 7
 
 #1 Deploying the standard contracts
 echo " - Deploying standard contracts..."
-pnpm nx run @eve/frontier-standard-contracts:deploy 1> '/dev/null'
+pnpm nx run @eveworld/standard-contracts:deploy 1> '/dev/null'
 wait
 show_progress 1 7
 
@@ -108,11 +108,11 @@ export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/$chai
 #
 # If the world address was not set by a parameter we deploy a new core
 # If the world address was passed as a parameter we are updating that world
-echo " - Deploying frontier world..."
+echo " - Deploying world..."
 if [ -z "$world_address" ]; then
     # If not set, execute a command to obtain the value
-    echo "No world address parameter set - Deploying a new frontier world..."
-    pnpm nx deploy @eve/frontier-world-core 1> '/dev/null'
+    echo "No world address parameter set - Deploying a new world..."
+    pnpm nx deploy @eveworld/world-core 1> '/dev/null'
     wait
     show_progress 2 7
     world_address=$(cat ./mud-contracts/core/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
@@ -121,14 +121,14 @@ else
     # If set, use that value
     export WORLD_ADDRESS="$world_address"
     echo "World address parameter set - Updating the world @ ${WORLD_ADDRESS}..."
-    pnpm nx deploy @eve/frontier-world-core --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
+    pnpm nx deploy @eveworld/world-core --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
     wait
     show_progress 2 7
 fi
 
 #3 Configure the world to receive the forwarder
 echo " - Configuring trusted forwarder within the world"
-pnpm nx setForwarder @eve/frontier-world-core 1> '/dev/null'
+pnpm nx setForwarder @eveworld/world-core 1> '/dev/null'
 
 wait
 show_progress 3 7
@@ -136,33 +136,33 @@ show_progress 3 7
 
 #4 Deploy smart object framework 
 #
-# TODO stop using :local for all the 
 echo " - Installing smart object framework into world"
-pnpm nx deploy @eve/frontier-smart-object-framework --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
+pnpm nx deploy @eveworld/smart-object-framework --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
 show_progress 4 7
 
-#5 Deploy Frontier world features
+#5 Deploy world features
 echo " - Deploying world features"
-pnpm nx deploy @eve/frontier-world --worldAddress '${WORLD_ADDRESS}' &> '/dev/null'
+pnpm nx deploy @eveworld/world --worldAddress '${WORLD_ADDRESS}' &> '/dev/null'
 show_progress 5 7
 
 #6 Delegate Namespace Access
 echo " - Delegating namespace access to forwarder contract"
-pnpm nx delegateNamespaceAccess @eve/frontier-world-core 1> '/dev/null'
+pnpm nx delegateNamespaceAccess @eveworld/world-core 1> '/dev/null'
 show_progress 6 7
 
 echo " - Collecting ABIs"
 mkdir abis
 mkdir abis/trusted-forwarder
-mkdir abis/frontier-world
+mkdir abis/world
 
 #7 Copy ABIS to be used for External consumption
 cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v${IMAGE_TAG}.abi.json"
-cp mud-contracts/frontier-world/out/IWorld.sol/IWorld.abi.json "abis/frontier-world/IWorld-v${IMAGE_TAG}.abi.json"
+cp mud-contracts/world/out/IWorld.sol/IWorld.abi.json "abis/world/IWorld-v${IMAGE_TAG}.abi.json"
 # Custome ERC2771 Compatible IWorld contract
-jq 'map((.name? |= gsub("^eveworld__"; "")) // .)' "abis/frontier-world/IWorld-v${IMAGE_TAG}.abi.json" > "abis/frontier-world/ERC2771IWorld-v${IMAGE_TAG}.abi.json"
+    jq 'map((.name? |= gsub("^eveworld__"; "")) // .)' "abis/world/IWorld-v${IMAGE_TAG}.abi.json" > "abis/world/ERC2771IWorld-v${IMAGE_TAG}.abi.json"
 
 show_progress  7 7
+echo '{"WORLD_ADDRESS":"'$WORLD_ADDRESS'", "FORWARDER_ADDRESS":"'$FORWARDER_ADDRESS'"}' > run_env.json
 
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 

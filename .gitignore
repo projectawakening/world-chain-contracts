@@ -3,7 +3,6 @@
 
 # Directories of generated code for MUD projects
 **/out
-**/codegen
 **/deploys/**
 **/cache
 **/**/worlds.json
@@ -15,3 +14,6 @@
 .nx/cache
 .DS_Store
 **/**/broadcast/
+
+#no npm package-locks needed
+**/package-lock.json

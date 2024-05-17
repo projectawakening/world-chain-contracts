@@ -4,12 +4,11 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@eve/frontier-world/src/codegen/world/IWorld.sol";
-import { SmartObjectData } from "@eve/frontier-world/src/modules/smart-character/types.sol";
-import { EntityRecordTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordTable.sol";
-import { SmartCharacterLib } from "@eve/frontier-world/src/modules/smart-character/SmartCharacterLib.sol";
-import { EntityRecordOffchainTableData } from "@eve/frontier-world/src/codegen/tables/EntityRecordOffchainTable.sol";
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { IBaseWorld } from "@eveworld/world/src/codegen/world/IWorld.sol";
+import { SmartObjectData, EntityRecordData } from "@eveworld/world/src/modules/smart-character/types.sol";
+import { SmartCharacterLib } from "@eveworld/world/src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordOffchainTableData } from "@eveworld/world/src/codegen/tables/EntityRecordOffchainTable.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract CreateSmartCharacter is Script {
   using SmartCharacterLib for SmartCharacterLib.World;
