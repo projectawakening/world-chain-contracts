@@ -66,7 +66,7 @@ library ModulesInitializationLibrary {
     );
   }
 
-   /**
+  /**
    * @notice associates an entity to the Entity Record module
    * @dev entity needs to be registered first, and Entity Record module needs to be fully initialized
    * Also, SOF needs to be initialized too before doing the steps above.
