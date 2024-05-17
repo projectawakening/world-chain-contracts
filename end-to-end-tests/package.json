@@ -45,8 +45,8 @@
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
-    "@eveworld/frontier-smart-object-framework": "0.0.1",
-    "@eveworld/frontier-world": "0.0.1",
+    "@eveworld/smart-object-framework": "0.0.1",
+    "@eveworld/world": "0.0.1",
     "@eveworld/common-constants": "0.0.1"
   },
   "devDependencies": {

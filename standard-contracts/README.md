@@ -1,5 +1,5 @@
-## EVE Frontier Smart Contracts
-This repository contains all the vanilla solidity smart contracts for the frontier use cases
+## World chain Standard Smart Contracts
+This repository contains all the vanilla solidity smart contracts for the world chain
 
 ## Usage
 

@@ -1,3 +1,3 @@
 # Scripts
 
-Script utilities and tools that facilitated the deployment of the frontier game contracts.
+Script utilities and tools that facilitated the deployment of the world chain game contracts.

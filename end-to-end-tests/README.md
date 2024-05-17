@@ -1,4 +1,4 @@
-# Frontier world end to end testing suite
+# World end to end testing suite
 
 This package contains scripts intended to perform end to end tests for the game chain contracts. 
 
