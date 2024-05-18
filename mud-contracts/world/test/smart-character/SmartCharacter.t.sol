@@ -17,6 +17,8 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
+import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
@@ -44,12 +46,13 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
-import { EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../../src/modules/smart-storage-unit/types.sol";
 import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract SmartCharacterTest is Test {
   using SmartCharacterUtils for bytes14;
   using EntityRecordUtils for bytes14;
+  using CoreUtils for bytes14;
   using ModulesInitializationLibrary for IBaseWorld;
   using SOFInitializationLibrary for IBaseWorld;
   using SmartObjectLib for SmartObjectLib.World;
@@ -122,23 +125,21 @@ contract SmartCharacterTest is Test {
     EntityRecordOffchainTableData memory offchainData,
     string memory tokenCid
   ) public {
-    vm.assume(entityId != 0);
+    vm.assume(
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
-    EntityRecordTableData memory entityRecordData = EntityRecordTableData({
+    EntityRecordData memory entityRecordData = EntityRecordData({
       itemId: itemId,
       typeId: typeId,
-      volume: volume,
-      recordExists: true
+      volume: volume
     });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
       createdAt: block.timestamp
     });
-
-    // registering a new entityId
-    smartObject.registerEntity(entityId, OBJECT);
 
     smartCharacter.createCharacter(entityId, characterAddress, entityRecordData, offchainData, tokenCid);
     CharactersTableData memory loggedCharactersData = CharactersTable.get(

@@ -7,14 +7,12 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../constants.sol";
 import { WorldPosition } from "../types.sol";
-import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SSU_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
-import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { InventoryLib } from "../../inventory/InventoryLib.sol";
 
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
@@ -25,6 +23,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils } from "../Utils.sol";
 
 import { SmartObjectData } from "../../smart-deployable/types.sol";
+import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 
 contract SmartStorageUnit is EveSystem {
@@ -51,7 +50,7 @@ contract SmartStorageUnit is EveSystem {
    */
   function createAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    EntityRecordTableData memory entityRecordData,
+    EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
@@ -60,7 +59,13 @@ contract SmartStorageUnit is EveSystem {
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public {
-    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(smartObjectId, SSU_CLASS_ID);
+    _smartDeployableLib().registerDeployable(
+      smartObjectId,
+      smartObjectData,
+      fuelUnitVolume,
+      fuelConsumptionPerMinute,
+      fuelMaxCapacity
+    );
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
       smartObjectId,
@@ -69,13 +74,7 @@ contract SmartStorageUnit is EveSystem {
       entityRecordData.volume
     );
 
-    _smartDeployableLib().registerDeployable(
-      smartObjectId,
-      smartObjectData,
-      fuelUnitVolume,
-      fuelConsumptionPerMinute,
-      fuelMaxCapacity
-    );
+    SmartObjectLib.World(IBaseWorld(_world()), _namespace()).tagEntity(smartObjectId, SSU_CLASS_ID);
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
       x: worldPosition.position.x,

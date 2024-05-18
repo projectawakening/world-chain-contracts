@@ -2,14 +2,14 @@
 pragma solidity >=0.8.21;
 
 import { SmartObjectData, WorldPosition } from "../types.sol";
-import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
 interface ISmartStorageUnit {
   function createAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    EntityRecordTableData memory entityRecordData,
+    EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
