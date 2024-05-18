@@ -32,6 +32,8 @@
     "withdrawFuel:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/WithdrawFuel.s.sol:WithdrawFuel --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "transfer:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY forge script script/Transfer.s.sol:Transfer --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "transfer:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/Transfer.s.sol:Transfer --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "withdrawFromInv:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY forge script script/WithdrawFromInventory.s.sol:WithdrawFromInventory --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
+    "withdrawFromInv:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/WithdrawFromInventory.s.sol:WithdrawFromInventory --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "runAll:local": "source ./.env.local pnpm run createSmartCharacter:local && pnpm run createMintERC20:local && pnpm run createAndAnchor:local && pnpm run setDeployableMetadata:local && pnpm run depositFuel:local && pnpm run bringOnline:local && pnpm run depositToInventory:local && pnpm run depositToEphemeral:local",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier '**/*.sol' --plugin=prettier-plugin-solidity --check",
@@ -46,8 +48,8 @@
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
     "@eveworld/smart-object-framework": "0.0.1",
-    "@eveworld/world": "0.0.1",
-    "@eveworld/common-constants": "0.0.1"
+    "@eveworld/world": "0.0.2",
+    "@eveworld/common-constants": "0.0.2"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

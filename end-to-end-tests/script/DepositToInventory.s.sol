@@ -26,8 +26,24 @@ contract DepositToInventory is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 12, typeId: 3, volume: 10, quantity: 5 });
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 0, typeId: 23, volume: 10, quantity: 5 });
+    items[0] = InventoryItem({
+      inventoryItemId: 1234,
+      owner: invOwner,
+      itemId: 0,
+      typeId: 34,
+      volume: 10,
+      quantity: 10
+    });
+    items[0] = InventoryItem({
+      inventoryItemId: 1235,
+      owner: invOwner,
+      itemId: 0,
+      typeId: 35,
+      volume: 10,
+      quantity: 300
+    });
 
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
 
