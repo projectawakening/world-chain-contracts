@@ -34,7 +34,7 @@ contract CreateAndAnchor is Script {
 
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
-      EntityRecordTableData({ typeId: 7888, itemId: 111, volume: 10, recordExists: true }),
+      EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 }),
       SmartObjectData({ owner: player, tokenURI: "test" }),
       WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) }),
       1e18, // fuelUnitVolume,
