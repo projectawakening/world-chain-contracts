@@ -11,7 +11,7 @@ interface IAccessRulesConfigErrors {
   error AccessRulesConfigIdOutOfBounds();
 
   /**
-   * @dev the configuration stored at `configId` is invalid and must be reconfigured
+   * @dev the enforcement setting can only be single roles for calling {AccessRulesConfig.setAccessControlRoles
    */
-  error AccessRulesConfigInvalidConfig(uint256 configId);
+  error AccessRulesConfigEnforcementOutOfBounds();
 }

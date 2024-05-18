@@ -32,7 +32,6 @@ import { AccessControlModule } from "../../src/modules/access-control/AccessCont
 
 import { AccessControl } from "../../src/modules/access-control/systems/AccessControl.sol";
 import { AccessRulesConfig } from "../../src/modules/access-control/systems/AccessRulesConfig.sol";
-import { AccessRules } from "../../src/modules/access-control/systems/AccessRules.sol";
 
 import { RootRoleData } from "../../src/modules/access-control/types.sol";
 import { Utils } from "../../src/modules/access-control/Utils.sol";
@@ -67,9 +66,8 @@ contract AccessControlTest is Test {
     StoreSwitch.setStoreAddress(address(world));
     address ac = address(new AccessControl());
     address arc = address(new AccessRulesConfig());
-    address ar = address(new AccessRules());
     // install AccessControlModule
-    _installModule(new AccessControlModule(), ACCESS_CONTROL, ac, arc, ar);
+    _installModule(new AccessControlModule(), ACCESS_CONTROL, ac, arc);
    
     // initilize the AccessControlInterface object
     AccessControlInterface = AccessControlLib.World(world, ACCESS_CONTROL);
@@ -385,23 +383,21 @@ contract AccessControlTest is Test {
     assertEq(hasRoleAfter, false);
   }
 
-  // // NOTE: the correct error is being thrown, can't catch it for some reason. TODO: fix this
-  // function testRenounceRoleFailWrongConfirmation() public {
-  //   RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
-  //   vm.roll(block.number + 1);
-  //   bytes32 roleId = _callCreateRole(testRoleName, rootDataAlice.rootAcct, rootDataAlice.roleId, alice);
-  //   vm.roll(block.number + 1);
+  function testRenounceRoleFailWrongConfirmation() public {
+    RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
+    vm.roll(block.number + 1);
+    bytes32 roleId = _callCreateRole(testRoleName, rootDataAlice.rootAcct, rootDataAlice.roleId, alice);
+    vm.roll(block.number + 1);
 
-  //   vm.startPrank(alice);
-  //   AccessControlInterface.grantRole(roleId, alice);
+    vm.startPrank(alice);
+    AccessControlInterface.grantRole(roleId, alice);
+    vm.expectRevert(
+      IAccessControlErrors.AccessControlBadConfirmation.selector
+    );  
+    AccessControlInterface.renounceRole(roleId, bob);
+    vm.stopPrank();
 
-  //   AccessControlInterface.renounceRole(roleId, bob);
-  //   vm.stopPrank();
-
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(IAccessControlErrors.AccessControlBadConfirmation.selector)
-  //   );  
-  // }
+  }
 
   function testHasRole() public {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
@@ -460,11 +456,11 @@ contract AccessControlTest is Test {
   }
 
   // helper function to guard against multiple module registrations on the same namespace
-  function _installModule(IModule module, bytes14 namespace, address accessControlSystem, address accessRulesConfig, address accessRules) internal {
+  function _installModule(IModule module, bytes14 namespace, address accessControlSystem, address accessRulesConfig) internal {
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this)) {
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     }
-    world.installModule(module, abi.encode(namespace, accessControlSystem, accessRulesConfig, accessRules));
+    world.installModule(module, abi.encode(namespace, accessControlSystem, accessRulesConfig));
   }
 
   // helper to call the AccessControl.createRootRole function successfully

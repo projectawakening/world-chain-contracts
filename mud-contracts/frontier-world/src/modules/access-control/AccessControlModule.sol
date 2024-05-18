@@ -20,7 +20,6 @@ import { AccessConfig } from "../../codegen/tables/AccessConfig.sol";
 
 import { AccessControl } from "./systems/AccessControl.sol";
 import { AccessRulesConfig } from "./systems/AccessRulesConfig.sol";
-import { AccessRules } from "./systems/AccessRules.sol";
 
 import { Utils } from "./Utils.sol";
 
@@ -48,9 +47,9 @@ contract AccessControlModule is Module {
     requireNotInstalled(__self, encodeArgs);
 
     //Extract args
-    (bytes14 namespace, address accessControlSystem, address accessRulesConfig, address accessRules) = abi.decode(
+    (bytes14 namespace, address accessControlSystem, address accessRulesConfig) = abi.decode(
       encodeArgs,
-      (bytes14, address, address, address)
+      (bytes14, address, address)
     );
 
     //Require the namespace to not be the module's namespace
@@ -66,11 +65,11 @@ contract AccessControlModule is Module {
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
       abi.encodeCall(
         AccessControlModuleRegistrationLibrary.register,
-        (world, namespace, accessControlSystem, accessRulesConfig, accessRules)
+        (world, namespace, accessControlSystem, accessRulesConfig)
       )
     );
     if (!success) revertWithBytes(returnedData);
-
+    
     //Transfer the ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
     world.transferOwnership(namespaceId, _msgSender());
@@ -88,13 +87,12 @@ contract AccessControlModuleRegistrationLibrary {
     IBaseWorld world,
     bytes14 namespace,
     address accessControlSystem,
-    address accessRulesConfig,
-    address accessRules
+    address accessRulesConfig
   ) public {
     //Register the namespace
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
-
+    
     //Register the tables and systems for inventory namespace
     if (!ResourceIds.getExists(namespace.roleTableId())) 
       Role.register(namespace.roleTableId());
@@ -116,7 +114,5 @@ contract AccessControlModuleRegistrationLibrary {
       world.registerSystem(namespace.accessControlSystemId(), System(accessControlSystem), true);
     if (!ResourceIds.getExists(namespace.accessRulesConfigSystemId()))
       world.registerSystem(namespace.accessRulesConfigSystemId(), System(accessRulesConfig), true);
-    if (!ResourceIds.getExists(namespace.accessRulesSystemId()))
-      world.registerSystem(namespace.accessRulesSystemId(), System(accessRules), true);
   }
 }

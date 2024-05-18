@@ -16,7 +16,6 @@
     "HOOK_CORE": "HookCore",
     "ACCESS_CONTROL": "AccessControl",
     "ACCESS_RULES_CONFIG": "AccessRulesConfi",
-    "ACCESS_RULES": "AccessRules",
     "STATIC_DATA": "StaticData",
     "ENTITY_RECORD": "EntityRecord",
     "LOCATION": "Location",

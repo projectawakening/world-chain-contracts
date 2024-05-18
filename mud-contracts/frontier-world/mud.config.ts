@@ -15,10 +15,6 @@ export default mudConfig({
       name: constants.systemName.ACCESS_RULES_CONFIG,
       openAccess: true,
     },
-    AccessRules: {
-      name: constants.systemName.ACCESS_RULES,
-      openAccess: true,
-    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
@@ -138,7 +134,6 @@ export default mudConfig({
       valueSchema: {
         enforcementLevel: "uint8",
         initialMsgSender: "bytes32[]",
-        mudMsgSender: "bytes32[]",
         txOrigin: "bytes32[]",
       },
       tableIdArgument: true,

@@ -437,10 +437,10 @@ contract smartDeployableTest is Test {
       UINT256_MAX
     );
     smartDeployable.setFuelMaxCapacity(entityId, UINT256_MAX);
-    console.log(
-      "fuel max capacity: ",
-      DeployableFuelBalance.getFuelMaxCapacity(DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(), entityId)
-    );
+    // console.log(
+    //   "fuel max capacity: ",
+    //   DeployableFuelBalance.getFuelMaxCapacity(DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(), entityId)
+    // );
     smartDeployable.depositFuel(entityId, fuelUnitAmount);
     smartDeployable.anchor(entityId, location);
     smartDeployable.bringOnline(entityId);

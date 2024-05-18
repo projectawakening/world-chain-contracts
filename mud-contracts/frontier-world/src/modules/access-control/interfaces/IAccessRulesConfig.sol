@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { RolesByContext, EnforcementLevel } from "../types.sol";
+import { EnforcementLevel } from "../types.sol";
 
 /**
  * @dev Interface definitions for AccessRulesConfig
@@ -15,8 +15,9 @@ interface IAccessRulesConfig {
    * Implements the  `hookable()` modifier, see {EveSystem} and {HookCore} for more details.
    *
    * Throws the error {AccessRulesConfigIdOutOfBounds} if `configId` is 0.
+  * Throws the error {AccessRulesConfigEnforcementOutOfBounds} if the enforcement is set to TRANSIENT_AND_ORIGIN
    */
-  function setAccessControlRoles(uint256 entityId, uint256 configId, RolesByContext memory rolesByContext) external;
+  function setAccessControlRoles(uint256 entityId, uint256 configId, EnforcementLevel enforcement, bytes32[] memory roleIds) external;
 
   /**
    * @dev Sets an enforcement level for a `configId`, defining which access contexts shoud be enforced for executions

@@ -20,9 +20,6 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_RULES_CONFIG_SYSTEM_NAME });
   }
 
-  function accessRulesSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_RULES_SYSTEM_NAME });
-  }
 
   function roleTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ROLE_TABLE_NAME });

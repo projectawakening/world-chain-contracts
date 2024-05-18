@@ -15,8 +15,6 @@ bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessContol";
 
 bytes16 constant ACCESS_RULES_CONFIG_SYSTEM_NAME = "AccessRulesConfi";
 
-bytes16 constant ACCESS_RULES_SYSTEM_NAME = "AccessRules";
-
 bytes16 constant ROLE_TABLE_NAME = "Role";
 bytes16 constant HAS_ROLE_TABLE_NAME = "HasRole";
 bytes16 constant ROLE_ADMIN_CHANGED_TABLE_NAME = "RoleAdminChanged";

@@ -4,7 +4,7 @@ pragma solidity >=0.8.24;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { IAccessRulesConfig } from "./interfaces/IAccessRulesConfig.sol";
-import { RolesByContext, EnforcementLevel } from "./types.sol";
+import { EnforcementLevel } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
 /**
@@ -20,11 +20,11 @@ library AccessRulesConfigLib {
     bytes14 namespace;
   }
 
-  function setAccessControlRoles(World memory world, uint256 entityId, uint256 configId, RolesByContext memory rolesByContext) internal {
+  function setAccessControlRoles(World memory world, uint256 entityId, uint256 configId, EnforcementLevel enforcement, bytes32[] memory roleIds) internal {
     world.iface.call(
       world.namespace.accessRulesConfigSystemId(),
       abi.encodeCall(IAccessRulesConfig.setAccessControlRoles,
-        (entityId, configId, rolesByContext)
+        (entityId, configId, enforcement, roleIds)
       )
     );
   }

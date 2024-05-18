@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { EnforcementLevel } from "./types.sol";
+import { EnforcementLevel } from "./IAccessRuleMock.sol";
 
 /**
- * @dev External interface for AccessRules originating errors.
+ * @dev External interface for AccessRuleMock originating errors.
  */
-interface IAccessRulesErrors {
+interface IAccessRuleMockErrors {
+
   struct AccessReport {
     address account;
     bytes32[] roleIds;
@@ -18,7 +19,6 @@ interface IAccessRulesErrors {
   error AccessRulesUnauthorizedAccount(
     EnforcementLevel enforcementLevel,
     AccessReport transient,
-    AccessReport mud,
     AccessReport origin
   );
 }

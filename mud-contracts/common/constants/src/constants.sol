@@ -20,7 +20,6 @@ bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
 bytes16 constant HOOK_CORE_SYSTEM_NAME = "HookCore";
 bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControl";
 bytes16 constant ACCESS_RULES_CONFIG_SYSTEM_NAME = "AccessRulesConfi";
-bytes16 constant ACCESS_RULES_SYSTEM_NAME = "AccessRules";
 bytes16 constant STATIC_DATA_SYSTEM_NAME = "StaticData";
 bytes16 constant ENTITY_RECORD_SYSTEM_NAME = "EntityRecord";
 bytes16 constant LOCATION_SYSTEM_NAME = "Location";

@@ -2,12 +2,13 @@
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { System } from "@latticexyz/world/src/System.sol";
+import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 
 import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./utils.sol";
@@ -81,9 +82,11 @@ contract SmartObjectFrameworkModule is Module {
     );
     if (!success) revertWithBytes(returnedData);
 
-    // Transfer ownership of the namespace to the caller
-    ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
-    world.transferOwnership(namespaceId, _msgSender());
+    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) != _msgSender()) {
+      // Transfer the ownership of the namespace to the caller
+      ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
+      world.transferOwnership(namespaceId, _msgSender());
+    }
   }
 
   // would be a very bad idea (see issue #5 on Github)
