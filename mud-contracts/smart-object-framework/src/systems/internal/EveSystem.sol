@@ -21,7 +21,7 @@ import { ICustomErrorSystem } from "../../codegen/world//ICustomErrorSystem.sol"
 import { HookTableData } from "../../codegen/tables/HookTable.sol";
 
 import { Utils } from "../../utils.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "@eve/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as CORE_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 /**
  * @title EveSystem
@@ -251,5 +251,9 @@ contract EveSystem is System {
   function _namespace() internal view returns (bytes14 namespace) {
     ResourceId systemId = SystemRegistry.get(address(this));
     return systemId.getNamespace();
+  }
+
+  function _initialMsgSender() internal view returns (address) {
+    return world().initialMsgSender();
   }
 }

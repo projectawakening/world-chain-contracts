@@ -1,7 +1,6 @@
 {
-  "name": "@eve/common-constants",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@eveworld/common-constants",
+  "version": "0.0.1",
   "license": "MIT",
   "dependencies": {
     "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",

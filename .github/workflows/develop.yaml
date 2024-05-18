@@ -78,7 +78,7 @@ jobs:
         with:
           push: false
           load: true
-          file: build/package/frontier-world.dockerfile
+          file: build/package/world.dockerfile
           context: .
           platforms: linux/amd64
           build-args: |
@@ -160,7 +160,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          file: build/package/frontier-world.dockerfile
+          file: build/package/world.dockerfile
           context: .
           platforms: linux/arm64,linux/amd64
           build-args: |
