@@ -20,20 +20,30 @@ import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/En
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
+
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordData } from "../../src/modules/smart-storage-unit/types.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract EntityRecordTest is Test {
   using Utils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   EntityRecordLib.World entityRecord;
+  SmartObjectLib.World smartObject;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -46,10 +56,13 @@ contract EntityRecordTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
 
     _installModule(new EntityRecordModule(), DEPLOYMENT_NAMESPACE);
+    world.initEntityRecord();
 
     entityRecord = EntityRecordLib.World(world, DEPLOYMENT_NAMESPACE);
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -68,12 +81,11 @@ contract EntityRecordTest is Test {
 
   function testCreateEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
-    EntityRecordTableData memory data = EntityRecordTableData({
-      itemId: itemId,
-      typeId: typeId,
-      volume: volume,
-      recordExists: true
-    });
+    EntityRecordData memory data = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
+
+    // SOF entity registration
+    smartObject.registerEntity(entityId, OBJECT);
+    world.associateEntityRecord(entityId);
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(
@@ -84,6 +96,7 @@ contract EntityRecordTest is Test {
     assertEq(data.itemId, tableData.itemId);
     assertEq(data.typeId, tableData.typeId);
     assertEq(data.volume, tableData.volume);
+    assertEq(tableData.recordExists, true);
   }
 
   function testCreateEntityRecordOffchain(
@@ -101,6 +114,10 @@ contract EntityRecordTest is Test {
       dappURL: dappURL,
       description: description
     });
+
+    // SOF entity registration
+    smartObject.registerEntity(entityId, OBJECT);
+    world.associateEntityRecord(entityId);
 
     entityRecord.createEntityRecordOffchain(entityId, name, dappURL, description);
     EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(

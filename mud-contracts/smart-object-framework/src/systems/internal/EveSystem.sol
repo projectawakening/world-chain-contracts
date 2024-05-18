@@ -36,19 +36,15 @@ contract EveSystem is System {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
 
-  /**
+  /** TODO: Should we filter by allowed function selectors too ?
    * @notice Executes the function only if the entity is associated with the module
    * @dev Module association is defined by the systems registered in the ModuleTable
    * @param entityId is the id of an object or class
-   * @param functionSelector is the function selector of the function to be executed
+   * @param systemId is the systemId of the originating call
    */
-  modifier onlyAssociatedModule(
-    uint256 entityId,
-    ResourceId systemId,
-    bytes4 functionSelector
-  ) {
+  modifier onlyAssociatedModule(uint256 entityId, ResourceId systemId) {
     _requireEntityRegistered(entityId);
-    _requireSystemAssociatedWithModule(entityId, systemId, functionSelector);
+    _requireSystemAssociatedWithModule(entityId, systemId);
     _;
   }
 
@@ -84,11 +80,7 @@ contract EveSystem is System {
   }
 
   //TODO optimize this function by removing array concatenation
-  function _requireSystemAssociatedWithModule(
-    uint256 entityId,
-    ResourceId systemId,
-    bytes4 functionSelector
-  ) internal view {
+  function _requireSystemAssociatedWithModule(uint256 entityId, ResourceId systemId) internal view {
     //Get the moduleIds for the entity
     uint256[] memory moduleIds = _getModuleIds(entityId);
 
@@ -106,7 +98,7 @@ contract EveSystem is System {
         entityId,
         "EveSystem: Entity is not associated with any module"
       );
-    _validateModules(moduleIds, systemId, functionSelector);
+    _validateModules(moduleIds, systemId);
 
     //TODO Add logic for more granularity by function selectors.
   }
@@ -115,8 +107,7 @@ contract EveSystem is System {
     return EntityAssociation.getModuleIds(_coreNamespace().entityAssociationTableId(), entityId);
   }
 
-  function _validateModules(uint256[] memory moduleIds, ResourceId systemId, bytes4 functionSelector) internal view {
-    bytes32 unwrappedSystemId = ResourceId.unwrap(systemId);
+  function _validateModules(uint256[] memory moduleIds, ResourceId systemId) internal view {
     bool isModuleFound = false;
 
     //TODO Below logic can be optimized by using supportsInterface as well
@@ -124,12 +115,6 @@ contract EveSystem is System {
       bool systemExists = ModuleTable.getDoesExists(_coreNamespace().moduleTableTableId(), moduleIds[i], systemId);
       if (systemExists) {
         isModuleFound = true;
-        bytes32 registeredSystemId = ResourceId.unwrap(FunctionSelectors.getSystemId(functionSelector));
-        if (registeredSystemId != unwrappedSystemId)
-          revert ICustomErrorSystem.FunctionSelectorNotRegistered(
-            functionSelector,
-            "EveSystem: Function selector is not registered in the system"
-          );
         break;
       }
     }

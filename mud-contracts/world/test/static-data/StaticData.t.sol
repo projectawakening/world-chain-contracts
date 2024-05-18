@@ -14,13 +14,16 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
 
 import { Utils } from "../../src/modules/static-data/Utils.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -34,10 +37,14 @@ import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGl
 contract StaticDataTest is Test {
   using Utils for bytes14;
   using StaticDataLib for StaticDataLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   StaticDataLib.World staticData;
+  SmartObjectLib.World smartObject;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -50,10 +57,13 @@ contract StaticDataTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
 
     _installModule(new StaticDataModule(), DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
 
     staticData = StaticDataLib.World(world, DEPLOYMENT_NAMESPACE);
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -74,6 +84,11 @@ contract StaticDataTest is Test {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newURI).length != 0);
 
+    // SOF entity registration
+    uint256 entityId = uint256(ResourceId.unwrap(systemId));
+    smartObject.registerEntity(entityId, CLASS);
+    world.associateStaticData(entityId);
+
     staticData.setBaseURI(systemId, newURI);
     assertEq(StaticDataGlobalTable.getBaseURI(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newURI);
   }
@@ -82,6 +97,11 @@ contract StaticDataTest is Test {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newName).length != 0);
 
+    // SOF entity registration
+    uint256 entityId = uint256(ResourceId.unwrap(systemId));
+    smartObject.registerEntity(entityId, CLASS);
+    world.associateStaticData(entityId);
+
     staticData.setName(systemId, newName);
     assertEq(StaticDataGlobalTable.getName(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newName);
   }
@@ -89,6 +109,11 @@ contract StaticDataTest is Test {
   function testSetSymbol(ResourceId systemId, string memory newSymbol) public {
     vm.assume(ResourceId.unwrap(systemId) != bytes32(0));
     vm.assume(bytes(newSymbol).length != 0);
+
+    // SOF entity registration
+    uint256 entityId = uint256(ResourceId.unwrap(systemId));
+    smartObject.registerEntity(entityId, CLASS);
+    world.associateStaticData(entityId);
 
     staticData.setSymbol(systemId, newSymbol);
     assertEq(StaticDataGlobalTable.getSymbol(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newSymbol);
@@ -105,6 +130,11 @@ contract StaticDataTest is Test {
     vm.assume(bytes(newName).length != 0);
     vm.assume(bytes(newSymbol).length != 0);
 
+    // SOF entity registration
+    uint256 entityId = uint256(ResourceId.unwrap(systemId));
+    smartObject.registerEntity(entityId, CLASS);
+    world.associateStaticData(entityId);
+
     staticData.setMetadata(systemId, StaticDataGlobalTableData({ name: newName, symbol: newSymbol, baseURI: newURI }));
 
     assertEq(StaticDataGlobalTable.getBaseURI(DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), systemId), newURI);
@@ -115,6 +145,10 @@ contract StaticDataTest is Test {
   function testSetCID(uint256 entityId, string memory newCid) public {
     vm.assume(entityId != 0);
     vm.assume(bytes(newCid).length != 0);
+
+    // SOF entity registration
+    smartObject.registerEntity(entityId, OBJECT);
+    world.associateStaticData(entityId);
 
     staticData.setCid(entityId, newCid);
     assertEq(StaticDataTable.getCid(DEPLOYMENT_NAMESPACE.staticDataTableId(), entityId), newCid);
