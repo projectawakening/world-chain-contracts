@@ -238,11 +238,10 @@ contract GateKeeperUnitTest is Test {
   }
 
   function testCreateAndAnchorGateKeeper(uint256 smartObjectId) public {
-    EntityRecordTableData memory entityRecordData = EntityRecordTableData({
+    EntityRecordData memory entityRecordData = EntityRecordData({
       typeId: 12345,
       itemId: 45,
-      volume: 10,
-      recordExists: true
+      volume: 10
     });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
@@ -250,8 +249,6 @@ contract GateKeeperUnitTest is Test {
       smartObjectId != 0 &&
         !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
     );
-
-    smartObject.registerEntity(smartObjectId, OBJECT);
 
     gateKeeper.createAndAnchorGateKeeper(
       smartObjectId,

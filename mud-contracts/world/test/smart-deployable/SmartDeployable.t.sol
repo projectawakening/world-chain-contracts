@@ -157,8 +157,6 @@ contract smartDeployableTest is Test {
     });
     vm.assume(smartObjectData.owner != address(0));
 
-    smartObject.registerEntity(entityId, OBJECT);
-
     smartDeployable.registerDeployable(
       entityId,
       smartObjectData,
@@ -472,9 +470,6 @@ contract smartDeployableTest is Test {
     fuelConsumption += timeElapsedAfterOffline * (fuelConsumptionPerMinute / 60) + 1;
     vm.assume(fuelUnitAmount * (10 ** FUEL_DECIMALS) > fuelConsumption); // this time we want to run out of fuel
     vm.assume(smartObjectData.owner != address(0));
-
-    // Tagging that entityId as a "SmartDeployable" class
-    smartObject.registerEntity(entityId, OBJECT);
 
     smartDeployable.globalResume();
     // have to disable fuel max inventory because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]

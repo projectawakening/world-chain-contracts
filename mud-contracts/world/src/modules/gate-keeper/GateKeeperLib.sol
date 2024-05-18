@@ -5,8 +5,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { Utils } from "./Utils.sol";
 import { IGateKeeper } from "./interfaces/IGateKeeper.sol";
-import { SmartObjectData, WorldPosition } from "../smart-storage-unit/types.sol";
-import { EntityRecordTableData } from "../../codegen/tables/EntityRecordTable.sol";
+import { SmartObjectData, EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol";
 import { InventoryItem } from "../inventory/types.sol";
 
 /**
@@ -26,7 +25,7 @@ library GateKeeperLib {
   function createAndAnchorGateKeeper(
     World memory world,
     uint256 smartObjectId,
-    EntityRecordTableData memory entityRecordData,
+    EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,

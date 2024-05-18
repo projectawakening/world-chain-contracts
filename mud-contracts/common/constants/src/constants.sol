@@ -25,14 +25,6 @@ uint256 constant GATE_KEEPER_CLASS_ID = 1234;
 //actual in-game value
 uint256 constant SMART_DEPLOYABLE_FRONTIER_TYPE_ID = 77917;
 
-// placeholder values
-uint256 constant SMART_CHARACTER_CLASS_ID = 123456;
-uint256 constant SMART_DEPLOYABLE_CLASS_ID = 1337;
-uint256 constant SSU_CLASS_ID = 5103412;
-
-//actual in-game value
-uint256 constant SMART_DEPLOYABLE_FRONTIER_TYPE_ID = 77917;
-
 bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
 bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
 bytes16 constant HOOK_CORE_SYSTEM_NAME = "HookCore";

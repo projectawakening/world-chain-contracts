@@ -87,10 +87,6 @@ contract EntityRecordTest is Test {
     smartObject.registerEntity(entityId, OBJECT);
     world.associateEntityRecord(entityId);
 
-    // SOF entity registration
-    smartObject.registerEntity(entityId, OBJECT);
-    world.associateEntityRecord(entityId);
-
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
     EntityRecordTableData memory tableData = EntityRecordTable.get(
       DEPLOYMENT_NAMESPACE.entityRecordTableId(),
