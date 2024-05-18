@@ -43,12 +43,7 @@ interface ISmartDeployableTestSystem {
 contract SmartDeployableTestSystem is EveSystem {
   function echoSmartDeployable(
     uint256 _value
-  )
-    public
-    onlyAssociatedModule(_value, SYSTEM_ID)
-    hookable(_value, SYSTEM_ID)
-    returns (uint256)
-  {
+  ) public onlyAssociatedModule(_value, SYSTEM_ID) hookable(_value, SYSTEM_ID) returns (uint256) {
     return _value;
   }
 
@@ -161,11 +156,34 @@ contract EveSystemTest is Test {
   function testSetup() public {
     setUp();
     assertEq(address(smartObject.iface), address(baseWorld));
-    uint256 sofModuleId = uint256(ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, SMART_OBJ_NAMESPACE, SMART_OBJECT_MODULE_NAME)));
+    uint256 sofModuleId = uint256(
+      ResourceId.unwrap(WorldResourceIdLib.encode(RESOURCE_SYSTEM, SMART_OBJ_NAMESPACE, SMART_OBJECT_MODULE_NAME))
+    );
 
-    assertEq(ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), sofModuleId, SMART_OBJ_NAMESPACE.moduleCoreSystemId()), true);
-    assertEq(ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), sofModuleId, SMART_OBJ_NAMESPACE.entityCoreSystemId()), true);
-    assertEq(ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), sofModuleId, SMART_OBJ_NAMESPACE.hookCoreSystemId()), true);
+    assertEq(
+      ModuleTable.getDoesExists(
+        SMART_OBJ_NAMESPACE.moduleTableTableId(),
+        sofModuleId,
+        SMART_OBJ_NAMESPACE.moduleCoreSystemId()
+      ),
+      true
+    );
+    assertEq(
+      ModuleTable.getDoesExists(
+        SMART_OBJ_NAMESPACE.moduleTableTableId(),
+        sofModuleId,
+        SMART_OBJ_NAMESPACE.entityCoreSystemId()
+      ),
+      true
+    );
+    assertEq(
+      ModuleTable.getDoesExists(
+        SMART_OBJ_NAMESPACE.moduleTableTableId(),
+        sofModuleId,
+        SMART_OBJ_NAMESPACE.hookCoreSystemId()
+      ),
+      true
+    );
   }
 
   function testWorldExists() public {

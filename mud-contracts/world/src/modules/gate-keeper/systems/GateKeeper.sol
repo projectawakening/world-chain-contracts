@@ -64,18 +64,23 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public hookable(smartObjectId, _systemId()) {
-    SmartStorageUnitLib.World(IBaseWorld(_world()), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE).createAndAnchorSmartStorageUnit(
+    SmartStorageUnitLib
+      .World(IBaseWorld(_world()), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE)
+      .createAndAnchorSmartStorageUnit(
+        smartObjectId,
+        entityRecordData,
+        smartObjectData,
+        worldPosition,
+        fuelUnitVolume,
+        fuelConsumptionPerMinute,
+        fuelMaxCapacity,
+        storageCapacity,
+        ephemeralStorageCapacity
+      );
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
       smartObjectId,
-      entityRecordData,
-      smartObjectData,
-      worldPosition,
-      fuelUnitVolume,
-      fuelConsumptionPerMinute,
-      fuelMaxCapacity,
-      storageCapacity,
-      ephemeralStorageCapacity
+      GATE_KEEPER_CLASS_ID
     );
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(smartObjectId, GATE_KEEPER_CLASS_ID);
   }
 
   function setAcceptedItemTypeId(
