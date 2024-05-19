@@ -7,7 +7,9 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
 import { LocationLib } from "../../location/LocationLib.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
@@ -25,6 +27,7 @@ import { Utils } from "../Utils.sol";
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
+  using SmartObjectLib for SmartObjectLib.World;
   using LocationLib for LocationLib.World;
 
   // TODO: is `supportInterface` working properly here ?
@@ -89,6 +92,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         lastUpdatedAt: block.timestamp
       })
     );
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(entityId, OBJECT);
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
+      entityId,
+      SMART_DEPLOYABLE_CLASS_ID
+    );
 
     IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
       smartObjectData.owner,
@@ -104,7 +112,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev destroys a smart deployable
    * @param entityId entityId
    */
-  function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) {
+  function destroyDeployable(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -119,7 +129,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
    */
-  function bringOnline(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function bringOnline(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.ANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -136,7 +148,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings offline smart deployable (must have been online first)
    * @param entityId entityId
    */
-  function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function bringOffline(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.ONLINE) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -152,7 +166,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function anchor(
     uint256 entityId,
     LocationTableData memory locationData
-  ) public hookable(entityId, _systemId()) onlyActive {
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.UNANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -167,7 +181,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev unanchors a smart deployable (must have been offline first)
    * @param entityId entityId
    */
-  function unanchor(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function unanchor(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -205,7 +221,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: needs to be only callable by admin
    * @param fuelConsumptionPerMinuteInWei global rate shared by all Smart Deployables (in Wei)
    */
-  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinuteInWei) public {
+  function setFuelConsumptionPerMinute(
+    uint256 entityId,
+    uint256 fuelConsumptionPerMinuteInWei
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelConsumptionPerMinute(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
@@ -219,7 +238,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to set the storage cap to
    * @param capacityInWei of max fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) public {
+  function setFuelMaxCapacity(
+    uint256 entityId,
+    uint256 capacityInWei
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, capacityInWei);
   }
 
@@ -229,7 +251,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel in full units
    */
-  function depositFuel(uint256 entityId, uint256 unitAmount) public {
+  function depositFuel(
+    uint256 entityId,
+    uint256 unitAmount
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     if (
       (
@@ -246,7 +271,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      (_currentFuelAmount(entityId) + unitAmount * (10 ** FUEL_DECIMALS))
+      (DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
+        unitAmount *
+        (10 ** FUEL_DECIMALS))
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -262,7 +289,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function withdrawFuel(uint256 entityId, uint256 unitAmount) public {
+  function withdrawFuel(
+    uint256 entityId,
+    uint256 unitAmount
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
@@ -282,7 +312,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * or that compose with it
    * @param entityId to update
    */
-  function updateFuel(uint256 entityId) public {
+  function updateFuel(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) hookable(entityId, _systemId()) {
     _updateFuel(entityId);
   }
 
@@ -290,7 +322,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev view function to get an accurate read of the current amount of fuel
    * @param entityId looked up
    */
-  function currentFuelAmount(uint256 entityId) public view returns (uint256 amount) {
+  function currentFuelAmount(
+    uint256 entityId
+  ) public onlyAssociatedModule(entityId, _systemId()) returns (uint256 amount) {
     return _currentFuelAmount(entityId) / (10 ** FUEL_DECIMALS);
   }
 

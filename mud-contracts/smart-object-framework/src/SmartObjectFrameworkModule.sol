@@ -4,18 +4,17 @@ pragma solidity >=0.8.21;
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { System } from "@latticexyz/world/src/System.sol";
-import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 
-import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
+import { SMART_OBJECT_MODULE_NAME as MODULE_NAME, SMART_OBJECT_MODULE_NAMESPACE as MODULE_NAMESPACE, CLASS, OBJECT } from "./constants.sol";
 import { Utils } from "./utils.sol";
 
 import { EntityCore } from "./systems/core/EntityCore.sol";
 import { ModuleCore } from "./systems/core/ModuleCore.sol";
 import { HookCore } from "./systems/core/HookCore.sol";
+import { SmartObjectLib } from "./SmartObjectLib.sol";
 
 import { EntityAssociation } from "./codegen/tables/EntityAssociation.sol";
 import { EntityMap } from "./codegen/tables/EntityMap.sol";
@@ -97,6 +96,7 @@ contract SmartObjectFrameworkModule is Module {
 
 contract SmartObjectFrameworkModuleRegistrationLibrary {
   using Utils for bytes14;
+  using SmartObjectLib for SmartObjectLib.World;
 
   /**
    * Register systems and tables for a new smart object framework in a given namespace

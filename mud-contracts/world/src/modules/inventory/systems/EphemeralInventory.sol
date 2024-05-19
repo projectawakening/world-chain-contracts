@@ -46,7 +46,7 @@ contract EphemeralInventory is EveSystem {
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
     uint256 ephemeralStorageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
@@ -69,7 +69,7 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
@@ -130,7 +130,7 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAssociatedModule(smartObjectId, _systemId()) hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId

@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/smart-object-framework",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "scripts": {
     "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
@@ -12,6 +12,7 @@
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier 'src/**/*.sol' --plugin=prettier-plugin-solidity --check",
+    "prettier:write": "prettier 'src/**/*.sol' --plugin=prettier-plugin-solidity --write",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
     "test": "tsc --noEmit && forge test -vvv"

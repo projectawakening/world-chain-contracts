@@ -24,3 +24,7 @@ bytes16 constant ENTITY_ASSOCIATION_NAME = "EntityAssociatio";
 bytes16 constant MODULE_SYSTEM_LOOKUP_NAME = "ModuleSystemLook";
 bytes16 constant HOOK_TARGET_BEFORE_NAME = "HookTargetBefore";
 bytes16 constant HOOK_TARGET_AFTER_NAME = "HookTargetAfter";
+
+//Constants for Entity
+uint8 constant OBJECT = 1;
+uint8 constant CLASS = 2;
