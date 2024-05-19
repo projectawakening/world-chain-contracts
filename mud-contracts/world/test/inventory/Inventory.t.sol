@@ -121,6 +121,9 @@ contract InventoryTest is Test {
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100, true);
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200, true);
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8235, 8235, 12, 100, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8236, 8236, 12, 200, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8237, 8237, 12, 150, true);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -181,7 +184,7 @@ contract InventoryTest is Test {
 
   function testDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
+    vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
@@ -210,6 +213,33 @@ contract InventoryTest is Test {
 
     inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
     assert(capacityBeforeDeposit < capacityAfterDeposit);
+    assertEq(inventoryTableData.items.length, 3);
+
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+
+    InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, items[0].quantity);
+    assertEq(inventoryItem2.quantity, items[1].quantity);
+    assertEq(inventoryItem3.quantity, items[2].quantity);
+
+    // console.log(inventoryItem1.index);
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 1);
+    assertEq(inventoryItem3.index, 2);
   }
 
   function testInventoryItemQuantityIncrease(uint256 smartObjectId, uint256 storageCapacity) public {
@@ -255,6 +285,32 @@ contract InventoryTest is Test {
 
     assertEq(inventoryItem1.quantity, items[0].quantity * 2);
     assertEq(inventoryItem2.quantity, items[1].quantity * 2);
+
+    uint256 itemsLength = InventoryTable.getItems(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId).length;
+    assertEq(itemsLength, 3);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 1);
+  }
+
+  function testDepositToExistingInventory(uint256 smartObjectId, uint256 storageCapacity) public {
+    testDepositToInventory(smartObjectId, storageCapacity);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(8235, address(0), 8235, 0, 1, 3);
+    inventory.depositToInventory(smartObjectId, items);
+
+    uint256 itemsLength = InventoryTable.getItems(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId).length;
+    assertEq(itemsLength, 4);
+
+    inventory.depositToInventory(smartObjectId, items);
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    assertEq(inventoryItem1.index, 3);
   }
 
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
@@ -300,6 +356,7 @@ contract InventoryTest is Test {
 
     inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
     assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
+    assertEq(inventoryTableData.items.length, 2);
 
     uint256[] memory existingItems = inventoryTableData.items;
     assertEq(existingItems.length, 2);
@@ -325,13 +382,57 @@ contract InventoryTest is Test {
     assertEq(inventoryItem1.quantity, 2);
     assertEq(inventoryItem2.quantity, 0);
     assertEq(inventoryItem3.quantity, 1);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.index, 2);
+  }
+
+  function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity) public {
+    testWithdrawFromInventory(smartObjectId, storageCapacity);
+
+    InventoryTableData memory inventoryTableData = InventoryTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryTableId(),
+      smartObjectId
+    );
+    assertEq(inventoryTableData.items.length, 2);
+
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(4237, address(0), 4236, 0, 200, 1);
+
+    // Try withdraw again
+    inventory.withdrawFromInventory(smartObjectId, items);
+
+    items = new InventoryItem[](2);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
+    items[1] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
+
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, 2);
+    assertEq(inventoryItem2.quantity, 0);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 0);
+
+    inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
+    assertEq(inventoryTableData.items.length, 1);
   }
 
   function revertWithdrawalForInvalidQuantity(uint256 smartObjectId, uint256 storageCapacity) public {
     testDepositToInventory(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 4);
+    items[0] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
 
     vm.expectRevert(
       abi.encodeWithSelector(
