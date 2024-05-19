@@ -44,7 +44,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     _;
   }
 
-  function registerDeployableToken(address tokenAddress) public {
+  function registerDeployableToken(
+    address tokenAddress
+  ) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     if (DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()) != address(0)) {
       revert SmartDeployableERC721AlreadyInitialized();
     }
@@ -198,7 +200,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalPause() public {
+  function globalPause() public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), false);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOffline(_namespace().globalStateTableId(), block.timestamp);
@@ -208,7 +210,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalResume() public {
+  function globalResume() public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), true);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOnline(_namespace().globalStateTableId(), block.timestamp);

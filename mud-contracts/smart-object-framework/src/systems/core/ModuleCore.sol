@@ -21,7 +21,11 @@ contract ModuleCore is EveSystem {
    * @param moduleName The name of the module
    * @param systemId The identifier for the system being called
    */
-  function registerEVEModule(uint256 moduleId, bytes16 moduleName, ResourceId systemId) external {
+  function registerEVEModule(
+    uint256 moduleId,
+    bytes16 moduleName,
+    ResourceId systemId
+  ) external hookable(moduleId, _systemId()) {
     _requireResourceRegistered(moduleId, systemId);
     _registerEVEModule(moduleId, systemId, moduleName);
   }
@@ -29,7 +33,11 @@ contract ModuleCore is EveSystem {
   /**
    * @notice Overloaded funciton for registerEVEModule
    */
-  function registerEVEModules(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external {
+  function registerEVEModules(
+    uint256 moduleId,
+    bytes16 moduleName,
+    ResourceId[] memory systemIds
+  ) external hookable(moduleId, _systemId()) {
     for (uint256 i = 0; i < systemIds.length; i++) {
       _requireResourceRegistered(moduleId, systemIds[i]);
       _registerEVEModule(moduleId, systemIds[i], moduleName);
@@ -41,14 +49,14 @@ contract ModuleCore is EveSystem {
    * @param entityId id of the class or object
    * @param moduleId The identifier for the module
    */
-  function associateModule(uint256 entityId, uint256 moduleId) external {
+  function associateModule(uint256 entityId, uint256 moduleId) external hookable(entityId, _systemId()) {
     _associateModule(entityId, moduleId);
   }
 
   /**
    * @notice Overloaded function for associateModule
    */
-  function associateModules(uint256 entityId, uint256[] memory moduleIds) external {
+  function associateModules(uint256 entityId, uint256[] memory moduleIds) external hookable(entityId, _systemId()) {
     for (uint256 i = 0; i < moduleIds.length; i++) {
       _associateModule(entityId, moduleIds[i]);
     }
@@ -59,17 +67,19 @@ contract ModuleCore is EveSystem {
    * @param entityId id of the class or object
    * @param moduleId The identifier for the module
    */
-  function removeEntityModuleAssociation(uint256 entityId, uint256 moduleId) external {
+  function removeEntityModuleAssociation(uint256 entityId, uint256 moduleId) external hookable(entityId, _systemId()) {
     _removeEntityModuleAssociation(entityId, moduleId);
   }
 
-  // TODO Figure our data dependency and data corruption problems
   /**
    * @notice Removes the association of a system with a module
    * @param systemId The identifier of the system
    * @param moduleId The identifier for the module
    */
-  function removeSystemModuleAssociation(ResourceId systemId, uint256 moduleId) external {
+  function removeSystemModuleAssociation(
+    ResourceId systemId,
+    uint256 moduleId
+  ) external hookable(moduleId, _systemId()) {
     _removeSystemModuleAssociation(systemId, moduleId);
   }
 
@@ -166,5 +176,9 @@ contract ModuleCore is EveSystem {
       }
       ModuleSystemLookup.popSystemIds(_namespace().moduleSystemLookupTableId(), moduleId);
     }
+  }
+
+  function _systemId() internal view returns (ResourceId) {
+    return _namespace().moduleCoreSystemId();
   }
 }

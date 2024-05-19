@@ -58,7 +58,7 @@ contract SmartStorageUnit is EveSystem {
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) {
     _smartDeployableLib().registerDeployable(
       smartObjectId,
       smartObjectData,
@@ -98,7 +98,7 @@ contract SmartStorageUnit is EveSystem {
   function createAndDepositItemsToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public onlyAssociatedModule(smartObjectId, _systemId()) {
+  ) public hookable(smartObjectId, _systemId()) onlyAssociatedModule(smartObjectId, _systemId()) {
     for (uint256 i = 0; i < items.length; i++) {
       //Check if the item exists on-chain if not Create entityRecord
       _entityRecordLib().createEntityRecord(
@@ -125,7 +125,7 @@ contract SmartStorageUnit is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public onlyAssociatedModule(smartObjectId, _systemId()) {
+  ) public hookable(smartObjectId, _systemId()) onlyAssociatedModule(smartObjectId, _systemId()) {
     //Check if the item exists on-chain if not Create entityRecord
     for (uint256 i = 0; i < items.length; i++) {
       _entityRecordLib().createEntityRecord(
@@ -154,7 +154,7 @@ contract SmartStorageUnit is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public onlyAssociatedModule(smartObjectId, _systemId()) {
+  ) public hookable(smartObjectId, _systemId()) onlyAssociatedModule(smartObjectId, _systemId()) {
     _entityRecordLib().createEntityRecordOffchain(smartObjectId, name, dappURL, description);
   }
 

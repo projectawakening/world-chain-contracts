@@ -31,7 +31,9 @@ contract SmartCharacter is EveSystem {
   error SmartCharacterTokenCidCannotBeEmpty(uint256 characterId, string tokenCid);
 
   // TODO: this alone weighs more than 25kbytes, find alternative
-  function registerERC721Token(address tokenAddress) public {
+  function registerERC721Token(
+    address tokenAddress
+  ) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     if (CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
       revert SmartCharacterERC721AlreadyInitialized();
     }
@@ -44,7 +46,7 @@ contract SmartCharacter is EveSystem {
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
-  ) public {
+  ) public hookable(characterId, _systemId()) {
     // TODO: uncomment this if/when static data flows off-chain are ready
     // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
 
