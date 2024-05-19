@@ -384,7 +384,6 @@ contract AccessRuleMockTest is Test {
     AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.ORIGIN, originRoleArray);
     AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.TRANSIENT_AND_ORIGIN);
 
-
     vm.expectRevert(
       abi.encodeWithSelector(
         IAccessRuleMockErrors.AccessRulesUnauthorizedAccount.selector,
