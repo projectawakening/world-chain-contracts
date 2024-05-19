@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/world",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "scripts": {
     "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
@@ -24,8 +24,8 @@
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
-    "@eveworld/smart-object-framework": "0.0.2",
-    "@eveworld/common-constants": "0.0.2"
+    "@eveworld/smart-object-framework": "0.0.3",
+    "@eveworld/common-constants": "0.0.3"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",
