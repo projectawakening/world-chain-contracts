@@ -342,4 +342,144 @@ contract AccessRuleMockTest is Test {
     assertEq(AccessControlInterface.hasRole(transientRoleId, alice), true);
     assertEq(abi.decode(dataCase1, (bool)), true);
   }
+
+  function testAccessRuleEnforcementLevel3Fail() public {
+    uint256 configId1 = 1;
+    string memory transientRoleString1 = "TRANSIENT_ROLE_1";
+    string memory transientRoleString2 = "TRANSIENT_ROLE_2";
+    string memory originRoleString = "ORIGIN_ROLE";
+
+    vm.startPrank(alice, bob);
+    // create a root role from which we can create other roles (as admin)
+    RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
+    // create a role for each access contex
+    bytes32 transientRoleId1 = AccessControlInterface.createRole(
+      transientRoleString1,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 transientRoleId2 = AccessControlInterface.createRole(
+      transientRoleString2,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 originRoleId = AccessControlInterface.createRole(
+      originRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+
+    bytes32[] memory transientRoleArray = new bytes32[](2);
+    transientRoleArray[0] = transientRoleId1;
+    transientRoleArray[1] = transientRoleId2;
+    bytes32[] memory originRoleArray = new bytes32[](1);
+    originRoleArray[0] = originRoleId;
+
+    AccessRulesConfigInterface.setAccessControlRoles(
+      entityId,
+      configId1,
+      EnforcementLevel.TRANSIENT,
+      transientRoleArray
+    );
+    AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.ORIGIN, originRoleArray);
+    AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.TRANSIENT_AND_ORIGIN);
+
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IAccessRuleMockErrors.AccessRulesUnauthorizedAccount.selector,
+        EnforcementLevel.TRANSIENT_AND_ORIGIN,
+        IAccessRuleMockErrors.AccessReport(alice, transientRoleArray),
+        IAccessRuleMockErrors.AccessReport(bob, originRoleArray)
+      )
+    );
+    // Case1: verify TRANSIENT_AND_ORIGIN, ALL accounts with no role granted, gets reverted
+    bytes memory dataCase1 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
+
+    assertEq(AccessControlInterface.hasRole(transientRoleId2, alice), false);
+    assertEq(AccessControlInterface.hasRole(originRoleId, bob), false);
+  }
+
+  function testAccessRuleEnforcementLevel2Fail() public {
+    uint256 configId1 = 1;
+    string memory originRoleString = "ORIGIN_ROLE";
+
+    vm.startPrank(alice, bob);
+    // create a root role from which we can create other roles (as admin)
+    RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
+    // create a role for each access context
+    bytes32 originRoleId = AccessControlInterface.createRole(
+      originRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+
+    bytes32[] memory emptyRoleArray = new bytes32[](0);
+    bytes32[] memory originRoleArray = new bytes32[](1);
+    originRoleArray[0] = originRoleId;
+
+    AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.ORIGIN, originRoleArray);
+    AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.ORIGIN);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IAccessRuleMockErrors.AccessRulesUnauthorizedAccount.selector,
+        EnforcementLevel.ORIGIN,
+        IAccessRuleMockErrors.AccessReport(address(0x0), emptyRoleArray),
+        IAccessRuleMockErrors.AccessReport(bob, originRoleArray)
+      )
+    );
+    // Case1: verify TRANSIENT_AND_ORIGIN, ALL accounts with no role granted, gets reverted
+    bytes memory dataCase1 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
+
+    assertEq(AccessControlInterface.hasRole(originRoleId, bob), false);
+  }
+
+  function testAccessRuleEnforcementLevel1Fail() public {
+    uint256 configId1 = 1;
+    string memory transientRoleString1 = "TRANSIENT_ROLE_1";
+    string memory transientRoleString2 = "TRANSIENT_ROLE_2";
+
+    vm.startPrank(alice, bob);
+    // create a root role from which we can create other roles (as admin)
+    RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
+    // create a role for each access contex
+    bytes32 transientRoleId1 = AccessControlInterface.createRole(
+      transientRoleString1,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 transientRoleId2 = AccessControlInterface.createRole(
+      transientRoleString2,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+
+    bytes32[] memory emptyRoleArray = new bytes32[](0);
+    bytes32[] memory transientRoleArray = new bytes32[](2);
+    transientRoleArray[0] = transientRoleId1;
+    transientRoleArray[1] = transientRoleId2;
+
+    AccessRulesConfigInterface.setAccessControlRoles(
+      entityId,
+      configId1,
+      EnforcementLevel.TRANSIENT,
+      transientRoleArray
+    );
+    AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.TRANSIENT);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IAccessRuleMockErrors.AccessRulesUnauthorizedAccount.selector,
+        EnforcementLevel.TRANSIENT,
+        IAccessRuleMockErrors.AccessReport(alice, transientRoleArray),
+        IAccessRuleMockErrors.AccessReport(address(0), emptyRoleArray)
+      )
+    );
+    // Case1: verify TRANSIENT_AND_ORIGIN, ALL accounts with no role granted, gets reverted
+    bytes memory dataCase1 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
+
+    assertEq(AccessControlInterface.hasRole(transientRoleId1, alice), false);
+    assertEq(AccessControlInterface.hasRole(transientRoleId2, alice), false);
+  }
 }
