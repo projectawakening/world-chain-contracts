@@ -6,7 +6,6 @@ import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal
 import { HOOKABLE_MOCK_SYSTEM_ID } from "./mockconstants.sol";
 
 contract HookableMock is EveSystem {
-
   /**
    * @dev Conforming to the hookable standard means you should always include the `entityId` of the hook target as the
    *   first parameter.
@@ -16,7 +15,7 @@ contract HookableMock is EveSystem {
     return true;
   }
 
-  // // example hookdata 
+  // // example hookdata
   // struct HookData {
   //   uint256[] hookIds; // include this param to check in your hook logic if your hook should use the bytes hookdata field
   //   string test;

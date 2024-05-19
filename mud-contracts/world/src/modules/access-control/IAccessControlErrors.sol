@@ -5,7 +5,6 @@ pragma solidity ^0.8.24;
  * @dev External interface for AccessControl originating errors.
  */
 interface IAccessControlErrors {
-
   /**
    * @dev `adminId` is already assigned to `roleId`
    */
@@ -19,7 +18,7 @@ interface IAccessControlErrors {
   error AccessControlBadConfirmation();
 
   /**
-   * @dev `roleId` with `name` under `root` already exists 
+   * @dev `roleId` with `name` under `root` already exists
    */
   error AccessControlRoleAlreadyCreated(bytes32 roleId, bytes32 name, address root);
 

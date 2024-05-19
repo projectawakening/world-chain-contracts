@@ -10,18 +10,12 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 
-import { 
-  MODULE_MOCK_NAME as MODULE_NAME,
-  MODULE_MOCK_NAMESPACE as MODULE_NAMESPACE,
-  FORWARD_MOCK_SYSTEM_ID,
-  HOOKABLE_MOCK_SYSTEM_ID,
-  ACCESS_RULE_MOCK_SYSTEM_ID } from "./mockconstants.sol";
+import { MODULE_MOCK_NAME as MODULE_NAME, MODULE_MOCK_NAMESPACE as MODULE_NAMESPACE, FORWARD_MOCK_SYSTEM_ID, HOOKABLE_MOCK_SYSTEM_ID, ACCESS_RULE_MOCK_SYSTEM_ID } from "./mockconstants.sol";
 
 import { ForwardMock } from "./ForwardMock.sol";
 import { HookableMock } from "./HookableMock.sol";
 
 contract ModuleMock is Module {
-
   error ModuleMock_InvalidNamespace(bytes14 namespace);
 
   address immutable registrationLibrary = address(new ModuleMockRegistrationLibrary());
@@ -43,10 +37,8 @@ contract ModuleMock is Module {
     requireNotInstalled(__self, encodeArgs);
 
     //Extract args
-    (bytes14 namespace, address forwardMockSystem, address hookableMockSystem, address accessRuleMockSystem) = abi.decode(
-      encodeArgs,
-      (bytes14, address, address, address)
-    );
+    (bytes14 namespace, address forwardMockSystem, address hookableMockSystem, address accessRuleMockSystem) = abi
+      .decode(encodeArgs, (bytes14, address, address, address));
 
     //Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -65,13 +57,12 @@ contract ModuleMock is Module {
       )
     );
     if (!success) revertWithBytes(returnedData);
-    
+
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) != _msgSender()) {
       // Transfer the ownership of the namespace to the caller
       ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
       world.transferOwnership(namespaceId, _msgSender());
     }
-
   }
 
   function installRoot(bytes memory) public pure {

@@ -13,13 +13,18 @@ library Utils {
   }
 
   function accessControlSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_CONTROL_SYSTEM_NAME });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_CONTROL_SYSTEM_NAME });
   }
 
   function accessRulesConfigSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_RULES_CONFIG_SYSTEM_NAME });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_SYSTEM,
+        namespace: namespace,
+        name: ACCESS_RULES_CONFIG_SYSTEM_NAME
+      });
   }
-
 
   function roleTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ROLE_TABLE_NAME });
@@ -30,12 +35,14 @@ library Utils {
   }
 
   function roleAdminChangedTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ROLE_ADMIN_CHANGED_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ROLE_ADMIN_CHANGED_TABLE_NAME });
   }
 
   function roleCreatedTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ROLE_CREATED_TABLE_NAME });
   }
+
   function roleGrantedTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ROLE_GRANTED_TABLE_NAME });
   }
@@ -47,5 +54,4 @@ library Utils {
   function accessConfigTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ACCESS_CONFIG_TABLE_NAME });
   }
-
 }

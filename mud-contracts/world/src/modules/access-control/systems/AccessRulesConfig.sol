@@ -25,7 +25,7 @@ contract AccessRulesConfig is EveSystem {
    * as to whether or not the value has been set as zero or has never been set.
    */
   modifier checkConfigId(uint256 configId) {
-    if(configId == 0) {
+    if (configId == 0) {
       revert IAccessRulesConfigErrors.AccessRulesConfigIdOutOfBounds();
     }
     _;
@@ -37,7 +37,7 @@ contract AccessRulesConfig is EveSystem {
    * @dev Stores {RolesByContext} data in the {AccessConfig} table, defined as bytes32 arrays.
    *   All {RolesByContext} array data is intented to store `roleIds` for various roles which have been created and
    *   managed in the {AccessControl} base contract. These `roleIds` are then used to verify access for account
-   *   interactions. 
+   *   interactions.
    *   There are two fields in {AccessConfig} which store `roleId` array data for the following three relevant access
    *   contexts:
    *   - a TRANSIENT CONTEXT variable tracked via `world().initialMsgSender()`. For world.call() and world.fallback(),
@@ -59,29 +59,15 @@ contract AccessRulesConfig is EveSystem {
     uint256 configId,
     EnforcementLevel enforcement,
     bytes32[] memory roleIds
-  )
-    external
-    checkConfigId(configId)
-    hookable(entityId, _systemId())
-  {
-    if(uint8(enforcement) > 2 || uint8(enforcement) == 0) {
+  ) external checkConfigId(configId) hookable(entityId, _systemId()) {
+    if (uint8(enforcement) > 2 || uint8(enforcement) == 0) {
       revert IAccessRulesConfigErrors.AccessRulesConfigEnforcementOutOfBounds();
     }
 
-    if(uint8(enforcement) == 1) {
-      AccessConfig.setInitialMsgSender(
-        _namespace().accessConfigTableId(), 
-        entityId,
-        configId,
-        roleIds
-      );
+    if (uint8(enforcement) == 1) {
+      AccessConfig.setInitialMsgSender(_namespace().accessConfigTableId(), entityId, configId, roleIds);
     } else {
-      AccessConfig.setTxOrigin(
-        _namespace().accessConfigTableId(), 
-        entityId,
-        configId,
-        roleIds
-      );
+      AccessConfig.setTxOrigin(_namespace().accessConfigTableId(), entityId, configId, roleIds);
     }
   }
 
@@ -89,7 +75,7 @@ contract AccessRulesConfig is EveSystem {
    * @notice Sets an enforcement level for a configuration, defining which access contexts shoud be enforced for executions
    *   related to `entityId` when that configuration is used.
    * @dev Stores EnforcementLevel data in the {AcessConfig} table defined as a unit8.
-   *   EnforcementLevel data is an enum to define which access contexts we want to enforce: 
+   *   EnforcementLevel data is an enum to define which access contexts we want to enforce:
    *    - NULL, nothing is enforced at this level, this level is tantamount to turning the access enforcement off
    *    - TRANSIENT_ONLY, sets only the `world().initalMsgSender` context for enforcement
    *    - ORIGIN_ONLY, sets only the `tx.origin`  context for enforcement
@@ -105,17 +91,8 @@ contract AccessRulesConfig is EveSystem {
     uint256 entityId,
     uint256 configId,
     EnforcementLevel enforcementLevel
-  )
-    external
-    checkConfigId(configId)
-    hookable(entityId, _systemId())
-  {
-    AccessConfig.setEnforcementLevel(
-      _namespace().accessConfigTableId(), 
-      entityId,
-      configId,
-      uint8(enforcementLevel)
-    );
+  ) external checkConfigId(configId) hookable(entityId, _systemId()) {
+    AccessConfig.setEnforcementLevel(_namespace().accessConfigTableId(), entityId, configId, uint8(enforcementLevel));
   }
 
   function _systemId() internal view returns (ResourceId) {

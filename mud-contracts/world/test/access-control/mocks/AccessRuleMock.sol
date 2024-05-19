@@ -16,14 +16,12 @@ import { HAS_ROLE_TABLE_ID, ACCESS_CONFIG_TABLE_ID } from "./mockconstants.sol";
  * @author The CCP Games Development Team
  * @notice A contract which implements access control enforcement logic configurated in {AccessControl} and {AccessRulesConfig}.
  * @dev The function in this is intended to be a hook logic implementation and associated (and thereafter
- *   executed) with another target function that implements the `hookable()` modfier. 
+ *   executed) with another target function that implements the `hookable()` modfier.
  * Association occurs by using the {HookCore} functionality of the Smart Object Framework. After asosciation with a
  *   target function, this hook logic will then also be executed anytime the target function is executed for a given
  *   `entityId`.
  */
 contract AccessRuleMock is System {
-
-
   /**
    * @dev All of the following accessRule implements ahook based logic that follows access control
    *   rules enforcement for a specific configuration.
@@ -33,7 +31,7 @@ contract AccessRuleMock is System {
    * In all instances, if the accessing account value is not a member of one of the defined roleIds for its context
    *   AND that access context is configured to be enforced, then an {AccessRulesUnauthorizedAccount} error
    *   will be thrown.
-   *   
+   *
    * @param entityId - currently the parameters of hooks must match the params of thier target function. See {EveSystem-_executeHook}.
    */
   function accessRule(uint256 entityId) public {
@@ -52,14 +50,14 @@ contract AccessRuleMock is System {
    */
   function _accessControlByConfigOR(uint256 entityId, uint256 configId) internal {
     AccessConfigData memory accessConfigData = AccessConfig.get(ACCESS_CONFIG_TABLE_ID, entityId, configId);
-   
+
     EnforcementLevel configuredEnforcement = EnforcementLevel(accessConfigData.enforcementLevel);
     IAccessRuleMockErrors.AccessReport memory transientReport;
     IAccessRuleMockErrors.AccessReport memory originReport;
     bool access = false;
-    
-    if(uint8(configuredEnforcement) > 0) {
-      if(configuredEnforcement == EnforcementLevel.TRANSIENT) {
+
+    if (uint8(configuredEnforcement) > 0) {
+      if (configuredEnforcement == EnforcementLevel.TRANSIENT) {
         for (uint256 i = 0; i < accessConfigData.initialMsgSender.length; i++) {
           if (HasRole.getHasRole(HAS_ROLE_TABLE_ID, accessConfigData.initialMsgSender[i], world().initialMsgSender())) {
             access = true;
@@ -86,10 +84,7 @@ contract AccessRuleMock is System {
           }
         }
         if (!access) {
-          originReport = IAccessRuleMockErrors.AccessReport(
-            tx.origin,
-            accessConfigData.txOrigin
-          );
+          originReport = IAccessRuleMockErrors.AccessReport(tx.origin, accessConfigData.txOrigin);
 
           revert IAccessRuleMockErrors.AccessRulesUnauthorizedAccount(
             configuredEnforcement,
@@ -125,17 +120,19 @@ contract AccessRuleMock is System {
         }
         if (count > 0) {
           for (uint256 i = 0; i < count; i++) {
-            if (context == EnforcementLevel.TRANSIENT){
+            if (context == EnforcementLevel.TRANSIENT) {
               if (
-                HasRole.getHasRole(HAS_ROLE_TABLE_ID, accessConfigData.initialMsgSender[i+count], world().initialMsgSender())
+                HasRole.getHasRole(
+                  HAS_ROLE_TABLE_ID,
+                  accessConfigData.initialMsgSender[i + count],
+                  world().initialMsgSender()
+                )
               ) {
                 access = true;
                 break;
               }
             } else {
-              if (
-                HasRole.getHasRole(HAS_ROLE_TABLE_ID, accessConfigData.txOrigin[i+count], tx.origin)
-              ) {
+              if (HasRole.getHasRole(HAS_ROLE_TABLE_ID, accessConfigData.txOrigin[i + count], tx.origin)) {
                 access = true;
                 break;
               }
@@ -147,10 +144,7 @@ contract AccessRuleMock is System {
             world().initialMsgSender(),
             accessConfigData.initialMsgSender
           );
-          originReport = IAccessRuleMockErrors.AccessReport(
-            tx.origin,
-            accessConfigData.txOrigin
-          );
+          originReport = IAccessRuleMockErrors.AccessReport(tx.origin, accessConfigData.txOrigin);
 
           revert IAccessRuleMockErrors.AccessRulesUnauthorizedAccount(
             configuredEnforcement,
@@ -159,7 +153,8 @@ contract AccessRuleMock is System {
           );
         }
       }
-    } else { // EnforcementLevel NULL
+    } else {
+      // EnforcementLevel NULL
       return;
     }
   }

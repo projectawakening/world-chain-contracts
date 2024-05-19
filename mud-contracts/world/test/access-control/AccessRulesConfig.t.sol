@@ -33,7 +33,6 @@ import { AccessRulesConfig } from "../../src/modules/access-control/systems/Acce
 import { RootRoleData, EnforcementLevel } from "../../src/modules/access-control/types.sol";
 import { Utils } from "../../src/modules/access-control/Utils.sol";
 
-
 contract AccessRulesConfigTest is Test {
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
@@ -54,14 +53,13 @@ contract AccessRulesConfigTest is Test {
   AccessRulesConfigLib.World AccessRulesConfigInterface;
 
   function setUp() public {
-    
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
     // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
     StoreSwitch.setStoreAddress(address(world));
     address ac = address(new AccessControl());
     address arc = address(new AccessRulesConfig());
- 
+
     // install AccessControlModule
     _installModule(new AccessControlModule(), ACCESS_CONTROL, ac, arc);
 
@@ -69,7 +67,6 @@ contract AccessRulesConfigTest is Test {
     AccessControlInterface = AccessControlLib.World(world, ACCESS_CONTROL);
     // initilize the AccessRulesConfigInterface object
     AccessRulesConfigInterface = AccessRulesConfigLib.World(world, ACCESS_CONTROL);
-
   }
 
   // tests
@@ -92,41 +89,54 @@ contract AccessRulesConfigTest is Test {
     uint256 configId1 = 1;
     string memory transientRoleString = "TRANSIENT_ROLE";
     string memory originRoleString = "ORIGIN_ROLE";
-    
+
     vm.startPrank(alice);
     RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
 
-    bytes32 transientRoleId = AccessControlInterface.createRole(transientRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
-    bytes32 originRoleId = AccessControlInterface.createRole(originRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
+    bytes32 transientRoleId = AccessControlInterface.createRole(
+      transientRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 originRoleId = AccessControlInterface.createRole(
+      originRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
     bytes32[] memory transientRoleArray = new bytes32[](1);
     transientRoleArray[0] = transientRoleId;
     bytes32[] memory originRoleArray = new bytes32[](1);
     originRoleArray[0] = originRoleId;
 
     {
-    AccessConfigData memory accessConfigDataBefore = AccessConfig.get(
-      ACCESS_CONTROL.accessConfigTableId(),
-      entityId,
-      configId1
-    );
-    bytes32[] memory emptyArray = new bytes32[](0);
+      AccessConfigData memory accessConfigDataBefore = AccessConfig.get(
+        ACCESS_CONTROL.accessConfigTableId(),
+        entityId,
+        configId1
+      );
+      bytes32[] memory emptyArray = new bytes32[](0);
 
-    assertEq(accessConfigDataBefore.enforcementLevel, uint8(0));
-    assertEq(abi.encodePacked(accessConfigDataBefore.initialMsgSender), abi.encodePacked(emptyArray));
-    assertEq(abi.encodePacked(accessConfigDataBefore.txOrigin), abi.encodePacked(emptyArray));
+      assertEq(accessConfigDataBefore.enforcementLevel, uint8(0));
+      assertEq(abi.encodePacked(accessConfigDataBefore.initialMsgSender), abi.encodePacked(emptyArray));
+      assertEq(abi.encodePacked(accessConfigDataBefore.txOrigin), abi.encodePacked(emptyArray));
     }
-    AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.TRANSIENT, transientRoleArray);
+    AccessRulesConfigInterface.setAccessControlRoles(
+      entityId,
+      configId1,
+      EnforcementLevel.TRANSIENT,
+      transientRoleArray
+    );
     AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.ORIGIN, originRoleArray);
     {
-    AccessConfigData memory accessConfigDataAfter = AccessConfig.get(
-      ACCESS_CONTROL.accessConfigTableId(),
-      entityId,
-      configId1
-    );
+      AccessConfigData memory accessConfigDataAfter = AccessConfig.get(
+        ACCESS_CONTROL.accessConfigTableId(),
+        entityId,
+        configId1
+      );
 
-    assertEq(accessConfigDataAfter.enforcementLevel, uint8(0));
-    assertEq(abi.encodePacked(accessConfigDataAfter.initialMsgSender), abi.encodePacked(transientRoleArray));
-    assertEq(abi.encodePacked(accessConfigDataAfter.txOrigin), abi.encodePacked(originRoleArray));
+      assertEq(accessConfigDataAfter.enforcementLevel, uint8(0));
+      assertEq(abi.encodePacked(accessConfigDataAfter.initialMsgSender), abi.encodePacked(transientRoleArray));
+      assertEq(abi.encodePacked(accessConfigDataAfter.txOrigin), abi.encodePacked(originRoleArray));
     }
   }
 
@@ -136,30 +146,37 @@ contract AccessRulesConfigTest is Test {
     uint256 configId1 = 1;
     string memory transientRoleString = "TRANSIENT_ROLE";
     string memory originRoleString = "ORIGIN_ROLE";
-    
+
     vm.startPrank(alice);
     RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
 
-    bytes32 transientRoleId = AccessControlInterface.createRole(transientRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
-    bytes32 originRoleId = AccessControlInterface.createRole(originRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
+    bytes32 transientRoleId = AccessControlInterface.createRole(
+      transientRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 originRoleId = AccessControlInterface.createRole(
+      originRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
     bytes32[] memory transientRoleArray = new bytes32[](1);
     transientRoleArray[0] = transientRoleId;
     bytes32[] memory originRoleArray = new bytes32[](1);
     originRoleArray[0] = originRoleId;
 
-  vm.expectRevert(
-      IAccessRulesConfigErrors.AccessRulesConfigIdOutOfBounds.selector
-    ); 
+    vm.expectRevert(IAccessRulesConfigErrors.AccessRulesConfigIdOutOfBounds.selector);
     AccessRulesConfigInterface.setAccessControlRoles(entityId, configId0, EnforcementLevel.ORIGIN, originRoleArray);
 
-    vm.expectRevert(
-      IAccessRulesConfigErrors.AccessRulesConfigEnforcementOutOfBounds.selector
-    ); 
+    vm.expectRevert(IAccessRulesConfigErrors.AccessRulesConfigEnforcementOutOfBounds.selector);
     AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.NULL, originRoleArray);
-    vm.expectRevert(
-      IAccessRulesConfigErrors.AccessRulesConfigEnforcementOutOfBounds.selector
-    ); 
-    AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.TRANSIENT_AND_ORIGIN, originRoleArray);
+    vm.expectRevert(IAccessRulesConfigErrors.AccessRulesConfigEnforcementOutOfBounds.selector);
+    AccessRulesConfigInterface.setAccessControlRoles(
+      entityId,
+      configId1,
+      EnforcementLevel.TRANSIENT_AND_ORIGIN,
+      originRoleArray
+    );
   }
 
   function testSetEnforcementLevel() public {
@@ -173,9 +190,9 @@ contract AccessRulesConfigTest is Test {
     );
 
     assertEq(accessConfigDataBefore.enforcementLevel, uint8(0));
-    
+
     AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.TRANSIENT_AND_ORIGIN);
-    
+
     AccessConfigData memory accessConfigDataAfter = AccessConfig.get(
       ACCESS_CONTROL.accessConfigTableId(),
       entityId,
@@ -188,18 +205,20 @@ contract AccessRulesConfigTest is Test {
   function testSetEnforcementLevelFailConfigZero() public {
     uint256 entityId = 123456789;
     uint256 configId0 = 0;
-    vm.expectRevert(
-      IAccessRulesConfigErrors.AccessRulesConfigIdOutOfBounds.selector
-    ); 
+    vm.expectRevert(IAccessRulesConfigErrors.AccessRulesConfigIdOutOfBounds.selector);
     AccessRulesConfigInterface.setEnforcementLevel(entityId, configId0, EnforcementLevel.TRANSIENT_AND_ORIGIN);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
-  function _installModule(IModule module, bytes14 namespace, address accessControlSystem, address accessRulesConfig) internal {
+  function _installModule(
+    IModule module,
+    bytes14 namespace,
+    address accessControlSystem,
+    address accessRulesConfig
+  ) internal {
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this)) {
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     }
     world.installModule(module, abi.encode(namespace, accessControlSystem, accessRulesConfig));
   }
 }
-

@@ -38,31 +38,31 @@ contract AccessControl is EveSystem {
   }
 
   /**
-    * @notice - Create a root role which corresponds to a single account which thereafter can be used to create other 
-    *  root linked roles.
-    * @dev - Root roles have the following specific configuration, thereby allowing ANYONE to securely use access control
-    *   with admin rights within a single address scope. This allows anyone to create a role that can be used as admin
-    *   for other roles without having to use the Ownable.sol pattern (which only gives the contract 
-    *   deployer elevated admin permissions to start with).
-    *   Root roles:
-    *     - must be created via a call from a single account sourced from `world().initialMsgSender()`
-    *     - assign themselves as thier own admin role
-    *     - grant `world().initialMsgSender()` as thier first member
-    *     - are the only roles which have a unique root value created and assigned as`world().initialMsgSender()`. All
-    *         other created roles, inherit thier root value from thier admin role at the time of creation.
-    *     - can be used to create other root linked roles by assigning as the admin role during creation.
-    *         Subsequently, if any of those created roles (or thier children) go on to create other roles, any
-    *         additional decendant role will also retain the orginating root role's rootId value
-    *  A root role's name value is always the bytes32 of the "ROOT" string using abi.encodePacked()
-    *  The roleId for any role (including root roles) is the hash of its root value and its name value.
-    *  Throws an error {AccessControlBadConfirmation} if `callerConfirmation` is not equal to
-    *    `world().initialMsgSender()`.
-    *  Throws an error {AccessControlRoleAlreadyCreated} if this root role already exists.
-    * @param callerConfirmation - the address of the `world().initialMsgSender()` caller, used to verify that the caller
-    *   knows the address value used as the root value and name value, to generate roleId.
-    * @return - the generated RootRoleData.
-    */
-  function createRootRole(address callerConfirmation) external returns(RootRoleData memory) {
+   * @notice - Create a root role which corresponds to a single account which thereafter can be used to create other
+   *  root linked roles.
+   * @dev - Root roles have the following specific configuration, thereby allowing ANYONE to securely use access control
+   *   with admin rights within a single address scope. This allows anyone to create a role that can be used as admin
+   *   for other roles without having to use the Ownable.sol pattern (which only gives the contract
+   *   deployer elevated admin permissions to start with).
+   *   Root roles:
+   *     - must be created via a call from a single account sourced from `world().initialMsgSender()`
+   *     - assign themselves as thier own admin role
+   *     - grant `world().initialMsgSender()` as thier first member
+   *     - are the only roles which have a unique root value created and assigned as`world().initialMsgSender()`. All
+   *         other created roles, inherit thier root value from thier admin role at the time of creation.
+   *     - can be used to create other root linked roles by assigning as the admin role during creation.
+   *         Subsequently, if any of those created roles (or thier children) go on to create other roles, any
+   *         additional decendant role will also retain the orginating root role's rootId value
+   *  A root role's name value is always the bytes32 of the "ROOT" string using abi.encodePacked()
+   *  The roleId for any role (including root roles) is the hash of its root value and its name value.
+   *  Throws an error {AccessControlBadConfirmation} if `callerConfirmation` is not equal to
+   *    `world().initialMsgSender()`.
+   *  Throws an error {AccessControlRoleAlreadyCreated} if this root role already exists.
+   * @param callerConfirmation - the address of the `world().initialMsgSender()` caller, used to verify that the caller
+   *   knows the address value used as the root value and name value, to generate roleId.
+   * @return - the generated RootRoleData.
+   */
+  function createRootRole(address callerConfirmation) external returns (RootRoleData memory) {
     if (callerConfirmation != world().initialMsgSender()) {
       revert IAccessControlErrors.AccessControlBadConfirmation();
     }
@@ -83,14 +83,14 @@ contract AccessControl is EveSystem {
    *   flag under the `roleId` key.
    * Only considers the first thirty-two bytes of the `name` string, since the role's stored name value is
    *   `bytes32(abi.encodePacked(name))`.
-   * The root value of any decendant role (non-root role) is inherited from its admin role's root value at the 
+   * The root value of any decendant role (non-root role) is inherited from its admin role's root value at the
    *   time of creation. Ultimately, this is the address of the account that created admin's root role.
    * The `roleId` for any created role is calculated as the hash of its root value and the first 32 bytes of
    *   `abi.encodePacked(name)`.
    *
    * Throws the error {AccessControlUnauthorizedAccount} if `world().initialMsgSender()` is not a member of admin.
    * Throws the error {AccessControlRootAdminMismatch} if `rootAcctConfirmation` is not the root value of admin role `adminId`.
-   * Throws the error {AccessControlRoleAlreadyCreated} if this role already exists (e.g. a role with `name` has 
+   * Throws the error {AccessControlRoleAlreadyCreated} if this role already exists (e.g. a role with `name` has
    *   already been created and linked with the `rootIdConfirmation` value as its rootId value).
    *
    * Emits a {RoleCreated} offchain table event.
@@ -102,13 +102,13 @@ contract AccessControl is EveSystem {
    * @param adminId - the admin role we want to assign for the created role.
    * @return - the generated roleId.
    */
-  function createRole(string memory name, address rootAcctConfirmation, bytes32 adminId) 
-    external 
-    onlyRole(adminId, world().initialMsgSender())
-    returns(bytes32)
-  {
+  function createRole(
+    string memory name,
+    address rootAcctConfirmation,
+    bytes32 adminId
+  ) external onlyRole(adminId, world().initialMsgSender()) returns (bytes32) {
     address adminRootAcct = Role.getRoot(_namespace().roleTableId(), adminId);
-    
+
     if (rootAcctConfirmation != adminRootAcct) {
       revert IAccessControlErrors.AccessControlRootAdminMismatch(rootAcctConfirmation, adminRootAcct, adminId);
     }
@@ -134,17 +134,17 @@ contract AccessControl is EveSystem {
    * @param newAdminId - the new admin role to be assigned to this role.
    *
    */
-  function transferRoleAdmin(bytes32 roleId, bytes32 newAdminId)
-    external
-    onlyRole(Role.getAdmin(_namespace().roleTableId(), roleId), world().initialMsgSender())
-  {
+  function transferRoleAdmin(
+    bytes32 roleId,
+    bytes32 newAdminId
+  ) external onlyRole(Role.getAdmin(_namespace().roleTableId(), roleId), world().initialMsgSender()) {
     _setRoleAdmin(roleId, newAdminId);
   }
 
   /**
    * @notice Grants role membership to an account.
    * @dev Updates the {HasRole} table with hasRole = true for the key `roleId`,`account`.
-   * 
+   *
    * Throws the error {AccessControlUnauthorizedAccount} if `world().initialMsgSender()` is not a member of the
    *   current admin role.
    *
@@ -153,10 +153,10 @@ contract AccessControl is EveSystem {
    * @param roleId - the role to grant membership for.
    * @param account - the account to grant as a member.
    */
-  function grantRole(bytes32 roleId, address account) 
-    external 
-    onlyRole(Role.getAdmin(_namespace().roleTableId(), roleId), world().initialMsgSender())
-  {
+  function grantRole(
+    bytes32 roleId,
+    address account
+  ) external onlyRole(Role.getAdmin(_namespace().roleTableId(), roleId), world().initialMsgSender()) {
     _grantRole(roleId, account);
   }
 
@@ -168,14 +168,14 @@ contract AccessControl is EveSystem {
    *   admin role.
    *
    * If `account` has role membership to be revoked, emits a {RoleRevoked} offchain table event.
-   * 
+   *
    * @param roleId - the role to revoke membership for
    * @param account - the account to remove as a member
    */
-  function revokeRole(bytes32 roleId, address account)
-    external
-    onlyRole(Role.getAdmin(_namespace().roleTableId(), roleId), world().initialMsgSender())
-  {
+  function revokeRole(
+    bytes32 roleId,
+    address account
+  ) external onlyRole(Role.getAdmin(_namespace().roleTableId(), roleId), world().initialMsgSender()) {
     _revokeRole(roleId, account);
   }
 
@@ -217,10 +217,9 @@ contract AccessControl is EveSystem {
   /**
    * @dev Returns a `roleId` given a `rootAcct` and a `name`.
    */
-  function getRoleId(address rootAcct, string calldata name) external pure returns(bytes32) {
+  function getRoleId(address rootAcct, string calldata name) external pure returns (bytes32) {
     return keccak256(abi.encodePacked(rootAcct, bytes32(abi.encodePacked(name))));
   }
-
 
   /**
    * @dev Returns `true` if `roleId` has been created
@@ -235,7 +234,7 @@ contract AccessControl is EveSystem {
   function isRootRole(bytes32 roleId) external view returns (bool) {
     RoleData memory roleData = Role.get(_namespace().roleTableId(), roleId);
     bytes32 rootRoleId = keccak256(abi.encodePacked(roleData.root, ROOT_NAME_BYTES32));
-    if(roleData.exists == true && roleId == rootRoleId) {
+    if (roleData.exists == true && roleId == rootRoleId) {
       return true;
     } else {
       return false;
@@ -276,10 +275,10 @@ contract AccessControl is EveSystem {
   function _setRoleAdmin(bytes32 roleId, bytes32 adminId) internal virtual {
     bytes32 previousAdminRole = Role.getAdmin(_namespace().roleTableId(), roleId);
 
-    if(previousAdminRole == adminId) {
+    if (previousAdminRole == adminId) {
       revert IAccessControlErrors.AccessControlAdminAlreadySet(roleId, adminId);
     }
-    
+
     Role.setAdmin(_namespace().roleTableId(), roleId, adminId);
     RoleAdminChanged.set(_namespace().roleAdminChangedTableId(), roleId, previousAdminRole, adminId);
   }

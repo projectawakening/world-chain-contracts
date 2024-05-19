@@ -10,6 +10,7 @@ enum EnforcementLevel {
   ORIGIN,
   TRANSIENT_AND_ORIGIN
 }
+
 interface IAccessRuleMock {
   /**
    * @dev The following accessRule implementation is hook based logic that implement access control

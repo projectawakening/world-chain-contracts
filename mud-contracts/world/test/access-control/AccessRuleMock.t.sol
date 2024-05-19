@@ -37,10 +37,7 @@ import { AccessRulesConfig } from "../../src/modules/access-control/systems/Acce
 import { RootRoleData, EnforcementLevel } from "../../src/modules/access-control/types.sol";
 import { Utils } from "../../src/modules/access-control/Utils.sol";
 
-import {MODULE_MOCK_NAME,
-  FORWARD_MOCK_SYSTEM_ID,
-  HOOKABLE_MOCK_SYSTEM_ID,
-  ACCESS_RULE_MOCK_SYSTEM_ID} from "./mocks/mockconstants.sol";
+import { MODULE_MOCK_NAME, FORWARD_MOCK_SYSTEM_ID, HOOKABLE_MOCK_SYSTEM_ID, ACCESS_RULE_MOCK_SYSTEM_ID } from "./mocks/mockconstants.sol";
 
 import { ModuleMock } from "./mocks/ModuleMock.sol";
 import { IForwardMock } from "./mocks/IForwardMock.sol";
@@ -76,13 +73,11 @@ contract AccessRuleMockTest is Test {
   ModuleCore ModuleCoreSystem;
   SmartObjectLib.World SOFInterface;
 
-
-
   // declare AccessControl related
   AccessControlModule AccessControlMod;
   AccessControlLib.World AccessControlInterface;
   AccessRulesConfigLib.World AccessRulesConfigInterface;
- 
+
   // declare mock related
   ModuleMock ModMock;
   HookableMock HookableMockSystem;
@@ -100,13 +95,13 @@ contract AccessRuleMockTest is Test {
     world.initialize(createCoreModule());
     // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
     StoreSwitch.setStoreAddress(address(world));
-    
+
     // SOF deployemnts
     SOFMod = new SmartObjectFrameworkModule();
     EntityCoreSystem = new EntityCore();
     HookCoreSystem = new HookCore();
     ModuleCoreSystem = new ModuleCore();
-    
+
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(WORLD_NAMESPACE)) == deployer) {
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(WORLD_NAMESPACE), address(SOFMod));
     }
@@ -120,7 +115,7 @@ contract AccessRuleMockTest is Test {
 
     // access-control deployment
     AccessControlMod = new AccessControlModule();
-    
+
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(WORLD_NAMESPACE)) == deployer) {
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(WORLD_NAMESPACE), address(AccessControlMod));
     }
@@ -132,7 +127,7 @@ contract AccessRuleMockTest is Test {
     AccessControlInterface = AccessControlLib.World(world, WORLD_NAMESPACE);
     // initilize the AccessRulesConfigInterface object
     AccessRulesConfigInterface = AccessRulesConfigLib.World(world, WORLD_NAMESPACE);
-    
+
     // mock related deployments
     ModMock = new ModuleMock();
     // create a target System for hooks
@@ -147,17 +142,22 @@ contract AccessRuleMockTest is Test {
     }
     world.installModule(
       ModMock,
-      abi.encode(WORLD_NAMESPACE, address(ForwardMockSystem), address(HookableMockSystem), address(AccessRuleMockSystem))
+      abi.encode(
+        WORLD_NAMESPACE,
+        address(ForwardMockSystem),
+        address(HookableMockSystem),
+        address(AccessRuleMockSystem)
+      )
     );
 
-    // SOF configuration 
+    // SOF configuration
     // create the CLASS entityType
     SOFInterface.registerEntityType(CLASS, "CLASS");
     // register our entity as a CLASS entityType
     entityId = 1234567890;
     SOFInterface.registerEntity(entityId, CLASS);
     uint256 mockModuleId = uint256(keccak256(abi.encodePacked(address(ModMock))));
-    
+
     // register Forward and Hookable to the MockMod on the SOF
     SOFInterface.registerEVEModule(mockModuleId, MODULE_MOCK_NAME, FORWARD_MOCK_SYSTEM_ID);
     SOFInterface.registerEVEModule(mockModuleId, MODULE_MOCK_NAME, HOOKABLE_MOCK_SYSTEM_ID);
@@ -167,21 +167,15 @@ contract AccessRuleMockTest is Test {
     // register the hook logic (AccessRuleMock.accessRule)
     SOFInterface.registerHook(ACCESS_RULE_MOCK_SYSTEM_ID, IAccessRuleMock.accessRule.selector);
 
-    uint256 hookId = uint256(keccak256(abi.encodePacked(
-      ResourceId.unwrap(ACCESS_RULE_MOCK_SYSTEM_ID),
-      IAccessRuleMock.accessRule.selector
-    )));
+    uint256 hookId = uint256(
+      keccak256(abi.encodePacked(ResourceId.unwrap(ACCESS_RULE_MOCK_SYSTEM_ID), IAccessRuleMock.accessRule.selector))
+    );
 
     // associate hook logic with entityId
     SOFInterface.associateHook(entityId, hookId);
 
     // add the hook logic to be executed before target System/function (HookableMock.target)
-    SOFInterface.addHook(
-      hookId,
-      HookType.BEFORE,
-      HOOKABLE_MOCK_SYSTEM_ID,
-      IHookableMock.target.selector
-    );
+    SOFInterface.addHook(hookId, HookType.BEFORE, HOOKABLE_MOCK_SYSTEM_ID, IHookableMock.target.selector);
     vm.stopPrank();
   }
 
@@ -214,7 +208,6 @@ contract AccessRuleMockTest is Test {
     ResourceId hasRoleTableId = WORLD_NAMESPACE.hasRoleTableId();
     assertEq(ResourceIds.getExists(WORLD_NAMESPACE.hasRoleTableId()), true);
     assertEq(WorldResourceIdInstance.getNamespace(hasRoleTableId), WORLD_NAMESPACE);
-
   }
 
   function testAccessRuleEnforcementLevel3PassingCases() public {
@@ -222,14 +215,26 @@ contract AccessRuleMockTest is Test {
     string memory transientRoleString1 = "TRANSIENT_ROLE_1";
     string memory transientRoleString2 = "TRANSIENT_ROLE_2";
     string memory originRoleString = "ORIGIN_ROLE";
-    
+
     vm.startPrank(alice, bob);
     // create a root role from which we can create other roles (as admin)
     RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
     // create a role for each access contex
-    bytes32 transientRoleId1 = AccessControlInterface.createRole(transientRoleString1, rootDataAlice.rootAcct, rootDataAlice.roleId);
-    bytes32 transientRoleId2 = AccessControlInterface.createRole(transientRoleString2, rootDataAlice.rootAcct, rootDataAlice.roleId);
-    bytes32 originRoleId = AccessControlInterface.createRole(originRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
+    bytes32 transientRoleId1 = AccessControlInterface.createRole(
+      transientRoleString1,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 transientRoleId2 = AccessControlInterface.createRole(
+      transientRoleString2,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
+    bytes32 originRoleId = AccessControlInterface.createRole(
+      originRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
 
     bytes32[] memory transientRoleArray = new bytes32[](2);
     transientRoleArray[0] = transientRoleId1;
@@ -237,7 +242,12 @@ contract AccessRuleMockTest is Test {
     bytes32[] memory originRoleArray = new bytes32[](1);
     originRoleArray[0] = originRoleId;
 
-    AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.TRANSIENT, transientRoleArray);
+    AccessRulesConfigInterface.setAccessControlRoles(
+      entityId,
+      configId1,
+      EnforcementLevel.TRANSIENT,
+      transientRoleArray
+    );
     AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.ORIGIN, originRoleArray);
     AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.TRANSIENT_AND_ORIGIN);
 
@@ -245,22 +255,16 @@ contract AccessRuleMockTest is Test {
     AccessControlInterface.grantRole(originRoleId, bob);
 
     // Case1: verify TRANSIENT_AND_ORIGIN, ALL roles satisfied
-    bytes memory dataCase1 = world.call(
-      FORWARD_MOCK_SYSTEM_ID,
-      abi.encodeCall(IForwardMock.callTarget,  (entityId))
-    );
+    bytes memory dataCase1 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
 
     assertEq(AccessControlInterface.hasRole(transientRoleId2, alice), true);
     assertEq(AccessControlInterface.hasRole(originRoleId, bob), true);
     assertEq(abi.decode(dataCase1, (bool)), true);
 
-   // Case2: verify TRANSIENT_AND_ORIGIN, TRANSIENT ONLY roles satisfied
+    // Case2: verify TRANSIENT_AND_ORIGIN, TRANSIENT ONLY roles satisfied
     AccessControlInterface.revokeRole(originRoleId, bob);
 
-    bytes memory dataCase2 = world.call(
-      FORWARD_MOCK_SYSTEM_ID,
-      abi.encodeCall(IForwardMock.callTarget, (entityId))
-    );
+    bytes memory dataCase2 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
 
     assertEq(AccessControlInterface.hasRole(transientRoleId2, alice), true);
     assertEq(AccessControlInterface.hasRole(originRoleId, bob), false);
@@ -269,11 +273,8 @@ contract AccessRuleMockTest is Test {
     // Case3: verify TRANSIENT_AND_ORIGIN, ORIGIN ONLY roles satisfied
     AccessControlInterface.revokeRole(transientRoleId2, alice);
     AccessControlInterface.grantRole(originRoleId, bob);
-    
-    bytes memory dataCase3 = world.call(
-      FORWARD_MOCK_SYSTEM_ID,
-      abi.encodeCall(IForwardMock.callTarget,  (entityId))
-    );
+
+    bytes memory dataCase3 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
 
     assertEq(AccessControlInterface.hasRole(transientRoleId2, alice), false);
     assertEq(AccessControlInterface.hasRole(originRoleId, bob), true);
@@ -283,12 +284,16 @@ contract AccessRuleMockTest is Test {
   function testAccessRuleEnforcementLevel2Pass() public {
     uint256 configId1 = 1;
     string memory originRoleString = "ORIGIN_ROLE";
-    
+
     vm.startPrank(alice, bob);
     // create a root role from which we can create other roles (as admin)
     RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
-    
-    bytes32 originRoleId = AccessControlInterface.createRole(originRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
+
+    bytes32 originRoleId = AccessControlInterface.createRole(
+      originRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
     bytes32[] memory originRoleArray = new bytes32[](1);
     originRoleArray[0] = originRoleId;
 
@@ -298,10 +303,7 @@ contract AccessRuleMockTest is Test {
     AccessControlInterface.grantRole(originRoleId, bob);
 
     // Case: verify ORIGIN_ONLY role satisfied
-    bytes memory dataCase1 = world.call(
-      FORWARD_MOCK_SYSTEM_ID,
-      abi.encodeCall(IForwardMock.callTarget,  (entityId))
-    );
+    bytes memory dataCase1 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
 
     assertEq(AccessControlInterface.hasRole(originRoleId, bob), true);
     assertEq(abi.decode(dataCase1, (bool)), true);
@@ -310,26 +312,32 @@ contract AccessRuleMockTest is Test {
   function testAccessRuleEnforcementLevel1Pass() public {
     uint256 configId1 = 1;
     string memory transientRoleString = "TRANSIENT_ROLE";
-    
+
     vm.startPrank(alice, bob);
     // create a root role from which we can create other roles (as admin)
     RootRoleData memory rootDataAlice = AccessControlInterface.createRootRole(alice);
     // create a role for each access contex
-    bytes32 transientRoleId = AccessControlInterface.createRole(transientRoleString, rootDataAlice.rootAcct, rootDataAlice.roleId);
+    bytes32 transientRoleId = AccessControlInterface.createRole(
+      transientRoleString,
+      rootDataAlice.rootAcct,
+      rootDataAlice.roleId
+    );
 
     bytes32[] memory transientRoleArray = new bytes32[](1);
     transientRoleArray[0] = transientRoleId;
 
-    AccessRulesConfigInterface.setAccessControlRoles(entityId, configId1, EnforcementLevel.TRANSIENT, transientRoleArray);
+    AccessRulesConfigInterface.setAccessControlRoles(
+      entityId,
+      configId1,
+      EnforcementLevel.TRANSIENT,
+      transientRoleArray
+    );
     AccessRulesConfigInterface.setEnforcementLevel(entityId, configId1, EnforcementLevel.TRANSIENT);
 
     AccessControlInterface.grantRole(transientRoleId, alice);
 
     // Case1: verify TRANSIENT_ONLY role satisfied
-    bytes memory dataCase1 = world.call(
-      FORWARD_MOCK_SYSTEM_ID,
-      abi.encodeCall(IForwardMock.callTarget,  (entityId))
-    );
+    bytes memory dataCase1 = world.call(FORWARD_MOCK_SYSTEM_ID, abi.encodeCall(IForwardMock.callTarget, (entityId)));
 
     assertEq(AccessControlInterface.hasRole(transientRoleId, alice), true);
     assertEq(abi.decode(dataCase1, (bool)), true);

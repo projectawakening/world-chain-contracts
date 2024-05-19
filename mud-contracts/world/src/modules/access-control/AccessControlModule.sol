@@ -69,7 +69,7 @@ contract AccessControlModule is Module {
       )
     );
     if (!success) revertWithBytes(returnedData);
-    
+
     //Transfer the ownership of the namespace to the caller
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
     world.transferOwnership(namespaceId, _msgSender());
@@ -92,22 +92,16 @@ contract AccessControlModuleRegistrationLibrary {
     //Register the namespace
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
-    
+
     //Register the tables and systems for inventory namespace
-    if (!ResourceIds.getExists(namespace.roleTableId())) 
-      Role.register(namespace.roleTableId());
-    if (!ResourceIds.getExists(namespace.hasRoleTableId()))
-      HasRole.register(namespace.hasRoleTableId());
-    if (!ResourceIds.getExists(namespace.accessConfigTableId()))
-      AccessConfig.register(namespace.accessConfigTableId());
+    if (!ResourceIds.getExists(namespace.roleTableId())) Role.register(namespace.roleTableId());
+    if (!ResourceIds.getExists(namespace.hasRoleTableId())) HasRole.register(namespace.hasRoleTableId());
+    if (!ResourceIds.getExists(namespace.accessConfigTableId())) AccessConfig.register(namespace.accessConfigTableId());
     if (!ResourceIds.getExists(namespace.roleAdminChangedTableId()))
       RoleAdminChanged.register(namespace.roleAdminChangedTableId());
-    if (!ResourceIds.getExists(namespace.roleCreatedTableId()))
-      RoleCreated.register(namespace.roleCreatedTableId());
-    if (!ResourceIds.getExists(namespace.roleGrantedTableId()))
-      RoleGranted.register(namespace.roleGrantedTableId());
-    if (!ResourceIds.getExists(namespace.roleRevokedTableId()))
-      RoleRevoked.register(namespace.roleRevokedTableId());
+    if (!ResourceIds.getExists(namespace.roleCreatedTableId())) RoleCreated.register(namespace.roleCreatedTableId());
+    if (!ResourceIds.getExists(namespace.roleGrantedTableId())) RoleGranted.register(namespace.roleGrantedTableId());
+    if (!ResourceIds.getExists(namespace.roleRevokedTableId())) RoleRevoked.register(namespace.roleRevokedTableId());
 
     //Register the systems
     if (!ResourceIds.getExists(namespace.accessControlSystemId()))

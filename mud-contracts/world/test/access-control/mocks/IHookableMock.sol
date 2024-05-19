@@ -4,9 +4,9 @@ pragma solidity ^0.8.24;
 /**
  * @dev Interface definition for HookableMock.
  */
- interface IHookableMock {
+interface IHookableMock {
   /**
-  *
+   *
    * Implements the  `hookable()` modifier, see {EveSystem} and {HookCore} for more details.
    *
    */

@@ -59,7 +59,6 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
-    
     /*******************
      * ACCESS CONTROL MODULE *
      *******************/
@@ -88,7 +87,7 @@ export default mudConfig({
     // Off-chain table event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdmin, bytes32 indexed newAdmin);
     RoleAdminChanged: {
       keySchema: { roleId: "bytes32" },
-      valueSchema: { 
+      valueSchema: {
         previousAdmin: "bytes32",
         newAdmin: "bytes32",
       },
@@ -109,9 +108,9 @@ export default mudConfig({
     // Off-chain table event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
     RoleGranted: {
       keySchema: { roleId: "bytes32" },
-      valueSchema: { 
+      valueSchema: {
         account: "address",
-        sender: "address"
+        sender: "address",
       },
       tableIdArgument: true,
       offchainOnly: true,
@@ -119,9 +118,9 @@ export default mudConfig({
     // Off-chain table event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
     RoleRevoked: {
       keySchema: { roleId: "bytes32" },
-      valueSchema: { 
+      valueSchema: {
         account: "address",
-        sender: "address"
+        sender: "address",
       },
       tableIdArgument: true,
       offchainOnly: true,

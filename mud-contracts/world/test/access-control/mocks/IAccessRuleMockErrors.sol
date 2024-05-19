@@ -7,7 +7,6 @@ import { EnforcementLevel } from "./IAccessRuleMock.sol";
  * @dev External interface for AccessRuleMock originating errors.
  */
 interface IAccessRuleMockErrors {
-
   struct AccessReport {
     address account;
     bytes32[] roleIds;
@@ -16,9 +15,5 @@ interface IAccessRuleMockErrors {
   /**
    * @dev `account` is NOT a member of any the listed required `roleIds`
    */
-  error AccessRulesUnauthorizedAccount(
-    EnforcementLevel enforcementLevel,
-    AccessReport transient,
-    AccessReport origin
-  );
+  error AccessRulesUnauthorizedAccount(EnforcementLevel enforcementLevel, AccessReport transient, AccessReport origin);
 }

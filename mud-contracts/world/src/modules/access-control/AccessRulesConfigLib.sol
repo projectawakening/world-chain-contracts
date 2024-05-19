@@ -20,21 +20,28 @@ library AccessRulesConfigLib {
     bytes14 namespace;
   }
 
-  function setAccessControlRoles(World memory world, uint256 entityId, uint256 configId, EnforcementLevel enforcement, bytes32[] memory roleIds) internal {
+  function setAccessControlRoles(
+    World memory world,
+    uint256 entityId,
+    uint256 configId,
+    EnforcementLevel enforcement,
+    bytes32[] memory roleIds
+  ) internal {
     world.iface.call(
       world.namespace.accessRulesConfigSystemId(),
-      abi.encodeCall(IAccessRulesConfig.setAccessControlRoles,
-        (entityId, configId, enforcement, roleIds)
-      )
+      abi.encodeCall(IAccessRulesConfig.setAccessControlRoles, (entityId, configId, enforcement, roleIds))
     );
   }
 
-  function setEnforcementLevel(World memory world, uint256 entityId, uint256 configId, EnforcementLevel enforcementLevel) internal {
+  function setEnforcementLevel(
+    World memory world,
+    uint256 entityId,
+    uint256 configId,
+    EnforcementLevel enforcementLevel
+  ) internal {
     world.iface.call(
       world.namespace.accessRulesConfigSystemId(),
-      abi.encodeCall(IAccessRulesConfig.setEnforcementLevel,
-        (entityId, configId, enforcementLevel)
-      )
+      abi.encodeCall(IAccessRulesConfig.setEnforcementLevel, (entityId, configId, enforcementLevel))
     );
   }
 }

@@ -7,7 +7,6 @@ struct RootRoleData {
   bytes32 roleId;
 }
 
-
 enum EnforcementLevel {
   NULL,
   TRANSIENT,

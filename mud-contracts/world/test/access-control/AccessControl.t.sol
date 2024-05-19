@@ -3,7 +3,6 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 
-
 import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -36,7 +35,6 @@ import { AccessRulesConfig } from "../../src/modules/access-control/systems/Acce
 import { RootRoleData } from "../../src/modules/access-control/types.sol";
 import { Utils } from "../../src/modules/access-control/Utils.sol";
 
-
 contract AccessControlTest is Test {
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
@@ -54,12 +52,9 @@ contract AccessControlTest is Test {
   IBaseWorld world;
   AccessControlLib.World AccessControlInterface;
 
-  
-
   string testRoleName = "TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST";
 
   function setUp() public {
-    
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
     // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
@@ -68,7 +63,7 @@ contract AccessControlTest is Test {
     address arc = address(new AccessRulesConfig());
     // install AccessControlModule
     _installModule(new AccessControlModule(), ACCESS_CONTROL, ac, arc);
-   
+
     // initilize the AccessControlInterface object
     AccessControlInterface = AccessControlLib.World(world, ACCESS_CONTROL);
   }
@@ -84,7 +79,7 @@ contract AccessControlTest is Test {
   function testCreateRootRole() public {
     RootRoleData memory rootData = _callCreateRootRole(alice);
     string memory rootString = "ROOT";
-    // check generated values 
+    // check generated values
     bytes32 rootRoleNameToBytes32 = bytes32(abi.encodePacked(rootString));
     bytes32 calculatedRoleId = keccak256(abi.encodePacked(alice, rootRoleNameToBytes32));
 
@@ -93,10 +88,7 @@ contract AccessControlTest is Test {
     assertEq(rootData.roleId, calculatedRoleId);
 
     // check stored values
-    RoleData memory roleData = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      rootData.roleId
-    );
+    RoleData memory roleData = Role.get(ACCESS_CONTROL.roleTableId(), rootData.roleId);
 
     assertEq(roleData.exists, true);
     assertEq(roleData.name, rootData.nameBytes32);
@@ -104,11 +96,7 @@ contract AccessControlTest is Test {
     // check self as admin
     assertEq(roleData.admin, rootData.roleId);
 
-    bool hasRole = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootData.roleId,
-      alice
-    );
+    bool hasRole = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootData.roleId, alice);
     // check account has membership
     assertEq(hasRole, true);
   }
@@ -130,10 +118,7 @@ contract AccessControlTest is Test {
     assertEq(roleId, calculatedRoleId);
 
     // check stored values
-    RoleData memory roleData = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      roleId
-    );
+    RoleData memory roleData = Role.get(ACCESS_CONTROL.roleTableId(), roleId);
 
     assertEq(roleData.exists, true);
     assertEq(roleData.name, roleNameToBytes32);
@@ -167,41 +152,26 @@ contract AccessControlTest is Test {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
     bytes32 roleId = _callCreateRole(testRoleName, rootDataAlice.rootAcct, rootDataAlice.roleId, alice);
 
-    RoleData memory roleDataAliceBefore = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      rootDataAlice.roleId
-    );
+    RoleData memory roleDataAliceBefore = Role.get(ACCESS_CONTROL.roleTableId(), rootDataAlice.roleId);
     assertEq(roleDataAliceBefore.admin, rootDataAlice.roleId);
     vm.prank(alice);
     AccessControlInterface.transferRoleAdmin(rootDataAlice.roleId, roleId);
 
-    RoleData memory roleDataAliceAfter = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      rootDataAlice.roleId
-    );
+    RoleData memory roleDataAliceAfter = Role.get(ACCESS_CONTROL.roleTableId(), rootDataAlice.roleId);
     assertEq(roleDataAliceAfter.admin, roleId);
   }
 
   function testGrantRoleRoot() public {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
 
-    bool hasRoleBefore = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootDataAlice.roleId,
-      bob
-    );
+    bool hasRoleBefore = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootDataAlice.roleId, bob);
     assertEq(hasRoleBefore, false);
 
     vm.prank(alice);
     AccessControlInterface.grantRole(rootDataAlice.roleId, bob);
 
-    bool hasRoleAfter = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootDataAlice.roleId,
-      bob
-    );
+    bool hasRoleAfter = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootDataAlice.roleId, bob);
     assertEq(hasRoleAfter, true);
-
   }
 
   function testRevokeRoleRoot() public {
@@ -209,42 +179,26 @@ contract AccessControlTest is Test {
     vm.prank(alice);
     AccessControlInterface.grantRole(rootDataAlice.roleId, bob);
 
-    bool hasRoleBefore = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootDataAlice.roleId,
-      bob
-    );
+    bool hasRoleBefore = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootDataAlice.roleId, bob);
     assertEq(hasRoleBefore, true);
 
     vm.prank(alice);
     AccessControlInterface.revokeRole(rootDataAlice.roleId, bob);
 
-    bool hasRoleAfter = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootDataAlice.roleId,
-      bob
-    );
+    bool hasRoleAfter = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootDataAlice.roleId, bob);
     assertEq(hasRoleAfter, false);
   }
 
   function testRenounceRoleRoot() public {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
 
-    bool hasRoleBefore = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootDataAlice.roleId,
-      alice
-    );
+    bool hasRoleBefore = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootDataAlice.roleId, alice);
     assertEq(hasRoleBefore, true);
 
     vm.prank(alice);
     AccessControlInterface.renounceRole(rootDataAlice.roleId, alice);
 
-    bool hasRoleAfter = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      rootDataAlice.roleId,
-      alice
-    );
+    bool hasRoleAfter = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), rootDataAlice.roleId, alice);
     assertEq(hasRoleAfter, false);
   }
 
@@ -253,19 +207,13 @@ contract AccessControlTest is Test {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
     bytes32 roleId = _callCreateRole(testRoleName, rootDataAlice.rootAcct, rootDataAlice.roleId, alice);
 
-    RoleData memory roleDataTestBefore = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      roleId
-    );
+    RoleData memory roleDataTestBefore = Role.get(ACCESS_CONTROL.roleTableId(), roleId);
     assertEq(roleDataTestBefore.admin, rootDataAlice.roleId);
 
     vm.prank(alice);
     AccessControlInterface.transferRoleAdmin(roleId, roleId);
 
-    RoleData memory roleDataTestAfter = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      roleId
-    );
+    RoleData memory roleDataTestAfter = Role.get(ACCESS_CONTROL.roleTableId(), roleId);
     assertEq(roleDataTestAfter.admin, roleId);
   }
 
@@ -276,7 +224,7 @@ contract AccessControlTest is Test {
 
   //   vm.prank(bob);
   //   AccessControlInterface.transferRoleAdmin(roleId, roleId);
-    
+
   //   vm.expectRevert(
   //     abi.encodeWithSelector(IAccessControlErrors.AccessControlUnauthorizedAccount.selector, bob, rootDataAlice.roleId)
   //   );
@@ -286,21 +234,13 @@ contract AccessControlTest is Test {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
     bytes32 roleId = _callCreateRole(testRoleName, rootDataAlice.rootAcct, rootDataAlice.roleId, alice);
 
-    bool hasRoleBefore = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      roleId,
-      bob
-    );
+    bool hasRoleBefore = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), roleId, bob);
     assertEq(hasRoleBefore, false);
 
     vm.prank(alice);
     AccessControlInterface.grantRole(roleId, bob);
 
-    bool hasRoleAfter = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      roleId,
-      bob
-    );
+    bool hasRoleAfter = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), roleId, bob);
     assertEq(hasRoleAfter, true);
   }
 
@@ -324,21 +264,13 @@ contract AccessControlTest is Test {
     vm.prank(alice);
     AccessControlInterface.grantRole(roleId, bob);
 
-    bool hasRoleBefore = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      roleId,
-      bob
-    );
+    bool hasRoleBefore = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), roleId, bob);
     assertEq(hasRoleBefore, true);
 
     vm.prank(alice);
     AccessControlInterface.revokeRole(roleId, bob);
 
-    bool hasRoleAfter = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      roleId,
-      bob
-    );
+    bool hasRoleAfter = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), roleId, bob);
     assertEq(hasRoleAfter, false);
   }
 
@@ -361,25 +293,17 @@ contract AccessControlTest is Test {
   function testRenounceRole() public {
     RootRoleData memory rootData = _callCreateRootRole(alice);
     bytes32 roleId = _callCreateRole(testRoleName, rootData.rootAcct, rootData.roleId, alice);
-    
+
     vm.startPrank(alice);
     AccessControlInterface.grantRole(roleId, alice);
 
-    bool hasRoleBefore = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      roleId,
-      alice
-    );
+    bool hasRoleBefore = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), roleId, alice);
     assertEq(hasRoleBefore, true);
 
     AccessControlInterface.renounceRole(roleId, alice);
     vm.stopPrank();
 
-    bool hasRoleAfter = HasRole.get(
-      ACCESS_CONTROL.hasRoleTableId(),
-      roleId,
-      alice
-    );
+    bool hasRoleAfter = HasRole.get(ACCESS_CONTROL.hasRoleTableId(), roleId, alice);
     assertEq(hasRoleAfter, false);
   }
 
@@ -391,12 +315,9 @@ contract AccessControlTest is Test {
 
     vm.startPrank(alice);
     AccessControlInterface.grantRole(roleId, alice);
-    vm.expectRevert(
-      IAccessControlErrors.AccessControlBadConfirmation.selector
-    );  
+    vm.expectRevert(IAccessControlErrors.AccessControlBadConfirmation.selector);
     AccessControlInterface.renounceRole(roleId, bob);
     vm.stopPrank();
-
   }
 
   function testHasRole() public {
@@ -408,10 +329,7 @@ contract AccessControlTest is Test {
 
   function testGetRoleAdmin() public {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
-    RoleData memory roleData = Role.get(
-      ACCESS_CONTROL.roleTableId(),
-      rootDataAlice.roleId
-    );
+    RoleData memory roleData = Role.get(ACCESS_CONTROL.roleTableId(), rootDataAlice.roleId);
 
     bytes32 adminId = AccessControlInterface.getRoleAdmin(rootDataAlice.roleId);
 
@@ -421,7 +339,7 @@ contract AccessControlTest is Test {
   function testGetRoleId() public {
     RootRoleData memory rootDataAlice = _callCreateRootRole(alice);
     bytes32 roleId = _callCreateRole(testRoleName, rootDataAlice.rootAcct, rootDataAlice.roleId, alice);
-    
+
     bytes32 rootRoleIdViaGetter = AccessControlInterface.getRoleId(rootDataAlice.rootAcct, "ROOT");
 
     bytes32 roleIdViaGetter = AccessControlInterface.getRoleId(rootDataAlice.rootAcct, testRoleName);
@@ -456,7 +374,12 @@ contract AccessControlTest is Test {
   }
 
   // helper function to guard against multiple module registrations on the same namespace
-  function _installModule(IModule module, bytes14 namespace, address accessControlSystem, address accessRulesConfig) internal {
+  function _installModule(
+    IModule module,
+    bytes14 namespace,
+    address accessControlSystem,
+    address accessRulesConfig
+  ) internal {
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this)) {
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
     }
@@ -472,7 +395,12 @@ contract AccessControlTest is Test {
   }
 
   // helper to call the AccessControl.createRole function successfully
-  function _callCreateRole(string memory name, address adminRootAcct, bytes32 adminId, address adminMember) internal returns (bytes32) {
+  function _callCreateRole(
+    string memory name,
+    address adminRootAcct,
+    bytes32 adminId,
+    address adminMember
+  ) internal returns (bytes32) {
     // prank execute as adminMember
     vm.prank(adminMember);
     bytes32 roleId = AccessControlInterface.createRole(name, adminRootAcct, adminId);

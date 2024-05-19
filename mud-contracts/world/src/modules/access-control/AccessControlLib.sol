@@ -21,22 +21,23 @@ library AccessControlLib {
     bytes14 namespace;
   }
 
-  function createRootRole(World memory world, address callerConfirmation) internal returns(RootRoleData memory) {
+  function createRootRole(World memory world, address callerConfirmation) internal returns (RootRoleData memory) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.createRootRole,
-        (callerConfirmation)
-      )
+      abi.encodeCall(IAccessControl.createRootRole, (callerConfirmation))
     );
     return abi.decode(returnData, (RootRoleData));
   }
 
-  function createRole(World memory world, string memory name, address rootAcctConfirmation, bytes32 adminId) internal returns(bytes32) {
+  function createRole(
+    World memory world,
+    string memory name,
+    address rootAcctConfirmation,
+    bytes32 adminId
+  ) internal returns (bytes32) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.createRole,
-        (name, rootAcctConfirmation, adminId)
-      )
+      abi.encodeCall(IAccessControl.createRole, (name, rootAcctConfirmation, adminId))
     );
     return abi.decode(returnData, (bytes32));
   }
@@ -44,45 +45,35 @@ library AccessControlLib {
   function transferRoleAdmin(World memory world, bytes32 roleId, bytes32 newAdminId) internal {
     world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.transferRoleAdmin,
-        (roleId, newAdminId)
-      )
+      abi.encodeCall(IAccessControl.transferRoleAdmin, (roleId, newAdminId))
     );
   }
 
   function grantRole(World memory world, bytes32 roleId, address account) internal {
     world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.grantRole,
-        (roleId, account)
-      )
+      abi.encodeCall(IAccessControl.grantRole, (roleId, account))
     );
   }
 
   function revokeRole(World memory world, bytes32 roleId, address account) internal {
     world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.revokeRole,
-        (roleId, account)
-      )
+      abi.encodeCall(IAccessControl.revokeRole, (roleId, account))
     );
   }
 
   function renounceRole(World memory world, bytes32 roleId, address callerConfirmation) internal {
     world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.renounceRole,
-        (roleId, callerConfirmation)
-      )
+      abi.encodeCall(IAccessControl.renounceRole, (roleId, callerConfirmation))
     );
   }
 
   function hasRole(World memory world, bytes32 roleId, address account) internal returns (bool) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.hasRole,
-        (roleId, account)
-      )
+      abi.encodeCall(IAccessControl.hasRole, (roleId, account))
     );
     return abi.decode(returnData, (bool));
   }
@@ -90,9 +81,7 @@ library AccessControlLib {
   function getRoleAdmin(World memory world, bytes32 roleId) internal returns (bytes32) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.getRoleAdmin,
-        (roleId)
-      )
+      abi.encodeCall(IAccessControl.getRoleAdmin, (roleId))
     );
     return abi.decode(returnData, (bytes32));
   }
@@ -100,9 +89,7 @@ library AccessControlLib {
   function getRoleId(World memory world, address rootAcct, string memory name) internal returns (bytes32) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.getRoleId,
-        (rootAcct, name)
-      )
+      abi.encodeCall(IAccessControl.getRoleId, (rootAcct, name))
     );
     return abi.decode(returnData, (bytes32));
   }
@@ -110,9 +97,7 @@ library AccessControlLib {
   function roleExists(World memory world, bytes32 roleId) internal returns (bool) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.roleExists,
-        (roleId)
-      )
+      abi.encodeCall(IAccessControl.roleExists, (roleId))
     );
     return abi.decode(returnData, (bool));
   }
@@ -120,9 +105,7 @@ library AccessControlLib {
   function isRootRole(World memory world, bytes32 roleId) internal returns (bool) {
     bytes memory returnData = world.iface.call(
       world.namespace.accessControlSystemId(),
-      abi.encodeCall(IAccessControl.isRootRole,
-        (roleId)
-      )
+      abi.encodeCall(IAccessControl.isRootRole, (roleId))
     );
     return abi.decode(returnData, (bool));
   }
