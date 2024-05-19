@@ -398,24 +398,23 @@ contract InventoryTest is Test {
     assertEq(inventoryTableData.items.length, 2);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4237, address(0), 4236, 0, 200, 1);
+    items[0] = InventoryItem(4237, address(0), 4237, 0, 200, 1);
 
     // Try withdraw again
     inventory.withdrawFromInventory(smartObjectId, items);
 
-    items = new InventoryItem[](2);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
-    items[1] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
+    uint256 itemId1 = uint256(4235);
+    uint256 itemId3 = uint256(4237);
 
     InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
       DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
       smartObjectId,
-      items[0].inventoryItemId
+      itemId1
     );
     InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
       DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
       smartObjectId,
-      items[1].inventoryItemId
+      itemId3
     );
 
     assertEq(inventoryItem1.quantity, 2);
