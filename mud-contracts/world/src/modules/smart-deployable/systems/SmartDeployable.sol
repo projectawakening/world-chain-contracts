@@ -67,6 +67,18 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
+    //Create a new deployable when its new
+    if (previousState == State.NULL) {
+      IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
+        smartObjectData.owner,
+        entityId
+      );
+      IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).setCid(
+        entityId,
+        smartObjectData.tokenURI
+      );
+    }
+
     DeployableState.set(
       _namespace().deployableStateTableId(),
       entityId,
@@ -90,15 +102,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
         fuelAmount: 0,
         lastUpdatedAt: block.timestamp
       })
-    );
-
-    IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).mint(
-      smartObjectData.owner,
-      entityId
-    );
-    IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).setCid(
-      entityId,
-      smartObjectData.tokenURI
     );
   }
 

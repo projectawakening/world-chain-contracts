@@ -10,7 +10,8 @@ import { EntityRecordData, WorldPosition } from "../types.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
@@ -23,6 +24,7 @@ import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
+import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/Utils.sol";
 import { Utils } from "../Utils.sol";
 
 import { SmartObjectData } from "../../smart-deployable/types.sol";
@@ -34,6 +36,7 @@ contract SmartStorageUnit is EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
+  using SmartObjectFrameworkUtils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
@@ -68,11 +71,13 @@ contract SmartStorageUnit is EveSystem {
       if (classId == 0) {
         revert ISmartStorageUnitErrors.SmartStorageUnit_UndefinedClassId();
       }
-      // register smartObjectId as an object
-      _smartObjectLib().registerEntity(smartObjectId, 1);
 
-      // tag this object's entity Id to a set of defined classIds
-      _smartObjectLib().tagEntity(smartObjectId, classId);
+      if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
+        // register smartObjectId as an object
+        _smartObjectLib().registerEntity(smartObjectId, OBJECT);
+        // tag this object's entity Id to a set of defined classIds
+        _smartObjectLib().tagEntity(smartObjectId, classId);
+      }
     }
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
