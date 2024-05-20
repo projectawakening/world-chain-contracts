@@ -22,11 +22,7 @@ interface IGateKeeper {
 
   function setTargetQuantity(uint256 smartObjectId, uint256 targetItemQuantity) external;
 
-  function ephemeralToInventoryTransferHook(bytes memory hookArgs) external;
+  function ephemeralToInventoryTransferHook(uint256 smartObjectId, InventoryItem[] memory items) external;
 
-  function depositToInventoryHook(
-    // bytes memory hookArgs
-    uint256 smartObjectId,
-    InventoryItem[] memory items
-  ) external;
+  function depositToInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) external;
 }

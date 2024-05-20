@@ -100,11 +100,7 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
     GateKeeperTable.setTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId, targetItemQuantity);
   }
 
-  function ephemeralToInventoryTransferHook(
-    uint256 smartObjectId,
-    address ephemeralInventoryOwner, // TODO that part is meant to be initialMsgSender()
-    InventoryItem[] memory items
-  ) public {
+  function ephemeralToInventoryTransferHook(uint256 smartObjectId, InventoryItem[] memory items) public {
     if (items.length != 1) revert GateKeeper_WrongItemArrayLength();
 
     uint256 expectedItemTypeId = GateKeeperTable.getAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId);
