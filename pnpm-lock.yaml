@@ -30,6 +30,9 @@ importers:
       '@eveworld/world':
         specifier: link:../mud-contracts/world
         version: link:../mud-contracts/world
+      '@eveworld/world-core':
+        specifier: workspace:^
+        version: link:../mud-contracts/core
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
         version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
@@ -103,6 +106,12 @@ importers:
       '@eveworld/common-constants':
         specifier: 0.0.2
         version: link:../common/constants
+      '@eveworld/smart-object-framework':
+        specifier: workspace:0.0.2
+        version: link:../smart-object-framework
+      '@eveworld/world':
+        specifier: ^0.0.2
+        version: link:../world
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
         version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)

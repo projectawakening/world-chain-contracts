@@ -8,5 +8,11 @@ export default mudConfig({
       },
       valueSchema: "bool",
     },
+    Role: {
+      keySchema: {
+        role: "bytes32",
+      },
+      valueSchema: "address",
+    },
   },
 });
