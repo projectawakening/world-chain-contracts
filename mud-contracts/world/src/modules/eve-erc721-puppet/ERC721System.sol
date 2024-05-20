@@ -40,9 +40,6 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
 
   /**
    * @dev See {IERC721-balanceOf}.
-   * TODO: Transient storage in `world.callFrom()` breaks composability/staticCall behavior of this and `ownerOf`
-   * results in a EvmError: StateChangeDuringStaticCall because there's a "write" in transient storage
-   * Is it a bug ? For now I'll just remove the view modifier, but it needs to be addressed properly.
    */
   function balanceOf(address owner) public virtual returns (uint256) {
     if (owner == address(0)) {
@@ -53,8 +50,6 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
 
   /**
    * @dev See {IERC721-ownerOf}.
-   * TODO: Transient storage in `world.callFrom()` breaks composability/staticCall behavior of this and `balanceOf`
-   * results in a EvmError: StateChangeDuringStaticCall because there's a "write" in transient storage
    */
   function ownerOf(uint256 tokenId) public virtual returns (address) {
     return _requireOwned(tokenId);

@@ -1117,6 +1117,7 @@ packages:
 
   /@latticexyz/services@2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2):
     resolution: {integrity: sha512-C3BfUrsd+QyhOYpjWPNwPlcNRePip9psmIP7h0FTn+U9XF2MTCmBy0uj7x2lljvvMkGaUBazW92ylntx6qturQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     dependencies:
       long: 5.2.3
       nice-grpc-common: 2.0.2

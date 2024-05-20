@@ -17,13 +17,11 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
-import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_CHARACTER_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.sol";
@@ -31,36 +29,25 @@ import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC7
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IERC721Metadata } from "../../src/modules/eve-erc721-puppet/IERC721Metadata.sol";
 
-import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
-
 import { Utils as SmartCharacterUtils } from "../../src/modules/smart-character/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { SmartCharacterModule } from "../../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
-import { SmartObjectData } from "../../src/modules/smart-character/types.sol";
+import { SmartObjectData, EntityRecordData } from "../../src/modules/smart-character/types.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
-import { EntityRecordData } from "../../src/modules/smart-storage-unit/types.sol";
 import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 contract SmartCharacterTest is Test {
   using SmartCharacterUtils for bytes14;
   using EntityRecordUtils for bytes14;
-  using CoreUtils for bytes14;
-  using ModulesInitializationLibrary for IBaseWorld;
-  using SOFInitializationLibrary for IBaseWorld;
-  using SmartObjectLib for SmartObjectLib.World;
   using SmartCharacterLib for SmartCharacterLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
-  SmartObjectLib.World smartObject;
   SmartCharacterLib.World smartCharacter;
   IERC721Mintable erc721Token;
   bytes14 constant SMART_CHAR_ERC721 = "ERC721Char";
@@ -76,15 +63,10 @@ contract SmartCharacterTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    world.initSOF();
-    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
 
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
-    world.initStaticData();
-    world.initEntityRecord();
-
     erc721Token = registerERC721(
       world,
       SMART_CHAR_ERC721,
@@ -93,11 +75,6 @@ contract SmartCharacterTest is Test {
 
     // install smartCharacterModule
     _installModule(new SmartCharacterModule(), SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
-    world.initSmartCharacter();
-
-    smartObject.registerEntity(SMART_CHARACTER_CLASS_ID, CLASS);
-    world.associateClassIdToSmartCharacter(SMART_CHARACTER_CLASS_ID);
-
     smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
     smartCharacter.registerERC721Token(address(erc721Token));
   }
@@ -125,9 +102,7 @@ contract SmartCharacterTest is Test {
     EntityRecordOffchainTableData memory offchainData,
     string memory tokenCid
   ) public {
-    vm.assume(
-      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
-    );
+    vm.assume(entityId != 0);
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 

@@ -15,16 +15,12 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
-import "@eveworld/common-constants/src/constants.sol";
-
-import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { EntityRecordTableData, EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -34,7 +30,6 @@ import { InventoryTable, InventoryTableData } from "../../src/codegen/tables/Inv
 import { InventoryItemTable, InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTable.sol";
 import { EphemeralInvTable, EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
-import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInvCapacityTable.sol";
 
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
@@ -55,7 +50,6 @@ import { InventoryInteract } from "../../src/modules/inventory/systems/Inventory
 import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 
-import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils as SmartStorageUnitUtils } from "../../src/modules/smart-storage-unit/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
@@ -70,22 +64,17 @@ import "../../src/modules/smart-storage-unit/types.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 contract SmartStorageUnitTest is Test {
-  using CoreUtils for bytes14;
   using SmartStorageUnitUtils for bytes14;
   using EntityRecordUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using InventoryUtils for bytes14;
   using LocationUtils for bytes14;
-  using ModulesInitializationLibrary for IBaseWorld;
-  using SOFInitializationLibrary for IBaseWorld;
-  using SmartObjectLib for SmartObjectLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
-  SmartObjectLib.World smartObject;
   IERC721Mintable erc721DeployableToken;
   SmartStorageUnitLib.World smartStorageUnit;
   SmartDeployableLib.World smartDeployable;
@@ -107,17 +96,12 @@ contract SmartStorageUnitTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    world.initSOF();
-    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
 
     // install module dependancies
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
-    world.initStaticData();
-    world.initEntityRecord();
-    world.initLocation();
 
     erc721DeployableToken = registerERC721(
       world,
@@ -135,7 +119,6 @@ contract SmartStorageUnitTest is Test {
         address(deployableModule)
       );
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
-    world.initSmartDeployable();
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 
@@ -151,25 +134,12 @@ contract SmartStorageUnitTest is Test {
       inventoryModule,
       abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
-    world.initInventory();
     inventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
     // SmartStorageUnitModule installation
     _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
-    world.initSSU();
     smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
-
-    smartObject.registerEntity(SSU_CLASS_ID, CLASS);
-    world.associateClassIdToSSU(SSU_CLASS_ID);
-
-    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
-    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable.globalResume();
-
-    smartObject.registerEntity(123, OBJECT);
-    world.associateEntityRecord(123);
-    smartObject.registerEntity(456, OBJECT);
-    world.associateEntityRecord(456);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -192,10 +162,6 @@ contract SmartStorageUnitTest is Test {
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
-    vm.assume(
-      smartObjectId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
-    );
 
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
@@ -226,7 +192,6 @@ contract SmartStorageUnitTest is Test {
     assertEq(entityRecordTableData.typeId, entityRecordData.typeId);
     assertEq(entityRecordTableData.itemId, entityRecordData.itemId);
     assertEq(entityRecordTableData.volume, entityRecordData.volume);
-    assertEq(entityRecordTableData.recordExists, true);
 
     LocationTableData memory locationTableData = LocationTable.get(
       LOCATION_DEPLOYMENT_NAMESPACE.locationTableId(),
@@ -263,6 +228,7 @@ contract SmartStorageUnitTest is Test {
       volume: 10,
       quantity: 5
     });
+
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(

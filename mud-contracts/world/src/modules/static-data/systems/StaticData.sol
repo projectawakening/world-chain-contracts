@@ -21,11 +21,7 @@ contract StaticData is EveSystem {
   function setBaseURI(
     ResourceId systemId,
     string memory baseURI
-  )
-    public
-    hookable(uint256(ResourceId.unwrap(systemId)), _systemId())
-    onlyAssociatedModule(uint256(ResourceId.unwrap(systemId)), _systemId())
-  {
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setBaseURI(_namespace().staticDataGlobalTableId(), systemId, baseURI);
   }
 
@@ -38,11 +34,7 @@ contract StaticData is EveSystem {
   function setName(
     ResourceId systemId,
     string memory name
-  )
-    public
-    hookable(uint256(ResourceId.unwrap(systemId)), _systemId())
-    onlyAssociatedModule(uint256(ResourceId.unwrap(systemId)), _systemId())
-  {
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setName(_namespace().staticDataGlobalTableId(), systemId, name);
   }
 
@@ -55,11 +47,7 @@ contract StaticData is EveSystem {
   function setSymbol(
     ResourceId systemId,
     string memory symbol
-  )
-    public
-    hookable(uint256(ResourceId.unwrap(systemId)), _systemId())
-    onlyAssociatedModule(uint256(ResourceId.unwrap(systemId)), _systemId())
-  {
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setSymbol(_namespace().staticDataGlobalTableId(), systemId, symbol);
   }
 
@@ -72,11 +60,7 @@ contract StaticData is EveSystem {
   function setMetadata(
     ResourceId systemId,
     StaticDataGlobalTableData memory data
-  )
-    public
-    hookable(uint256(ResourceId.unwrap(systemId)), _systemId())
-    onlyAssociatedModule(uint256(ResourceId.unwrap(systemId)), _systemId())
-  {
+  ) public hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.set(_namespace().staticDataGlobalTableId(), systemId, data);
   }
 
@@ -85,10 +69,7 @@ contract StaticData is EveSystem {
    * @param entityId entityId of the in-game object
    * @param cid the new CID string
    */
-  function setCid(
-    uint256 entityId,
-    string memory cid
-  ) public hookable(entityId, _systemId()) onlyAssociatedModule(entityId, _systemId()) {
+  function setCid(uint256 entityId, string memory cid) public hookable(entityId, _systemId()) {
     StaticDataTable.setCid(_namespace().staticDataTableId(), entityId, cid);
   }
 
