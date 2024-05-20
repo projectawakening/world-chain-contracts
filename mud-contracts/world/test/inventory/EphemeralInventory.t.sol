@@ -21,11 +21,6 @@ import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/En
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
-
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -41,6 +36,7 @@ import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
@@ -48,38 +44,21 @@ import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
-import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
-import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
-import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
-
-import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
-import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
-
-import { InventoryItem } from "../../src/modules/inventory/types.sol";
-
 contract EphemeralInventoryTest is Test {
   using Utils for bytes14;
-  using CoreUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
-  using ModulesInitializationLibrary for IBaseWorld;
-  using SOFInitializationLibrary for IBaseWorld;
-  using SmartObjectLib for SmartObjectLib.World;
-  using EntityRecordLib for EntityRecordLib.World;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   IERC721Mintable erc721DeployableToken;
-  SmartObjectLib.World smartObject;
-  EntityRecordLib.World entityRecord;
   InventoryLib.World ephemeralInventory;
   SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
@@ -97,18 +76,11 @@ contract EphemeralInventoryTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    world.initSOF();
-    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
-
     // install module dependancies
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
-    world.initStaticData();
-    world.initEntityRecord();
-    world.initLocation();
-    entityRecord = EntityRecordLib.World(world, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
 
     erc721DeployableToken = registerERC721(
       world,
@@ -126,10 +98,6 @@ contract EphemeralInventoryTest is Test {
         address(deployableModule)
       );
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
-    world.initSmartDeployable();
-
-    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
-    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
     smartDeployable.globalResume();
@@ -146,23 +114,14 @@ contract EphemeralInventoryTest is Test {
       inventoryModule,
       abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
-    world.initInventory();
+
     ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
-    _createMockItems();
-  }
-
-  function _createMockItems() internal {
     //Mock Item creation
-    smartObject.registerEntity(4235, OBJECT);
-    world.associateEntityRecord(4235);
-    entityRecord.createEntityRecord(4235, 4235, 12, 100);
-    smartObject.registerEntity(4236, OBJECT);
-    world.associateEntityRecord(4236);
-    entityRecord.createEntityRecord(4236, 4236, 12, 200);
-    smartObject.registerEntity(4237, OBJECT);
-    world.associateEntityRecord(4237);
-    entityRecord.createEntityRecord(4237, 4237, 12, 150);
+    // Note: this only works because the test contract currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150, true);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -180,10 +139,7 @@ contract EphemeralInventoryTest is Test {
   }
 
   function testSetDeployableStateToValid(uint256 smartObjectId) public {
-    vm.assume(
-      smartObjectId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
-    );
+    vm.assume(smartObjectId != 0);
 
     DeployableState.set(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -201,14 +157,8 @@ contract EphemeralInventoryTest is Test {
   }
 
   function testSetEphemeralInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(
-      smartObjectId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
-    );
+    vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-
-    smartObject.registerEntity(smartObjectId, OBJECT);
-    world.associateInventory(smartObjectId);
 
     DeployableState.setCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -227,14 +177,6 @@ contract EphemeralInventoryTest is Test {
 
   function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(storageCapacity == 0);
-    vm.assume(
-      smartObjectId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
-    );
-
-    smartObject.registerEntity(smartObjectId, OBJECT);
-    world.associateInventory(smartObjectId);
-
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidCapacity.selector,
@@ -245,10 +187,7 @@ contract EphemeralInventoryTest is Test {
   }
 
   function testDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
-    vm.assume(
-      smartObjectId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
-    );
+    vm.assume(smartObjectId != 0);
     vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1000 && storageCapacity <= 10000);
 

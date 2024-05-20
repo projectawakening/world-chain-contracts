@@ -5,8 +5,8 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ISmartCharacter } from "./interfaces/ISmartCharacter.sol";
 import { EntityRecordOffchainTableData } from "../../codegen/tables/EntityRecordOffchainTable.sol";
-import { EntityRecordData } from "../smart-storage-unit/types.sol";
-import { SmartObjectData } from "./types.sol";
+
+import { SmartObjectData, EntityRecordData } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
 /**

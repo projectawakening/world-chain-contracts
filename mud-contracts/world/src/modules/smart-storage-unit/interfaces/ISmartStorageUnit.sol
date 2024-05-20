@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { SmartObjectData, WorldPosition } from "../types.sol";
-import { EntityRecordData } from "../../smart-storage-unit/types.sol";
+import { EntityRecordData, SmartObjectData, WorldPosition } from "../types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 

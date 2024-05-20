@@ -14,21 +14,18 @@ import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
 import { GasReporter } from "@latticexyz/gas-report/src/GasReporter.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE as STATIC_DATA_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
-
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE as STATIC_DATA_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 
 import { createCoreModule } from "../CreateCoreModule.sol";
+
 import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
 import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
@@ -79,16 +76,11 @@ contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
 contract NonERC721Recipient {}
 
 contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
-  using SmartObjectLib for SmartObjectLib.World;
-  using ModulesInitializationLibrary for IBaseWorld;
-  using SOFInitializationLibrary for IBaseWorld;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   ERC721Module erc721Module;
   IERC721Mintable token;
-  SmartObjectLib.World smartObject;
-
   bytes14 constant DEPLOYMENT_NAMESPACE = "MyERC721";
 
   function setUp() public {
@@ -102,11 +94,8 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    world.initSOF();
-
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_NAMESPACE);
-    world.initStaticData();
 
     // Register a new ERC721 token
     token = registerERC721(

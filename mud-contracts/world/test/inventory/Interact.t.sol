@@ -26,11 +26,6 @@ import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/Hook
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 import "@eveworld/common-constants/src/constants.sol";
 
-import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
-import { SOFInitializationLibrary } from "@eveworld/smart-object-framework/src/SOFInitializationLibrary.sol";
-import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { CLASS, OBJECT } from "@eveworld/smart-object-framework/src/constants.sol";
-
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { InventoryItemTableData, InventoryItemTable } from "../../src/codegen/tables/InventoryItemTable.sol";
@@ -40,16 +35,6 @@ import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/code
 import { ItemTransferOffchainTable } from "../../src/codegen/tables/ItemTransferOffchainTable.sol";
 import { DeployableTokenTable } from "../../src/codegen/tables/DeployableTokenTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
-
-import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-
-import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
-import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
-import { State } from "../../src/modules/smart-deployable/types.sol";
-import { Utils } from "../../src/modules/inventory/Utils.sol";
-import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
-import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
-
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
@@ -60,7 +45,6 @@ import { EphemeralInventory } from "../../src/modules/inventory/systems/Ephemera
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
-import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
@@ -128,21 +112,14 @@ contract VendingMachineTestSystem is System {
 
 contract InteractTest is Test {
   using Utils for bytes14;
-  using CoreUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
-  using ModulesInitializationLibrary for IBaseWorld;
-  using SOFInitializationLibrary for IBaseWorld;
-  using SmartObjectLib for SmartObjectLib.World;
-  using EntityRecordLib for EntityRecordLib.World;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
-  SmartObjectLib.World smartObject;
-  EntityRecordLib.World entityRecord;
   InventoryLib.World inventory;
   SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
@@ -150,18 +127,15 @@ contract InteractTest is Test {
   SmartStorageUnitLib.World smartStorageUnit;
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
-  uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-  uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-  uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-  EntityRecordData entity1 = EntityRecordData({ typeId: 1, itemId: 2345, volume: 100 });
-  EntityRecordData entity2 = EntityRecordData({ typeId: 45, itemId: 1, volume: 50 });
-  EntityRecordData entity3 = EntityRecordData({ typeId: 46, itemId: 2, volume: 70 });
 
   VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
   bytes16 constant SYSTEM_NAME = bytes16("System");
   ResourceId constant VENDING_MACHINE_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, SYSTEM_NAME))));
 
+  uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+  uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
+  uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
   uint256 storageCapacity = 100000;
   uint256 ephemeralStorageCapacity = 100000;
   address inventoryOwner = address(1);
@@ -178,17 +152,11 @@ contract InteractTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-    world.initSOF();
-    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
     // install module dependancies
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
-    world.initStaticData();
-    world.initEntityRecord();
-    world.initLocation();
-    entityRecord = EntityRecordLib.World(world, ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
 
     erc721DeployableToken = registerERC721(
       world,
@@ -207,10 +175,6 @@ contract InteractTest is Test {
         address(deployableModule)
       );
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
-    world.initSmartDeployable();
-
-    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
-    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
     smartDeployable.globalResume();
@@ -223,16 +187,12 @@ contract InteractTest is Test {
       inventoryModule,
       abi.encode(DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
-    world.initInventory();
-
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
     // Smart Storage Module installation
+    // SmartStorageUnitModule installation
     _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
-    world.initSSU();
     smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
-    smartObject.registerEntity(SSU_CLASS_ID, CLASS);
-    world.associateClassIdToSSU(SSU_CLASS_ID);
 
     // Vending Machine registration
     world.registerSystem(VENDING_MACHINE_SYSTEM_ID, vendingMachineSystem, true);
@@ -240,8 +200,8 @@ contract InteractTest is Test {
     // Register system's functions
     world.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactHandler(uint256, address, uint256)");
 
-    _createMockItems();
     //Mock Smart Storage Unit data
+    EntityRecordData memory entity1 = EntityRecordData({ typeId: 1, itemId: 2345, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
 
@@ -269,18 +229,6 @@ contract InteractTest is Test {
     smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephItemOwner, ephInvItems);
   }
 
-  function _createMockItems() internal {
-    //Mock Smart Storage Unit data
-
-    smartObject.registerEntity(itemObjectId1, OBJECT);
-    world.associateEntityRecord(itemObjectId1);
-    smartObject.registerEntity(itemObjectId2, OBJECT);
-    world.associateEntityRecord(itemObjectId2);
-
-    entityRecord.createEntityRecord(itemObjectId1, entity2.itemId, entity2.typeId, entity2.volume);
-    entityRecord.createEntityRecord(itemObjectId2, entity3.itemId, entity3.typeId, entity3.volume);
-  }
-
   // helper function to guard against multiple module registrations on the same namespace
   // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
   function _installModule(IModule module, bytes14 namespace) internal {
@@ -304,6 +252,9 @@ contract InteractTest is Test {
   }
 
   function testInteractHandler() public {
+    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+    uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
+    uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
     address inventoryOwner = address(1);
     address ephItemOwner = address(2);
     uint256 quantity = 2;
