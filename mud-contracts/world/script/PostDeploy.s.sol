@@ -32,14 +32,27 @@ import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeploya
 import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
+import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
 import { InventoryInteract } from "../src/modules/inventory/systems/InventoryInteract.sol";
 
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { EntityTable, EntityTableData } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { EntityMap } from "@eveworld/smart-object-framework/src/codegen/tables/EntityMap.sol";
+import { Utils as SmartObjectUtils } from "@eveworld/smart-object-framework/src/utils.sol";
+
 contract PostDeploy is Script {
+  using SmartObjectUtils for bytes14;
   using SmartCharacterLib for SmartCharacterLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
+  using SmartStorageUnitLib for SmartStorageUnitLib.World;
+
+  SmartObjectLib.World SOFInterface;
+  SmartStorageUnitLib.World smartStorageUnit;
 
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -85,6 +98,8 @@ contract PostDeploy is Script {
     _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initERC721(world, baseURI);
+
+    _configureEntitiesAndClasses(world);
     vm.stopBroadcast();
   }
 
@@ -166,5 +181,33 @@ contract PostDeploy is Script {
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .globalResume();
+  }
+
+  //Configure Entities and Classes
+  function _configureEntitiesAndClasses(IBaseWorld world) internal {
+    uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
+
+    SOFInterface = SmartObjectLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    smartStorageUnit = SmartStorageUnitLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+
+    // create class and object types
+    SOFInterface.registerEntityType(2, "CLASS");
+    SOFInterface.registerEntityType(1, "OBJECT");
+    // allow object to class tagging
+    SOFInterface.registerEntityTypeAssociation(OBJECT, CLASS);
+
+    // initalize the smart character class
+    SOFInterface.registerEntity(smartCharacterClassId, CLASS);
+    // set smart character classId in the config
+    SmartCharacterLib
+      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
+      .setCharClassId(smartCharacterClassId);
+
+    // initalize the ssu class
+    uint256 ssuClassId = uint256(keccak256("SSUClass"));
+    SOFInterface.registerEntity(ssuClassId, 2);
+
+    // set ssu classId in the config
+    smartStorageUnit.setSSUClassId(ssuClassId);
   }
 }
