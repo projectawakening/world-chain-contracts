@@ -2,6 +2,7 @@
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
@@ -40,7 +41,7 @@ contract InventoryInteract is EveSystem {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
-    address ephemeralInventoryOwner = _initialMsgSender();
+    address ephemeralInventoryOwner = World(payable(_world())).initialMsgSender();
     InventoryItem[] memory inItems = new InventoryItem[](outItems.length);
 
     for (uint i = 0; i < outItems.length; i++) {
@@ -97,7 +98,7 @@ contract InventoryInteract is EveSystem {
     address owner = IERC721(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
       smartObjectId
     );
-    address ephemeralInventoryOwner = _initialMsgSender();
+    address ephemeralInventoryOwner = World(payable(_world())).initialMsgSender();
 
     //check the caller of this function has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {

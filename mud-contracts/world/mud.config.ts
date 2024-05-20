@@ -43,6 +43,10 @@ export default mudConfig({
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
     },
+    GateKeeper: {
+      name: "GateKeeper",
+      openAccess: true,
+    }
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
@@ -326,6 +330,24 @@ export default mudConfig({
       },
       tableIdArgument: true,
       // offchainOnly: true,
+    },
+
+    /**********************
+     * GATE KEEPER MODULE *
+     **********************/
+    /**
+     * Used to store the transfer details when a item is exchanged
+     */
+    GateKeeperTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        isGoalReached: "bool",
+        acceptedItemTypeId: "uint256",
+        targetQuantity: "uint256",
+      },
+      tableIdArgument: true,
     },
 
     /************************

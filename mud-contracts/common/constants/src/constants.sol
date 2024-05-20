@@ -14,6 +14,7 @@ bytes14 constant EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant INVENTORY_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE = "eveworld";
+bytes14 constant GATE_KEEPER_DEPLOYMENT_NAMESPACE = "eveworld";
 
 bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
 bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
@@ -28,9 +29,11 @@ bytes16 constant SMART_STORAGE_UNIT_SYSTEM_NAME = "SmartStorageUnit";
 bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
+bytes16 constant GATE_KEEPER_SYSTEM_NAME = "GateKeeper";
 
 bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";
 
 //Constants for Entity
 uint8 constant OBJECT = 1;
 uint8 constant CLASS = 2;
+
