@@ -29,7 +29,7 @@ bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
 
-bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControl";
+bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";
 
 //Constants for Entity
 uint8 constant OBJECT = 1;

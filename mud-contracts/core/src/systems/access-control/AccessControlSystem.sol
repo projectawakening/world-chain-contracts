@@ -25,7 +25,7 @@ contract AccessControlSystem is EveSystem {
   using WorldResourceIdInstance for ResourceId;
   using SmartObjectLib for SmartObjectLib.World;
 
-  function onlyAdminHook(uint256 entityId) public hookable(entityId, _systemId()) {
+  function onlyAdminHook(bytes memory args) public {
     if (Role.get(ADMIN) != tx.origin) {
       revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, Role.get(ADMIN));
     }
@@ -48,7 +48,7 @@ contract AccessControlSystem is EveSystem {
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().accessControlSystemId();
+    return Utils.accessControlSystemId();
   }
 
   function _smartObjectFramework() internal view returns (SmartObjectLib.World memory) {

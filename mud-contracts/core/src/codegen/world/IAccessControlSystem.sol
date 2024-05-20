@@ -8,7 +8,7 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IAccessControlSystem {
-  function onlyAdminHook(uint256 entityId) external;
+  function onlyAdminHook(bytes memory args) external;
 
   function onlyOwnerHook(uint256 smartObjectId) external;
 
