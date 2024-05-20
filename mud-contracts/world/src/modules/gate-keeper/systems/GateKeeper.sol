@@ -140,10 +140,17 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
 
   function _getTypeIdQuantity(uint256 smartObjectId, uint256 reqTypeId) internal view returns (uint256 quantity) {
     uint256[] memory items = InventoryTable.getItems(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
-    for(uint i=0; i< items.length; i++) {
-      uint256 itemTypeId = EntityRecordTable.getTypeId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), items[i]);
-      if(itemTypeId == reqTypeId) {
-        quantity += InventoryItemTable.getQuantity(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, items[i]);
+    for (uint i = 0; i < items.length; i++) {
+      uint256 itemTypeId = EntityRecordTable.getTypeId(
+        ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
+        items[i]
+      );
+      if (itemTypeId == reqTypeId) {
+        quantity += InventoryItemTable.getQuantity(
+          INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+          smartObjectId,
+          items[i]
+        );
       }
     }
   }

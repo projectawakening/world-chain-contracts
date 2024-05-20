@@ -362,7 +362,6 @@ contract GateKeeperUnitTest is Test {
     });
     vm.expectRevert();
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
-
   }
 
   function testCreateAndDepositItemsToInventory(uint256 smartObjectId, uint256 entityTypeId) public {
