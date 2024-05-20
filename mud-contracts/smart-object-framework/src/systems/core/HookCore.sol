@@ -32,7 +32,12 @@ contract HookCore is EveSystem {
    * @param systemId is the id of the target system
    * @param functionSelector is the function selector of the target hook function
    */
-  function addHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) external {
+  function addHook(
+    uint256 hookId,
+    HookType hookType,
+    ResourceId systemId,
+    bytes4 functionSelector
+  ) external hookable(uint256(keccak256(abi.encodePacked(systemId, functionSelector))), _systemId()) {
     _addHook(hookId, hookType, systemId, functionSelector);
   }
 
@@ -44,7 +49,12 @@ contract HookCore is EveSystem {
    * @param functionSelector is the function selector of the target hook function
    */
   //TODO - instead of systemSelector and functionSelector, should we use targetId ?
-  function removeHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) external {
+  function removeHook(
+    uint256 hookId,
+    HookType hookType,
+    ResourceId systemId,
+    bytes4 functionSelector
+  ) external hookable(uint256(keccak256(abi.encodePacked(systemId, functionSelector))), _systemId()) {
     _removeHook(hookId, hookType, systemId, functionSelector);
   }
 
@@ -53,14 +63,14 @@ contract HookCore is EveSystem {
    * @param entityId is the id of the entity (Class/Object)
    * @param hookId is the id of the hook function
    */
-  function associateHook(uint256 entityId, uint256 hookId) external {
+  function associateHook(uint256 entityId, uint256 hookId) external hookable(entityId, _systemId()) {
     _associateHook(entityId, hookId);
   }
 
   /**
    * @notice Associate multiple hook ids to an entity
    */
-  function associateHooks(uint256 entityId, uint256[] memory hookIds) external {
+  function associateHooks(uint256 entityId, uint256[] memory hookIds) external hookable(entityId, _systemId()) {
     for (uint256 i = 0; i < hookIds.length; i++) {
       _associateHook(entityId, hookIds[i]);
     }
@@ -71,7 +81,7 @@ contract HookCore is EveSystem {
    * @param entityId is the id of the entity (Class/Object)
    * @param hookId is the id of the hook function
    */
-  function removeEntityHookAssociation(uint256 entityId, uint256 hookId) external {
+  function removeEntityHookAssociation(uint256 entityId, uint256 hookId) external hookable(entityId, _systemId()) {
     _removeEntityHookAssociation(entityId, hookId);
   }
 
@@ -148,5 +158,9 @@ contract HookCore is EveSystem {
       }
       EntityAssociation.popModuleIds(_namespace().entityAssociationTableId(), entityId);
     }
+  }
+
+  function _systemId() internal view returns (ResourceId) {
+    return _namespace().hookCoreSystemId();
   }
 }

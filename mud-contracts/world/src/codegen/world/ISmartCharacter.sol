@@ -5,16 +5,12 @@ pragma solidity >=0.8.24;
 
 import { EntityRecordData } from "./../../modules/smart-character/types.sol";
 import { EntityRecordOffchainTableData } from "./../tables/EntityRecordOffchainTable.sol";
-import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 /**
  * @title ISmartCharacter
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISmartCharacter {
-  error SmartCharacterERC721AlreadyInitialized();
-  error SmartCharacterTokenCidCannotBeEmpty(uint256 characterId, string tokenCid);
-
   function eveworld__registerERC721Token(address tokenAddress) external;
 
   function eveworld__createCharacter(
@@ -25,5 +21,5 @@ interface ISmartCharacter {
     string memory tokenCid
   ) external;
 
-  function eveworld__characterSystemId() external view returns (ResourceId);
+  function eveworld__setCharClassId(uint256 classId) external;
 }

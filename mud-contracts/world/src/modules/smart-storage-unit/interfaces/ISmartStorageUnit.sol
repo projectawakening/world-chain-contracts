@@ -32,4 +32,6 @@ interface ISmartStorageUnit {
     string memory dappURL,
     string memory description
   ) external;
+
+  function setSSUClassId(uint256 classId) external;
 }

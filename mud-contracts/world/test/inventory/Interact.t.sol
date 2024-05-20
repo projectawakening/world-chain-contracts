@@ -19,11 +19,12 @@ import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOw
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import "@eveworld/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
@@ -118,6 +119,7 @@ contract InteractTest is Test {
   using SmartDeployableLib for SmartDeployableLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using WorldResourceIdInstance for ResourceId;
+  using SmartObjectLib for SmartObjectLib.World;
 
   IBaseWorld world;
   InventoryLib.World inventory;
@@ -125,6 +127,7 @@ contract InteractTest is Test {
   InventoryModule inventoryModule;
   IERC721Mintable erc721DeployableToken;
   SmartStorageUnitLib.World smartStorageUnit;
+  SmartObjectLib.World SOFInterface;
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
 
@@ -141,6 +144,8 @@ contract InteractTest is Test {
   address inventoryOwner = address(1);
   address ephItemOwner = address(2);
 
+  uint256 ssuClassId = uint256(keccak256("SSUClass"));
+
   function setUp() public {
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
@@ -152,17 +157,29 @@ contract InteractTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+
     // install module dependancies
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
 
+    SOFInterface = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
+
     erc721DeployableToken = registerERC721(
       world,
       ERC721_DEPLOYABLE,
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
     );
+
+    // create class and object types
+    SOFInterface.registerEntityType(2, "CLASS");
+    SOFInterface.registerEntityType(1, "OBJECT");
+    // allow object to class tagging
+    SOFInterface.registerEntityTypeAssociation(1, 2);
+
+    // initalize the ssu class
+    SOFInterface.registerEntity(ssuClassId, 2);
 
     // install SmartDeployableModule
     SmartDeployableModule deployableModule = new SmartDeployableModule();
@@ -204,6 +221,9 @@ contract InteractTest is Test {
     EntityRecordData memory entity1 = EntityRecordData({ typeId: 1, itemId: 2345, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+
+    // set ssu classId in the config for this SSU
+    smartStorageUnit.setSSUClassId(ssuClassId);
 
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,

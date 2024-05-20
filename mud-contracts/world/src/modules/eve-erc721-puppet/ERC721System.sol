@@ -131,7 +131,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-transferFrom}.
    */
-  function transferFrom(address from, address to, uint256 tokenId) public virtual {
+  function transferFrom(address from, address to, uint256 tokenId) public virtual hookable(tokenId, _systemId()) {
     if (to == address(0)) {
       revert ERC721InvalidReceiver(address(0));
     }
@@ -169,7 +169,10 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Emits a {Transfer} event.
    */
-  function mint(address to, uint256 tokenId) public virtual {
+  function mint(
+    address to,
+    uint256 tokenId
+  ) public virtual hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _mint(to, tokenId);
   }
@@ -185,7 +188,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Emits a {Transfer} event.
    */
-  function safeMint(address to, uint256 tokenId) public {
+  function safeMint(address to, uint256 tokenId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, "");
   }
@@ -194,7 +197,11 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * @dev Same as {xref-ERC721-safeMint-address-uint256-}[`safeMint`], with an additional `data` parameter which is
    * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
    */
-  function safeMint(address to, uint256 tokenId, bytes memory data) public virtual {
+  function safeMint(
+    address to,
+    uint256 tokenId,
+    bytes memory data
+  ) public virtual hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, data);
   }

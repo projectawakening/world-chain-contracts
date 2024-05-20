@@ -7,12 +7,14 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
 import { registerERC721 } from "../../eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 
+import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
@@ -20,19 +22,20 @@ import { EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRec
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 import { Utils } from "../Utils.sol";
 import { EntityRecordData } from "../types.sol";
+import { ISmartCharacterErrors } from "../ISmartCharacterErrors.sol";
 
 contract SmartCharacter is EveSystem {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
-
-  error SmartCharacterERC721AlreadyInitialized();
-  error SmartCharacterTokenCidCannotBeEmpty(uint256 characterId, string tokenCid);
+  using SmartObjectLib for SmartObjectLib.World;
 
   // TODO: this alone weighs more than 25kbytes, find alternative
-  function registerERC721Token(address tokenAddress) public {
+  function registerERC721Token(
+    address tokenAddress
+  ) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     if (CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
-      revert SmartCharacterERC721AlreadyInitialized();
+      revert ISmartCharacterErrors.SmartCharacter_ERC721AlreadyInitialized();
     }
     CharactersConstantsTable.setErc721Address(_namespace().charactersConstantsTableId(), tokenAddress);
   }
@@ -43,9 +46,21 @@ contract SmartCharacter is EveSystem {
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
-  ) public {
+  ) public hookable(characterId, _systemId()) {
     // TODO: uncomment this if/when static data flows off-chain are ready
     // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
+
+    uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
+
+    if (classId == 0) {
+      revert ISmartCharacterErrors.SmartCharacter_UndefinedClassIds();
+    }
+
+    // register smartObjectId as an object
+    _smartObjectLib().registerEntity(characterId, 1);
+
+    // tag this object's entity Id to a defined classId
+    _smartObjectLib().tagEntity(characterId, classId);
 
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);
@@ -69,12 +84,19 @@ contract SmartCharacter is EveSystem {
     );
   }
 
-  // TODO: this is kinda dirty.
+  function setCharClassId(uint256 classId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+    ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
+  }
+
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {
     return EntityRecordLib.World({ iface: IBaseWorld(_world()), namespace: ENTITY_RECORD_DEPLOYMENT_NAMESPACE });
   }
 
-  function characterSystemId() public view returns (ResourceId) {
+  function _smartObjectLib() internal view returns (SmartObjectLib.World memory) {
+    return SmartObjectLib.World({ iface: IBaseWorld(_world()), namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE });
+  }
+
+  function _systemId() internal view returns (ResourceId) {
     return _namespace().smartCharacterSystemId();
   }
 }
