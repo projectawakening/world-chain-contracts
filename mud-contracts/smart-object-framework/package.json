@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/smart-object-framework",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "license": "MIT",
   "scripts": {
     "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
@@ -18,7 +18,7 @@
     "test": "tsc --noEmit && forge test -vvv"
   },
   "dependencies": {
-    "@eveworld/common-constants": "0.0.3",
+    "@eveworld/common-constants": "0.0.1",
     "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/store": "2.0.0-transaction-context-98ef570f",

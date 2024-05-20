@@ -22,13 +22,13 @@ importers:
   end-to-end-tests:
     dependencies:
       '@eveworld/common-constants':
-        specifier: link:../mud-contracts/common/constants
+        specifier: 0.0.1
         version: link:../mud-contracts/common/constants
       '@eveworld/smart-object-framework':
-        specifier: link:../mud-contracts/smart-object-framework
+        specifier: 0.0.1
         version: link:../mud-contracts/smart-object-framework
       '@eveworld/world':
-        specifier: link:../mud-contracts/world
+        specifier: 0.0.1
         version: link:../mud-contracts/world
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -101,7 +101,7 @@ importers:
   mud-contracts/core:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.3
+        specifier: 0.0.1
         version: link:../common/constants
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -150,7 +150,7 @@ importers:
   mud-contracts/smart-object-framework:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.3
+        specifier: 0.0.1
         version: link:../common/constants
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -205,10 +205,10 @@ importers:
   mud-contracts/world:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.3
+        specifier: 0.0.1
         version: link:../common/constants
       '@eveworld/smart-object-framework':
-        specifier: 0.0.3
+        specifier: 0.0.1
         version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -266,10 +266,10 @@ importers:
   standard-contracts:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.3
+        specifier: 0.0.1
         version: link:../mud-contracts/common/constants
       '@eveworld/world':
-        specifier: 0.0.3
+        specifier: 0.0.1
         version: link:../mud-contracts/world
       '@latticexyz/schema-type':
         specifier: 2.0.0-transaction-context-98ef570f
