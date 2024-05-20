@@ -29,17 +29,6 @@ contract WithdrawFromInventory is Script {
       namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
-    // uint256 smartObjectId = uint256(39041226111257929967735499841581212310485402913336957115444953092733099610999);
-    // uint256 inventoryItemId = uint256(112603025077760770783264636189502217226733230421932850697496331082050661822826);
-
-    // InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
-    //   FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
-    //   smartObjectId,
-    //   inventoryItemId
-    // );
-
-    // console.log(inventoryItem1.quantity);
-
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     InventoryItem[] memory items = new InventoryItem[](3);
     items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 0, typeId: 23, volume: 10, quantity: 1 });
