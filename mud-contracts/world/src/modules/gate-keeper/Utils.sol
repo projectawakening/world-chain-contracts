@@ -12,7 +12,6 @@ import { GATE_KEEPER_TABLE_NAME } from "./constants.sol";
 // clash with a version of npm that doesnt exist yet
 bytes16 constant GATE_KEEPER_SYSTEM_NAME = "GateKeeper";
 
-
 library Utils {
   function gateKeeperTableId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: GATE_KEEPER_TABLE_NAME });

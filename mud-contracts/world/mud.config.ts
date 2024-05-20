@@ -46,7 +46,7 @@ export default mudConfig({
     GateKeeper: {
       name: "GateKeeper",
       openAccess: true,
-    }
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
