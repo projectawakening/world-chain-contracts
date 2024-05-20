@@ -42,7 +42,7 @@ contract WithdrawFromInventory is Script {
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 0, typeId: 23, volume: 10, quantity: 1 });
+    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 0, typeId: 23, volume: 10, quantity: 5 });
     items[1] = InventoryItem({
       inventoryItemId: 1234,
       owner: invOwner,
@@ -57,7 +57,7 @@ contract WithdrawFromInventory is Script {
       itemId: 0,
       typeId: 35,
       volume: 10,
-      quantity: 10
+      quantity: 300
     });
 
     inventory.withdrawFromInventory(smartObjectId, items);
