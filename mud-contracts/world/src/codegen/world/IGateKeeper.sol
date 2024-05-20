@@ -27,11 +27,7 @@ interface IGateKeeper {
 
   function eveworld__setTargetQuantity(uint256 smartObjectId, uint256 targetItemQuantity) external;
 
-  function eveworld__ephemeralToInventoryTransferHook(
-    uint256 smartObjectId,
-    address ephemeralInventoryOwner,
-    InventoryItem[] memory items
-  ) external;
+  function eveworld__ephemeralToInventoryTransferHook(uint256 smartObjectId, InventoryItem[] memory items) external;
 
   function eveworld__depositToInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) external;
 }
