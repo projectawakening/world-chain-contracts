@@ -1,10 +1,13 @@
-name: Develop branch (default branch) workflow
-run-name: Develop
+name: Release
 
 on:
   push:
-    branches:
-      - "develop"
+    tags:
+      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+      - 'v[0-9]+\.[0-9]+\.[0-9]+-alpha[0-9]+'
+      - 'v[0-9]+\.[0-9]+\.[0-9]+-beta[0-9]+'
+      - 'v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+'
+
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -61,7 +64,7 @@ jobs:
 
       - name: Run local anvil node
         run: |
-          ./scripts/run-local-node.sh &
+          ./scripts/run-local-node.sh & 
 
       - name: Docker meta
         uses: docker/metadata-action@v5
@@ -82,7 +85,7 @@ jobs:
           context: .
           platforms: linux/amd64
           build-args: |
-            IMAGE_TAG=0.0.1
+            IMAGE_TAG=${{ github.ref_name }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=docker
@@ -154,7 +157,10 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-              type=sha,format=long,prefix={{branch}}-
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
       - name: Build deployer image
         id: build_and_push
         uses: docker/build-push-action@v5
