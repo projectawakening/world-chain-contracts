@@ -320,23 +320,49 @@ contract GateKeeperUnitTest is Test {
   function testCreateAndDepositItemsToInventoryRevertTooMuchDeposited(
     uint256 smartObjectId,
     uint256 entityTypeId,
-    uint256 quantity
+    uint256 quantity,
+    uint256 volume
   ) public {
     testCreateAndAnchorGateKeeper(smartObjectId);
-    vm.assume(quantity < type(uint256).max);
+    vm.assume(volume < type(uint128).max - 1);
+    vm.assume(quantity < type(uint128).max - 1);
+    vm.assume(quantity * volume < storageCapacity);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
       owner: address(2),
       itemId: 12,
       typeId: entityTypeId,
-      volume: 10,
+      volume: volume,
       quantity: quantity + 1
     });
     gateKeeper.setAcceptedItemTypeId(smartObjectId, entityTypeId);
     gateKeeper.setTargetQuantity(smartObjectId, quantity);
     vm.expectRevert();
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
+
+    // deposit up to goal
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(2),
+      itemId: 12,
+      typeId: entityTypeId,
+      volume: volume,
+      quantity: quantity
+    });
+    smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
+    // then deposit one and see if it reverts
+    items[0] = InventoryItem({
+      inventoryItemId: 123,
+      owner: address(2),
+      itemId: 12,
+      typeId: entityTypeId,
+      volume: volume,
+      quantity: 1
+    });
+    vm.expectRevert();
+    smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
+
   }
 
   function testCreateAndDepositItemsToInventory(uint256 smartObjectId, uint256 entityTypeId) public {

@@ -26,7 +26,7 @@ contract GateKeeperConfig is Script {
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2346")));
 
-    gateKeeper.setAcceptedItemTypeId(smartObjectId, 0);
+    gateKeeper.setAcceptedItemTypeId(smartObjectId, 23);
     gateKeeper.setTargetQuantity(smartObjectId, 1000);
 
     vm.stopBroadcast();

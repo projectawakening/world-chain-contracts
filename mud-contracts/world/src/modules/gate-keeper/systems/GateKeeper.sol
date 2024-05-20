@@ -8,7 +8,7 @@ import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldReso
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { SmartStorageUnitLib } from "../../smart-storage-unit/SmartStorageUnitLib.sol";
 
@@ -16,9 +16,11 @@ import { IGateKeeperErrors } from "../IGateKeeperErrors.sol";
 
 import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 
+import { EntityRecordTable } from "../../../codegen/tables/EntityRecordTable.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
-import { InventoryItemTable } from "../../../codegen/tables/InventoryItemTable.sol";
+import { InventoryTable } from "../../../codegen/tables/InventoryTable.sol";
+import { InventoryItemTable, InventoryItemTableData } from "../../../codegen/tables/InventoryItemTable.sol";
 import { GateKeeperTable } from "../../../codegen/tables/GateKeeperTable.sol";
 
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
@@ -106,11 +108,7 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
     uint256 expectedItemTypeId = GateKeeperTable.getAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId);
     if (items[0].typeId != expectedItemTypeId) revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
 
-    uint256 storedQuantity = InventoryItemTable.getQuantity(
-      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
-      smartObjectId,
-      items[0].typeId
-    );
+    uint256 storedQuantity = _getTypeIdQuantity(smartObjectId, expectedItemTypeId);
     uint256 targetQuantity = GateKeeperTable.getTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId);
     if (storedQuantity + items[0].quantity > targetQuantity) {
       revert GateKeeper_DepositOverTargetLimit();
@@ -128,11 +126,7 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
     uint256 expectedItemTypeId = GateKeeperTable.getAcceptedItemTypeId(_namespace().gateKeeperTableId(), smartObjectId);
     if (items[0].typeId != expectedItemTypeId) revert GateKeeper_WrongDepositType(expectedItemTypeId, items[0].typeId);
 
-    uint256 storedQuantity = InventoryItemTable.getQuantity(
-      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
-      smartObjectId,
-      items[0].typeId
-    );
+    uint256 storedQuantity = _getTypeIdQuantity(smartObjectId, expectedItemTypeId);
     uint256 targetQuantity = GateKeeperTable.getTargetQuantity(_namespace().gateKeeperTableId(), smartObjectId);
     if (storedQuantity + items[0].quantity > targetQuantity) {
       revert GateKeeper_DepositOverTargetLimit();
@@ -142,6 +136,16 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
 
     // must be added as a BeforeHook to the related Inventory function, to GATE_KEEPER_CLASS_ID tagged entities
     // _;
+  }
+
+  function _getTypeIdQuantity(uint256 smartObjectId, uint256 reqTypeId) internal view returns (uint256 quantity) {
+    uint256[] memory items = InventoryTable.getItems(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
+    for(uint i=0; i< items.length; i++) {
+      uint256 itemTypeId = EntityRecordTable.getTypeId(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), items[i]);
+      if(itemTypeId == reqTypeId) {
+        quantity += InventoryItemTable.getQuantity(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(), smartObjectId, items[i]);
+      }
+    }
   }
 
   function _systemId() internal view returns (ResourceId) {
