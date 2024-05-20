@@ -16,6 +16,7 @@ import { ISmartCharacter } from "@eveworld/world/src/modules/smart-character/int
 import { Utils as SmartCharacterUtils } from "@eveworld/world/src/modules/smart-character/Utils.sol";
 import { Utils as SmartStorageUnitUtils } from "@eveworld/world/src/modules/smart-storage-unit/Utils.sol";
 
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { HookTable } from "@eveworld/smart-object-framework/src/codegen/tables/HookTable.sol";
 import { HOOK_SYSTEM_ID, HOOK_SYSTEM_NAME, OBJECT, CLASS } from "@eveworld/smart-object-framework/test/constants.sol";
 import { Utils } from "@eveworld/smart-object-framework/src/Utils.sol";
