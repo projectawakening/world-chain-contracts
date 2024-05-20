@@ -445,7 +445,67 @@ contract EphemeralInventoryTest is Test {
 
     assertEq(inventoryItem1.index, 0);
     assertEq(inventoryItem2.index, 0);
-    assertEq(inventoryItem3.index, 2);
+    assertEq(inventoryItem3.index, 1);
+  }
+
+  function testWithdrawCompletely(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+    vm.assume(owner != address(0));
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
+
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
+      smartObjectId,
+      owner
+    );
+
+    uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
+    uint256 capacityAfterWithdrawal = 0;
+    assertEq(capacityBeforeWithdrawal, 1000);
+
+    ephemeralInventory.withdrawFromEphemeralInventory(smartObjectId, owner, items);
+    for (uint256 i = 0; i < items.length; i++) {
+      uint256 itemVolume = items[i].volume * items[i].quantity;
+      capacityAfterWithdrawal += itemVolume;
+    }
+
+    inventoryTableData = EphemeralInvTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
+      smartObjectId,
+      owner
+    );
+    assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - capacityAfterWithdrawal);
+
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 0);
+
+    //Check weather the items quantity is reduced
+    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
+      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, 0);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 0);
   }
 
   function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity, address owner) public {

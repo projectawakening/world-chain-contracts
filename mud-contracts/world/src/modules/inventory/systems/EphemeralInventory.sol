@@ -346,6 +346,14 @@ contract EphemeralInventory is EveSystem {
     );
     EphemeralInvTable.popItems(_namespace().ephemeralInvTableId(), smartObjectId, ephemeralInventoryOwner);
 
+    //when a last element is swapped, change the index of the last element in the EphemeralInvItemTable
+    EphemeralInvItemTable.setIndex(
+      _namespace().ephemeralInventoryItemTableId(),
+      smartObjectId,
+      lastElement,
+      ephemeralInventoryOwner,
+      itemData.index
+    );
     EphemeralInvItemTable.deleteRecord(
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
