@@ -49,9 +49,9 @@
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
-    "@eveworld/smart-object-framework": "0.0.1",
-    "@eveworld/world": "0.0.2",
-    "@eveworld/common-constants": "0.0.2"
+    "@eveworld/smart-object-framework": "link:../mud-contracts/smart-object-framework",
+    "@eveworld/world": "link:../mud-contracts/world",
+    "@eveworld/common-constants": "link:../mud-contracts/common/constants"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
