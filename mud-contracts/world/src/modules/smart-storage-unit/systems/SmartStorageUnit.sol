@@ -24,7 +24,7 @@ import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
-import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/Utils.sol";
+import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils } from "../Utils.sol";
 
 import { SmartObjectData } from "../../smart-deployable/types.sol";
