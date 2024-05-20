@@ -73,9 +73,9 @@ contract Inventory is EveSystem {
 
     uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
-    uint256 itemsLength = items.length;
+    uint256 existingItemsLength = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId).length;
 
-    for (uint256 i = 0; i < itemsLength; i++) {
+    for (uint256 i = 0; i < items.length; i++) {
       //Revert if the items to deposit is not created on-chain
       EntityRecordTableData memory entityRecord = EntityRecordTable.get(
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
@@ -84,7 +84,9 @@ contract Inventory is EveSystem {
       if (entityRecord.recordExists == false) {
         revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
       }
-      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, i);
+      //If there are inventory items exists for the smartObjectId, then the itemIndex is the length of the inventoryItems + i
+      uint256 itemIndex = existingItemsLength + i;
+      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, itemIndex);
     }
 
     InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
@@ -159,7 +161,7 @@ contract Inventory is EveSystem {
       _depositNewItem(smartObjectId, item, itemIndex);
     } else {
       //Deployable is valid and item exists in the inventory
-      _increaseItemQuantity(smartObjectId, item, itemIndex);
+      _increaseItemQuantity(smartObjectId, item, itemData.index);
     }
   }
 
@@ -260,6 +262,9 @@ contract Inventory is EveSystem {
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
     InventoryTable.updateItems(_namespace().inventoryTableId(), smartObjectId, itemData.index, lastElement);
     InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
+
+    //when a last element is swapped, change the index of the last element in the InventoryItemTable
+    InventoryItemTable.setIndex(_namespace().inventoryItemTableId(), smartObjectId, lastElement, itemData.index);
     InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
   }
 

@@ -87,9 +87,12 @@ contract EphemeralInventory is EveSystem {
       _namespace().ephemeralInvCapacityTableId(),
       smartObjectId
     );
-    uint256 itemsLength = items.length;
 
-    for (uint256 i = 0; i < itemsLength; i++) {
+    uint256 existingItemsLength = EphemeralInvTable
+      .getItems(_namespace().ephemeralInvTableId(), smartObjectId, ephemeralInventoryOwner)
+      .length;
+
+    for (uint256 i = 0; i < items.length; i++) {
       //Revert if the items to deposit is not created on-chain
       EntityRecordTableData memory entityRecord = EntityRecordTable.get(
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
@@ -101,13 +104,14 @@ contract EphemeralInventory is EveSystem {
           items[i].typeId
         );
       }
+      uint256 itemIndex = existingItemsLength + i;
       usedCapacity = _processItemDeposit(
         smartObjectId,
         ephemeralInventoryOwner,
         items[i],
         usedCapacity,
         maxCapacity,
-        i
+        itemIndex
       );
     }
     EphemeralInvTable.setUsedCapacity(
@@ -213,7 +217,7 @@ contract EphemeralInventory is EveSystem {
       _depositNewItem(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
     } else {
       //Deployable is valid and item exists in the inventory
-      _increaseItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
+      _increaseItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemData.index);
     }
   }
 
@@ -342,6 +346,14 @@ contract EphemeralInventory is EveSystem {
     );
     EphemeralInvTable.popItems(_namespace().ephemeralInvTableId(), smartObjectId, ephemeralInventoryOwner);
 
+    //when a last element is swapped, change the index of the last element in the EphemeralInvItemTable
+    EphemeralInvItemTable.setIndex(
+      _namespace().ephemeralInventoryItemTableId(),
+      smartObjectId,
+      lastElement,
+      ephemeralInventoryOwner,
+      itemData.index
+    );
     EphemeralInvItemTable.deleteRecord(
       _namespace().ephemeralInventoryItemTableId(),
       smartObjectId,
