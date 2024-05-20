@@ -262,6 +262,9 @@ contract Inventory is EveSystem {
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
     InventoryTable.updateItems(_namespace().inventoryTableId(), smartObjectId, itemData.index, lastElement);
     InventoryTable.popItems(_namespace().inventoryTableId(), smartObjectId);
+
+    //when a last element is swapped, change the index of the last element in the InventoryItemTable
+    InventoryItemTable.setIndex(_namespace().inventoryItemTableId(), smartObjectId, lastElement, itemData.index);
     InventoryItemTable.deleteRecord(_namespace().inventoryItemTableId(), smartObjectId, item.inventoryItemId);
   }
 

@@ -124,6 +124,17 @@ contract InventoryTest is Test {
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8235, 8235, 12, 100, true);
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8236, 8236, 12, 200, true);
     EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8237, 8237, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 5237, 5237, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 6237, 6237, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 7237, 7237, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 5238, 5238, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 5239, 5239, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 6238, 6238, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 6239, 6239, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 7238, 7238, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 7239, 7239, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 9236, 9236, 12, 150, true);
+    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 9237, 9237, 12, 150, true);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -385,7 +396,216 @@ contract InventoryTest is Test {
 
     assertEq(inventoryItem1.index, 0);
     assertEq(inventoryItem2.index, 0);
-    assertEq(inventoryItem3.index, 2);
+    assertEq(inventoryItem3.index, 1);
+  }
+
+  function testDeposit1andWithdraw1(uint256 smartObjectId, uint256 storageCapacity) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
+    testSetDeployableStateToValid(smartObjectId);
+    inventory.depositToInventory(smartObjectId, items);
+
+    inventory.withdrawFromInventory(smartObjectId, items);
+
+    InventoryTableData memory inventoryTableData = InventoryTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryTableId(),
+      smartObjectId
+    );
+    assertEq(inventoryTableData.items.length, 0);
+
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+
+    assertEq(inventoryItem1.quantity, 0);
+  }
+
+  function testWithdrawRemove2Items(uint256 smartObjectId, uint256 storageCapacity) public {
+    testDepositToInventory(smartObjectId, storageCapacity);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](2);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+
+    InventoryTableData memory inventoryTableData = InventoryTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryTableId(),
+      smartObjectId
+    );
+    uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
+    uint256 itemVolume = 0;
+
+    assertEq(capacityBeforeWithdrawal, 1000);
+
+    inventory.withdrawFromInventory(smartObjectId, items);
+    for (uint256 i = 0; i < items.length; i++) {
+      itemVolume += items[i].volume * items[i].quantity;
+    }
+
+    inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
+    assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
+    assertEq(inventoryTableData.items.length, 1);
+
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 1);
+
+    //Check weather the items quantity is reduced
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      4237
+    );
+    assertEq(inventoryItem1.quantity, 0);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 2);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.index, 0);
+  }
+
+  function testWithdrawRemoveCompletely(uint256 smartObjectId, uint256 storageCapacity) public {
+    testDepositToInventory(smartObjectId, storageCapacity);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+
+    InventoryTableData memory inventoryTableData = InventoryTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryTableId(),
+      smartObjectId
+    );
+    uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
+    uint256 itemVolume = 0;
+
+    assertEq(capacityBeforeWithdrawal, 1000);
+
+    inventory.withdrawFromInventory(smartObjectId, items);
+    for (uint256 i = 0; i < items.length; i++) {
+      itemVolume += items[i].volume * items[i].quantity;
+    }
+
+    inventoryTableData = InventoryTable.get(DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
+    assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
+    assertEq(inventoryTableData.items.length, 0);
+
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 0);
+
+    //Check weather the items quantity is reduced
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId
+    );
+    assertEq(inventoryItem1.quantity, 0);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 0);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.index, 0);
+  }
+
+  function testWithdrawWithBigArraySize(uint256 smartObjectId, uint256 storageCapacity) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(storageCapacity >= 11000 && storageCapacity <= 90000);
+
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
+    testSetDeployableStateToValid(smartObjectId);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](12);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 10, 300);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 20, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 10, 2);
+    items[3] = InventoryItem(8235, address(2), 8235, 0, 10, 2);
+    items[4] = InventoryItem(8237, address(2), 8237, 0, 10, 2);
+    items[5] = InventoryItem(5237, address(2), 5237, 0, 10, 2);
+    items[6] = InventoryItem(6237, address(2), 6237, 0, 10, 2);
+    items[7] = InventoryItem(7237, address(2), 7237, 0, 10, 2);
+    items[8] = InventoryItem(5238, address(2), 5238, 0, 10, 2);
+    items[9] = InventoryItem(5239, address(2), 5239, 0, 10, 2);
+    items[10] = InventoryItem(6238, address(2), 6238, 0, 10, 2);
+    items[11] = InventoryItem(6239, address(2), 6239, 0, 10, 2);
+
+    inventory.depositToInventory(smartObjectId, items);
+
+    //Change the order
+    items = new InventoryItem[](12);
+    items[0] = InventoryItem(4235, address(0), 4235, 0, 10, 300);
+    items[1] = InventoryItem(4236, address(1), 4236, 0, 20, 2);
+    items[2] = InventoryItem(4237, address(2), 4237, 0, 10, 2);
+    items[3] = InventoryItem(8235, address(2), 8235, 0, 10, 2);
+    items[4] = InventoryItem(8237, address(2), 8237, 0, 10, 2);
+    items[5] = InventoryItem(5237, address(2), 5237, 0, 10, 2);
+    items[6] = InventoryItem(6237, address(2), 6237, 0, 10, 2);
+    items[7] = InventoryItem(7237, address(2), 7237, 0, 10, 2);
+    items[8] = InventoryItem(5238, address(2), 5238, 0, 10, 2);
+    items[9] = InventoryItem(5239, address(2), 5239, 0, 10, 2);
+    items[10] = InventoryItem(6238, address(2), 6238, 0, 10, 2);
+    items[11] = InventoryItem(6239, address(2), 6239, 0, 10, 2);
+    inventory.withdrawFromInventory(smartObjectId, items);
+
+    InventoryTableData memory inventoryTableData = InventoryTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryTableId(),
+      smartObjectId
+    );
+    assertEq(inventoryTableData.items.length, 0);
+
+    //check if everything is 0
+    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[0].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[1].inventoryItemId
+    );
+    InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(
+      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+      smartObjectId,
+      items[2].inventoryItemId
+    );
+    assertEq(inventoryItem1.quantity, 0);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 0);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.index, 0);
   }
 
   function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity) public {
