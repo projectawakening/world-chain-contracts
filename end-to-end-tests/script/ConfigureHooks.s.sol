@@ -41,7 +41,6 @@ contract ConfigureHooks is Script {
     // Get the admin role
     address admin = Role.get("ADMIN");
     console.log("Admin: ", admin);
-    uint256 CLASS_ID = uint256(keccak256(abi.encodePacked("CLASSID")));
 
     //Register Hook
     SmartObjectLib.World memory smartObjectFramework = SmartObjectLib.World({
@@ -49,32 +48,26 @@ contract ConfigureHooks is Script {
       namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
-    // Register the entities
-    //TODO decouple this to a different sctipt
-    smartObjectFramework.registerEntityType(1, "Class");
-    smartObjectFramework.registerEntityType(2, "Object");
-    smartObjectFramework.registerEntityTypeAssociation(OBJECT, CLASS);
-    smartObjectFramework.registerEntity(CLASS_ID, CLASS);
-
+    //Register Hook
     bytes4 onlyAdminHookFunctionId = IAccessControlSystem.onlyAdminHook.selector;
-
-    smartObjectFramework.registerHook(
-      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.accessControlSystemId(),
-      onlyAdminHookFunctionId
-    );
+    // smartObjectFramework.registerHook(
+    //   FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.accessControlSystemId(),
+    //   onlyAdminHookFunctionId
+    // );
 
     uint256 hookId = uint256(
       keccak256(abi.encodePacked(FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.accessControlSystemId(), onlyAdminHookFunctionId))
     );
     console.log("Hook ID: ", hookId);
 
-    //asscoaite hook with a entity
-    smartObjectFramework.associateHook(CLASS_ID, hookId);
+    // uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
+    // //asscoaite hook with a entity
+    // smartObjectFramework.associateHook(smartCharacterClassId, hookId);
 
     //Add hook for createCharacter
     smartObjectFramework.addHook(
       hookId,
-      HookType.BEFORE,
+      HookType.AFTER,
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.smartCharacterSystemId(),
       ISmartCharacter.createCharacter.selector
     );
