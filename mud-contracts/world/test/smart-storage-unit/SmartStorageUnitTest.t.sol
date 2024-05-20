@@ -2,7 +2,7 @@
 pragma solidity >=0.8.21;
 
 import "forge-std/Test.sol";
-import "forge-std/console.sol";
+
 import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -20,6 +20,7 @@ import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
@@ -55,6 +56,7 @@ import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Util
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
+import { Utils as SmartObejctUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
@@ -62,6 +64,8 @@ import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartS
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import "../../src/modules/smart-storage-unit/types.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
+import { EntityTable, EntityTableData } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
+import { EntityMap } from "@eveworld/smart-object-framework/src/codegen/tables/EntityMap.sol";
 
 contract SmartStorageUnitTest is Test {
   using SmartStorageUnitUtils for bytes14;
@@ -69,10 +73,12 @@ contract SmartStorageUnitTest is Test {
   using SmartDeployableUtils for bytes14;
   using InventoryUtils for bytes14;
   using LocationUtils for bytes14;
+  using SmartObejctUtils for bytes14;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
+  using SmartObjectLib for SmartObjectLib.World;
 
   IBaseWorld world;
   IERC721Mintable erc721DeployableToken;
@@ -85,6 +91,9 @@ contract SmartStorageUnitTest is Test {
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
 
+  SmartObjectLib.World SOFInterface;
+  uint256 ssuClassId = uint256(keccak256("SSUClass"));
+
   function setUp() public {
     world = IBaseWorld(address(new World()));
     world.initialize(createCoreModule());
@@ -96,6 +105,8 @@ contract SmartStorageUnitTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+
+    SOFInterface = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
 
     // install module dependancies
     _installModule(new PuppetModule(), 0);
@@ -140,6 +151,15 @@ contract SmartStorageUnitTest is Test {
     _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
     smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
     smartDeployable.globalResume();
+
+    // create class and object types
+    SOFInterface.registerEntityType(2, "CLASS");
+    SOFInterface.registerEntityType(1, "OBJECT");
+    // allow object to class tagging
+    SOFInterface.registerEntityTypeAssociation(1, 2);
+
+    // initalize the ssu class
+    SOFInterface.registerEntity(ssuClassId, 2);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -159,6 +179,11 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndAnchorSmartStorageUnit(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
+
+    // set ssu classId in the config
+    smartStorageUnit.setSSUClassId(ssuClassId);
+
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
@@ -214,6 +239,22 @@ contract SmartStorageUnitTest is Test {
     assertEq(entityRecordOffchainTableData.name, "testName");
     assertEq(entityRecordOffchainTableData.dappURL, "testDappURL");
     assertEq(entityRecordOffchainTableData.description, "testdesc");
+
+    // check that the ssu has been registered as an OBJECT entity
+    EntityTableData memory entityTableData = EntityTable.get(
+      SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(),
+      smartObjectId
+    );
+    assertEq(entityTableData.doesExists, true);
+    assertEq(entityTableData.entityType, 1);
+
+    // check that the ssu has been tagged for the appropriate classes
+    uint256[] memory taggedEntityIds = EntityMap.get(
+      SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityMapTableId(),
+      smartObjectId
+    );
+
+    assertEq(taggedEntityIds[0], ssuClassId);
   }
 
   function testCreateAndDepositItemsToInventory(uint256 smartObjectId) public {

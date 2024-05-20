@@ -7,7 +7,7 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { SMART_CHARACTER_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_CHARACTER_SYSTEM_NAME, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { CHARACTERS_TABLE_NAME, CHARACTERS_CONSTANTS_TABLE_NAME } from "./constants.sol";
 
@@ -28,5 +28,14 @@ library Utils {
   function smartCharacterSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_CHARACTER_SYSTEM_NAME });
+  }
+
+  function classConfigTableId(bytes14 namespace) internal pure returns (ResourceId) {
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+        name: bytes16("ClassConfig")
+      });
   }
 }

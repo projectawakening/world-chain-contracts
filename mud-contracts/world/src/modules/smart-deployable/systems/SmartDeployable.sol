@@ -41,7 +41,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     _;
   }
 
-  function registerDeployableToken(address tokenAddress) public {
+  function registerDeployableToken(
+    address tokenAddress
+  ) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     if (DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()) != address(0)) {
       revert SmartDeployableERC721AlreadyInitialized();
     }
@@ -182,7 +184,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalPause() public {
+  function globalPause() public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), false);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOffline(_namespace().globalStateTableId(), block.timestamp);
@@ -192,7 +194,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalResume() public {
+  function globalResume() public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), true);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOnline(_namespace().globalStateTableId(), block.timestamp);
@@ -205,7 +207,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: needs to be only callable by admin
    * @param fuelConsumptionPerMinuteInWei global rate shared by all Smart Deployables (in Wei)
    */
-  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinuteInWei) public {
+  function setFuelConsumptionPerMinute(
+    uint256 entityId,
+    uint256 fuelConsumptionPerMinuteInWei
+  ) public hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelConsumptionPerMinute(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
@@ -219,7 +224,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to set the storage cap to
    * @param capacityInWei of max fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) public {
+  function setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) public hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, capacityInWei);
   }
 
@@ -229,7 +234,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel in full units
    */
-  function depositFuel(uint256 entityId, uint256 unitAmount) public {
+  function depositFuel(uint256 entityId, uint256 unitAmount) public hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     if (
       (
@@ -262,7 +267,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function withdrawFuel(uint256 entityId, uint256 unitAmount) public {
+  function withdrawFuel(uint256 entityId, uint256 unitAmount) public hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
@@ -282,7 +287,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * or that compose with it
    * @param entityId to update
    */
-  function updateFuel(uint256 entityId) public {
+  function updateFuel(uint256 entityId) public hookable(entityId, _systemId()) {
     _updateFuel(entityId);
   }
 

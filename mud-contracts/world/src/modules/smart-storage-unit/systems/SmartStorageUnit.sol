@@ -9,8 +9,11 @@ import { SMART_STORAGE_MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE } from "../co
 import { EntityRecordData, WorldPosition } from "../types.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
+
+import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { InventoryLib } from "../../inventory/InventoryLib.sol";
@@ -24,6 +27,7 @@ import { Utils } from "../Utils.sol";
 
 import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
+import { ISmartStorageUnitErrors } from "../ISmartStorageUnitErrors.sol";
 
 contract SmartStorageUnit is EveSystem {
   using WorldResourceIdInstance for ResourceId;
@@ -33,6 +37,7 @@ contract SmartStorageUnit is EveSystem {
   using EntityRecordLib for EntityRecordLib.World;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
 
   error SmartStorageUnitERC721AlreadyInitialized();
 
@@ -56,7 +61,19 @@ contract SmartStorageUnit is EveSystem {
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) {
+    {
+      uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
+
+      if (classId == 0) {
+        revert ISmartStorageUnitErrors.SmartStorageUnit_UndefinedClassId();
+      }
+      // register smartObjectId as an object
+      _smartObjectLib().registerEntity(smartObjectId, 1);
+
+      // tag this object's entity Id to a set of defined classIds
+      _smartObjectLib().tagEntity(smartObjectId, classId);
+    }
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
       smartObjectId,
@@ -92,7 +109,10 @@ contract SmartStorageUnit is EveSystem {
    * @param smartObjectId The smart object id
    * @param items The item to store in a inventory
    */
-  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) public {
+  function createAndDepositItemsToInventory(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) {
     for (uint256 i = 0; i < items.length; i++) {
       //Check if the item exists on-chain if not Create entityRecord
       _entityRecordLib().createEntityRecord(
@@ -119,7 +139,7 @@ contract SmartStorageUnit is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) {
     //Check if the item exists on-chain if not Create entityRecord
     for (uint256 i = 0; i < items.length; i++) {
       _entityRecordLib().createEntityRecord(
@@ -132,6 +152,10 @@ contract SmartStorageUnit is EveSystem {
     //Deposit item to the ephemeral inventory
     // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
     _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
+  }
+
+  function setSSUClassId(uint256 classId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+    ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
   }
 
   /**
@@ -148,7 +172,7 @@ contract SmartStorageUnit is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public {
+  ) public hookable(smartObjectId, _systemId()) {
     _entityRecordLib().createEntityRecordOffchain(smartObjectId, name, dappURL, description);
   }
 
@@ -162,5 +186,13 @@ contract SmartStorageUnit is EveSystem {
 
   function _smartDeployableLib() internal view returns (SmartDeployableLib.World memory) {
     return SmartDeployableLib.World({ iface: IBaseWorld(_world()), namespace: SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE });
+  }
+
+  function _smartObjectLib() internal view returns (SmartObjectLib.World memory) {
+    return SmartObjectLib.World({ iface: IBaseWorld(_world()), namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE });
+  }
+
+  function _systemId() internal view returns (ResourceId) {
+    return _namespace().smartStorageUnitSystemId();
   }
 }

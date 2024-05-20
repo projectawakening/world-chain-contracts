@@ -16,4 +16,6 @@ interface ISmartCharacter {
   ) external;
 
   function registerERC721Token(address tokenAddress) external;
+
+  function setCharClassId(uint256 classId) external;
 }

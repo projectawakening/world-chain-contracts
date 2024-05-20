@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
 import { EntityType } from "../../codegen/tables/EntityType.sol";
 import { EntityTypeAssociation } from "../../codegen/tables/EntityTypeAssociation.sol";
@@ -72,7 +73,12 @@ contract EntityCore is EveSystem {
   function registerEntityTypeAssociation(
     uint8 entityType,
     uint8 tagEntityType
-  ) external requireEntityTypeExists(entityType) requireEntityTypeExists(tagEntityType) {
+  )
+    external
+    requireEntityTypeExists(entityType)
+    requireEntityTypeExists(tagEntityType)
+    hookable(uint256(entityType), _systemId())
+  {
     _registerEntityTypeAssociation(entityType, tagEntityType);
   }
 
@@ -82,14 +88,14 @@ contract EntityCore is EveSystem {
    * @param entityId is the id of the entity
    * @param entityTagId is the id of the entity tag which the entity belongs to
    */
-  function tagEntity(uint256 entityId, uint256 entityTagId) external {
+  function tagEntity(uint256 entityId, uint256 entityTagId) external hookable(entityId, _systemId()) {
     _tagEntity(entityId, entityTagId);
   }
 
   /**
    * @notice Overloaded function to tagEntity under multiple entities
    */
-  function tagEntities(uint256 entityId, uint256[] memory entityTagIds) external {
+  function tagEntities(uint256 entityId, uint256[] memory entityTagIds) external hookable(entityId, _systemId()) {
     for (uint256 i = 0; i < entityTagIds.length; i++) {
       _tagEntity(entityId, entityTagIds[i]);
     }
@@ -100,7 +106,7 @@ contract EntityCore is EveSystem {
    * @param entityId is the id of the entity
    * @param entityTagId is the id of the tagged entity
    */
-  function removeEntityTag(uint256 entityId, uint256 entityTagId) external {
+  function removeEntityTag(uint256 entityId, uint256 entityTagId) external hookable(entityId, _systemId()) {
     _removeEntityTag(entityId, entityTagId);
   }
 
@@ -162,5 +168,9 @@ contract EntityCore is EveSystem {
         tagEntityType,
         "EntityCore: EntityType association not allowed"
       );
+  }
+
+  function _systemId() internal view returns (ResourceId) {
+    return _namespace().entityCoreSystemId();
   }
 }

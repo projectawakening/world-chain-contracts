@@ -46,4 +46,11 @@ library SmartCharacterLib {
       abi.encodeCall(ISmartCharacter.registerERC721Token, (tokenAddress))
     );
   }
+
+  function setCharClassId(World memory world, uint256 classId) internal {
+    world.iface.call(
+      world.namespace.smartCharacterSystemId(),
+      abi.encodeCall(ISmartCharacter.setCharClassId, (classId))
+    );
+  }
 }

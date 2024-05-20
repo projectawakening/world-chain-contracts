@@ -91,4 +91,11 @@ library SmartStorageUnitLib {
       abi.encodeCall(ISmartStorageUnit.setDeploybaleMetadata, (smartObjectId, name, dappURL, description))
     );
   }
+
+  function setSSUClassId(World memory world, uint256 classId) internal {
+    world.iface.call(
+      world.namespace.smartStorageUnitSystemId(),
+      abi.encodeCall(ISmartStorageUnit.setSSUClassId, (classId))
+    );
+  }
 }
