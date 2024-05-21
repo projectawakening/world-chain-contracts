@@ -54,7 +54,12 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
 
   modifier onlySSUOwner(uint256 smartObjectId) {
-    if(_initialMsgSender() != IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId)) {
+    if (
+      _initialMsgSender() !=
+      IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(
+        smartObjectId
+      )
+    ) {
       revert ItemSeller_NotSSUOwner(smartObjectId);
     }
     _;
@@ -121,7 +126,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param isAllowed The new purchase status (true to allow purchase, false to disallow).
    */
-  function setAllowPurchase(uint256 smartObjectId, bool isAllowed) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
+  function setAllowPurchase(
+    uint256 smartObjectId,
+    bool isAllowed
+  ) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setIsPurchaseAllowed(_namespace().itemSellerTableId(), smartObjectId, isAllowed);
   }
 
@@ -130,7 +138,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param isAllowed The new buyback status (true to allow buyback, false to disallow).
    */
-  function setAllowBuyback(uint256 smartObjectId, bool isAllowed) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
+  function setAllowBuyback(
+    uint256 smartObjectId,
+    bool isAllowed
+  ) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId, isAllowed);
   }
 
@@ -163,7 +174,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param erc20Address The address of the ERC20 currency.
    */
-  function setERC20Currency(uint256 smartObjectId, address erc20Address) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
+  function setERC20Currency(
+    uint256 smartObjectId,
+    address erc20Address
+  ) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setErc20Address(_namespace().itemSellerTableId(), smartObjectId, erc20Address);
   }
 
@@ -178,7 +192,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 smartObjectId,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) {
-    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+    if (!ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
       revert ItemSeller_BuybackPriceNotSet(smartObjectId);
     }
     // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
@@ -187,7 +201,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
     // sending ERC20 from this contract to the user initiating the transfer
-    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()))
+      .ownerOf(smartObjectId);
     IERC20Mintable(erc20Address).transferFrom(ssuOwner, _initialMsgSender(), priceWei);
   }
 
@@ -202,7 +217,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 smartObjectId,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) {
-    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+    if (!ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
       revert ItemSeller_BuybackPriceNotSet(smartObjectId);
     }
     // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
@@ -211,7 +226,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
     // sending ERC20 from this contract to the user initiating the transfer
-    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()))
+      .ownerOf(smartObjectId);
     IERC20Mintable(erc20Address).transferFrom(ssuOwner, _initialMsgSender(), priceWei);
   }
 
@@ -226,7 +242,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 smartObjectId,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) {
-    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+    if (!ItemSellerTable.getIsPurchaseAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
       revert ItemSeller_PurchasePriceNotSet(smartObjectId);
     }
     // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
@@ -234,7 +250,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 priceWei = ItemSellerTable.getErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId) *
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
-    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()))
+      .ownerOf(smartObjectId);
     IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), ssuOwner, priceWei);
   }
 
@@ -249,7 +266,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 smartObjectId,
     InventoryItem[] memory items
   ) public hookable(smartObjectId, _systemId()) {
-    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+    if (!ItemSellerTable.getIsPurchaseAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
       revert ItemSeller_PurchasePriceNotSet(smartObjectId);
     }
     // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
@@ -257,7 +274,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 priceWei = ItemSellerTable.getErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId) *
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
-    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()))
+      .ownerOf(smartObjectId);
     IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), ssuOwner, priceWei);
   }
 

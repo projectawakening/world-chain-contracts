@@ -49,7 +49,7 @@ interface IItemSeller {
    * @param smartObjectId The ID of the smart object.
    * @param entityTypeId The ID of the item type that is accepted by the seller.
    */
-  function setAcceptedItemTypeId(uint256 smartObjectId, uint256 entityTypeId) external;
+  function setItemSellerAcceptedItemTypeId(uint256 smartObjectId, uint256 entityTypeId) external;
 
   /**
    * @notice Sets the ERC20 purchase price for a given smart object.

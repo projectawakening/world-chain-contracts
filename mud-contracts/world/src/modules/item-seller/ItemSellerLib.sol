@@ -98,10 +98,10 @@ library ItemSellerLib {
    * @param smartObjectId The ID of the smart object.
    * @param entityTypeId The ID of the item type that is accepted by the seller.
    */
-  function setAcceptedItemTypeId(World memory world, uint256 smartObjectId, uint256 entityTypeId) internal {
+  function setItemSellerAcceptedItemTypeId(World memory world, uint256 smartObjectId, uint256 entityTypeId) internal {
     world.iface.call(
       world.namespace.itemSellerSystemId(),
-      abi.encodeCall(IItemSeller.setAcceptedItemTypeId, (smartObjectId, entityTypeId))
+      abi.encodeCall(IItemSeller.setItemSellerAcceptedItemTypeId, (smartObjectId, entityTypeId))
     );
   }
 

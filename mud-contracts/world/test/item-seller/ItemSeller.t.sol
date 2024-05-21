@@ -14,7 +14,10 @@ import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/Puppe
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
-
+import { registerERC20 } from "@latticexyz/world-modules/src/modules/erc20-puppet/registerERC20.sol";
+import { IERC20Mintable } from "@latticexyz/world-modules/src/modules/erc20-puppet/IERC20Mintable.sol";
+import { IERC20Events } from "@latticexyz/world-modules/src/modules/erc20-puppet/IERC20Events.sol";
+import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-puppet/tables/ERC20Metadata.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
@@ -39,6 +42,7 @@ import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInv
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
+import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
@@ -85,6 +89,7 @@ contract ItemSellerUnitTest is Test {
   using ModulesInitializationLibrary for IBaseWorld;
   using SOFInitializationLibrary for IBaseWorld;
   using SmartObjectLib for SmartObjectLib.World;
+  using EntityRecordLib for EntityRecordLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using ItemSellerLib for ItemSellerLib.World;
@@ -93,14 +98,16 @@ contract ItemSellerUnitTest is Test {
 
   IBaseWorld world;
   SmartObjectLib.World smartObject;
+  EntityRecordLib.World entityRecord;
   IERC721Mintable erc721DeployableToken;
+  IERC20Mintable erc20;
   SmartStorageUnitLib.World smartStorageUnit;
   ItemSellerLib.World itemSeller;
   SmartDeployableLib.World smartDeployable;
   InventoryLib.World inventory;
 
-  uint256 storageCapacity = 100000;
-  uint256 ephemeralStorageCapacity = 100000;
+  uint256 storageCapacity = 100000000;
+  uint256 ephemeralStorageCapacity = 100000000;
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
 
@@ -126,6 +133,8 @@ contract ItemSellerUnitTest is Test {
     world.initStaticData();
     world.initEntityRecord();
     world.initLocation();
+
+    entityRecord = EntityRecordLib.World({ iface: world, namespace: ENTITY_RECORD_DEPLOYMENT_NAMESPACE });
 
     erc721DeployableToken = registerERC721(
       world,
@@ -183,12 +192,45 @@ contract ItemSellerUnitTest is Test {
 
     smartDeployable.globalResume();
 
-    smartObject.registerEntity(123, OBJECT);
-    world.associateEntityRecord(123);
-    smartObject.registerEntity(456, OBJECT);
-    world.associateEntityRecord(456);
-
     _registerClassLevelHookItemSeller();
+  }
+
+  function _createItems(uint256 typeId) internal returns (InventoryItem[] memory) {
+    InventoryItem[] memory _items = new InventoryItem[](3);
+    _items[0] = InventoryItem({
+      inventoryItemId: uint256(keccak256(abi.encodePacked(typeId))),
+      owner: address(1), // doesnt actually matter apparently
+      itemId: 69,
+      typeId: typeId,
+      volume: 1,
+      quantity: 10
+    });
+    _items[1] = InventoryItem({
+      inventoryItemId: uint256(keccak256(abi.encodePacked(typeId))) + 1,
+      owner: address(1), // doesnt actually matter apparently
+      itemId: 69,
+      typeId: typeId,
+      volume: 1,
+      quantity: 10
+    });
+    _items[2] = InventoryItem({
+      inventoryItemId: uint256(keccak256(abi.encodePacked(typeId))) + 2,
+      owner: address(1), // doesnt actually matter apparently
+      itemId: 69,
+      typeId: typeId,
+      volume: 1,
+      quantity: 10
+    });
+    smartObject.registerEntity(_items[0].inventoryItemId, OBJECT);
+    smartObject.registerEntity(_items[1].inventoryItemId, OBJECT);
+    smartObject.registerEntity(_items[2].inventoryItemId, OBJECT);
+    return _items;
+  }
+
+  function _createEntityRecords(InventoryItem[] memory _items) internal {
+    for (uint i = 0; i < _items.length; i++) {
+      entityRecord.createEntityRecord(_items[i].inventoryItemId, _items[i].itemId, _items[i].typeId, _items[i].volume);
+    }
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -204,14 +246,17 @@ contract ItemSellerUnitTest is Test {
     ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
 
-    uint256 depositHookId = _registerHook(inventorySystemId, IItemSeller.itemSellerDepositToInventoryHook.selector);
-    uint256 withdrawHookId = _registerHook(inventorySystemId, IItemSeller.itemSellerWithdrawFromInventoryHook.selector);
+    uint256 depositHookId = _registerHook(itemSellerSystemId, IItemSeller.itemSellerDepositToInventoryHook.selector);
+    uint256 withdrawHookId = _registerHook(
+      itemSellerSystemId,
+      IItemSeller.itemSellerWithdrawFromInventoryHook.selector
+    );
     uint256 transferToInvHookId = _registerHook(
-      inventoryInteractSystemId,
+      itemSellerSystemId,
       IItemSeller.itemSellerEphemeralToInventoryTransferHook.selector
     );
     uint256 transferToEphHookId = _registerHook(
-      inventoryInteractSystemId,
+      itemSellerSystemId,
       IItemSeller.itemSellerInventoryToEphemeralTransferHook.selector
     );
 
@@ -238,14 +283,21 @@ contract ItemSellerUnitTest is Test {
     assertEq(smartStorageUnitSystemId.getNamespace(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
   }
 
-  function testCreateAndAnchorItemSeller(uint256 smartObjectId) public {
+  // it's bad but we can't test transient storage cleanup as-is so instead we'll do everything from address(owner)
+  function testCreateAndBringOnlineItemSeller(uint256 smartObjectId, address owner) public {
+    vm.assume(owner != address(0));
+    vm.startPrank(owner);
+    erc20 = registerERC20(world, "TestERC20", ERC20MetadataData({ decimals: 18, name: "EVEToken", symbol: "EVE" }));
+    erc20.mint(owner, 1000000);
+
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: owner, tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
     vm.assume(
       smartObjectId != 0 &&
         !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
     );
+    vm.assume(owner != address(0));
 
     itemSeller.createAndAnchorItemSeller(
       smartObjectId,
@@ -286,7 +338,7 @@ contract ItemSellerUnitTest is Test {
     assertEq(locationTableData.y, worldPosition.position.y);
     assertEq(locationTableData.z, worldPosition.position.z);
 
-    assertEq(erc721DeployableToken.ownerOf(smartObjectId), address(1));
+    assertEq(erc721DeployableToken.ownerOf(smartObjectId), owner);
 
     smartStorageUnit.setDeploybaleMetadata(smartObjectId, "testName", "testDappURL", "testdesc");
 
@@ -298,5 +350,57 @@ contract ItemSellerUnitTest is Test {
     assertEq(entityRecordOffchainTableData.name, "testName");
     assertEq(entityRecordOffchainTableData.dappURL, "testDappURL");
     assertEq(entityRecordOffchainTableData.description, "testdesc");
+  }
+
+  function testPurchaseItems(
+    uint256 smartObjectId,
+    address owner,
+    uint256 acceptedEntityTypeId,
+    uint256 purchasePrice
+  ) public {
+    vm.assume(purchasePrice < type(uint128).max);
+    testCreateAndBringOnlineItemSeller(smartObjectId, owner); // pranks into owner
+    itemSeller.setERC20Currency(smartObjectId, address(erc20));
+    itemSeller.setItemSellerAcceptedItemTypeId(smartObjectId, acceptedEntityTypeId);
+    itemSeller.setAllowPurchase(smartObjectId, true);
+    itemSeller.setERC20PurchasePrice(smartObjectId, purchasePrice);
+
+    // to deposit items, we `allowBuyBack` with a price of 0` so we can "deposit" items
+    InventoryItem[] memory tempItems = new InventoryItem[](1);
+    tempItems[0] = _createItems(acceptedEntityTypeId)[0]; //quantity = 10
+    _createEntityRecords(tempItems);
+    itemSeller.setAllowBuyback(smartObjectId, true);
+    inventory.depositToInventory(smartObjectId, tempItems);
+    itemSeller.setAllowBuyback(smartObjectId, false);
+
+    // let's see if an ERC20 transfer is shot
+    vm.expectEmit(true, true, true, false);
+    emit IERC20Events.Transfer(owner, owner, tempItems[0].quantity * purchasePrice);
+    inventory.withdrawFromInventory(smartObjectId, tempItems);
+  }
+
+  function testBuybackItems(
+    uint256 smartObjectId,
+    address owner,
+    uint256 acceptedEntityTypeId,
+    uint256 purchasePrice
+  ) public {
+    vm.assume(purchasePrice < type(uint128).max);
+    testCreateAndBringOnlineItemSeller(smartObjectId, owner); // pranks into owner
+    itemSeller.setERC20Currency(smartObjectId, address(erc20));
+    itemSeller.setItemSellerAcceptedItemTypeId(smartObjectId, acceptedEntityTypeId);
+    itemSeller.setAllowPurchase(smartObjectId, true);
+    itemSeller.setERC20PurchasePrice(smartObjectId, purchasePrice);
+
+    // to deposit items, we `allowBuyBack` with a price of 0` so we can "deposit" items
+    InventoryItem[] memory tempItems = new InventoryItem[](1);
+    tempItems[0] = _createItems(acceptedEntityTypeId)[0]; //quantity = 10
+    _createEntityRecords(tempItems);
+    itemSeller.setAllowBuyback(smartObjectId, true);
+
+    // let's see if an ERC20 transfer is shot
+    vm.expectEmit(true, true, true, false);
+    emit IERC20Events.Transfer(owner, owner, tempItems[0].quantity * purchasePrice);
+    inventory.depositToInventory(smartObjectId, tempItems);
   }
 }
