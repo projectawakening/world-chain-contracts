@@ -44,7 +44,7 @@ import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDe
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { GateKeeperModule } from "../src/modules/gate-keeper/GateKeeperModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
-import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartStorageUnitLib } from "../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
