@@ -14,6 +14,7 @@ import { SmartStorageUnitLib } from "../../smart-storage-unit/SmartStorageUnitLi
 
 import { IItemSellerErrors } from "../IItemSellerErrors.sol";
 
+import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
 import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 import { EntityRecordTable } from "../../../codegen/tables/EntityRecordTable.sol";
@@ -29,6 +30,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as InventoryUtils } from "../../inventory/Utils.sol";
 import { Utils } from "../Utils.sol";
 
+import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { IERC20Mintable } from "@latticexyz/world-modules/src/modules/erc20-puppet/IERC20Mintable.sol";
 
 import { SmartObjectData, WorldPosition } from "../../smart-storage-unit/types.sol";
@@ -160,7 +162,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
 
   /**
    * @notice Hook that is called when a seller deposits items to the inventory of a smart object.
-   * @dev needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
+   * @dev The SSU owner needs to `approve` this system's address to enable the item buyback feature (makes an `ERC20.transferFrom()` from him)
+   * Also, needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
    * @param smartObjectId The ID of the smart object.
    * @param items The list of inventory items being deposited.
    */
@@ -177,12 +180,14 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
     // sending ERC20 from this contract to the user initiating the transfer
-    IERC20Mintable(erc20Address).transferFrom(address(this), _initialMsgSender(), priceWei);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    IERC20Mintable(erc20Address).transferFrom(ssuOwner, _initialMsgSender(), priceWei);
   }
 
   /**
    * @notice Hook that is called when a seller deposits items to the inventory of a smart object.
-   * @dev needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
+   * @dev The SSU owner needs to `approve` this system's address to enable the item buyback feature (makes an `ERC20.transferFrom()` from him)
+   * needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
    * @param smartObjectId The ID of the smart object.
    * @param items The list of inventory items being deposited.
    */
@@ -199,7 +204,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
     // sending ERC20 from this contract to the user initiating the transfer
-    IERC20Mintable(erc20Address).transferFrom(address(this), _initialMsgSender(), priceWei);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    IERC20Mintable(erc20Address).transferFrom(ssuOwner, _initialMsgSender(), priceWei);
   }
 
   /**
@@ -221,7 +227,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 priceWei = ItemSellerTable.getErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId) *
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
-    IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), address(this), priceWei);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), ssuOwner, priceWei);
   }
 
   /**
@@ -243,7 +250,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     uint256 priceWei = ItemSellerTable.getErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId) *
       totalQuantity;
     address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
-    IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), address(this), priceWei);
+    address ssuOwner = IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId);
+    IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), ssuOwner, priceWei);
   }
 
   function _getTypeIdQuantity(
