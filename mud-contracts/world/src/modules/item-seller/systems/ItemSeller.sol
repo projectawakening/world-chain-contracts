@@ -88,7 +88,8 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
     if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
       // register smartObjectId as an object
       _smartObjectLib().registerEntity(smartObjectId, OBJECT);
-    }    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
+    }
+    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
       smartObjectId,
       ITEM_SELLER_CLASS_ID
     );
