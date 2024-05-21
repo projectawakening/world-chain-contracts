@@ -149,7 +149,7 @@ contract SmartStorageUnit is EveSystem {
     // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
     _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
-  
+
   /**
    * @notice Create metadata of a smart deployable
    * @dev Create metadata of a smart deployable by smart object id

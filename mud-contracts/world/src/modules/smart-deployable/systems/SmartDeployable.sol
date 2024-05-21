@@ -7,7 +7,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT,SMART_DEPLOYABLE_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
+import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT, SMART_DEPLOYABLE_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { LocationLib } from "../../location/LocationLib.sol";
@@ -415,7 +415,6 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function _smartObjectLib() internal view returns (SmartObjectLib.World memory) {
     return SmartObjectLib.World({ iface: IBaseWorld(_world()), namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE });
   }
-
 
   function _systemId() internal view returns (ResourceId) {
     return _namespace().smartDeployableSystemId();

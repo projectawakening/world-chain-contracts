@@ -88,10 +88,7 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
       // register smartObjectId as an object
       _smartObjectLib().registerEntity(smartObjectId, OBJECT);
     }
-    _smartObjectLib().tagEntity(
-      smartObjectId,
-      GATE_KEEPER_CLASS_ID
-    );
+    _smartObjectLib().tagEntity(smartObjectId, GATE_KEEPER_CLASS_ID);
   }
 
   function setAcceptedItemTypeId(

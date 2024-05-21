@@ -30,23 +30,23 @@ contract WithdrawFromInventory is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 0, typeId: 23, volume: 10, quantity: 1 });
+    InventoryItem[] memory items = new InventoryItem[](2);
+    items[0] = InventoryItem({ inventoryItemId: 123, owner: invOwner, itemId: 0, typeId: 23, volume: 10, quantity: 4 });
+    // items[1] = InventoryItem({
+    //   inventoryItemId: 1234,
+    //   owner: invOwner,
+    //   itemId: 0,
+    //   typeId: 34,
+    //   volume: 10,
+    //   quantity: 0
+    // });
     items[1] = InventoryItem({
-      inventoryItemId: 1234,
-      owner: invOwner,
-      itemId: 0,
-      typeId: 34,
-      volume: 10,
-      quantity: 10
-    });
-    items[2] = InventoryItem({
       inventoryItemId: 1235,
       owner: invOwner,
       itemId: 0,
       typeId: 35,
       volume: 10,
-      quantity: 10
+      quantity: 290
     });
 
     inventory.withdrawFromInventory(smartObjectId, items);
@@ -62,16 +62,15 @@ contract WithdrawFromInventory is Script {
       items[1].inventoryItemId
     );
 
-    console.log(inventoryItem1.quantity);
-    InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(
-      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
-      smartObjectId,
-      items[2].inventoryItemId
-    );
+    // InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(
+    //   FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
+    //   smartObjectId,
+    //   items[2].inventoryItemId
+    // );
 
     console.log(inventoryItem1.quantity);
     console.log(inventoryItem2.quantity);
-    console.log(inventoryItem3.quantity);
+    // console.log(inventoryItem3.quantity);
 
     vm.stopBroadcast();
   }
