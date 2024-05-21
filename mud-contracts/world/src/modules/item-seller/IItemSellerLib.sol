@@ -143,30 +143,4 @@ library GateKeeperLib {
       abi.encodeCall(IItemSeller.setERC20Currency, (smartObjectId, erc20Address))
     );
   }
-
-  /**
-   * @notice Hook that is called when a seller deposits items to the inventory of a smart object.
-   * @param world The world state.
-   * @param smartObjectId The ID of the smart object.
-   * @param items The list of inventory items being deposited.
-   */
-  function depositToInventoryHook(World memory world, uint256 smartObjectId, InventoryItem[] memory items) internal {
-    world.iface.call(
-      world.namespace.itemSellerSystemId(),
-      abi.encodeCall(IItemSeller.depositToInventoryHook, (smartObjectId, items))
-    );
-  }
-
-  /**
-   * @notice Hook that is called when a seller withdraws items from the inventory of a smart object.
-   * @param world The world state.
-   * @param smartObjectId The ID of the smart object.
-   * @param items The list of inventory items being withdrawn.
-   */
-  function withdrawFromInventoryHook(World memory world, uint256 smartObjectId, InventoryItem[] memory items) internal {
-    world.iface.call(
-      world.namespace.itemSellerSystemId(),
-      abi.encodeCall(IItemSeller.withdrawFromInventoryHook, (smartObjectId, items))
-    );
-  }
 }
