@@ -35,7 +35,7 @@ importers:
         specifier: link:../mud-contracts/world
         version: link:../mud-contracts/world
       '@eveworld/world-core':
-        specifier: workspace:^
+        specifier: link:../mud-contracts/core
         version: link:../mud-contracts/core
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -108,13 +108,13 @@ importers:
   mud-contracts/core:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.2
+        specifier: 0.0.7
         version: link:../common/constants
       '@eveworld/smart-object-framework':
-        specifier: workspace:0.0.2
+        specifier: 0.0.7
         version: link:../smart-object-framework
       '@eveworld/world':
-        specifier: ^0.0.2
+        specifier: 0.0.7
         version: link:../world
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -163,8 +163,8 @@ importers:
   mud-contracts/smart-object-framework:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.1
-        version: 0.0.1(google-protobuf@3.21.2)(typescript@5.4.5)(zod@3.23.8)
+        specifier: 0.0.7
+        version: link:../common/constants
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
         version: 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
@@ -218,10 +218,10 @@ importers:
   mud-contracts/world:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.2
+        specifier: 0.0.7
         version: link:../common/constants
       '@eveworld/smart-object-framework':
-        specifier: 0.0.2
+        specifier: 0.0.7
         version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -279,10 +279,10 @@ importers:
   standard-contracts:
     dependencies:
       '@eveworld/common-constants':
-        specifier: 0.0.2
+        specifier: 0.0.7
         version: link:../mud-contracts/common/constants
       '@eveworld/world':
-        specifier: 0.0.2
+        specifier: 0.0.7
         version: link:../mud-contracts/world
       '@latticexyz/schema-type':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -1056,23 +1056,6 @@ packages:
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
       '@ethersproject/strings': 5.7.0
-    dev: false
-
-  /@eveworld/common-constants@0.0.1(google-protobuf@3.21.2)(typescript@5.4.5)(zod@3.23.8):
-    resolution: {integrity: sha512-cVWjYsZKF/634SpNYtxbUPizjeDi94z4LxzjX+MefnJJTr2WIyWalB/tARWxKgpvr+TXKH7E46l0OWzwQMBBKQ==}
-    dependencies:
-      '@latticexyz/cli': 2.0.0-transaction-context-98ef570f(google-protobuf@3.21.2)
-      '@latticexyz/schema-type': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)(zod@3.23.8)
-      '@latticexyz/store': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
-      '@latticexyz/world': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
-      '@latticexyz/world-modules': 2.0.0-transaction-context-98ef570f(typescript@5.4.5)
-    transitivePeerDependencies:
-      - bufferutil
-      - google-protobuf
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
     dev: false
 
   /@improbable-eng/grpc-web-node-http-transport@0.15.0(@improbable-eng/grpc-web@0.15.0):
