@@ -18,7 +18,8 @@ import { Utils as SmartStorageUnitUtils } from "@eveworld/world/src/modules/smar
 
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { HookTable } from "@eveworld/smart-object-framework/src/codegen/tables/HookTable.sol";
-import { HOOK_SYSTEM_ID, HOOK_SYSTEM_NAME, OBJECT, CLASS } from "@eveworld/smart-object-framework/test/constants.sol";
+import { HOOK_SYSTEM_ID, HOOK_SYSTEM_NAME, OBJECT } from "@eveworld/smart-object-framework/test/constants.sol";
+import { SSU_CLASS_ID, SMART_CHARACTER_CLASS_ID, CLASS } from "@eveworld/common-constants/src/constants.sol";
 import { Utils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { HookType } from "@eveworld/smart-object-framework/src/types.sol";
 
@@ -89,9 +90,8 @@ contract ConfigureHooks is Script {
   }
 
   function _addHookForCreateSmartCharacter(SmartObjectLib.World memory smartObjectFramework, uint256 hookId) internal {
-    uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
     //asscoaite hook with a entity
-    smartObjectFramework.associateHook(smartCharacterClassId, hookId);
+    smartObjectFramework.associateHook(SMART_CHARACTER_CLASS_ID, hookId);
 
     //Add hook for createCharacter
     smartObjectFramework.addHook(
@@ -103,9 +103,8 @@ contract ConfigureHooks is Script {
   }
 
   function _addHookForCreateAndAnchor(SmartObjectLib.World memory smartObjectFramework, uint256 hookId) internal {
-    uint256 ssuClassId = uint256(keccak256("SSUClass"));
     //asscoaite hook with a entity
-    smartObjectFramework.associateHook(ssuClassId, hookId);
+    smartObjectFramework.associateHook(SSU_CLASS_ID, hookId);
 
     //Add hook for createCharacter
     smartObjectFramework.addHook(
