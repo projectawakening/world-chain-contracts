@@ -32,6 +32,7 @@ import { Utils as GateKeeperUtils } from "../src/modules/gate-keeper/Utils.sol";
 import { Utils as InventoryUtils } from "../src/modules/inventory/Utils.sol";
 
 import { IGateKeeper } from "../src/modules/gate-keeper/interfaces/IGateKeeper.sol";
+import { IItemSeller } from "../src/modules/item-seller/interfaces/IItemSeller.sol";
 import { IInventory } from "../src/modules/inventory/interfaces/IInventory.sol";
 import { IInventoryInteract } from "../src/modules/inventory/interfaces/IInventoryInteract.sol";
 import { EntityRecordModule } from "../src/modules/entity-record/EntityRecordModule.sol";
@@ -43,6 +44,8 @@ import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeploya
 import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { GateKeeperModule } from "../src/modules/gate-keeper/GateKeeperModule.sol";
+import { ItemSellerModule } from "../src/modules/item-seller/ItemSellerModule.sol";
+
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
 import { SmartStorageUnitLib } from "../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 
@@ -112,6 +115,8 @@ contract PostDeploy is Script {
     );
     _installModule(deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     _installModule(deployer, new GateKeeperModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    _installModule(deployer, new ItemSellerModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initERC721(baseURI);
 
@@ -130,20 +135,27 @@ contract PostDeploy is Script {
     world.initInventory();
     world.initSSU();
     world.initGateKeeper();
+    world.initItemSeller();
 
     smartObject.registerEntity(SMART_CHARACTER_CLASS_ID, CLASS);
     smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
     smartObject.registerEntity(SSU_CLASS_ID, CLASS);
     smartObject.registerEntity(GATE_KEEPER_CLASS_ID, CLASS);
+    smartObject.registerEntity(ITEM_SELLER_CLASS_ID, CLASS);
     world.associateClassIdToSmartCharacter(SMART_CHARACTER_CLASS_ID);
     world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
     world.associateClassIdToSSU(SSU_CLASS_ID);
     world.associateClassIdToGateKeeper(GATE_KEEPER_CLASS_ID);
+    world.associateClassIdToItemSeller(ITEM_SELLER_CLASS_ID);
+
 
     uint256 smartDeplFrontierClassId = world.registerAndAssociateTypeIdToSSU(SMART_DEPLOYABLE_FRONTIER_TYPE_ID);
     console.log("Smart Deployable (Frontier TypeId: 77917) - classId: ", smartDeplFrontierClassId);
 
     _registerClassLevelHookGateKeeper();
+
+    // will add the direct deposit/withdraw functions by default, but registers the InventoryInteract hooks just in case also
+    _registerClassLevelHookItemSeller();
   }
 
   function _installPuppet(address deployer) internal {
@@ -228,23 +240,53 @@ contract PostDeploy is Script {
     ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
 
-    smartObject.registerHook(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector);
-    uint256 depositHookId = uint256(
-      keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector))
-    );
-    smartObject.associateHook(GATE_KEEPER_CLASS_ID, depositHookId);
-    smartObject.addHook(depositHookId, HookType.BEFORE, inventorySystemId, IInventory.depositToInventory.selector);
+    uint256 depositHookId = _registerHook(gateKeeperSystemId, IGateKeeper.depositToInventoryHook.selector);
+    uint256 transferHookId = _registerHook(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector);
 
-    smartObject.registerHook(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector);
-    uint256 transferHookId = uint256(
-      keccak256(abi.encodePacked(gateKeeperSystemId, IGateKeeper.ephemeralToInventoryTransferHook.selector))
-    );
+    smartObject.associateHook(GATE_KEEPER_CLASS_ID, depositHookId);
     smartObject.associateHook(GATE_KEEPER_CLASS_ID, transferHookId);
+
+    smartObject.addHook(depositHookId, HookType.BEFORE, inventorySystemId, IInventory.depositToInventory.selector);
     smartObject.addHook(
       transferHookId,
       HookType.BEFORE,
       inventoryInteractSystemId,
       IInventoryInteract.ephemeralToInventoryTransfer.selector
     );
+  }
+
+  function _registerClassLevelHookItemSeller() internal {
+    ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
+    ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
+    ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
+
+    uint256 depositHookId = _registerHook(inventorySystemId, IItemSeller.itemSellerDepositToInventoryHook.selector);
+    uint256 withdrawHookId = _registerHook(inventorySystemId, IItemSeller.itemSellerWithdrawFromInventoryHook.selector);
+    uint256 transferToInvHookId = _registerHook(inventoryInteractSystemId, IItemSeller.itemSellerEphemeralToInventoryTransferHook.selector);
+    uint256 transferToEphHookId = _registerHook(inventoryInteractSystemId, IItemSeller.itemSellerInventoryToEphemeralTransferHook.selector);
+
+    smartObject.associateHook(ITEM_SELLER_CLASS_ID, depositHookId);
+    smartObject.associateHook(ITEM_SELLER_CLASS_ID, withdrawHookId);
+    smartObject.associateHook(ITEM_SELLER_CLASS_ID, transferToInvHookId);
+    smartObject.associateHook(ITEM_SELLER_CLASS_ID, transferToEphHookId);
+
+    smartObject.addHook(
+      depositHookId,
+      HookType.AFTER,
+      inventorySystemId,
+      IInventory.depositToInventory.selector
+    );
+
+    smartObject.addHook(
+      withdrawHookId,
+      HookType.AFTER,
+      inventorySystemId,
+      IInventory.withdrawFromInventory.selector
+    );
+  }
+
+  function _registerHook(ResourceId systemId, bytes4 functionSelector) internal returns (uint256 hookId) {
+    smartObject.registerHook(systemId, functionSelector);
+    hookId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
   }
 }

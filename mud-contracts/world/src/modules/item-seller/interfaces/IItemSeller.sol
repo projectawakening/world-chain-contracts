@@ -63,7 +63,7 @@ interface IItemSeller {
    * @param smartObjectId The ID of the smart object.
    * @param buybackPriceWei The buyback price in wei.
    */
-  function setERC20BuybackPrice(uint256 smartObjectId,  uint256 buybackPriceWei) external;
+  function setERC20BuybackPrice(uint256 smartObjectId, uint256 buybackPriceWei) external;
 
   /**
    * @notice Sets the ERC20 currency address for a given smart object.
@@ -77,12 +77,29 @@ interface IItemSeller {
    * @param smartObjectId The ID of the smart object.
    * @param items The list of inventory items being deposited.
    */
-  function depositToInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function itemSellerDepositToInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) external;
+
+  /**
+   * @notice Hook that is called when a seller deposits items to the inventory of a smart object.
+   * @dev needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
+   * @param smartObjectId The ID of the smart object.
+   * @param items The list of inventory items being deposited.
+   */
+  function itemSellerEphemeralToInventoryTransferHook(uint256 smartObjectId, InventoryItem[] memory items) external;
 
   /**
    * @notice Hook that is called when a seller withdraws items from the inventory of a smart object.
    * @param smartObjectId The ID of the smart object.
    * @param items The list of inventory items being withdrawn.
    */
-  function withdrawFromInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function itemSellerWithdrawFromInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) external;
+
+  /**
+   * @notice Hook that is called when a seller withdraws items from the inventory of a smart object.
+   * @dev _initialMsgSender() need to first call `IERC20.approve()` on this System's address
+   * also, needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
+   * @param smartObjectId The ID of the smart object.
+   * @param items The list of inventory items being withdrawn.
+   */
+  function itemSellerInventoryToEphemeralTransferHook(uint256 smartObjectId, InventoryItem[] memory items) external;
 }

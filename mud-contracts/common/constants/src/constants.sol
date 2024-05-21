@@ -15,6 +15,7 @@ bytes14 constant INVENTORY_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant GATE_KEEPER_DEPLOYMENT_NAMESPACE = "eveworld";
+bytes14 constant ITEM_SELLER_DEPLOYMENT_NAMESPACE = "eveworld";
 
 bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
 bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
@@ -30,6 +31,7 @@ bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
 bytes16 constant GATE_KEEPER_SYSTEM_NAME = "GateKeeper";
+bytes16 constant ITEM_SELLER_SYSTEM_NAME = "ItemSeller";
 
 bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";
 
@@ -42,6 +44,7 @@ uint256 constant SMART_CHARACTER_CLASS_ID = 1234;
 uint256 constant SMART_DEPLOYABLE_CLASS_ID = 2345;
 uint256 constant SSU_CLASS_ID = 3456;
 uint256 constant GATE_KEEPER_CLASS_ID = 4567;
+uint256 constant ITEM_SELLER_CLASS_ID = 5678;
 
 //actual in-game value
 uint256 constant SMART_DEPLOYABLE_FRONTIER_TYPE_ID = 77917;

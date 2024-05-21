@@ -8,14 +8,13 @@ import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldReso
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, OBJECT, ITEM_SELLER_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { SmartStorageUnitLib } from "../../smart-storage-unit/SmartStorageUnitLib.sol";
 
 import { IItemSellerErrors } from "../IItemSellerErrors.sol";
 
 import { EntityRecordData } from "../../smart-storage-unit/types.sol";
-
 import { EntityRecordTable } from "../../../codegen/tables/EntityRecordTable.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
@@ -27,6 +26,8 @@ import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol"
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as InventoryUtils } from "../../inventory/Utils.sol";
 import { Utils } from "../Utils.sol";
+
+import { IERC20Mintable } from "@latticexyz/world-modules/src/modules/erc20-puppet/IERC20Mintable.sol";
 
 import { SmartObjectData, WorldPosition } from "../../smart-storage-unit/types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
@@ -123,7 +124,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param purchasePriceInWei The target item quantity for the purchase price.
    */
-  function setERC20PurchasePrice(uint256 smartObjectId, uint256 purchasePriceInWei) public hookable(smartObjectId, _systemId()) {
+  function setERC20PurchasePrice(
+    uint256 smartObjectId,
+    uint256 purchasePriceInWei
+  ) public hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId, purchasePriceInWei);
   }
 
@@ -132,7 +136,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param buybackPriceInWei The target item quantity for the buyback price.
    */
-  function setERC20BuybackPrice(uint256 smartObjectId, uint256 buybackPriceInWei) public hookable(smartObjectId, _systemId()) {
+  function setERC20BuybackPrice(
+    uint256 smartObjectId,
+    uint256 buybackPriceInWei
+  ) public hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setErc20BuybackPriceWei(_namespace().itemSellerTableId(), smartObjectId, buybackPriceInWei);
   }
 
@@ -147,34 +154,109 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
 
   /**
    * @notice Hook that is called when a seller deposits items to the inventory of a smart object.
+   * @dev needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
    * @param smartObjectId The ID of the smart object.
    * @param items The list of inventory items being deposited.
    */
-  function itemSellerDepositToInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) public hookable(smartObjectId, _systemId()) {
+  function itemSellerDepositToInventoryHook(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) {
+    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+      revert ItemSeller_BuybackPriceNotSet(smartObjectId);
+    }
+    // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
+    uint256 totalQuantity = _getTypeIdQuantity(smartObjectId, items);
+    uint256 priceWei = ItemSellerTable.getErc20BuybackPriceWei(_namespace().itemSellerTableId(), smartObjectId) *
+      totalQuantity;
+    address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
+    // sending ERC20 from this contract to the user initiating the transfer
+    IERC20Mintable(erc20Address).transferFrom(address(this), _initialMsgSender(), priceWei);
+  }
 
+  /**
+   * @notice Hook that is called when a seller deposits items to the inventory of a smart object.
+   * @dev needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
+   * @param smartObjectId The ID of the smart object.
+   * @param items The list of inventory items being deposited.
+   */
+  function itemSellerEphemeralToInventoryTransferHook(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) {
+    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+      revert ItemSeller_BuybackPriceNotSet(smartObjectId);
+    }
+    // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
+    uint256 totalQuantity = _getTypeIdQuantity(smartObjectId, items);
+    uint256 priceWei = ItemSellerTable.getErc20BuybackPriceWei(_namespace().itemSellerTableId(), smartObjectId) *
+      totalQuantity;
+    address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
+    // sending ERC20 from this contract to the user initiating the transfer
+    IERC20Mintable(erc20Address).transferFrom(address(this), _initialMsgSender(), priceWei);
   }
 
   /**
    * @notice Hook that is called when a seller withdraws items from the inventory of a smart object.
+   * @dev _initialMsgSender() need to first call `IERC20.approve()` on this System's address
+   * also, needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
    * @param smartObjectId The ID of the smart object.
    * @param items The list of inventory items being withdrawn.
    */
-  function itemSellerWithdrawFromInventoryHook(uint256 smartObjectId, InventoryItem[] memory items) public hookable(smartObjectId, _systemId()) {
-
+  function itemSellerWithdrawFromInventoryHook(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) {
+    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+      revert ItemSeller_PurchasePriceNotSet(smartObjectId);
+    }
+    // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
+    uint256 totalQuantity = _getTypeIdQuantity(smartObjectId, items);
+    uint256 priceWei = ItemSellerTable.getErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId) *
+      totalQuantity;
+    address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
+    IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), address(this), priceWei);
   }
 
-  function _getTypeIdQuantity(uint256 smartObjectId, uint256 reqTypeId) internal view returns (uint256 quantity) {
-    uint256[] memory items = InventoryTable.getItems(INVENTORY_DEPLOYMENT_NAMESPACE.inventoryTableId(), smartObjectId);
+  /**
+   * @notice Hook that is called when a seller withdraws items from the inventory of a smart object.
+   * @dev _initialMsgSender() need to first call `IERC20.approve()` on this System's address
+   * also, needs to be an AFTER hook because the ERC20 transfer needs to be done _after_ internal state changes
+   * @param smartObjectId The ID of the smart object.
+   * @param items The list of inventory items being withdrawn.
+   */
+  function itemSellerInventoryToEphemeralTransferHook(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) public hookable(smartObjectId, _systemId()) {
+    if (ItemSellerTable.getIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId)) {
+      revert ItemSeller_PurchasePriceNotSet(smartObjectId);
+    }
+    // TODO: perhaps double check the hook is only applied once and the InventoryInteract version is not present either to prevent double spend
+    uint256 totalQuantity = _getTypeIdQuantity(smartObjectId, items);
+    uint256 priceWei = ItemSellerTable.getErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId) *
+      totalQuantity;
+    address erc20Address = ItemSellerTable.getErc20Address(_namespace().itemSellerTableId(), smartObjectId);
+    IERC20Mintable(erc20Address).transferFrom(_initialMsgSender(), address(this), priceWei);
+  }
+
+  function _getTypeIdQuantity(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) internal view returns (uint256 quantity) {
+    uint256 acceptedTypeId = ItemSellerTable.getAcceptedItemTypeId(_namespace().itemSellerTableId(), smartObjectId);
+    uint256 totalQuantity = 0;
     for (uint i = 0; i < items.length; i++) {
       uint256 itemTypeId = EntityRecordTable.getTypeId(
         ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-        items[i]
+        items[i].inventoryItemId
       );
-      if (itemTypeId == reqTypeId) {
-        quantity += InventoryItemTable.getQuantity(
+      if (itemTypeId != acceptedTypeId) revert ItemSeller_WrongWithdrawType(acceptedTypeId, items[i].inventoryItemId);
+      else {
+        totalQuantity += InventoryItemTable.getQuantity(
           INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
           smartObjectId,
-          items[i]
+          items[i].inventoryItemId
         );
       }
     }
