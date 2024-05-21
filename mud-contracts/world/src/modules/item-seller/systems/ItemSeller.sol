@@ -53,6 +53,13 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
   using SmartObjectLib for SmartObjectLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
 
+  modifier onlySSUOwner(uint256 smartObjectId) {
+    if(_initialMsgSender() != IERC721Mintable(DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId())).ownerOf(smartObjectId)) {
+      revert ItemSeller_NotSSUOwner(smartObjectId);
+    }
+    _;
+  }
+
   /**
    * @notice Create and anchor a smart storage unit
    * @dev Create and anchor a smart storage unit by smart object id
@@ -105,7 +112,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
   function setItemSellerAcceptedItemTypeId(
     uint256 smartObjectId,
     uint256 entityTypeId
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setAcceptedItemTypeId(_namespace().itemSellerTableId(), smartObjectId, entityTypeId);
   }
 
@@ -114,7 +121,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param isAllowed The new purchase status (true to allow purchase, false to disallow).
    */
-  function setAllowPurchase(uint256 smartObjectId, bool isAllowed) public hookable(smartObjectId, _systemId()) {
+  function setAllowPurchase(uint256 smartObjectId, bool isAllowed) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setIsPurchaseAllowed(_namespace().itemSellerTableId(), smartObjectId, isAllowed);
   }
 
@@ -123,7 +130,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param isAllowed The new buyback status (true to allow buyback, false to disallow).
    */
-  function setAllowBuyback(uint256 smartObjectId, bool isAllowed) public hookable(smartObjectId, _systemId()) {
+  function setAllowBuyback(uint256 smartObjectId, bool isAllowed) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setIsBuybackAllowed(_namespace().itemSellerTableId(), smartObjectId, isAllowed);
   }
 
@@ -135,7 +142,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
   function setERC20PurchasePrice(
     uint256 smartObjectId,
     uint256 purchasePriceInWei
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setErc20PurchasePriceWei(_namespace().itemSellerTableId(), smartObjectId, purchasePriceInWei);
   }
 
@@ -147,7 +154,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
   function setERC20BuybackPrice(
     uint256 smartObjectId,
     uint256 buybackPriceInWei
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setErc20BuybackPriceWei(_namespace().itemSellerTableId(), smartObjectId, buybackPriceInWei);
   }
 
@@ -156,7 +163,7 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
    * @param smartObjectId The ID of the smart object.
    * @param erc20Address The address of the ERC20 currency.
    */
-  function setERC20Currency(uint256 smartObjectId, address erc20Address) public hookable(smartObjectId, _systemId()) {
+  function setERC20Currency(uint256 smartObjectId, address erc20Address) public onlySSUOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     ItemSellerTable.setErc20Address(_namespace().itemSellerTableId(), smartObjectId, erc20Address);
   }
 
