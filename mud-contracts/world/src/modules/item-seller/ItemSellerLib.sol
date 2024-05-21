@@ -9,12 +9,12 @@ import { IItemSeller } from "./interfaces/IItemSeller.sol";
 import { Utils } from "./Utils.sol";
 
 /**
- * @title GateKeeper Library (makes interacting with the underlying Systems cleaner)
+ * @title ItemSeller Library (makes interacting with the underlying Systems cleaner)
  * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
  * @dev To preserve _msgSender() and other context-dependent properties, Library methods like those MUST be `internal`.
  * That way, the compiler is forced to inline the method's implementation in the contract they're imported into.
  */
-library GateKeeperLib {
+library ItemSellerLib {
   using Utils for bytes14;
 
   struct World {

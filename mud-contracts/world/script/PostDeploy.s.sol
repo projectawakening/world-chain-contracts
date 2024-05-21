@@ -29,6 +29,7 @@ import { SOFInitializationLibrary } from "../src/utils/SOFInitializationLibrary.
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
 import { Utils as GateKeeperUtils } from "../src/modules/gate-keeper/Utils.sol";
+import { Utils as ItemSellerUtils } from "../src/modules/item-seller/Utils.sol";
 import { Utils as InventoryUtils } from "../src/modules/inventory/Utils.sol";
 
 import { IGateKeeper } from "../src/modules/gate-keeper/interfaces/IGateKeeper.sol";
@@ -70,6 +71,7 @@ contract PostDeploy is Script {
 
   SmartStorageUnitLib.World smartStorageUnit;
   using GateKeeperUtils for bytes14;
+  using ItemSellerUtils for bytes14;
   using InventoryUtils for bytes14;
 
   IBaseWorld world;
@@ -256,7 +258,7 @@ contract PostDeploy is Script {
   }
 
   function _registerClassLevelHookItemSeller() internal {
-    ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
+    ResourceId itemSellerSystemId = ITEM_SELLER_DEPLOYMENT_NAMESPACE.itemSellerSystemId();
     ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
 

@@ -74,8 +74,6 @@ import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGl
 import "../../src/modules/smart-storage-unit/types.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
-import "../../src/utils/ModulesInitializationLibrary.sol";
-
 contract GateKeeperUnitTest is Test {
   using CoreUtils for bytes14;
   using SmartStorageUnitUtils for bytes14;

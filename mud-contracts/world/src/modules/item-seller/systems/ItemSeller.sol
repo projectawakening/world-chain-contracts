@@ -14,6 +14,7 @@ import { SmartStorageUnitLib } from "../../smart-storage-unit/SmartStorageUnitLi
 
 import { IItemSellerErrors } from "../IItemSellerErrors.sol";
 
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 import { EntityRecordTable } from "../../../codegen/tables/EntityRecordTable.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
@@ -22,6 +23,7 @@ import { InventoryTable } from "../../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable, InventoryItemTableData } from "../../../codegen/tables/InventoryItemTable.sol";
 import { ItemSellerTable } from "../../../codegen/tables/ItemSellerTable.sol";
 
+import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as InventoryUtils } from "../../inventory/Utils.sol";
@@ -42,6 +44,7 @@ import { OBJECT, ITEM_SELLER_CLASS_ID } from "../../../utils/ModulesInitializati
 contract ItemSeller is EveSystem, IItemSellerErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
+  using SmartObjectFrameworkUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
   using InventoryUtils for bytes14;
@@ -82,8 +85,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
         storageCapacity,
         ephemeralStorageCapacity
       );
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(smartObjectId, OBJECT);
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
+    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
+      // register smartObjectId as an object
+      _smartObjectLib().registerEntity(smartObjectId, OBJECT);
+    }    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
       smartObjectId,
       ITEM_SELLER_CLASS_ID
     );
@@ -260,6 +265,10 @@ contract ItemSeller is EveSystem, IItemSellerErrors {
         );
       }
     }
+  }
+
+  function _smartObjectLib() internal view returns (SmartObjectLib.World memory) {
+    return SmartObjectLib.World({ iface: IBaseWorld(_world()), namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal view returns (ResourceId) {
