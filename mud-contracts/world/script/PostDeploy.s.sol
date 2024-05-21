@@ -116,7 +116,6 @@ contract PostDeploy is Script {
     _initERC721(baseURI);
 
     _initModules();
-    _initERC721(baseURI);
     vm.stopBroadcast();
   }
 
