@@ -37,5 +37,4 @@ We are running the anvil node explicitly ourselves for three reasons:
 - Having a stand alone development node allows us to deploy modules in a deterministic an selective manner
 
 # License 
-
 The contents of this repository are open-source software under the [MIT license](./LICENSE).
