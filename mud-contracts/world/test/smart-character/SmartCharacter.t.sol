@@ -83,7 +83,7 @@ contract SmartCharacterTest is Test {
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     world.initStaticData();
     world.initEntityRecord();
-    
+
     erc721Token = registerERC721(
       world,
       SMART_CHAR_ERC721,

@@ -167,7 +167,6 @@ contract SmartStorageUnitTest is Test {
     world.associateClassIdToSSU(SSU_CLASS_ID);
 
     smartDeployable.globalResume();
-
   }
 
   // helper function to guard against multiple module registrations on the same namespace

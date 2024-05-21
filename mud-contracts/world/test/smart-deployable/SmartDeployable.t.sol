@@ -15,7 +15,6 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
-
 import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
 import { SOFInitializationLibrary } from "../../src/utils/SOFInitializationLibrary.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
@@ -140,8 +139,7 @@ contract smartDeployableTest is Test {
     smartDeployable.globalPause();
     smartDeployable.globalResume();
     vm.assume(
-      entityId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
     );
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
@@ -441,8 +439,7 @@ contract smartDeployableTest is Test {
     uint256 timeElapsedAfterOffline
   ) public {
     vm.assume(
-      entityId != 0 &&
-        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+      entityId != 0 && !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
     );
     vm.assume(fuelUnitAmount < type(uint32).max);
     vm.assume(fuelUnitVolume < type(uint128).max);
