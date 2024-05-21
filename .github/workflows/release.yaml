@@ -170,6 +170,6 @@ jobs:
           context: .
           platforms: linux/arm64,linux/amd64
           build-args: |
-            IMAGE_TAG=0.0.1
+            IMAGE_TAG=${{ github.ref_name }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
