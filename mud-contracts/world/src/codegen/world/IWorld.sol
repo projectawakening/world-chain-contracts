@@ -10,6 +10,7 @@ import { IGateKeeper } from "./IGateKeeper.sol";
 import { IEphemeralInventory } from "./IEphemeralInventory.sol";
 import { IInventory } from "./IInventory.sol";
 import { IInventoryInteract } from "./IInventoryInteract.sol";
+import { IItemSeller } from "./IItemSeller.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartCharacter } from "./ISmartCharacter.sol";
 import { ISmartDeployable } from "./ISmartDeployable.sol";
@@ -29,6 +30,7 @@ interface IWorld is
   IEphemeralInventory,
   IInventory,
   IInventoryInteract,
+  IItemSeller,
   ILocationSystem,
   ISmartCharacter,
   ISmartDeployable,

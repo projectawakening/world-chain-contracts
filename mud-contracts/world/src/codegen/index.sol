@@ -21,6 +21,7 @@ import { EphemeralInvTable, EphemeralInvTableData } from "./tables/EphemeralInvT
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "./tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable, ItemTransferOffchainTableData } from "./tables/ItemTransferOffchainTable.sol";
 import { GateKeeperTable, GateKeeperTableData } from "./tables/GateKeeperTable.sol";
+import { ItemSellerTable, ItemSellerTableData } from "./tables/ItemSellerTable.sol";
 import { Balances } from "./tables/Balances.sol";
 import { TokenURI } from "./tables/TokenURI.sol";
 import { Owners } from "./tables/Owners.sol";
