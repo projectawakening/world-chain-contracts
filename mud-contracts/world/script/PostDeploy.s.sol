@@ -262,29 +262,28 @@ contract PostDeploy is Script {
     ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
     ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
 
-    uint256 depositHookId = _registerHook(inventorySystemId, IItemSeller.itemSellerDepositToInventoryHook.selector);
-    uint256 withdrawHookId = _registerHook(inventorySystemId, IItemSeller.itemSellerWithdrawFromInventoryHook.selector);
-    uint256 transferToInvHookId = _registerHook(inventoryInteractSystemId, IItemSeller.itemSellerEphemeralToInventoryTransferHook.selector);
-    uint256 transferToEphHookId = _registerHook(inventoryInteractSystemId, IItemSeller.itemSellerInventoryToEphemeralTransferHook.selector);
+    uint256 depositHookId = _registerHook(itemSellerSystemId, IItemSeller.itemSellerDepositToInventoryHook.selector);
+    uint256 withdrawHookId = _registerHook(
+      itemSellerSystemId,
+      IItemSeller.itemSellerWithdrawFromInventoryHook.selector
+    );
+    uint256 transferToInvHookId = _registerHook(
+      itemSellerSystemId,
+      IItemSeller.itemSellerEphemeralToInventoryTransferHook.selector
+    );
+    uint256 transferToEphHookId = _registerHook(
+      itemSellerSystemId,
+      IItemSeller.itemSellerInventoryToEphemeralTransferHook.selector
+    );
 
     smartObject.associateHook(ITEM_SELLER_CLASS_ID, depositHookId);
     smartObject.associateHook(ITEM_SELLER_CLASS_ID, withdrawHookId);
     smartObject.associateHook(ITEM_SELLER_CLASS_ID, transferToInvHookId);
     smartObject.associateHook(ITEM_SELLER_CLASS_ID, transferToEphHookId);
 
-    smartObject.addHook(
-      depositHookId,
-      HookType.AFTER,
-      inventorySystemId,
-      IInventory.depositToInventory.selector
-    );
+    smartObject.addHook(depositHookId, HookType.AFTER, inventorySystemId, IInventory.depositToInventory.selector);
 
-    smartObject.addHook(
-      withdrawHookId,
-      HookType.AFTER,
-      inventorySystemId,
-      IInventory.withdrawFromInventory.selector
-    );
+    smartObject.addHook(withdrawHookId, HookType.AFTER, inventorySystemId, IInventory.withdrawFromInventory.selector);
   }
 
   function _registerHook(ResourceId systemId, bytes4 functionSelector) internal returns (uint256 hookId) {
