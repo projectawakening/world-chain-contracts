@@ -15,14 +15,19 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
+
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "../../src/utils/SOFInitializationLibrary.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID, CLASS } from "@eveworld/common-constants/src/constants.sol";
 
+import { Utils as CoreUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
@@ -42,6 +47,7 @@ import { EphemeralInventory } from "../../src/modules/inventory/systems/Ephemera
 import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../src/codegen/tables/GlobalDeployableState.sol";
@@ -52,15 +58,20 @@ import { LocationTable, LocationTableData } from "../../src/codegen/tables/Locat
 import { FUEL_DECIMALS } from "../../src/modules/smart-deployable/constants.sol";
 
 contract smartDeployableTest is Test {
+  using CoreUtils for bytes14;
   using Utils for bytes14;
   using LocationUtils for bytes14;
   using InventoryUtils for bytes14;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
+  using SmartObjectLib for SmartObjectLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   SmartDeployableLib.World smartDeployable;
   IERC721Mintable erc721Token;
+  SmartObjectLib.World smartObject;
 
   bytes14 constant SMART_DEPLOYABLE_ERC721 = "ERC721Deployab";
 
@@ -75,11 +86,17 @@ contract smartDeployableTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
+    smartObject = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
 
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
+    world.initEntityRecord();
+    world.initLocation();
+
     erc721Token = registerERC721(
       world,
       SMART_DEPLOYABLE_ERC721,
@@ -88,11 +105,16 @@ contract smartDeployableTest is Test {
 
     // install SmartDeployableModule
     SmartDeployableModule deployableModule = new SmartDeployableModule();
+
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
       world.transferOwnership(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE), address(deployableModule));
     world.installModule(deployableModule, abi.encode(DEPLOYMENT_NAMESPACE, new SmartDeployable()));
+    world.initSmartDeployable();
     smartDeployable = SmartDeployableLib.World(world, DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721Token));
+
+    smartObject.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
+    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
   }
 
   function _installModule(IModule module, bytes14 namespace) internal {
@@ -117,7 +139,10 @@ contract smartDeployableTest is Test {
     smartDeployable.globalResume();
     smartDeployable.globalPause();
     smartDeployable.globalResume();
-    vm.assume(entityId != 0);
+    vm.assume(
+      entityId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
     vm.assume(fuelMaxCapacity != 0);
@@ -415,6 +440,10 @@ contract smartDeployableTest is Test {
     uint256 globalOfflineDuration,
     uint256 timeElapsedAfterOffline
   ) public {
+    vm.assume(
+      entityId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), entityId)
+    );
     vm.assume(fuelUnitAmount < type(uint32).max);
     vm.assume(fuelUnitVolume < type(uint128).max);
     vm.assume(fuelConsumptionPerMinute < type(uint256).max / 1e18); // Ensure ratePerMinute doesn't overflow when adjusted for precision

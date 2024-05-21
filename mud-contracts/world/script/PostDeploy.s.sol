@@ -56,8 +56,6 @@ import { EntityTable, EntityTableData } from "@eveworld/smart-object-framework/s
 import { EntityMap } from "@eveworld/smart-object-framework/src/codegen/tables/EntityMap.sol";
 import { Utils as SmartObjectUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 
-import { OBJECT, CLASS, SMART_CHARACTER_CLASS_ID, SMART_DEPLOYABLE_CLASS_ID, SSU_CLASS_ID, GATE_KEEPER_CLASS_ID, SMART_DEPLOYABLE_FRONTIER_TYPE_ID } from "../src/utils/ModulesInitializationLibrary.sol";
-
 contract PostDeploy is Script {
   using SmartObjectUtils for bytes14;
   using ModulesInitializationLibrary for IBaseWorld;
@@ -117,7 +115,6 @@ contract PostDeploy is Script {
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _initERC721(baseURI);
 
-    _configureEntitiesAndClasses();
     _initModules();
     _initERC721(baseURI);
     vm.stopBroadcast();
@@ -225,34 +222,6 @@ contract PostDeploy is Script {
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .globalResume();
-  }
-
-  //Configure Entities and Classes
-  function _configureEntitiesAndClasses() internal {
-    uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
-
-    smartObject = SmartObjectLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-    smartStorageUnit = SmartStorageUnitLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-
-    // create class and object types
-    smartObject.registerEntityType(2, "CLASS");
-    smartObject.registerEntityType(1, "OBJECT");
-    // allow object to class tagging
-    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
-
-    // initalize the smart character class
-    smartObject.registerEntity(smartCharacterClassId, CLASS);
-    // set smart character classId in the config
-    SmartCharacterLib
-      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
-      .setCharClassId(smartCharacterClassId);
-
-    // initalize the ssu class
-    uint256 ssuClassId = uint256(keccak256("SSUClass"));
-    smartObject.registerEntity(ssuClassId, 2);
-
-    // set ssu classId in the config
-    smartStorageUnit.setSSUClassId(ssuClassId);
   }
 
   function _registerClassLevelHookGateKeeper() internal {

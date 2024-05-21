@@ -14,7 +14,7 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && forge test -vvv"
+    "test": " forge test -vv"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",

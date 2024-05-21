@@ -29,13 +29,4 @@ library Utils {
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_CHARACTER_SYSTEM_NAME });
   }
-
-  function classConfigTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
-        name: bytes16("ClassConfig")
-      });
-  }
 }

@@ -55,19 +55,6 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
-    /**
-     * ClassId Configuration - for setting a list of classIds to tag an object with during creation
-     */
-    ClassConfig: {
-      keySchema: {
-        systemId: "ResourceId", // the system which is generating objects for class tagging
-      },
-      valueSchema: {
-        classId: "uint256", // an array of classIds which can be configured for tagging created object for a System
-      },
-      tableIdArgument: true,
-    },
-
     /**********************
      * STATIC DATA MODULE *
      **********************/

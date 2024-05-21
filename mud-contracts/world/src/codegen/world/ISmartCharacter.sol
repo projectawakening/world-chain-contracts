@@ -20,6 +20,4 @@ interface ISmartCharacter {
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
   ) external;
-
-  function eveworld__setCharClassId(uint256 classId) external;
 }

@@ -37,3 +37,11 @@ bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";
 uint8 constant OBJECT = 1;
 uint8 constant CLASS = 2;
 
+// placeholder values
+uint256 constant SMART_CHARACTER_CLASS_ID = 1234;
+uint256 constant SMART_DEPLOYABLE_CLASS_ID = 2345;
+uint256 constant SSU_CLASS_ID = 3456;
+uint256 constant GATE_KEEPER_CLASS_ID = 4567;
+
+//actual in-game value
+uint256 constant SMART_DEPLOYABLE_FRONTIER_TYPE_ID = 77917;

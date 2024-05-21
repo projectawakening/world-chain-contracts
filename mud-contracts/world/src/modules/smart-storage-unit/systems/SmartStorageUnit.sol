@@ -11,10 +11,8 @@ import { EntityRecordData, WorldPosition } from "../types.sol";
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT } from "@eveworld/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT, SSU_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
-
-import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { InventoryLib } from "../../inventory/InventoryLib.sol";
@@ -65,20 +63,13 @@ contract SmartStorageUnit is EveSystem {
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public hookable(smartObjectId, _systemId()) {
-    {
-      uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
-
-      if (classId == 0) {
-        revert ISmartStorageUnitErrors.SmartStorageUnit_UndefinedClassId();
-      }
-
-      if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
-        // register smartObjectId as an object
-        _smartObjectLib().registerEntity(smartObjectId, OBJECT);
-        // tag this object's entity Id to a set of defined classIds
-        _smartObjectLib().tagEntity(smartObjectId, classId);
-      }
+    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
+      // register smartObjectId as an object
+      _smartObjectLib().registerEntity(smartObjectId, OBJECT);
     }
+    // it's always not tag because this function is to create an SSU. If this revert it means it already existed
+    _smartObjectLib().tagEntity(smartObjectId, SSU_CLASS_ID);
+
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
       smartObjectId,
@@ -158,11 +149,7 @@ contract SmartStorageUnit is EveSystem {
     // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
     _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
-
-  function setSSUClassId(uint256 classId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
-    ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
-  }
-
+  
   /**
    * @notice Create metadata of a smart deployable
    * @dev Create metadata of a smart deployable by smart object id

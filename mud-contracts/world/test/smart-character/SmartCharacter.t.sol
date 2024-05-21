@@ -15,6 +15,8 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IModule } from "@latticexyz/world/src/IModule.sol";
 
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "../../src/utils/SOFInitializationLibrary.sol";
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
@@ -22,7 +24,7 @@ import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/Hook
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
-import { SMART_CHARACTER_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_CHARACTER_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_CLASS_ID, CLASS } from "@eveworld/common-constants/src/constants.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.sol";
@@ -52,14 +54,14 @@ contract SmartCharacterTest is Test {
   using SmartCharacterLib for SmartCharacterLib.World;
   using WorldResourceIdInstance for ResourceId;
   using SmartObjectLib for SmartObjectLib.World;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
 
   IBaseWorld world;
   SmartCharacterLib.World smartCharacter;
   IERC721Mintable erc721Token;
   bytes14 constant SMART_CHAR_ERC721 = "ERC721Char";
   SmartObjectLib.World SOFInterface;
-  uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
-  uint256[] smartCharClassIds;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -72,12 +74,16 @@ contract SmartCharacterTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    world.initSOF();
 
     SOFInterface = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
 
     _installModule(new PuppetModule(), 0);
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
+    world.initEntityRecord();
+    
     erc721Token = registerERC721(
       world,
       SMART_CHAR_ERC721,
@@ -89,14 +95,9 @@ contract SmartCharacterTest is Test {
     smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
     smartCharacter.registerERC721Token(address(erc721Token));
 
-    // create class and object types
-    SOFInterface.registerEntityType(2, "CLASS");
-    SOFInterface.registerEntityType(1, "OBJECT");
-    // allow object to class tagging
-    SOFInterface.registerEntityTypeAssociation(1, 2);
-
-    // initalize the smart character class
-    SOFInterface.registerEntity(smartCharacterClassId, 2);
+    SOFInterface.registerEntity(SMART_CHARACTER_CLASS_ID, CLASS);
+    world.initSmartCharacter();
+    world.associateClassIdToSmartCharacter(SMART_CHARACTER_CLASS_ID);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -125,9 +126,6 @@ contract SmartCharacterTest is Test {
     vm.assume(entityId != 0);
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
-
-    // set smart character classId in the config
-    smartCharacter.setCharClassId(smartCharacterClassId);
 
     EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
     CharactersTableData memory charactersData = CharactersTableData({
@@ -171,7 +169,7 @@ contract SmartCharacterTest is Test {
 
     // check that the character has been tagged for the appropriate class
     assertEq(taggedEntityIds.length, 1);
-    assertEq(taggedEntityIds[0], smartCharacterClassId);
+    assertEq(taggedEntityIds[0], SMART_CHARACTER_CLASS_ID);
   }
 
   function testCreateSmartCharacterOffchain(

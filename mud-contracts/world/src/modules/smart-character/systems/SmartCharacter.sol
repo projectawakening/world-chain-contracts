@@ -7,26 +7,29 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT, SMART_CHARACTER_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
 import { registerERC721 } from "../../eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 
-import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
 import { StaticDataGlobalTableData } from "../../../codegen/tables/StaticDataGlobalTable.sol";
 import { Utils } from "../Utils.sol";
+import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
+
 import { EntityRecordData } from "../types.sol";
 import { ISmartCharacterErrors } from "../ISmartCharacterErrors.sol";
 
 contract SmartCharacter is EveSystem {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
+  using SmartObjectFrameworkUtils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
   using SmartObjectLib for SmartObjectLib.World;
 
@@ -50,17 +53,12 @@ contract SmartCharacter is EveSystem {
     // TODO: uncomment this if/when static data flows off-chain are ready
     // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
 
-    uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
-
-    if (classId == 0) {
-      revert ISmartCharacterErrors.SmartCharacter_UndefinedClassIds();
+    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), characterId) == false) {
+      // register smartObjectId as an object
+      _smartObjectLib().registerEntity(characterId, OBJECT);
     }
-
-    // register smartObjectId as an object
-    _smartObjectLib().registerEntity(characterId, 1);
-
-    // tag this object's entity Id to a defined classId
-    _smartObjectLib().tagEntity(characterId, classId);
+    // it's always not tag because this function is to create an SSU. If this revert it means it already existed
+    _smartObjectLib().tagEntity(characterId, SMART_CHARACTER_CLASS_ID);
 
     uint256 createdAt = block.timestamp;
     CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);
@@ -82,10 +80,6 @@ contract SmartCharacter is EveSystem {
       characterId,
       tokenCid
     );
-  }
-
-  function setCharClassId(uint256 classId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
-    ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
   }
 
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {

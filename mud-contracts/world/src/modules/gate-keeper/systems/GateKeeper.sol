@@ -16,6 +16,7 @@ import { IGateKeeperErrors } from "../IGateKeeperErrors.sol";
 
 import { EntityRecordData } from "../../smart-storage-unit/types.sol";
 
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { EntityRecordTable } from "../../../codegen/tables/EntityRecordTable.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
@@ -23,6 +24,7 @@ import { InventoryTable } from "../../../codegen/tables/InventoryTable.sol";
 import { InventoryItemTable, InventoryItemTableData } from "../../../codegen/tables/InventoryItemTable.sol";
 import { GateKeeperTable } from "../../../codegen/tables/GateKeeperTable.sol";
 
+import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as InventoryUtils } from "../../inventory/Utils.sol";
@@ -41,6 +43,7 @@ import { OBJECT, GATE_KEEPER_CLASS_ID } from "../../../utils/ModulesInitializati
 contract GateKeeper is EveSystem, IGateKeeperErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
+  using SmartObjectFrameworkUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
   using InventoryUtils for bytes14;
@@ -81,8 +84,11 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
         storageCapacity,
         ephemeralStorageCapacity
       );
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).registerEntity(smartObjectId, OBJECT);
-    SmartObjectLib.World(IBaseWorld(_world()), SMART_OBJECT_DEPLOYMENT_NAMESPACE).tagEntity(
+    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
+      // register smartObjectId as an object
+      _smartObjectLib().registerEntity(smartObjectId, OBJECT);
+    }
+    _smartObjectLib().tagEntity(
       smartObjectId,
       GATE_KEEPER_CLASS_ID
     );
@@ -153,6 +159,10 @@ contract GateKeeper is EveSystem, IGateKeeperErrors {
         );
       }
     }
+  }
+
+  function _smartObjectLib() internal view returns (SmartObjectLib.World memory) {
+    return SmartObjectLib.World({ iface: IBaseWorld(_world()), namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal view returns (ResourceId) {

@@ -7,8 +7,9 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT,SMART_DEPLOYABLE_CLASS_ID } from "@eveworld/common-constants/src/constants.sol";
 
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { LocationLib } from "../../location/LocationLib.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
@@ -16,15 +17,19 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codeg
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
+import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 import { State, SmartObjectData } from "../types.sol";
 import { FUEL_DECIMALS } from "../constants.sol";
 import { Utils } from "../Utils.sol";
+import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
+  using SmartObjectFrameworkUtils for bytes14;
+  using SmartObjectLib for SmartObjectLib.World;
   using LocationLib for LocationLib.World;
 
   // TODO: is `supportInterface` working properly here ?
@@ -66,6 +71,13 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
+
+    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), entityId) == false) {
+      // register smartObjectId as an object
+      _smartObjectLib().registerEntity(entityId, OBJECT);
+    }
+    // it's always not tag because this function is to create an SSU. If this revert it means it already existed
+    _smartObjectLib().tagEntity(entityId, SMART_DEPLOYABLE_CLASS_ID);
 
     //Create a new deployable when its new
     if (previousState == State.NULL) {
@@ -399,6 +411,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function _locationLib() internal view returns (LocationLib.World memory) {
     return LocationLib.World({ iface: IBaseWorld(_world()), namespace: LOCATION_DEPLOYMENT_NAMESPACE });
   }
+
+  function _smartObjectLib() internal view returns (SmartObjectLib.World memory) {
+    return SmartObjectLib.World({ iface: IBaseWorld(_world()), namespace: SMART_OBJECT_DEPLOYMENT_NAMESPACE });
+  }
+
 
   function _systemId() internal view returns (ResourceId) {
     return _namespace().smartDeployableSystemId();

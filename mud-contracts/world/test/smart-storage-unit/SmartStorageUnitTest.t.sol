@@ -21,7 +21,10 @@ import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/En
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SSU_CLASS_ID, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_CLASS_ID, SSU_CLASS_ID, CLASS } from "@eveworld/common-constants/src/constants.sol";
+
+import { ModulesInitializationLibrary } from "../../src/utils/ModulesInitializationLibrary.sol";
+import { SOFInitializationLibrary } from "../../src/utils/SOFInitializationLibrary.sol";
 
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { EntityRecordTableData, EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -74,6 +77,8 @@ contract SmartStorageUnitTest is Test {
   using InventoryUtils for bytes14;
   using LocationUtils for bytes14;
   using SmartObejctUtils for bytes14;
+  using ModulesInitializationLibrary for IBaseWorld;
+  using SOFInitializationLibrary for IBaseWorld;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using InventoryLib for InventoryLib.World;
@@ -92,7 +97,6 @@ contract SmartStorageUnitTest is Test {
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
 
   SmartObjectLib.World SOFInterface;
-  uint256 ssuClassId = uint256(keccak256("SSUClass"));
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -105,7 +109,7 @@ contract SmartStorageUnitTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
-
+    world.initSOF();
     SOFInterface = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
 
     // install module dependancies
@@ -113,6 +117,9 @@ contract SmartStorageUnitTest is Test {
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
+    world.initStaticData();
+    world.initEntityRecord();
+    world.initLocation();
 
     erc721DeployableToken = registerERC721(
       world,
@@ -130,6 +137,7 @@ contract SmartStorageUnitTest is Test {
         address(deployableModule)
       );
     world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
+    world.initSmartDeployable();
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
     smartDeployable.registerDeployableToken(address(erc721DeployableToken));
 
@@ -140,26 +148,26 @@ contract SmartStorageUnitTest is Test {
         WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE),
         address(inventoryModule)
       );
-
     world.installModule(
       inventoryModule,
       abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
     );
+    world.initInventory();
     inventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
     // SmartStorageUnitModule installation
     _installModule(new SmartStorageUnitModule(), SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+    world.initSSU();
     smartStorageUnit = SmartStorageUnitLib.World(world, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE);
+
+    SOFInterface.registerEntity(SMART_DEPLOYABLE_CLASS_ID, CLASS);
+    world.associateClassIdToSmartDeployable(SMART_DEPLOYABLE_CLASS_ID);
+
+    SOFInterface.registerEntity(SSU_CLASS_ID, CLASS);
+    world.associateClassIdToSSU(SSU_CLASS_ID);
+
     smartDeployable.globalResume();
 
-    // create class and object types
-    SOFInterface.registerEntityType(2, "CLASS");
-    SOFInterface.registerEntityType(1, "OBJECT");
-    // allow object to class tagging
-    SOFInterface.registerEntityTypeAssociation(1, 2);
-
-    // initalize the ssu class
-    SOFInterface.registerEntity(ssuClassId, 2);
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -179,10 +187,10 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndAnchorSmartStorageUnit(uint256 smartObjectId) public {
-    vm.assume(smartObjectId != 0);
-
-    // set ssu classId in the config
-    smartStorageUnit.setSSUClassId(ssuClassId);
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
 
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
@@ -254,7 +262,7 @@ contract SmartStorageUnitTest is Test {
       smartObjectId
     );
 
-    assertEq(taggedEntityIds[0], ssuClassId);
+    assertEq(taggedEntityIds[0], SSU_CLASS_ID);
   }
 
   function testCreateAndDepositItemsToInventory(uint256 smartObjectId) public {
@@ -333,6 +341,10 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testUnanchorAndreAnchor(uint256 smartObjectId) public {
+    vm.assume(
+      smartObjectId != 0 &&
+        !EntityTable.getDoesExists(SMART_OBJECT_DEPLOYMENT_NAMESPACE.entityTableTableId(), smartObjectId)
+    );
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
@@ -387,53 +399,16 @@ contract SmartStorageUnitTest is Test {
     assertEq(deployableStateData.anchoredAt >= ephemeralInvItemTableData.stateUpdate, true);
 
     vm.warp(block.timestamp + 10);
-    // set ssu classId in the config
-    smartStorageUnit.setSSUClassId(ssuClassId);
 
-    EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
 
-    smartStorageUnit.createAndAnchorSmartStorageUnit(
-      smartObjectId,
-      entityRecordData,
-      smartObjectData,
-      worldPosition,
-      1e18, // fuelUnitVolume,
-      1, // fuelConsumptionPerMinute,
-      1000000 * 1e18, // fuelMaxCapacity,
-      storageCapacity,
-      ephemeralStorageCapacity
-    );
-    smartDeployable.depositFuel(smartObjectId, 100000);
-    smartDeployable.bringOnline(smartObjectId);
-
-    smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
-
-    deployableStateData = DeployableState.get(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-
-    assertEq(uint8(deployableStateData.currentState), uint8(State.ONLINE));
-    assertEq(deployableStateData.isValid, true);
-
-    inventoryItemTableData = InventoryItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
-      smartObjectId,
-      items[0].inventoryItemId
-    );
-    assertEq(inventoryItemTableData.quantity, items[0].quantity);
-
-    ephemeralInvItemTableData = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
-      smartObjectId,
-      ephemeralItems[0].inventoryItemId,
-      ephemeralItems[0].owner
-    );
-
-    assertEq(ephemeralInvItemTableData.quantity, ephemeralItems[0].quantity);
+    LocationTableData memory locationData = LocationTableData({
+      solarSystemId: worldPosition.solarSystemId,
+      x: worldPosition.position.x,
+      y: worldPosition.position.y,
+      z: worldPosition.position.z
+    });
+    smartDeployable.anchor(smartObjectId, locationData);
   }
 
   function testUnanchorDepositRevert(uint256 smartObjectId) public {

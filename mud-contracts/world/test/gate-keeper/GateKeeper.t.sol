@@ -189,10 +189,6 @@ contract GateKeeperUnitTest is Test {
     smartObject.registerEntity(456, OBJECT);
     world.associateEntityRecord(456);
 
-    ResourceId gateKeeperSystemId = GATE_KEEPER_DEPLOYMENT_NAMESPACE.gateKeeperSystemId();
-    ResourceId inventoryInteractSystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId();
-    ResourceId inventorySystemId = INVENTORY_DEPLOYMENT_NAMESPACE.inventorySystemId();
-
     _registerClassLevelHookGateKeeper();
   }
 

@@ -34,8 +34,6 @@ interface ISmartStorageUnit {
     InventoryItem[] memory items
   ) external;
 
-  function eveworld__setSSUClassId(uint256 classId) external;
-
   function eveworld__setDeploybaleMetadata(
     uint256 smartObjectId,
     string memory name,
