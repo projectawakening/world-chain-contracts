@@ -109,7 +109,7 @@ jobs:
           export FORWARDER_ADDRESS
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
-          pnpm nx createSmartCharacter:local end-to-end-tests
+          pnpm nx createSmartCharacter:ci end-to-end-tests
 
       - name: Testing ERC20 creation and minting
         run: |
@@ -117,7 +117,7 @@ jobs:
           export FORWARDER_ADDRESS
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
-          pnpm nx createMintERC20:local end-to-end-tests
+          pnpm nx createMintERC20:ci end-to-end-tests
 
       - name: Testing Smart Storage Unit creation and anchoring
         run: |
@@ -125,7 +125,7 @@ jobs:
           export FORWARDER_ADDRESS
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
-          pnpm nx createAndAnchor:local end-to-end-tests
+          pnpm nx createAndAnchor:ci end-to-end-tests
   
 
   ReleaseImage:
