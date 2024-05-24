@@ -82,7 +82,7 @@ jobs:
           context: .
           platforms: linux/amd64
           build-args: |
-            IMAGE_TAG=0.0.7
+            IMAGE_TAG=v0.0.7
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=docker
@@ -164,6 +164,6 @@ jobs:
           context: .
           platforms: linux/arm64,linux/amd64
           build-args: |
-            IMAGE_TAG=0.0.7
+            IMAGE_TAG=v0.0.7
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
