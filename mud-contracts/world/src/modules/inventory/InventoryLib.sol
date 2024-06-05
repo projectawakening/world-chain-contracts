@@ -100,6 +100,21 @@ library InventoryLib {
     );
   }
 
+  function inventoryToEphemeralTransferWithParam(
+    World memory world,
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory outItems
+  ) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(
+        IInventoryInteract.inventoryToEphemeralTransferWithParam,
+        (smartObjectId, ephemeralInventoryOwner, outItems)
+      )
+    );
+  }
+
   function ephemeralToInventoryTransfer(
     World memory world,
     uint256 smartObjectId,

@@ -12,6 +12,12 @@ import { InventoryItem } from "./../../modules/inventory/types.sol";
 interface IInventoryInteract {
   function eveworld__inventoryToEphemeralTransfer(uint256 smartObjectId, InventoryItem[] memory outItems) external;
 
+  function eveworld__inventoryToEphemeralTransferWithParam(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory outItems
+  ) external;
+
   function eveworld__ephemeralToInventoryTransfer(uint256 smartObjectId, InventoryItem[] memory items) external;
 
   function eveworld__configureInteractionHandler(uint256 smartObjectId, bytes memory interactionParams) external;
