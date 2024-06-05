@@ -85,8 +85,8 @@ contract InventoryInteract is EveSystem {
   }
 
   /**
-   * @notice Transfer items from ephemeral to inventory
-   * @dev transfer items from ephemeral to inventory
+   * @notice Transfer items from inventory to ephemeral
+   * @dev transfer items from inventory to ephemeral
    * @param smartObjectId is the smart object id
    * @param ephemeralInventoryOwner is the ephemeral inventory owner
    * @param outItems is the array of items to transfer
