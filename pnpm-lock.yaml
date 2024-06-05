@@ -114,7 +114,7 @@ importers:
         specifier: 0.0.7
         version: link:../smart-object-framework
       '@eveworld/world':
-        specifier: 0.0.7
+        specifier: 0.0.8
         version: link:../world
       '@latticexyz/cli':
         specifier: 2.0.0-transaction-context-98ef570f
@@ -282,7 +282,7 @@ importers:
         specifier: 0.0.7
         version: link:../mud-contracts/common/constants
       '@eveworld/world':
-        specifier: 0.0.7
+        specifier: 0.0.8
         version: link:../mud-contracts/world
       '@latticexyz/schema-type':
         specifier: 2.0.0-transaction-context-98ef570f
