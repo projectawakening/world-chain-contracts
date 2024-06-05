@@ -1,5 +1,11 @@
 # @eveworld/world
 
+## 0.0.8
+
+### Patch Changes
+
+- Bug fix: inventory interact inventoryToEphemeralTransferWithParam with parameter
+
 ## 0.0.7
 
 ### Patch Changes
