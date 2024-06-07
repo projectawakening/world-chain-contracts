@@ -98,10 +98,11 @@ contract VendingMachineTestSystem is System {
     outItems[0] = InventoryItem(outItemId, inventoryOwner, 45, 1, 50, quantity * ratio);
 
     //Withdraw from inventory and deposit to ephemeral inventory
-    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, outItems);
+    // _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, outItems);
 
     //Withdraw from ephemeralnventory and deposit to inventory
     _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, inItems);
+    _inventoryLib().inventoryToEphemeralTransferWithParam(smartObjectId, ephItemOwner, outItems);
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {

@@ -156,10 +156,10 @@ mkdir abis/trusted-forwarder
 mkdir abis/world
 
 #7 Copy ABIS to be used for External consumption
-cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v${IMAGE_TAG}.abi.json"
-cp mud-contracts/world/out/IWorld.sol/IWorld.abi.json "abis/world/IWorld-v${IMAGE_TAG}.abi.json"
+cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-${IMAGE_TAG}.abi.json"
+cp mud-contracts/world/out/IWorld.sol/IWorld.abi.json "abis/world/IWorld-${IMAGE_TAG}.abi.json"
 # Custome ERC2771 Compatible IWorld contract
-    jq 'map((.name? |= gsub("^eveworld__"; "")) // .)' "abis/world/IWorld-v${IMAGE_TAG}.abi.json" > "abis/world/ERC2771IWorld-v${IMAGE_TAG}.abi.json"
+    jq 'map((.name? |= gsub("^eveworld__"; "")) // .)' "abis/world/IWorld-${IMAGE_TAG}.abi.json" > "abis/world/ERC2771IWorld-${IMAGE_TAG}.abi.json"
 
 show_progress  7 7
 echo '{"WORLD_ADDRESS":"'$WORLD_ADDRESS'", "FORWARDER_ADDRESS":"'$FORWARDER_ADDRESS'"}' > run_env.json
