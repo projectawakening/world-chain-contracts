@@ -13,6 +13,7 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { State } from "../../../codegen/common.sol";
 
+import { AccessModified } from "../../access-control/systems/AccessModified.sol";
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
@@ -21,7 +22,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
 
-contract Inventory is EveSystem {
+contract Inventory is AccessModified, EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
@@ -45,7 +46,7 @@ contract Inventory is EveSystem {
   function setInventoryCapacity(
     uint256 smartObjectId,
     uint256 storageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
     if (storageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("Inventory: storage capacity cannot be 0");
     }
@@ -62,7 +63,7 @@ contract Inventory is EveSystem {
   function depositToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrObjectOwner(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
@@ -102,7 +103,7 @@ contract Inventory is EveSystem {
   function withdrawFromInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrObjectOwner(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId

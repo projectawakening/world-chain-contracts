@@ -22,6 +22,7 @@
     "SMART_STORAGE_UNIT": "SmartStorageUnit",
     "INVENTORY": "Inventory",
     "EPHEMERAL_INVENTORY": "EphemeralInv",
-    "INVENTORY_INTERACT": "InventoryInterac"
+    "INVENTORY_INTERACT": "InventoryInterac",
+    "ACCESS_CONTROL": "AccessControl"
   }
 }

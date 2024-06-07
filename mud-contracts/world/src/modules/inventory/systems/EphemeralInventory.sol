@@ -16,12 +16,13 @@ import { State } from "../../../codegen/common.sol";
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 
+import { AccessModified } from "../../access-control/systems/AccessModified.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils } from "../Utils.sol";
 import { InventoryItem } from "../types.sol";
 
-contract EphemeralInventory is EveSystem {
+contract EphemeralInventory is AccessModified, EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
@@ -46,7 +47,7 @@ contract EphemeralInventory is EveSystem {
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
     uint256 ephemeralStorageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
@@ -69,15 +70,16 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (currentState != State.ONLINE) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+  ) public onlyAdminOrEphInvOwner(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
+    {
+      State currentState = DeployableState.getCurrentState(
+        SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+        smartObjectId
+      );
+      if (currentState != State.ONLINE) {
+        revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+      }
     }
-
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
       _namespace().ephemeralInvTableId(),
       smartObjectId,
@@ -134,13 +136,15 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+  ) public onlyAdminOrEphInvOwner(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
+    {
+      State currentState = DeployableState.getCurrentState(
+        SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+        smartObjectId
+      );
+      if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+        revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+      }
     }
 
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(

@@ -7,6 +7,10 @@ export default mudConfig({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
   excludeSystems: ["ERC721System"],
   systems: {
+    AccessControl: {
+      name: "AccessControl", // NOTE: hardcoded for now
+      openAccess: true,
+    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
@@ -51,6 +55,21 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
+    /**
+     * Simple Access Control - for enforcing the most basic acess rules
+     */
+    AccessRole: {
+      keySchema: { roleId: "bytes32" },
+      valueSchema: {
+        accounts: "address[]",
+      },
+    },
+    AccessEnforcement: {
+      keySchema: { target: "bytes32" },
+      valueSchema: {
+        isEnforced: "bool",
+      },
+    },
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation
      */
