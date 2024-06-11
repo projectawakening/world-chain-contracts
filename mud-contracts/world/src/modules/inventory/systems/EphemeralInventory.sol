@@ -70,7 +70,7 @@ contract EphemeralInventory is AccessModified, EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public onlyAdminOrEphInvOwner(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminWithEphInvOwnerOrApproved(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
     {
       State currentState = DeployableState.getCurrentState(
         SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -80,11 +80,69 @@ contract EphemeralInventory is AccessModified, EveSystem {
         revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
       }
     }
+
+    uint256 totalUsedCapacity = _processAndReturnTotalUsedCapacity(smartObjectId, ephemeralInventoryOwner, items);
+    
+
+    EphemeralInvTable.setUsedCapacity(
+      _namespace().ephemeralInvTableId(),
+      smartObjectId,
+      ephemeralInventoryOwner,
+      totalUsedCapacity
+    );
+  }
+
+  /**
+   * @notice Withdraw items from the ephemeral inventory
+   * @dev Withdraw items from the ephemeral inventory by smart storage unit id
+   * //TODO msg.sender should be the item owner
+   * @param smartObjectId The smart storage unit id
+   * @param ephemeralInventoryOwner The owner of the inventory
+   * @param items The items to withdraw from the inventory
+   */
+  function withdrawFromEphemeralInventory(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) public onlyAdminWithEphInvOwnerOrApproved(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
+    {
+      State currentState = DeployableState.getCurrentState(
+        SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+        smartObjectId
+      );
+      if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+        revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+      }
+    }
+
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
       _namespace().ephemeralInvTableId(),
       smartObjectId,
       ephemeralInventoryOwner
     );
+
+    for (uint256 i = 0; i < items.length; i++) {
+      usedCapacity = _processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
+    }
+    EphemeralInvTable.setUsedCapacity(
+      _namespace().ephemeralInvTableId(),
+      smartObjectId,
+      ephemeralInventoryOwner,
+      usedCapacity
+    );
+  }
+
+  function _systemId() internal view returns (ResourceId) {
+    return _namespace().ephemeralInventorySystemId();
+  }
+
+  function _processAndReturnTotalUsedCapacity(uint256  smartObjectId, address ephemeralInventoryOwner, InventoryItem[] memory items) internal returns (uint256) {
+    uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
+      _namespace().ephemeralInvTableId(),
+      smartObjectId,
+      ephemeralInventoryOwner
+    );
+    uint256 totalUsedCapacity = usedCapacity;
     uint256 maxCapacity = EphemeralInvCapacityTable.getCapacity(
       _namespace().ephemeralInvCapacityTableId(),
       smartObjectId
@@ -107,66 +165,17 @@ contract EphemeralInventory is AccessModified, EveSystem {
         );
       }
       uint256 itemIndex = existingItemsLength + i;
-      usedCapacity = _processItemDeposit(
+      totalUsedCapacity = _processItemDeposit(
         smartObjectId,
         ephemeralInventoryOwner,
         items[i],
-        usedCapacity,
+        totalUsedCapacity,
         maxCapacity,
         itemIndex
       );
     }
-    EphemeralInvTable.setUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner,
-      usedCapacity
-    );
-  }
 
-  /**
-   * @notice Withdraw items from the ephemeral inventory
-   * @dev Withdraw items from the ephemeral inventory by smart storage unit id
-   * //TODO msg.sender should be the item owner
-   * @param smartObjectId The smart storage unit id
-   * @param ephemeralInventoryOwner The owner of the inventory
-   * @param items The items to withdraw from the inventory
-   */
-  function withdrawFromEphemeralInventory(
-    uint256 smartObjectId,
-    address ephemeralInventoryOwner,
-    InventoryItem[] memory items
-  ) public onlyAdminOrEphInvOwner(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
-    {
-      State currentState = DeployableState.getCurrentState(
-        SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-        smartObjectId
-      );
-      if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
-        revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
-      }
-    }
-
-    uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner
-    );
-    uint256 itemsLength = items.length;
-
-    for (uint256 i = 0; i < itemsLength; i++) {
-      usedCapacity = _processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
-    }
-    EphemeralInvTable.setUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner,
-      usedCapacity
-    );
-  }
-
-  function _systemId() internal view returns (ResourceId) {
-    return _namespace().ephemeralInventorySystemId();
+    return totalUsedCapacity;
   }
 
   function _processItemDeposit(
@@ -313,7 +322,7 @@ contract EphemeralInventory is AccessModified, EveSystem {
     );
 
     if (itemData.stateUpdate < deployableStateData.anchoredAt) {
-      //Disable withdraw if its has been re-anchored
+      // Disable withdraw if its has been re-anchored
       revert IInventoryErrors.Inventory_InvalidItemQuantity(
         "Inventory: invalid quantity",
         smartObjectId,

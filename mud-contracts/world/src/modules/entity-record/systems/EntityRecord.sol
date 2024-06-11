@@ -6,11 +6,12 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
+import { AccessModified } from "../../access-control/systems/AccessModified.sol";
 import { Utils } from "../Utils.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
 
-contract EntityRecord is EveSystem {
+contract EntityRecord is AccessModified, EveSystem {
   using Utils for bytes14;
 
   /**
@@ -25,7 +26,7 @@ contract EntityRecord is EveSystem {
     uint256 itemId,
     uint256 typeId,
     uint256 volume
-  ) public hookable(entityId, _systemId()) {
+  ) public onlyAdmin() hookable(entityId, _systemId()) {
     EntityRecordTable.set(_namespace().entityRecordTableId(), entityId, itemId, typeId, volume, true);
   }
 
@@ -42,7 +43,7 @@ contract EntityRecord is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public hookable(entityId, _systemId()) {
+  ) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
   }
 
@@ -60,7 +61,7 @@ contract EntityRecord is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public hookable(entityId, _systemId()) {
+  ) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.set(_namespace().entityRecordOffchainTableId(), entityId, name, dappURL, description);
   }
 
@@ -71,7 +72,7 @@ contract EntityRecord is EveSystem {
    * @param entityId we create an off-chain record for
    * @param name name of that entity
    */
-  function setName(uint256 entityId, string memory name) public hookable(entityId, _systemId()) {
+  function setName(uint256 entityId, string memory name) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.setName(_namespace().entityRecordOffchainTableId(), entityId, name);
   }
 
@@ -82,7 +83,7 @@ contract EntityRecord is EveSystem {
    * @param entityId we create an off-chain record for
    * @param dappURL link to that entity's dApp URL
    */
-  function setDappURL(uint256 entityId, string memory dappURL) public hookable(entityId, _systemId()) {
+  function setDappURL(uint256 entityId, string memory dappURL) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.setDappURL(_namespace().entityRecordOffchainTableId(), entityId, dappURL);
   }
 
@@ -93,7 +94,7 @@ contract EntityRecord is EveSystem {
    * @param entityId we create an off-chain record for
    * @param description description of that entity
    */
-  function setDescription(uint256 entityId, string memory description) public hookable(entityId, _systemId()) {
+  function setDescription(uint256 entityId, string memory description) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) {
     EntityRecordOffchainTable.setDescription(_namespace().entityRecordOffchainTableId(), entityId, description);
   }
 

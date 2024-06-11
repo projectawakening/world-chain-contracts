@@ -7,10 +7,6 @@ export default mudConfig({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
   excludeSystems: ["ERC721System"],
   systems: {
-    AccessControl: {
-      name: "AccessControl", // NOTE: hardcoded for now
-      openAccess: true,
-    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
@@ -56,19 +52,25 @@ export default mudConfig({
   },
   tables: {
     /**
-     * Simple Access Control - for enforcing the most basic acess rules
+     * Simple Access Control - for enforcing the most basic access rules
      */
     AccessRole: {
-      keySchema: { roleId: "bytes32" },
+      keySchema: { 
+        roleId: "bytes32",
+      },
       valueSchema: {
         accounts: "address[]",
       },
+      tableIdArgument: true,
     },
     AccessEnforcement: {
-      keySchema: { target: "bytes32" },
+      keySchema: { 
+        target: "bytes32",
+      },
       valueSchema: {
         isEnforced: "bool",
       },
+      tableIdArgument: true,
     },
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation

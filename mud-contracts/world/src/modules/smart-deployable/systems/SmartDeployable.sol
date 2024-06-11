@@ -9,6 +9,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
+import { AccessModified } from "../../access-control/systems/AccessModified.sol";
 import { LocationLib } from "../../location/LocationLib.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
@@ -22,7 +23,7 @@ import { State, SmartObjectData } from "../types.sol";
 import { FUEL_DECIMALS } from "../constants.sol";
 import { Utils } from "../Utils.sol";
 
-contract SmartDeployable is EveSystem, SmartDeployableErrors {
+contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using LocationLib for LocationLib.World;
@@ -43,7 +44,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
 
   function registerDeployableToken(
     address tokenAddress
-  ) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     if (DeployableTokenTable.getErc721Address(_namespace().deployableTokenTableId()) != address(0)) {
       revert SmartDeployableERC721AlreadyInitialized();
     }
@@ -61,7 +62,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     uint256 fuelUnitVolumeInWei,
     uint256 fuelConsumptionPerMinuteInWei,
     uint256 fuelMaxCapacityInWei
-  ) public hookable(entityId, _systemId()) onlyActive {
+  ) public onlyAdmin() hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -109,7 +110,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev destroys a smart deployable
    * @param entityId entityId
    */
-  function destroyDeployable(uint256 entityId) public hookable(entityId, _systemId()) {
+  function destroyDeployable(uint256 entityId) public onlyAdmin() hookable(entityId, _systemId()) {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -124,7 +125,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * TODO: restrict this to entityIds that exist
    * @param entityId entityId
    */
-  function bringOnline(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function bringOnline(uint256 entityId) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.ANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -141,7 +142,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings offline smart deployable (must have been online first)
    * @param entityId entityId
    */
-  function bringOffline(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function bringOffline(uint256 entityId) public onlyAdminOrObjectOwner(entityId) hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.ONLINE) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -157,7 +158,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function anchor(
     uint256 entityId,
     LocationTableData memory locationData
-  ) public hookable(entityId, _systemId()) onlyActive {
+  ) public onlyAdmin() hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (previousState != State.UNANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -172,7 +173,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev unanchors a smart deployable (must have been offline first)
    * @param entityId entityId
    */
-  function unanchor(uint256 entityId) public hookable(entityId, _systemId()) onlyActive {
+  function unanchor(uint256 entityId) public onlyAdmin() hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -187,7 +188,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalPause() public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function globalPause() public onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), false);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOffline(_namespace().globalStateTableId(), block.timestamp);
@@ -197,7 +198,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables offline (for admin use only)
    * TODO: actually needs to be made admin-only
    */
-  function globalResume() public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function globalResume() public onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     GlobalDeployableState.setIsPaused(_namespace().globalStateTableId(), true);
     GlobalDeployableState.setUpdatedBlockNumber(_namespace().globalStateTableId(), block.number);
     GlobalDeployableState.setLastGlobalOnline(_namespace().globalStateTableId(), block.timestamp);
@@ -213,7 +214,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
   function setFuelConsumptionPerMinute(
     uint256 entityId,
     uint256 fuelConsumptionPerMinuteInWei
-  ) public hookable(entityId, _systemId()) {
+  ) public onlyAdmin() hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelConsumptionPerMinute(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
@@ -227,7 +228,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to set the storage cap to
    * @param capacityInWei of max fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) public hookable(entityId, _systemId()) {
+  function setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) public onlyAdmin() hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId, capacityInWei);
   }
 
@@ -237,7 +238,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel in full units
    */
-  function depositFuel(uint256 entityId, uint256 unitAmount) public hookable(entityId, _systemId()) {
+  function depositFuel(uint256 entityId, uint256 unitAmount) public onlyAdmin() hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     if (
       (
@@ -270,7 +271,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId to deposit fuel to
    * @param unitAmount of fuel (for now Fuel has 18 decimals like regular ERC20 balances)
    */
-  function withdrawFuel(uint256 entityId, uint256 unitAmount) public hookable(entityId, _systemId()) {
+  function withdrawFuel(uint256 entityId, uint256 unitAmount) public onlyAdmin() hookable(entityId, _systemId()) {
     _updateFuel(entityId);
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),

@@ -14,10 +14,12 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && forge test -vvv"
+    "test": "tsc --noEmit && forge test -vvv",
+    "update-world:access-control": ". ./.env && pnpm forge script ./script/UpdateWorld.s.sol:UpdateWorld --broadcast --rpc-url $RPC_URL --chain-id $CHAIN_ID --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "config-access:inventory": ". ./.env && pnpm forge script ./script/InventoryAccess.s.sol:InventoryAccess --broadcast --rpc-url $RPC_URL --chain-id $CHAIN_ID --sig \"run(address)\" $WORLD_ADDRESS -vvv"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.0.0-next-17-awakening-9c07ab3a2",
+    "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",

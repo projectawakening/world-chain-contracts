@@ -50,6 +50,7 @@ import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecord
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
+import { ISmartDeployable } from "../../src/modules/smart-deployable/interfaces/ISmartDeployable.sol";
 import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
@@ -62,21 +63,26 @@ import { EphemeralInventory } from "../../src/modules/inventory/systems/Ephemera
 import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { IInventoryInteract } from "../../src/modules/inventory/interfaces/IInventoryInteract.sol";
+import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { IInventory } from "../../src/modules/inventory/interfaces/IInventory.sol";
 import { IEphemeralInventory } from "../../src/modules/inventory/interfaces/IEphemeralInventory.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
+import { DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
+
 
 // Access Control
 import { IAccessControlErrors } from "../../src/modules/access-control/interfaces/IAccessControlErrors.sol";
 import { IAccessControl } from "../../src/modules/access-control/interfaces/IAccessControl.sol";
 import { AccessControl } from "../../src/modules/access-control/systems/AccessControl.sol";
 
-import { AccessRole, AccessRoleTableId, AccessEnforcement, AccessEnforcementTableId } from "../../src/codegen/index.sol";
+import { AccessRole, AccessEnforcement } from "../../src/codegen/index.sol";
+import { MockForwarder } from "./MockForwarder.sol";
 
-import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_CONTROL_SYSTEM_NAME } from "../../src/modules/access-control/constants.sol";
+import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_ENFORCEMENT_TABLE_NAME, ACCESS_CONTROL_SYSTEM_NAME } from "../../src/modules/access-control/constants.sol";
 
 contract AccessControlTest is Test {
   using WorldResourceIdInstance for ResourceId;
@@ -95,10 +101,12 @@ contract AccessControlTest is Test {
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
   uint256 alicePK = vm.deriveKey(mnemonic, 1);
   uint256 bobPK = vm.deriveKey(mnemonic, 2);
+  uint256 charliePK = vm.deriveKey(mnemonic, 3);
 
   address deployer = vm.addr(deployerPK);
   address alice = vm.addr(alicePK);
   address bob = vm.addr(bobPK);
+  address charlie = vm.addr(charliePK);
 
   IBaseWorld world;
 
@@ -135,16 +143,35 @@ contract AccessControlTest is Test {
   EphemeralInventory ephemeral;
 
   uint256 inventoryItemId = 12345;
-  uint256 itemId = 12;
+  uint256 itemId = 0;
   uint256 typeId = 3;
   uint256 volume = 10;
 
   // Access Control Variables
   AccessControl accessControl;
+  MockForwarder mockForwarder;
   ResourceId ACCESS_CONTROL_SYSTEM_ID = WorldResourceIdLib.encode({
     typeId: RESOURCE_SYSTEM,
     namespace: EVE_WORLD_NAMESPACE,
-    name: bytes16("AccessControl")
+    name: ACCESS_CONTROL_SYSTEM_NAME
+  });
+
+  ResourceId MOCK_FORWARDER_SYSTEM_ID = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: EVE_WORLD_NAMESPACE,
+      name: bytes16("MockForwarder")
+    });
+
+  ResourceId ACCESS_ROLE_TABLE_ID = WorldResourceIdLib.encode({
+    typeId: RESOURCE_TABLE,
+    namespace: EVE_WORLD_NAMESPACE,
+    name: ACCESS_ROLE_TABLE_NAME
+  });
+
+  ResourceId ACCESS_ENFORCEMENT_TABLE_ID = WorldResourceIdLib.encode({
+    typeId: RESOURCE_TABLE,
+    namespace: EVE_WORLD_NAMESPACE,
+    name: ACCESS_ENFORCEMENT_TABLE_NAME
   });
 
   function setUp() public {
@@ -178,12 +205,17 @@ contract AccessControlTest is Test {
     world.installModule(SSUMod, abi.encode(EVE_WORLD_NAMESPACE));
     
     // DEPLOY AND REGISTER FOR ACCESS CONTROL
-    AccessRole.register();
-    AccessEnforcement.register();
+    AccessRole.register(ACCESS_ROLE_TABLE_ID);
+    AccessEnforcement.register(ACCESS_ENFORCEMENT_TABLE_ID);
     // deploy AccessControl System 
     accessControl = new AccessControl();
-    // register AccessControl Systems - to root
+    // register AccessControl System
     world.registerSystem(ACCESS_CONTROL_SYSTEM_ID, System(accessControl), true);
+
+    // deploy MockForwarder System 
+   mockForwarder  = new MockForwarder();
+    // register MockForwarder System
+    world.registerSystem(MOCK_FORWARDER_SYSTEM_ID, System(mockForwarder), true);
 
      // END: DEPLOY AND REGISTER FOR EVE WORLD
 
@@ -191,6 +223,8 @@ contract AccessControlTest is Test {
     SOFInterface = SmartObjectLib.World(world, EVE_WORLD_NAMESPACE);
     SDInterface = SmartDeployableLib.World(world, EVE_WORLD_NAMESPACE);
     SSUInterface = SmartStorageUnitLib.World(world, EVE_WORLD_NAMESPACE);
+    EntityRecordInterface = EntityRecordLib.World(world, EVE_WORLD_NAMESPACE);
+    InventoryInterface = InventoryLib.World(world, EVE_WORLD_NAMESPACE);
 
     // SOF setup
     // create class and object types
@@ -236,7 +270,11 @@ contract AccessControlTest is Test {
 
     EntityRecordInterface.createEntityRecord(inventoryItemId, itemId, typeId, volume);
     // END: WORLD CONFIGURATION
-
+    
+    world.grantAccess(ACCESS_ROLE_TABLE_ID, deployer);
+    world.grantAccess(ACCESS_ROLE_TABLE_ID, alice);
+    // not bob so we have an account to test against 
+    world.grantAccess(ACCESS_ROLE_TABLE_ID, charlie);
   }
 
   function testSetup() public {
@@ -252,19 +290,18 @@ contract AccessControlTest is Test {
     vm.expectRevert(
       IAccessControlErrors.AccessControl_AccessConfigAccessDenied.selector
     );
-    vm.startPrank(alice);
+    vm.prank(bob);
     world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
-
     // success, granted
-    world.grantAccess(AccessRoleTableId, alice);
+    vm.startPrank(deployer);
     world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
     world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
     vm.stopPrank();
 
     // verify table updates
-    address[] memory storedAdminAccessList = AccessRole.get(ADMIN);
+    address[] memory storedAdminAccessList = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
     assertEq(storedAdminAccessList[0], alice);
-    address[] memory storedApprovedAccessList = AccessRole.get(APPROVED);
+    address[] memory storedApprovedAccessList = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
     assertEq(storedApprovedAccessList[0], address(interact));
 
   }
@@ -275,24 +312,23 @@ contract AccessControlTest is Test {
     vm.expectRevert(
       IAccessControlErrors.AccessControl_AccessConfigAccessDenied.selector
     );
-    vm.startPrank(alice);
+    vm.prank(bob);
     world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
 
     // success, granted
-    world.grantAccess(AccessRoleTableId, alice);
+    vm.startPrank(deployer);
     world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
     vm.stopPrank();
 
     // verify table updates
-    bool isEnforced = AccessEnforcement.get(target);
+    bool isEnforced = AccessEnforcement.get(ACCESS_ENFORCEMENT_TABLE_ID, target);
     assertEq(isEnforced, true);
   }
 
   function testModifiedFunctionEnforcement() public {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
-    world.grantAccess(AccessRoleTableId, alice);
-    vm.startPrank(alice, alice);
+    vm.startPrank(deployer, alice);
     // success, not enforced
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     bytes32 target = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.setInventoryCapacity.selector));
@@ -303,43 +339,480 @@ contract AccessControlTest is Test {
     );
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     // success, not enforced
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, false)));
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     vm.stopPrank();
   }
 
   function testOnlyAdmin() public {
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    bytes32 target = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.setInventoryCapacity.selector));
     // success, ADMIN pass
-    // reject, not ADMIN 
+    vm.startPrank(deployer, deployer);
+    // set admin
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // enforce permission
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
+    // successful call from ADMIN tx.origin
+    InventoryInterface.setInventoryCapacity(ssuId, 100000000);
+    vm.stopPrank();
+
+    // reject, not ADMIN
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, alice, bytes32(ADMIN))
+    );
+    vm.startPrank(deployer, alice); // alice is not ADMIN
+    InventoryInterface.setInventoryCapacity(ssuId, 100000000);
+    vm.stopPrank();
+    
   }
 
 function testOnlyAdminOrObjectOwner() public {
-    // success, ADMIN pass
-    // success, OWNER pass
-    // reject, not ADMIN nor OWNER
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOffline.selector));
+    bytes32 target2 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOnline.selector));
+    vm.startPrank(alice, deployer);
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // enforce permission
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target2, true)));
+    
+    // success, OWNER and ADMIN pass
+    SDInterface.bringOffline(ssuId);
+    vm.stopPrank();
+
+    // success, OWNER only pass
+    vm.prank(alice, alice);
+    SDInterface.bringOnline(ssuId);
   }
+
+  function testOnlyAdminOrObjectOwner2() public {
+    // new initialization with charlie who is not ADMIN nor OWNER, this is needed fro initMsgSender testing since parnk don't reliably update transient storage values in the same test
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOnline.selector));
+    vm.startPrank(charlie, charlie);
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // enforce permission
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    
+    // reject, not ADMIN nor OWNER
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, bytes32(ADMIN))
+    );
+    SDInterface.bringOnline(ssuId);
+    vm.stopPrank();
+  }
+
+  function testOnlyAdminOrObjectOwner3() public {
+    // new initialization with charlie as msg.sender who is not ADMIN nor OWNER, this is needed fro initMsgSender testing since parnk don't reliably update transient storage values in the same test
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOffline.selector));
+    vm.startPrank(charlie, deployer);
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // enforce permission
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    
+    // success, ADMIN only pass
+    SDInterface.bringOffline(ssuId);
+    vm.stopPrank();
+  }
+  
 
   function testNoAccess() public {
+    ResourceId ERC721_SYSTEM_ID = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: ERC721_DEPLOYABLE_NAMESPACE,
+      name: bytes16("ERC721System")
+    });
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    bytes32 target = keccak256(abi.encodePacked(ERC721_SYSTEM_ID, IERC721.transferFrom.selector));
+    vm.startPrank(charlie, deployer);
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
+
     // reject, is ADMIN
-    // reject, is OWNER
-    // reject, is APPROVED
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, address(0), bytes32(0))
+    );
+    IERC721(erc721DeployableToken).transferFrom(deployer, alice, ssuId);
+    vm.stopPrank();
   }
 
+  function testNoAccess2() public {
+    ResourceId ERC721_SYSTEM_ID = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: ERC721_DEPLOYABLE_NAMESPACE,
+      name: bytes16("ERC721System")
+    });
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    bytes32 target = keccak256(abi.encodePacked(ERC721_SYSTEM_ID, IERC721.transferFrom.selector));
+    vm.startPrank(deployer, charlie);
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
+
+    // reject, is OWNER
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, address(0), bytes32(0))
+    );
+    IERC721(erc721DeployableToken).transferFrom(deployer, alice, ssuId);
+    vm.stopPrank();
+  }
+
+  function testNoAccess3() public {
+    ResourceId ERC721_SYSTEM_ID = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: ERC721_DEPLOYABLE_NAMESPACE,
+      name: bytes16("ERC721System")
+    });
+    address[] memory approvedAccessList = new address[](1);
+    approvedAccessList[0] = address(mockForwarder);
+    bytes32 target = keccak256(abi.encodePacked(ERC721_SYSTEM_ID, IERC721.transferFrom.selector));
+    vm.startPrank(charlie, charlie);
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target, true)));
+    
+    // reject, is APPROVED
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, address(0), bytes32(0))
+    );
+    world.call(
+      MOCK_FORWARDER_SYSTEM_ID,
+      abi.encodeCall(MockForwarder.callERC721, (deployer, alice, ssuId))
+    );
+    vm.stopPrank();
+    
+  }
 
   function testOnlyAdminWithEphInvOwnerOrApproved() public {
-    // success, is ADMIN, is EPH INV OWNER, is not APPROVED
-    // success, is not ADMIN, is EPH INV OWNER, is APPROVED
-    // success, is ADMIN, is not EPH INV OWNER, is APPROVED
-    // reject, is not ADMIN, is EPH INV OWNER, is not APPROVED
-    // reject, is ADMIN, is not EPH INV OWNER, is not APPROVED
+    InventoryItem[] memory inItems = new InventoryItem[](1);
+    inItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: alice,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 3
+    });
+
+    InventoryItem[] memory outItems = new InventoryItem[](1);
+    outItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: alice,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 1
+    });
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    address[] memory approvedAccessList = new address[](1);
+    approvedAccessList[0] = address(interact);
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventory.depositToEphemeralInventory.selector));
+    bytes32 target2 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventory.withdrawFromEphemeralInventory.selector));
+    
+    // ENV INV OWNER AND ADMIN
+    vm.startPrank(alice, deployer);
+    // no permissions enforced.. populate items and test flows with free calls
+    InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);    
+    InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+    // set ADMIN account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // enforce permissions (deposit)
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    // enforce permissions (withdrawal) 
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target2, true)));
+    
+    // success, is ADMIN, is EPH INV OWNER, is not APPROVED (direct call)
+    // deposit 
+    InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
+    // withdraw
+    InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+    vm.stopPrank();
+
+    // EPH INV OWNER ONLY
+    vm.startPrank(alice, alice);
+    // reject, is not ADMIN, is EPH INV OWNER, is not APPROVED (direct call)
+    // deposit
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, alice, ADMIN)
+    );
+    InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
+    // withdraw
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, alice, ADMIN)
+    );
+    InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+
+    // set APPROVED account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
+    // make forwarded call
+    // success, is not ADMIN, is EPH INV OWNER, is APPROVED (forwarded call)
+    // this implies withdrawalFromEphemeralInventory passes under APPROVED conditions
+    InventoryInterface.ephemeralToInventoryTransfer(ssuId, outItems);
+    vm.stopPrank();
+  }
+
+  function testOnlyAdminWithEphInvOwnerOrApproved2() public {
+    InventoryItem[] memory inItems = new InventoryItem[](1);
+    inItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: alice,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 5
+    });
+
+    InventoryItem[] memory outItems = new InventoryItem[](1);
+    outItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: alice,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 1
+    });
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    address[] memory approvedAccessList = new address[](2);
+    approvedAccessList[0] = address(interact);
+    approvedAccessList[1] = address(mockForwarder);
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventory.depositToEphemeralInventory.selector));
+    bytes32 target2 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventory.withdrawFromEphemeralInventory.selector));
+    
+    // ADMIN ONLY
+    vm.startPrank(charlie, deployer);
+    // no permissions enforced.. populate items and test flows with free calls
+    InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);    
+    InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+    // set ADMIN account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // set APPROVED account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
+    // enforce permissions (both deposit and withdraw)
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target2, true)));
+    
+    // reject, is ADMIN, is not EPH INV OWNER, is not APPROVED (direct call)
+    // deposit
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, bytes32("OWNER"))
+    );
+    InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
+    // withdraw
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, bytes32("OWNER"))
+    );
+    InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+
+    // make forwarded call
+    // is ADMIN, is not EPH INV OWNER, is APPROVED (forwarded call)
+    // passes permission modifier because is APPROVED (forwarded call), but then fails the harcoded ephInvOwner requirement in InventoryInteract.ephemeralToInventoryTranfser
+    vm.expectRevert(
+      abi.encodeWithSelector(IInventoryErrors.Inventory_InvalidItemQuantity.selector,
+          "InventoryInteract: Not enough items to transfer",
+          inventoryItemId,
+          1
+        )
+    );
+    InventoryInterface.ephemeralToInventoryTransfer(ssuId, outItems);
+
+    // successful call, implies EphemeralInventory.withdrawFromEphemeralInventory and Inventory.depositToInventory both work under APPROVED forwarder scenario
+    // forwarder call succeeds (if inventory interact logic was open itself and protectable as it should have been)
+    world.call(
+      MOCK_FORWARDER_SYSTEM_ID,
+      abi.encodeCall(MockForwarder.openEphemeralToInventoryTransfer, (ssuId, alice, outItems))
+    );
+    vm.stopPrank();
+
+    // NEITHER ADMIN NOR EPH INV OWNER
+    vm.startPrank(charlie, charlie);
+    // reject, is not ADMIN, is not EPH INV OWNER, is not APPROVED (direct call)
+    // deposit reject
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, ADMIN)
+    );
+    InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
+    // withdrawal reject
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, ADMIN)
+    );
+    InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+
+    // make forwarded call
+    // fails the harcoded ephInvOwner requirement in InventoryInteract.ephemeralToInventoryTranfser
+    vm.expectRevert(
+      abi.encodeWithSelector(IInventoryErrors.Inventory_InvalidItemQuantity.selector,
+          "InventoryInteract: Not enough items to transfer",
+          inventoryItemId,
+          1
+        )
+    );
+    InventoryInterface.ephemeralToInventoryTransfer(ssuId, outItems);
+
+    // successful call, implies EphemeralInventory.withdrawFromEphemeralInventory and Inventory.depositToInventory both work under APPROVED forwarder scenario
+    // forwarder call succeeds (if inventory interact logic was open itself and protectable as it should have been)
+    world.call(
+      MOCK_FORWARDER_SYSTEM_ID,
+      abi.encodeCall(MockForwarder.openEphemeralToInventoryTransfer, (ssuId, alice, outItems))
+    );
+    vm.stopPrank();
   }
 
   function testOnlyAdminWithObjectOwnerOrApproved() public {
-    // success, is ADMIN, is OWNER, is not APPROVED
-    // success, is not ADMIN, is OWNER, is APPROVED
-    // success, is ADMIN, is not OWNER, is APPROVED
-    // reject, is not ADMIN, is OWNER, is not APPROVED
-    // reject, is ADMIN, is not OWNER, is not APPROVED
+    InventoryItem[] memory inItems = new InventoryItem[](1);
+    inItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: deployer,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 7
+    });
+
+    InventoryItem[] memory outItems = new InventoryItem[](1);
+    outItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: deployer,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 1
+    });
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    address[] memory approvedAccessList = new address[](1);
+    approvedAccessList[0] = address(interact);
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.depositToInventory.selector));
+    bytes32 target2 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.withdrawFromInventory.selector));
+    
+    // INV OWNER AND ADMIN
+    vm.startPrank(alice, deployer);
+    // no permissions enforced.. populate items and test flows with free calls
+    InventoryInterface.depositToInventory(ssuId,inItems);    
+    InventoryInterface.withdrawFromInventory(ssuId, outItems);
+    // set ADMIN account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // enforce permissions (deposit)
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    // enforce permissions (withdrawal) 
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target2, true)));
+    
+    // success, is ADMIN, is EPH INV OWNER, is not APPROVED (direct call)
+    // deposit 
+    InventoryInterface.depositToInventory(ssuId, inItems);
+    // withdraw
+    InventoryInterface.withdrawFromInventory(ssuId, outItems);
+    vm.stopPrank();
+
+    // OWNER ONLY
+    vm.startPrank(alice, alice);
+    // reject, is not ADMIN, is OWNER, is not APPROVED (direct call)
+    // deposit
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, alice, ADMIN)
+    );
+    InventoryInterface.depositToInventory(ssuId, inItems);
+    // withdraw
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, alice, ADMIN)
+    );
+    InventoryInterface.withdrawFromInventory(ssuId, outItems);
+
+    // set APPROVED account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
+    // make forwarded call
+    // success, is not ADMIN, is OWNER, is APPROVED (forwarded call)
+    // this implies Inventory.withdrawalFromInventory and EphemeralInventory.depositToEphmeralInventory pass under APPROVED conditions
+    InventoryInterface.inventoryToEphemeralTransfer(ssuId, outItems);
+    InventoryInterface.inventoryToEphemeralTransferWithParam(ssuId, alice, outItems);
+    vm.stopPrank();
+  }
+
+  function testOnlyAdminWithObjectOwnerOrApproved2() public {
+   InventoryItem[] memory inItems = new InventoryItem[](1);
+    inItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: alice,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 9
+    });
+
+    InventoryItem[] memory outItems = new InventoryItem[](1);
+    outItems[0] = InventoryItem({
+      inventoryItemId: inventoryItemId,
+      owner: alice,
+      itemId: itemId,
+      typeId: typeId,
+      volume: volume,
+      quantity: 1
+    });
+    address[] memory adminAccessList = new address[](1);
+    adminAccessList[0] = deployer;
+    address[] memory approvedAccessList = new address[](1);
+    approvedAccessList[0] = address(interact);
+    bytes32 target1 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.depositToInventory.selector));
+    bytes32 target2 = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.withdrawFromInventory.selector));
+    
+    // ADMIN ONLY
+    vm.startPrank(charlie, deployer);
+    // no permissions enforced.. populate items and test flows with free calls
+    InventoryInterface.depositToInventory(ssuId, inItems);    
+    InventoryInterface.withdrawFromInventory(ssuId, outItems);
+    // set ADMIN account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    // set APPROVED account
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
+    // enforce permissions (both deposit and withdraw)
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (target2, true)));
+    
+    // reject, is ADMIN, is not SSU OWNER, is not APPROVED (direct call)
+    // deposit
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, bytes32("OWNER"))
+    );
+    InventoryInterface.depositToInventory(ssuId, inItems);
+    // withdraw
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, bytes32("OWNER"))
+    );
+    InventoryInterface.withdrawFromInventory(ssuId, outItems);
+
+    // make forwarded call
+    // is ADMIN, is not SSU OWNER, is APPROVED (forwarded call)
+    // successful call, implies Inventory.withdrawFromInventory and EphemeralInventory.depositToEphemeralInventory both work under APPROVED forwarder scenario
+    InventoryInterface.inventoryToEphemeralTransfer(ssuId, outItems);
+    InventoryInterface.inventoryToEphemeralTransferWithParam(ssuId, alice, outItems);
+    vm.stopPrank();
+
+    // NEITHER ADMIN NOR SSU OWNER
+    vm.startPrank(charlie, charlie);
+    // reject, is not ADMIN, is not SSU OWNER, is not APPROVED (direct call)
+    // deposit reject
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, ADMIN)
+    );
+    InventoryInterface.depositToInventory(ssuId, inItems);
+    // withdrawal reject
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessControlErrors.AccessControl_NoPermission.selector, charlie, ADMIN)
+    );
+    InventoryInterface.withdrawFromInventory(ssuId, outItems);
+
+    // make forwarded call
+    // successful call, implies EphemeralInventory.withdrawFromEphemeralInventory and Inventory.depositToInventory both work under APPROVED forwarder scenario
+    InventoryInterface.inventoryToEphemeralTransfer(ssuId, outItems);
+    InventoryInterface.inventoryToEphemeralTransferWithParam(ssuId, alice, outItems);
+    vm.stopPrank();
   }
 
   function _sdDependenciesDeploy(IBaseWorld world_) internal {

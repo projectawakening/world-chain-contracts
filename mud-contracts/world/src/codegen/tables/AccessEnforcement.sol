@@ -19,10 +19,6 @@ import { Schema, SchemaLib } from "@latticexyz/store/src/Schema.sol";
 import { PackedCounter, PackedCounterLib } from "@latticexyz/store/src/PackedCounter.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-// Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "AccessEnforcemen", typeId: RESOURCE_TABLE });`
-ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000416363657373456e666f7263656d656e);
-ResourceId constant AccessEnforcementTableId = _tableId;
-
 FieldLayout constant _fieldLayout = FieldLayout.wrap(
   0x0001010001000000000000000000000000000000000000000000000000000000
 );
@@ -79,21 +75,21 @@ library AccessEnforcement {
   /**
    * @notice Register the table with its config.
    */
-  function register() internal {
+  function register(ResourceId _tableId) internal {
     StoreSwitch.registerTable(_tableId, _fieldLayout, getKeySchema(), getValueSchema(), getKeyNames(), getFieldNames());
   }
 
   /**
    * @notice Register the table with its config.
    */
-  function _register() internal {
+  function _register(ResourceId _tableId) internal {
     StoreCore.registerTable(_tableId, _fieldLayout, getKeySchema(), getValueSchema(), getKeyNames(), getFieldNames());
   }
 
   /**
    * @notice Get isEnforced.
    */
-  function getIsEnforced(bytes32 target) internal view returns (bool isEnforced) {
+  function getIsEnforced(ResourceId _tableId, bytes32 target) internal view returns (bool isEnforced) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -104,7 +100,7 @@ library AccessEnforcement {
   /**
    * @notice Get isEnforced.
    */
-  function _getIsEnforced(bytes32 target) internal view returns (bool isEnforced) {
+  function _getIsEnforced(ResourceId _tableId, bytes32 target) internal view returns (bool isEnforced) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -115,7 +111,7 @@ library AccessEnforcement {
   /**
    * @notice Get isEnforced.
    */
-  function get(bytes32 target) internal view returns (bool isEnforced) {
+  function get(ResourceId _tableId, bytes32 target) internal view returns (bool isEnforced) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -126,7 +122,7 @@ library AccessEnforcement {
   /**
    * @notice Get isEnforced.
    */
-  function _get(bytes32 target) internal view returns (bool isEnforced) {
+  function _get(ResourceId _tableId, bytes32 target) internal view returns (bool isEnforced) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -137,7 +133,7 @@ library AccessEnforcement {
   /**
    * @notice Set isEnforced.
    */
-  function setIsEnforced(bytes32 target, bool isEnforced) internal {
+  function setIsEnforced(ResourceId _tableId, bytes32 target, bool isEnforced) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -147,7 +143,7 @@ library AccessEnforcement {
   /**
    * @notice Set isEnforced.
    */
-  function _setIsEnforced(bytes32 target, bool isEnforced) internal {
+  function _setIsEnforced(ResourceId _tableId, bytes32 target, bool isEnforced) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -157,7 +153,7 @@ library AccessEnforcement {
   /**
    * @notice Set isEnforced.
    */
-  function set(bytes32 target, bool isEnforced) internal {
+  function set(ResourceId _tableId, bytes32 target, bool isEnforced) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -167,7 +163,7 @@ library AccessEnforcement {
   /**
    * @notice Set isEnforced.
    */
-  function _set(bytes32 target, bool isEnforced) internal {
+  function _set(ResourceId _tableId, bytes32 target, bool isEnforced) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -177,7 +173,7 @@ library AccessEnforcement {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(bytes32 target) internal {
+  function deleteRecord(ResourceId _tableId, bytes32 target) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 
@@ -187,7 +183,7 @@ library AccessEnforcement {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(bytes32 target) internal {
+  function _deleteRecord(ResourceId _tableId, bytes32 target) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = target;
 

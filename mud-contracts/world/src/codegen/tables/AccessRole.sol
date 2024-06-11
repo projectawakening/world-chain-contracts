@@ -19,10 +19,6 @@ import { Schema, SchemaLib } from "@latticexyz/store/src/Schema.sol";
 import { PackedCounter, PackedCounterLib } from "@latticexyz/store/src/PackedCounter.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-// Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "AccessRole", typeId: RESOURCE_TABLE });`
-ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000416363657373526f6c65000000000000);
-ResourceId constant AccessRoleTableId = _tableId;
-
 FieldLayout constant _fieldLayout = FieldLayout.wrap(
   0x0000000100000000000000000000000000000000000000000000000000000000
 );
@@ -79,21 +75,21 @@ library AccessRole {
   /**
    * @notice Register the table with its config.
    */
-  function register() internal {
+  function register(ResourceId _tableId) internal {
     StoreSwitch.registerTable(_tableId, _fieldLayout, getKeySchema(), getValueSchema(), getKeyNames(), getFieldNames());
   }
 
   /**
    * @notice Register the table with its config.
    */
-  function _register() internal {
+  function _register(ResourceId _tableId) internal {
     StoreCore.registerTable(_tableId, _fieldLayout, getKeySchema(), getValueSchema(), getKeyNames(), getFieldNames());
   }
 
   /**
    * @notice Get accounts.
    */
-  function getAccounts(bytes32 roleId) internal view returns (address[] memory accounts) {
+  function getAccounts(ResourceId _tableId, bytes32 roleId) internal view returns (address[] memory accounts) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -104,7 +100,7 @@ library AccessRole {
   /**
    * @notice Get accounts.
    */
-  function _getAccounts(bytes32 roleId) internal view returns (address[] memory accounts) {
+  function _getAccounts(ResourceId _tableId, bytes32 roleId) internal view returns (address[] memory accounts) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -115,7 +111,7 @@ library AccessRole {
   /**
    * @notice Get accounts.
    */
-  function get(bytes32 roleId) internal view returns (address[] memory accounts) {
+  function get(ResourceId _tableId, bytes32 roleId) internal view returns (address[] memory accounts) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -126,7 +122,7 @@ library AccessRole {
   /**
    * @notice Get accounts.
    */
-  function _get(bytes32 roleId) internal view returns (address[] memory accounts) {
+  function _get(ResourceId _tableId, bytes32 roleId) internal view returns (address[] memory accounts) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -137,7 +133,7 @@ library AccessRole {
   /**
    * @notice Set accounts.
    */
-  function setAccounts(bytes32 roleId, address[] memory accounts) internal {
+  function setAccounts(ResourceId _tableId, bytes32 roleId, address[] memory accounts) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -147,7 +143,7 @@ library AccessRole {
   /**
    * @notice Set accounts.
    */
-  function _setAccounts(bytes32 roleId, address[] memory accounts) internal {
+  function _setAccounts(ResourceId _tableId, bytes32 roleId, address[] memory accounts) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -157,7 +153,7 @@ library AccessRole {
   /**
    * @notice Set accounts.
    */
-  function set(bytes32 roleId, address[] memory accounts) internal {
+  function set(ResourceId _tableId, bytes32 roleId, address[] memory accounts) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -167,7 +163,7 @@ library AccessRole {
   /**
    * @notice Set accounts.
    */
-  function _set(bytes32 roleId, address[] memory accounts) internal {
+  function _set(ResourceId _tableId, bytes32 roleId, address[] memory accounts) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -177,7 +173,7 @@ library AccessRole {
   /**
    * @notice Get the length of accounts.
    */
-  function lengthAccounts(bytes32 roleId) internal view returns (uint256) {
+  function lengthAccounts(ResourceId _tableId, bytes32 roleId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -190,7 +186,7 @@ library AccessRole {
   /**
    * @notice Get the length of accounts.
    */
-  function _lengthAccounts(bytes32 roleId) internal view returns (uint256) {
+  function _lengthAccounts(ResourceId _tableId, bytes32 roleId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -203,7 +199,7 @@ library AccessRole {
   /**
    * @notice Get the length of accounts.
    */
-  function length(bytes32 roleId) internal view returns (uint256) {
+  function length(ResourceId _tableId, bytes32 roleId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -216,7 +212,7 @@ library AccessRole {
   /**
    * @notice Get the length of accounts.
    */
-  function _length(bytes32 roleId) internal view returns (uint256) {
+  function _length(ResourceId _tableId, bytes32 roleId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -230,7 +226,7 @@ library AccessRole {
    * @notice Get an item of accounts.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemAccounts(bytes32 roleId, uint256 _index) internal view returns (address) {
+  function getItemAccounts(ResourceId _tableId, bytes32 roleId, uint256 _index) internal view returns (address) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -244,7 +240,7 @@ library AccessRole {
    * @notice Get an item of accounts.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemAccounts(bytes32 roleId, uint256 _index) internal view returns (address) {
+  function _getItemAccounts(ResourceId _tableId, bytes32 roleId, uint256 _index) internal view returns (address) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -258,7 +254,7 @@ library AccessRole {
    * @notice Get an item of accounts.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItem(bytes32 roleId, uint256 _index) internal view returns (address) {
+  function getItem(ResourceId _tableId, bytes32 roleId, uint256 _index) internal view returns (address) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -272,7 +268,7 @@ library AccessRole {
    * @notice Get an item of accounts.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItem(bytes32 roleId, uint256 _index) internal view returns (address) {
+  function _getItem(ResourceId _tableId, bytes32 roleId, uint256 _index) internal view returns (address) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -285,7 +281,7 @@ library AccessRole {
   /**
    * @notice Push an element to accounts.
    */
-  function pushAccounts(bytes32 roleId, address _element) internal {
+  function pushAccounts(ResourceId _tableId, bytes32 roleId, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -295,7 +291,7 @@ library AccessRole {
   /**
    * @notice Push an element to accounts.
    */
-  function _pushAccounts(bytes32 roleId, address _element) internal {
+  function _pushAccounts(ResourceId _tableId, bytes32 roleId, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -305,7 +301,7 @@ library AccessRole {
   /**
    * @notice Push an element to accounts.
    */
-  function push(bytes32 roleId, address _element) internal {
+  function push(ResourceId _tableId, bytes32 roleId, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -315,7 +311,7 @@ library AccessRole {
   /**
    * @notice Push an element to accounts.
    */
-  function _push(bytes32 roleId, address _element) internal {
+  function _push(ResourceId _tableId, bytes32 roleId, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -325,7 +321,7 @@ library AccessRole {
   /**
    * @notice Pop an element from accounts.
    */
-  function popAccounts(bytes32 roleId) internal {
+  function popAccounts(ResourceId _tableId, bytes32 roleId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -335,7 +331,7 @@ library AccessRole {
   /**
    * @notice Pop an element from accounts.
    */
-  function _popAccounts(bytes32 roleId) internal {
+  function _popAccounts(ResourceId _tableId, bytes32 roleId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -345,7 +341,7 @@ library AccessRole {
   /**
    * @notice Pop an element from accounts.
    */
-  function pop(bytes32 roleId) internal {
+  function pop(ResourceId _tableId, bytes32 roleId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -355,7 +351,7 @@ library AccessRole {
   /**
    * @notice Pop an element from accounts.
    */
-  function _pop(bytes32 roleId) internal {
+  function _pop(ResourceId _tableId, bytes32 roleId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -365,7 +361,7 @@ library AccessRole {
   /**
    * @notice Update an element of accounts at `_index`.
    */
-  function updateAccounts(bytes32 roleId, uint256 _index, address _element) internal {
+  function updateAccounts(ResourceId _tableId, bytes32 roleId, uint256 _index, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -378,7 +374,7 @@ library AccessRole {
   /**
    * @notice Update an element of accounts at `_index`.
    */
-  function _updateAccounts(bytes32 roleId, uint256 _index, address _element) internal {
+  function _updateAccounts(ResourceId _tableId, bytes32 roleId, uint256 _index, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -391,7 +387,7 @@ library AccessRole {
   /**
    * @notice Update an element of accounts at `_index`.
    */
-  function update(bytes32 roleId, uint256 _index, address _element) internal {
+  function update(ResourceId _tableId, bytes32 roleId, uint256 _index, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -404,7 +400,7 @@ library AccessRole {
   /**
    * @notice Update an element of accounts at `_index`.
    */
-  function _update(bytes32 roleId, uint256 _index, address _element) internal {
+  function _update(ResourceId _tableId, bytes32 roleId, uint256 _index, address _element) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -417,7 +413,7 @@ library AccessRole {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(bytes32 roleId) internal {
+  function deleteRecord(ResourceId _tableId, bytes32 roleId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 
@@ -427,7 +423,7 @@ library AccessRole {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(bytes32 roleId) internal {
+  function _deleteRecord(ResourceId _tableId, bytes32 roleId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = roleId;
 

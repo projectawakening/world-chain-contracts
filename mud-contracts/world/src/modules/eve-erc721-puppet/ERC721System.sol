@@ -16,6 +16,7 @@ import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol"
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
+import { AccessModified } from "../access-control/systems/AccessModified.sol";
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
 import { StaticDataLib } from "../static-data/StaticDataLib.sol";
@@ -32,7 +33,7 @@ import { Balances } from "../../codegen/tables/Balances.sol";
 
 import { Utils } from "./Utils.sol";
 
-contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMaster {
+contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using StaticDataUtils for bytes14;
@@ -83,9 +84,8 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
 
   /**
    * @dev bridge gap solution to make it possible to change the default Token CID
-   * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
    */
-  function setCid(uint256 tokenId, string memory cid) public {
+  function setCid(uint256 tokenId, string memory cid) public onlyAdmin() {
     _staticDataLib().setCid(tokenId, cid);
   }
 
@@ -131,7 +131,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-transferFrom}.
    */
-  function transferFrom(address from, address to, uint256 tokenId) public virtual hookable(tokenId, _systemId()) {
+  function transferFrom(address from, address to, uint256 tokenId) public virtual noAccess() hookable(tokenId, _systemId()) {
     if (to == address(0)) {
       revert ERC721InvalidReceiver(address(0));
     }
@@ -172,7 +172,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   function mint(
     address to,
     uint256 tokenId
-  ) public virtual hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public virtual onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _mint(to, tokenId);
   }
@@ -188,7 +188,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Emits a {Transfer} event.
    */
-  function safeMint(address to, uint256 tokenId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function safeMint(address to, uint256 tokenId) public onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, "");
   }
@@ -201,7 +201,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     address to,
     uint256 tokenId,
     bytes memory data
-  ) public virtual hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public virtual onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, data);
   }
@@ -216,7 +216,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Emits a {Transfer} event.
    */
-  function burn(uint256 tokenId) public {
+  function burn(uint256 tokenId) public onlyAdmin() {
     _requireOwner();
     _burn(tokenId);
   }
