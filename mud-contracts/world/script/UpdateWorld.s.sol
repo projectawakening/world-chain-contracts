@@ -13,7 +13,9 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
+import { AccessRole, AccessEnforcement } from "../src/codegen/index.sol";
 import { AccessControl } from "../src/modules/access-control/systems/AccessControl.sol";
+import { Utils as AccessUtils } from "../src/modules/access-control/Utils.sol";
 import { EntityRecord } from "../src/modules/entity-record/systems/EntityRecord.sol";
 import { ERC721System } from "../src/modules/eve-erc721-puppet/ERC721System.sol";
 import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
@@ -25,6 +27,8 @@ import { SmartStorageUnit } from "../src/modules/smart-storage-unit/systems/Smar
 import { StaticData } from "../src/modules/static-data/systems/StaticData.sol";
 
 contract UpdateWorld is Script {
+  using AccessUtils for bytes14;
+
   bytes14 constant EVE_WORLD_NAMESPACE = bytes14("eveworld");
 
   AccessControl accessControl;
@@ -81,6 +85,11 @@ contract UpdateWorld is Script {
     deployable = new SmartDeployable();
     smartStorage = new SmartStorageUnit();
     staticData = new StaticData();
+
+    // devnet deploy needs tables included
+    // // register AccessRole adn AccessEnforcement Tables (they are used by AccessControl)
+    // AccessRole.register(EVE_WORLD_NAMESPACE.accessRoleTableId());
+    // AccessEnforcement.register(EVE_WORLD_NAMESPACE.accessEnforcementTableId());
 
     // register AccessControl and functions
     world.registerSystem(ACCESS_CONTROL_SYSTEM_ID, System(accessControl), true);
