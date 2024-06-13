@@ -59,7 +59,7 @@ contract InventoryAccess is Script {
     // must populate this with ALL active ADMIN public addresses (to prevent any transaction failures)
     address[] memory adminAccounts = new address[](1);
     adminAccounts[0] = deployer;
-     
+
     address[] memory adminAccessList = new address[](adminAccounts.length);
     for (uint i = 0; i < adminAccounts.length; i++) {
       adminAccessList[i] = adminAccounts[i];
@@ -68,7 +68,7 @@ contract InventoryAccess is Script {
     address[] memory approvedAccessList = new address[](1);
     
     address interactAddr = Systems.getSystem(EVE_WORLD_NAMESPACE.inventoryInteractSystemId());
-    approvedAccessList[0] = address(interactAddr);
+    approvedAccessList[0] = interactAddr;
     // set access ADMIN accounts
     world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
     // set access APPROVED account

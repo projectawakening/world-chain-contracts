@@ -32,7 +32,7 @@ import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeploya
 import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
-import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartStorageUnitLib } from "../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
 import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";

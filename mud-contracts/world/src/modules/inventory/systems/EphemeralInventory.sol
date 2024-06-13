@@ -70,7 +70,7 @@ contract EphemeralInventory is AccessModified, EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public onlyAdminWithEphInvOwnerOrApproved(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     {
       State currentState = DeployableState.getCurrentState(
         SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -104,7 +104,7 @@ contract EphemeralInventory is AccessModified, EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public onlyAdminWithEphInvOwnerOrApproved(smartObjectId, ephemeralInventoryOwner) hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     {
       State currentState = DeployableState.getCurrentState(
         SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),

@@ -63,7 +63,7 @@ contract Inventory is AccessModified, EveSystem {
   function depositToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public onlyAdminWithObjectOwnerOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     {
       State currentState = DeployableState.getCurrentState(
         SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
@@ -89,7 +89,7 @@ contract Inventory is AccessModified, EveSystem {
   function withdrawFromInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public onlyAdminWithObjectOwnerOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId

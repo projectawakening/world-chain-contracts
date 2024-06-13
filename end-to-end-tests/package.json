@@ -25,6 +25,8 @@
     "bringOnline:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/BringOnline.s.sol:BringOnline --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "bringOffline:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY forge script script/BringOffline.s.sol:BringOffline --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "bringOffline:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/BringOffline.s.sol:BringOffline --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createAndDeposit:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY forge script script/CreateAndDeposit.s.sol:CreateAndDeposit --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "createAndDeposit:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/CreateAndDeposit.s.sol:CreateAndDeposit --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "transfer:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY forge script script/Transfer.s.sol:Transfer --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "transfer:devnet": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY forge script script/Transfer.s.sol:Transfer --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "lint": "pnpm run prettier && pnpm run solhint",
