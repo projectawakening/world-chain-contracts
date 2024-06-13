@@ -156,7 +156,7 @@ contract HookCore is EveSystem {
       if (index != lastIndex) {
         EntityAssociation.updateHookIds(_namespace().entityAssociationTableId(), entityId, index, hookIds[lastIndex]);
       }
-      EntityAssociation.popModuleIds(_namespace().entityAssociationTableId(), entityId);
+      EntityAssociation.popHookIds(_namespace().entityAssociationTableId(), entityId);
     }
   }
 
