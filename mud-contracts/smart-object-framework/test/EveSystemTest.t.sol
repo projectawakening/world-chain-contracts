@@ -211,15 +211,14 @@ contract EveSystemTest is Test {
   }
 
   function testRevertEntityTypeNotRegistered() public {
-    // TODO: See comment at the top of the file
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityTypeNotRegistered.selector,
-    //     2,
-    //     "EntityCore: EntityType not registered"
-    //   )
-    // );
-    // smartObject.registerEntity(1, CLASS);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityTypeNotRegistered.selector,
+        2,
+        "EntityCore: EntityType not registered"
+      )
+    );
+    smartObject.registerEntity(1, CLASS);
   }
 
   function testRevertIfEntityNotRegistered() public {
@@ -270,43 +269,41 @@ contract EveSystemTest is Test {
   }
 
   function testRevertAlreadyTagged() public {
-    // TODO: See comment at the top of the file
-    // //register entity
-    // smartObject.registerEntityType(CLASS, "Class");
-    // smartObject.registerEntityType(OBJECT, "Object");
-    // smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
-    // smartObject.registerEntity(classId1, CLASS);
-    // smartObject.registerEntity(singletonObject1, OBJECT);
-    // //Tag objects under a class
-    // smartObject.tagEntity(singletonObject1, classId1);
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityAlreadyTagged.selector,
-    //     singletonObject1,
-    //     classId1,
-    //     "EntityCore: Entity already tagged"
-    //   )
-    // );
-    // smartObject.tagEntity(singletonObject1, classId1);
+    //register entity
+    smartObject.registerEntityType(CLASS, "Class");
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
+    smartObject.registerEntity(classId1, CLASS);
+    smartObject.registerEntity(singletonObject1, OBJECT);
+    //Tag objects under a class
+    smartObject.tagEntity(singletonObject1, classId1);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyTagged.selector,
+        singletonObject1,
+        classId1,
+        "EntityCore: Entity already tagged"
+      )
+    );
+    smartObject.tagEntity(singletonObject1, classId1);
   }
 
   function testRevertIfTaggingNotAllowed() public {
-    // TODO: See comment at the top of the file
-    // //register entity
-    // smartObject.registerEntityType(CLASS, "Class");
-    // smartObject.registerEntityType(OBJECT, "Object");
-    // smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
-    // smartObject.registerEntity(classId1, CLASS);
-    // smartObject.registerEntity(singletonObject1, OBJECT);
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityTypeAssociationNotAllowed.selector,
-    //     CLASS,
-    //     OBJECT,
-    //     "EntityCore: EntityType association not allowed"
-    //   )
-    // );
-    // smartObject.tagEntity(classId1, singletonObject1);
+    //register entity
+    smartObject.registerEntityType(CLASS, "Class");
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
+    smartObject.registerEntity(classId1, CLASS);
+    smartObject.registerEntity(singletonObject1, OBJECT);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityTypeAssociationNotAllowed.selector,
+        CLASS,
+        OBJECT,
+        "EntityCore: EntityType association not allowed"
+      )
+    );
+    smartObject.tagEntity(classId1, singletonObject1);
   }
 
   function testregisterEVEModule() public {
@@ -320,20 +317,19 @@ contract EveSystemTest is Test {
   }
 
   function testRevertregisterEVEModuleIfSystemAlreadyRegistered() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // //register module
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.SystemAlreadyAssociatedWithModule.selector,
-    //     moduleId,
-    //     SYSTEM_ID,
-    //     "ModuleCore: System already associated with the module"
-    //   )
-    // );
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    IWorld world = IWorld(address(baseWorld));
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    //register module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.SystemAlreadyAssociatedWithModule.selector,
+        moduleId,
+        SYSTEM_ID,
+        "ModuleCore: System already associated with the module"
+      )
+    );
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
   }
 
   function testObjectAssociate() public {
@@ -486,72 +482,69 @@ contract EveSystemTest is Test {
   }
 
   function testRevertIfEntityAlreadyAssociated() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // //install module
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // //register entity
-    // smartObject.registerEntityType(OBJECT, "Object");
-    // smartObject.registerEntity(singletonEntity, OBJECT);
-    // // register system associated with module
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    // //associate entity with module
-    // smartObject.associateModule(singletonEntity, moduleId);
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
-    //     singletonEntity,
-    //     moduleId,
-    //     "ModuleCore: Module already associated with the entity"
-    //   )
-    // );
-    // smartObject.associateModule(singletonEntity, moduleId);
+    IWorld world = IWorld(address(baseWorld));
+    //install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    //register entity
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntity(singletonEntity, OBJECT);
+    // register system associated with module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    //associate entity with module
+    smartObject.associateModule(singletonEntity, moduleId);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        singletonEntity,
+        moduleId,
+        "ModuleCore: Module already associated with the entity"
+      )
+    );
+    smartObject.associateModule(singletonEntity, moduleId);
   }
 
   function testRevertIfTaggedEntityIsAlreadyAssociated() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // //install module
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // // register system associated with module
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    // //register entity
-    // smartObject.registerEntityType(1, "Class");
-    // smartObject.registerEntityType(2, "Object");
-    // smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
-    // smartObject.registerEntity(classId1, CLASS);
-    // smartObject.registerEntity(classId2, CLASS);
-    // smartObject.registerEntity(singletonObject1, OBJECT);
-    // smartObject.tagEntity(singletonObject1, classId1);
-    // smartObject.tagEntity(singletonObject1, classId2);
-    // //associate entity with module
-    // smartObject.associateModule(classId1, moduleId);
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
-    //     classId1,
-    //     moduleId,
-    //     "ModuleCore: Module already associated with the entity"
-    //   )
-    // );
-    // smartObject.associateModule(singletonObject1, moduleId);
+    IWorld world = IWorld(address(baseWorld));
+    //install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    // register system associated with module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    //register entity
+    smartObject.registerEntityType(1, "Class");
+    smartObject.registerEntityType(2, "Object");
+    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
+    smartObject.registerEntity(classId1, CLASS);
+    smartObject.registerEntity(classId2, CLASS);
+    smartObject.registerEntity(singletonObject1, OBJECT);
+    smartObject.tagEntity(singletonObject1, classId1);
+    smartObject.tagEntity(singletonObject1, classId2);
+    //associate entity with module
+    smartObject.associateModule(classId1, moduleId);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        classId1,
+        moduleId,
+        "ModuleCore: Module already associated with the entity"
+      )
+    );
+    smartObject.associateModule(singletonObject1, moduleId);
   }
 
   function testRevertIfModuleNotRegistered() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // //install module
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // smartObject.registerEntityType(2, "Object");
-    // smartObject.registerEntity(singletonEntity, CLASS);
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.ModuleNotRegistered.selector,
-    //     singletonEntity,
-    //     "EveSystem: Module not registered"
-    //   )
-    // );
-    // smartObject.associateModule(singletonEntity, singletonEntity);
+    IWorld world = IWorld(address(baseWorld));
+    //install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    smartObject.registerEntityType(2, "Object");
+    smartObject.registerEntity(singletonEntity, CLASS);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.ModuleNotRegistered.selector,
+        singletonEntity,
+        "EveSystem: Module not registered"
+      )
+    );
+    smartObject.associateModule(singletonEntity, singletonEntity);
   }
 
   //TODO commenting until we resolve data corruption issue
@@ -700,112 +693,109 @@ contract EveSystemTest is Test {
   }
 
   function testRevertHookAssociationIfHookNotRegistered() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // // install module
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // //register entity
-    // smartObject.registerEntityType(OBJECT, "Object");
-    // smartObject.registerEntity(singletonEntity, OBJECT);
-    // // register system associated with module
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    // //associate entity with module
-    // smartObject.associateModule(singletonEntity, moduleId);
-    // //Hook
-    // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
-    // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(ICustomErrorSystem.HookNotRegistered.selector, hookId, "HookCore: Hook not registered")
-    // );
-    // smartObject.associateHook(singletonEntity, hookId);
+    IWorld world = IWorld(address(baseWorld));
+    // install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    //register entity
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntity(singletonEntity, OBJECT);
+    // register system associated with module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    //associate entity with module
+    smartObject.associateModule(singletonEntity, moduleId);
+    //Hook
+    bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
+    vm.expectRevert(
+      abi.encodeWithSelector(ICustomErrorSystem.HookNotRegistered.selector, hookId, "HookCore: Hook not registered")
+    );
+    smartObject.associateHook(singletonEntity, hookId);
   }
 
   function testRevertDuplicateHookAssociation() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // // install module
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // //register entity
-    // smartObject.registerEntityType(OBJECT, "Object");
-    // smartObject.registerEntity(singletonEntity, OBJECT);
-    // // register system associated with module
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    // //associate entity with module
-    // smartObject.associateModule(singletonEntity, moduleId);
-    // //Hook
-    // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
-    // smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
-    // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
-    // //asscoaite hook with a entity
-    // smartObject.associateHook(singletonEntity, hookId);
-    // //add the hook to be executed before/after a function
-    // smartObject.addHook(
-    //   hookId,
-    //   HookType.BEFORE,
-    //   SYSTEM_ID,
-    //   bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
-    // );
-    // //execute hooks by calling the target function
-    // abi.decode(
-    //   world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
-    //   (uint256)
-    // );
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
-    //     singletonEntity,
-    //     hookId,
-    //     "HookCore: Hook already associated with the entity"
-    //   )
-    // );
-    // smartObject.associateHook(singletonEntity, hookId);
+    IWorld world = IWorld(address(baseWorld));
+    // install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    //register entity
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntity(singletonEntity, OBJECT);
+    // register system associated with module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    //associate entity with module
+    smartObject.associateModule(singletonEntity, moduleId);
+    //Hook
+    bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
+    uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
+    assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    //asscoaite hook with a entity
+    smartObject.associateHook(singletonEntity, hookId);
+    //add the hook to be executed before/after a function
+    smartObject.addHook(
+      hookId,
+      HookType.BEFORE,
+      SYSTEM_ID,
+      bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
+    );
+    //execute hooks by calling the target function
+    abi.decode(
+      world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
+      (uint256)
+    );
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        singletonEntity,
+        hookId,
+        "HookCore: Hook already associated with the entity"
+      )
+    );
+    smartObject.associateHook(singletonEntity, hookId);
   }
 
   function testRevertIfTaggedEntityHasHookAssociated() public {
-    // TODO: See comment at the top of the file
-    // IWorld world = IWorld(address(baseWorld));
-    // // install module
-    // world.installModule(smartDeployableTestModule, new bytes(0));
-    // //register entity
-    // smartObject.registerEntityType(OBJECT, "Object");
-    // smartObject.registerEntityType(CLASS, "Object");
-    // smartObject.registerEntity(singletonEntity, OBJECT);
-    // smartObject.registerEntity(classId1, CLASS);
-    // smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
-    // smartObject.tagEntity(singletonEntity, classId1);
-    // // register system associated with module
-    // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    // //associate entity with module
-    // smartObject.associateModule(classId1, moduleId);
-    // //Hook
-    // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
-    // smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
-    // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
-    // //asscoaite hook with a entity
-    // smartObject.associateHook(classId1, hookId);
-    // //add the hook to be executed before/after a function
-    // smartObject.addHook(
-    //   hookId,
-    //   HookType.BEFORE,
-    //   SYSTEM_ID,
-    //   bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
-    // );
-    // //execute hooks by calling the target function
-    // abi.decode(
-    //   world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
-    //   (uint256)
-    // );
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(
-    //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
-    //     classId1,
-    //     hookId,
-    //     "HookCore: Hook already associated with the entity"
-    //   )
-    // );
-    // smartObject.associateHook(singletonEntity, hookId);
+    IWorld world = IWorld(address(baseWorld));
+    // install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    //register entity
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntityType(CLASS, "Object");
+    smartObject.registerEntity(singletonEntity, OBJECT);
+    smartObject.registerEntity(classId1, CLASS);
+    smartObject.registerEntityTypeAssociation(OBJECT, CLASS);
+    smartObject.tagEntity(singletonEntity, classId1);
+    // register system associated with module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    //associate entity with module
+    smartObject.associateModule(classId1, moduleId);
+    //Hook
+    bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
+    uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
+    assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    //asscoaite hook with a entity
+    smartObject.associateHook(classId1, hookId);
+    //add the hook to be executed before/after a function
+    smartObject.addHook(
+      hookId,
+      HookType.BEFORE,
+      SYSTEM_ID,
+      bytes4(keccak256(abi.encodePacked("echoSmartDeployable(uint256)")))
+    );
+    //execute hooks by calling the target function
+    abi.decode(
+      world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonEntity))),
+      (uint256)
+    );
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ICustomErrorSystem.EntityAlreadyAssociated.selector,
+        classId1,
+        hookId,
+        "HookCore: Hook already associated with the entity"
+      )
+    );
+    smartObject.associateHook(singletonEntity, hookId);
   }
 
   function testRemoveHook() public {
