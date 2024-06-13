@@ -15,6 +15,7 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 import { IWorld } from "../src/codegen/world/IWorld.sol";
 import { World } from "@latticexyz/world/src/World.sol";
 import { ICustomErrorSystem } from "../src/codegen/world/ICustomErrorSystem.sol";
+import { EntityAssociation } from "../src/codegen/tables/EntityAssociation.sol";
 import { EntityTable } from "../src/codegen/tables/EntityTable.sol";
 import { EntityMap } from "../src/codegen/tables/EntityMap.sol";
 import { ModuleTable } from "../src/codegen/tables/ModuleTable.sol";
@@ -65,7 +66,16 @@ contract SmartDeployableTestSystem is EveSystem {
 
 contract SampleHook is EveSystem {
   function echoSmartDeployableHook(uint256 _value) public view {
-    console.log("======Hook Executed========", _value);
+    console.log("======Hook 1 Executed========", _value);
+  }
+  function echoSmartDeployableHook2(uint256 _value) public view {
+    console.log("======Hook 2 Executed========", _value);
+  }
+  function echoSmartDeployableHook3(uint256 _value) public view {
+    console.log("======Hook 3 Executed========", _value);
+  }
+  function echoSmartDeployableHook4(uint256 _value) public view {
+    console.log("======Hook 4 Executed========", _value);
   }
 }
 
@@ -710,6 +720,46 @@ contract EveSystemTest is Test {
       abi.encodeWithSelector(ICustomErrorSystem.HookNotRegistered.selector, hookId, "HookCore: Hook not registered")
     );
     smartObject.associateHook(singletonEntity, hookId);
+  }
+
+  function testRemoveHookAssociation() public {
+    IWorld world = IWorld(address(baseWorld));
+    // install module
+    world.installModule(smartDeployableTestModule, new bytes(0));
+    //register entity
+    smartObject.registerEntityType(OBJECT, "Object");
+    smartObject.registerEntity(singletonEntity, OBJECT);
+    // register system associated with module
+    smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
+    //associate entity with module
+    smartObject.associateModule(singletonEntity, moduleId);
+    //Hook
+    bytes4[] memory functionIds = new bytes4[](4);
+    uint256[] memory hookIds = new uint256[](4);
+    functionIds[0] = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
+    functionIds[1] = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook2(uint256)")));
+    functionIds[2] = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook3(uint256)")));
+    functionIds[3] = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook4(uint256)")));
+    hookIds[0] = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionIds[0])));
+    hookIds[1] = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionIds[1])));
+    hookIds[2] = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionIds[2])));
+    hookIds[3] = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionIds[3])));
+    smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionIds[0]);
+    smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionIds[1]);
+    smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionIds[2]);
+    smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionIds[3]);
+    smartObject.associateHook(singletonEntity, hookIds[0]);
+    smartObject.associateHook(singletonEntity, hookIds[1]);
+    smartObject.associateHook(singletonEntity, hookIds[2]);
+    smartObject.associateHook(singletonEntity, hookIds[3]);
+
+    smartObject.removeEntityHookAssociation(singletonEntity, hookIds[1]);
+
+    uint256[] memory tableHookIds = EntityAssociation.getHookIds(SMART_OBJ_NAMESPACE.entityAssociationTableId(), singletonEntity);
+    assertEq(tableHookIds.length, 3);
+    assertEq(tableHookIds[0], hookIds[0]);
+    assertEq(tableHookIds[1], hookIds[3]);
+    assertEq(tableHookIds[2], hookIds[2]);    
   }
 
   function testRevertDuplicateHookAssociation() public {
