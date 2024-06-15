@@ -42,9 +42,17 @@ contract InventoryAccess is Script {
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
-    // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
+
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address deployer = vm.addr(deployerPrivateKey);
+    
+    address[] memory adminAccounts = vm.envAddress("ADMIN_ACCOUNTS", ",");
+    // must populate this with ALL active ADMIN public addresses (to prevent any transaction failures)
+    address[] memory adminAccessList = new address[](adminAccounts.length);
+    
+    for (uint i = 0; i < adminAccounts.length; i++) {
+      adminAccessList[i] = adminAccounts[i];
+    }
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
@@ -56,17 +64,8 @@ contract InventoryAccess is Script {
       world.grantAccess(ACCESS_ROLE_TABLE_ID, deployer);
     }
 
-    // must populate this with ALL active ADMIN public addresses (to prevent any transaction failures)
-    address[] memory adminAccounts = new address[](1);
-    adminAccounts[0] = deployer;
-
-    address[] memory adminAccessList = new address[](adminAccounts.length);
-    for (uint i = 0; i < adminAccounts.length; i++) {
-      adminAccessList[i] = adminAccounts[i];
-    }
-
     address[] memory approvedAccessList = new address[](1);
-    
+    // currently we are only allowing InventoryInteract to be an APPROVED call forwarder
     address interactAddr = Systems.getSystem(EVE_WORLD_NAMESPACE.inventoryInteractSystemId());
     approvedAccessList[0] = interactAddr;
     // set access ADMIN accounts

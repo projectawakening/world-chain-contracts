@@ -7,6 +7,7 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
@@ -74,39 +75,44 @@ contract UpdateWorld is Script {
     IBaseWorld world = IBaseWorld(worldAddress);
 
     vm.startBroadcast(deployerPrivateKey);
-    // deploy new contracts
-    accessControl = new AccessControl();
-    entityRecord = new EntityRecord();
-    erc721System = new ERC721System();
-    ephemeralInventory = new EphemeralInventory();
-    inventory = new Inventory();
-    location = new LocationSystem();
-    character = new SmartCharacter();
-    deployable = new SmartDeployable();
-    smartStorage = new SmartStorageUnit();
-    staticData = new StaticData();
+    // if AccessControl has already been registered to the world, assume that we have already run this script on this network
+    if (!ResourceIds.getExists(ACCESS_CONTROL_SYSTEM_ID)) {
+      // deploy new contracts
+      accessControl = new AccessControl();
+      entityRecord = new EntityRecord();
+      erc721System = new ERC721System();
+      ephemeralInventory = new EphemeralInventory();
+      inventory = new Inventory();
+      location = new LocationSystem();
+      character = new SmartCharacter();
+      deployable = new SmartDeployable();
+      smartStorage = new SmartStorageUnit();
+      staticData = new StaticData();
 
-    // devnet deploy needs tables included
-    // // register AccessRole adn AccessEnforcement Tables (they are used by AccessControl)
-    // AccessRole.register(EVE_WORLD_NAMESPACE.accessRoleTableId());
-    // AccessEnforcement.register(EVE_WORLD_NAMESPACE.accessEnforcementTableId());
+      // devnet/testnet deploy needs tables included
+      string memory environment = vm.envString("ENV");
+      if(keccak256(abi.encodePacked(environment)) == keccak256(abi.encodePacked("devnet")) || keccak256(abi.encodePacked(environment)) == keccak256(abi.encodePacked("testnet"))) {
+        // register AccessRole and AccessEnforcement Tables (they are used by AccessControl)
+        AccessRole.register(EVE_WORLD_NAMESPACE.accessRoleTableId());
+        AccessEnforcement.register(EVE_WORLD_NAMESPACE.accessEnforcementTableId());
+      }
 
-    // register AccessControl and functions
-    world.registerSystem(ACCESS_CONTROL_SYSTEM_ID, System(accessControl), true);
-    world.registerFunctionSelector(ACCESS_CONTROL_SYSTEM_ID, "setAccessListByRole(bytes32,address[])");
-    world.registerFunctionSelector(ACCESS_CONTROL_SYSTEM_ID, "setAccessEnforcement(bytes32,bool)");
+      // register AccessControl and functions
+      world.registerSystem(ACCESS_CONTROL_SYSTEM_ID, System(accessControl), true);
+      world.registerFunctionSelector(ACCESS_CONTROL_SYSTEM_ID, "setAccessListByRole(bytes32,address[])");
+      world.registerFunctionSelector(ACCESS_CONTROL_SYSTEM_ID, "setAccessEnforcement(bytes32,bool)");
 
-    // register updated Systems (no function changes, only modifiers added)
-    world.registerSystem(ENTITY_RECORD_SYSTEM_ID, System(entityRecord), true);
-    world.registerSystem(ERC721_SYSTEM_ID, System(erc721System), true);
-    world.registerSystem(EPHEMERAL_INVENTORY_SYSTEM_ID, System(ephemeralInventory), true);
-    world.registerSystem(INVENTORY_SYSTEM_ID, System(inventory), true);
-    world.registerSystem(LOCATION_SYSTEM_ID, System(location), true);
-    world.registerSystem(SMART_CHARACTER_SYSTEM_ID, System(character), true);
-    world.registerSystem(SMART_DEPLOYABLE_SYSTEM_ID, System(deployable), true);
-    world.registerSystem(SMART_STORAGE_UNIT_SYSTEM_ID, System(smartStorage), true);
-    world.registerSystem(STATIC_DATA_SYSTEM_ID, System(staticData), true);
-
+      // register updated Systems (no function changes, only modifiers added)
+      world.registerSystem(ENTITY_RECORD_SYSTEM_ID, System(entityRecord), true);
+      world.registerSystem(ERC721_SYSTEM_ID, System(erc721System), true);
+      world.registerSystem(EPHEMERAL_INVENTORY_SYSTEM_ID, System(ephemeralInventory), true);
+      world.registerSystem(INVENTORY_SYSTEM_ID, System(inventory), true);
+      world.registerSystem(LOCATION_SYSTEM_ID, System(location), true);
+      world.registerSystem(SMART_CHARACTER_SYSTEM_ID, System(character), true);
+      world.registerSystem(SMART_DEPLOYABLE_SYSTEM_ID, System(deployable), true);
+      world.registerSystem(SMART_STORAGE_UNIT_SYSTEM_ID, System(smartStorage), true);
+      world.registerSystem(STATIC_DATA_SYSTEM_ID, System(staticData), true);
+    }
     vm.stopBroadcast();
   }
 }
