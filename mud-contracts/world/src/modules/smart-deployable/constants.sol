@@ -4,7 +4,7 @@ pragma solidity >=0.8.21;
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-uint256 constant FUEL_DECIMALS = 18;
+uint256 constant DECIMALS = 18;
 
 bytes16 constant SMART_DEPLOYABLE_MODULE_NAME = "SmartDeployable";
 bytes14 constant SMART_DEPLOYABLE_MODULE_NAMESPACE = "SmartDeployabl";

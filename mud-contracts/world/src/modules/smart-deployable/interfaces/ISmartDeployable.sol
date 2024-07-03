@@ -43,5 +43,7 @@ interface ISmartDeployable {
 
   function currentFuelAmount(uint256 entityId) external view returns (uint256 amount);
 
+  function currentFuelAmountInWei(uint256 entityId) external view returns (uint256 amount);
+
   function registerDeployableToken(address tokenAddress) external;
 }

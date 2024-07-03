@@ -19,7 +19,7 @@ import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codeg
 
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 import { State, SmartObjectData } from "../types.sol";
-import { FUEL_DECIMALS } from "../constants.sol";
+import { DECIMALS } from "../constants.sol";
 import { Utils } from "../Utils.sol";
 
 contract SmartDeployable is EveSystem, SmartDeployableErrors {
@@ -65,6 +65,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+
+    //Revert if the fuelUnitConsumption interval is min 1
+    if (fuelConsumptionPerMinuteInWei < 1) {
+      revert SmartDeployable_InvalidFuelConsumptionInterval(entityId);
     }
 
     //Create a new deployable when its new
@@ -132,7 +137,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     _updateFuel(entityId);
     uint256 currentFuel = DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId);
     if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);
-    DeployableFuelBalance.setFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId, currentFuel - 1); //forces it to tick
+    DeployableFuelBalance.setFuelAmount(
+      _namespace().deployableFuelBalanceTableId(),
+      entityId,
+      currentFuel - (1 * (10 ** DECIMALS))
+    ); //forces it to tick
     _setDeployableState(entityId, previousState, State.ONLINE);
     DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
@@ -243,10 +252,10 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       (
         ((DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
           unitAmount *
-          (10 ** FUEL_DECIMALS)) *
+          (10 ** DECIMALS)) *
           DeployableFuelBalance.getFuelUnitVolume(_namespace().deployableFuelBalanceTableId(), entityId))
       ) /
-        (10 ** FUEL_DECIMALS) >
+        (10 ** DECIMALS) >
       DeployableFuelBalance.getFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId)
     ) {
       revert SmartDeployable_TooMuchFuelDeposited(entityId, unitAmount);
@@ -254,7 +263,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      (_currentFuelAmount(entityId) + unitAmount * (10 ** FUEL_DECIMALS))
+      (_currentFuelAmount(entityId) + unitAmount * (10 ** DECIMALS))
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -275,7 +284,7 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      (_currentFuelAmount(entityId) - unitAmount * (10 ** FUEL_DECIMALS)) // will revert if underflow
+      (_currentFuelAmount(entityId) - unitAmount * (10 ** DECIMALS)) // will revert if underflow
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -299,7 +308,11 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
    * @param entityId looked up
    */
   function currentFuelAmount(uint256 entityId) public view returns (uint256 amount) {
-    return _currentFuelAmount(entityId) / (10 ** FUEL_DECIMALS);
+    return _currentFuelAmount(entityId) / (10 ** DECIMALS);
+  }
+
+  function currentFuelAmountInWei(uint256 entityId) public view returns (uint256 amount) {
+    return _currentFuelAmount(entityId);
   }
 
   /********************
@@ -365,7 +378,9 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
       entityId
     );
     // elapsed time in seconds, multiplied by consumption rate per second
-    uint256 fuelConsumed = (block.timestamp - data.lastUpdatedAt) * (data.fuelConsumptionPerMinute / 60);
+    uint256 fuelConsumed = (((block.timestamp - data.lastUpdatedAt) * (10 ** DECIMALS)) /
+      (data.fuelConsumptionPerMinute));
+
     fuelConsumed -= _globalOfflineFuelRefund(entityId);
     if (fuelConsumed >= data.fuelAmount) {
       return 0;
@@ -390,9 +405,8 @@ contract SmartDeployable is EveSystem, SmartDeployableErrors {
     if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
 
     uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spend online during server downtime
-    return
-      elapsedRefundTime *
-      (DeployableFuelBalance.getFuelConsumptionPerMinute(_namespace().deployableFuelBalanceTableId(), entityId) / 60);
+    return ((elapsedRefundTime * (10 ** DECIMALS)) /
+      (DeployableFuelBalance.getFuelConsumptionPerMinute(_namespace().deployableFuelBalanceTableId(), entityId)));
   }
 
   // TODO: this is kinda dirty.
