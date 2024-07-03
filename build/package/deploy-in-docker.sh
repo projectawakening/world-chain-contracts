@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -eou pipefail
 
 bar_size=40
 bar_char_done="#"
