@@ -134,4 +134,12 @@ library SmartDeployableLib {
     );
     return abi.decode(returnData, (uint256));
   }
+
+  function currentFuelAmountInWei(World memory world, uint256 entityId) internal returns (uint256 amount) {
+    bytes memory returnData = world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployable.currentFuelAmountInWei, (entityId))
+    );
+    return abi.decode(returnData, (uint256));
+  }
 }
