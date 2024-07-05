@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -eou pipefail
 # Fresh install
 pnpm install
 
