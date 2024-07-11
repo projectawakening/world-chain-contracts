@@ -20,7 +20,7 @@ import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codeg
 
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 import { State, SmartObjectData } from "../types.sol";
-import { FUEL_DECIMALS } from "../constants.sol";
+import { DECIMALS, ONE_UNIT_IN_WEI } from "../constants.sol";
 import { Utils } from "../Utils.sol";
 
 contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
@@ -66,6 +66,11 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+
+    //Revert if the fuelUnitConsumption interval is min 1
+    if (fuelConsumptionPerMinuteInWei < 1) {
+      revert SmartDeployable_InvalidFuelConsumptionInterval(entityId);
     }
 
     //Create a new deployable when its new
@@ -133,7 +138,11 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     _updateFuel(entityId);
     uint256 currentFuel = DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId);
     if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);
-    DeployableFuelBalance.setFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId, currentFuel - 1); //forces it to tick
+    DeployableFuelBalance.setFuelAmount(
+      _namespace().deployableFuelBalanceTableId(),
+      entityId,
+      currentFuel - ONE_UNIT_IN_WEI
+    ); //forces it to tick
     _setDeployableState(entityId, previousState, State.ONLINE);
     DeployableFuelBalance.setLastUpdatedAt(_namespace().deployableFuelBalanceTableId(), entityId, block.timestamp);
   }
@@ -244,10 +253,10 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
       (
         ((DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId) +
           unitAmount *
-          (10 ** FUEL_DECIMALS)) *
+          ONE_UNIT_IN_WEI) *
           DeployableFuelBalance.getFuelUnitVolume(_namespace().deployableFuelBalanceTableId(), entityId))
       ) /
-        (10 ** FUEL_DECIMALS) >
+        ONE_UNIT_IN_WEI >
       DeployableFuelBalance.getFuelMaxCapacity(_namespace().deployableFuelBalanceTableId(), entityId)
     ) {
       revert SmartDeployable_TooMuchFuelDeposited(entityId, unitAmount);
@@ -255,7 +264,7 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      (_currentFuelAmount(entityId) + unitAmount * (10 ** FUEL_DECIMALS))
+      (_currentFuelAmount(entityId) + unitAmount * ONE_UNIT_IN_WEI)
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -276,7 +285,7 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     DeployableFuelBalance.setFuelAmount(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      (_currentFuelAmount(entityId) - unitAmount * (10 ** FUEL_DECIMALS)) // will revert if underflow
+      (_currentFuelAmount(entityId) - unitAmount * ONE_UNIT_IN_WEI) // will revert if underflow
     );
     DeployableFuelBalance.setLastUpdatedAt(
       _namespace().deployableFuelBalanceTableId(),
@@ -300,7 +309,11 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
    * @param entityId looked up
    */
   function currentFuelAmount(uint256 entityId) public view returns (uint256 amount) {
-    return _currentFuelAmount(entityId) / (10 ** FUEL_DECIMALS);
+    return _currentFuelAmount(entityId) / ONE_UNIT_IN_WEI;
+  }
+
+  function currentFuelAmountInWei(uint256 entityId) public view returns (uint256 amount) {
+    return _currentFuelAmount(entityId);
   }
 
   /********************
@@ -352,25 +365,43 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
   }
 
   /**
-   * internal method to look up current fuel amount from last updated state
-   * @param entityId to lookup fuel amount for
+   * @dev Internal method to look up the current fuel amount for an entity from the last updated state.
+   * @param entityId The ID of the entity to lookup fuel amount for.
+   * @return amount The current fuel amount.
    */
   function _currentFuelAmount(uint256 entityId) internal view returns (uint256 amount) {
-    // since we make sure the last time we interacted with an entity was when we set it online, it's fine
+    // Check if the entity is not online. If it's not online, return the fuel amount directly.
     if (DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId) != State.ONLINE) {
       return DeployableFuelBalance.getFuelAmount(_namespace().deployableFuelBalanceTableId(), entityId);
     }
 
+    // Fetch the fuel balance data for the entity.
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(
       _namespace().deployableFuelBalanceTableId(),
       entityId
     );
-    // elapsed time in seconds, multiplied by consumption rate per second
-    uint256 fuelConsumed = (block.timestamp - data.lastUpdatedAt) * (data.fuelConsumptionPerMinute / 60);
+
+    // TODO: fuelConsumptionPerMinute should be renamed to fuelConsumptionIntervalInSeconds as timestamp is in seconds.
+    // For example:
+    // OneFuelUnitConsumptionIntervalInSec = 1; // Consuming 1 unit of fuel every second.
+    // OneFuelUnitConsumptionIntervalInSec = 60; // Consuming 1 unit of fuel every minute.
+    // OneFuelUnitConsumptionIntervalInSec = 3600; // Consuming 1 unit of fuel every hour.
+    uint256 oneFuelUnitConsumptionIntervalInSec = data.fuelConsumptionPerMinute;
+
+    // Calculate the fuel consumed since the last update.
+    // Multiply by ONE_UNIT_IN_WEI to maintain high precision and handle floating-point arithmetic.
+    uint256 fuelConsumed = ((block.timestamp - data.lastUpdatedAt) * ONE_UNIT_IN_WEI) /
+      oneFuelUnitConsumptionIntervalInSec;
+
+    // Subtract any global offline fuel refund from the consumed fuel.
     fuelConsumed -= _globalOfflineFuelRefund(entityId);
+
+    // If the consumed fuel is greater than or equal to the current fuel amount, return 0.
     if (fuelConsumed >= data.fuelAmount) {
       return 0;
     }
+
+    // Return the remaining fuel amount.
     return data.fuelAmount - fuelConsumed;
   }
 
@@ -391,9 +422,8 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
 
     uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spend online during server downtime
-    return
-      elapsedRefundTime *
-      (DeployableFuelBalance.getFuelConsumptionPerMinute(_namespace().deployableFuelBalanceTableId(), entityId) / 60);
+    return ((elapsedRefundTime * ONE_UNIT_IN_WEI) /
+      (DeployableFuelBalance.getFuelConsumptionPerMinute(_namespace().deployableFuelBalanceTableId(), entityId)));
   }
 
   // TODO: this is kinda dirty.
