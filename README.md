@@ -59,5 +59,8 @@ We are running the anvil node explicitly ourselves for three reasons:
 - Decoupling from MUD's opinionated dev tools
 - Having a stand alone development node allows us to deploy modules in a deterministic an selective manner
 
+# Contribute
+We'd love your support! There are many ways you can participate and help build. Check out the [contribution guide](CONTRIBUTING.md)!
+
 # License 
 The contents of this repository are open-source software under the [MIT license](./LICENSE).
