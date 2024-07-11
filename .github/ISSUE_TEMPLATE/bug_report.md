@@ -1,10 +1,10 @@
 ---
-name: "\U0001F41C Bug report"
+name: "🐜 Bug report"
 about: Report a bug in World Chain Contracts
 labels: bug
 ---
 
-*📃 Description**
+**📃 Description**
 
 <!-- Briefly describe the issue you're experiencing. Tell us what you were trying to do and what happened instead. -->
 
