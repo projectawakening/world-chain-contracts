@@ -47,7 +47,7 @@ contract EphemeralInventory is AccessModified, EveSystem {
   function setEphemeralInventoryCapacity(
     uint256 smartObjectId,
     uint256 ephemeralStorageCapacity
-  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
@@ -82,7 +82,6 @@ contract EphemeralInventory is AccessModified, EveSystem {
     }
 
     uint256 totalUsedCapacity = _processAndReturnTotalUsedCapacity(smartObjectId, ephemeralInventoryOwner, items);
-    
 
     EphemeralInvTable.setUsedCapacity(
       _namespace().ephemeralInvTableId(),
@@ -136,7 +135,11 @@ contract EphemeralInventory is AccessModified, EveSystem {
     return _namespace().ephemeralInventorySystemId();
   }
 
-  function _processAndReturnTotalUsedCapacity(uint256  smartObjectId, address ephemeralInventoryOwner, InventoryItem[] memory items) internal returns (uint256) {
+  function _processAndReturnTotalUsedCapacity(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) internal returns (uint256) {
     uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
       _namespace().ephemeralInvTableId(),
       smartObjectId,

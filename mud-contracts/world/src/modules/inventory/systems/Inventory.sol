@@ -46,7 +46,7 @@ contract Inventory is AccessModified, EveSystem {
   function setInventoryCapacity(
     uint256 smartObjectId,
     uint256 storageCapacity
-  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     if (storageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("Inventory: storage capacity cannot be 0");
     }
@@ -110,7 +110,10 @@ contract Inventory is AccessModified, EveSystem {
     return _namespace().inventorySystemId();
   }
 
-  function _processAndReturnUsedCapacity(uint256 smartObjectId, InventoryItem[] memory items) internal returns (uint256) {
+  function _processAndReturnUsedCapacity(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) internal returns (uint256) {
     uint256 totalUsedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
     uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
 

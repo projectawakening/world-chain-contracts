@@ -18,17 +18,15 @@ import { IAccessControlErrors } from "../interfaces/IAccessControlErrors.sol";
 import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_ENFORCEMENT_TABLE_NAME } from "../constants.sol";
 
 contract AccessModified is System {
-  using SmartDeployableUtils for bytes14; 
-  ResourceId ACCESS_ENFORCEMENT_TABLE_ID = WorldResourceIdLib.encode({
-    typeId: RESOURCE_TABLE,
-    namespace: EVE_WORLD_NAMESPACE,
-    name: ACCESS_ENFORCEMENT_TABLE_NAME
-  });
-  ResourceId ACCESS_ROLE_TABLE_ID = WorldResourceIdLib.encode({
-    typeId: RESOURCE_TABLE,
-    namespace: EVE_WORLD_NAMESPACE,
-    name: ACCESS_ROLE_TABLE_NAME
-  });
+  using SmartDeployableUtils for bytes14;
+  ResourceId ACCESS_ENFORCEMENT_TABLE_ID =
+    WorldResourceIdLib.encode({
+      typeId: RESOURCE_TABLE,
+      namespace: EVE_WORLD_NAMESPACE,
+      name: ACCESS_ENFORCEMENT_TABLE_NAME
+    });
+  ResourceId ACCESS_ROLE_TABLE_ID =
+    WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ROLE_TABLE_NAME });
 
   modifier onlyAdmin() {
     // check enforcement
@@ -52,7 +50,10 @@ contract AccessModified is System {
     // check enforcement
     if (_isEnforced()) {
       if (IWorldKernel(_world()).initialMsgSender() != _getOwner(smartObjectId)) {
-        revert IAccessControlErrors.AccessControl_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+        revert IAccessControlErrors.AccessControl_NoPermission(
+          IWorldKernel(_world()).initialMsgSender(),
+          bytes32("OWNER")
+        );
       }
     }
     _;
@@ -88,10 +89,13 @@ contract AccessModified is System {
         }
       }
       if (!(adminAccess || IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
-        if(!adminAccess) {
+        if (!adminAccess) {
           revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+          revert IAccessControlErrors.AccessControl_NoPermission(
+            IWorldKernel(_world()).initialMsgSender(),
+            bytes32("OWNER")
+          );
         }
       }
     }
@@ -110,10 +114,13 @@ contract AccessModified is System {
         }
       }
       if (!adminAccess || IWorldKernel(_world()).initialMsgSender() != ephInvOwner) {
-        if(!adminAccess) {
+        if (!adminAccess) {
           revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+          revert IAccessControlErrors.AccessControl_NoPermission(
+            IWorldKernel(_world()).initialMsgSender(),
+            bytes32("OWNER")
+          );
         }
       }
     }
@@ -149,8 +156,8 @@ contract AccessModified is System {
         }
       }
 
-      if(!(adminAccess || approvedAccess)) {
-        if(!adminAccess && ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0)) {
+      if (!(adminAccess || approvedAccess)) {
+        if (!adminAccess && ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0)) {
           revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
         } else {
           revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
@@ -188,10 +195,16 @@ contract AccessModified is System {
       } else if (!approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == ephInvOwner)) {
         _;
       } else {
-        if(!adminAccess && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
+        if (!adminAccess && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
           revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
-        } else if ((IWorldKernel(_world()).initialMsgSender() != ephInvOwner) && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
-          revert IAccessControlErrors.AccessControl_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+        } else if (
+          (IWorldKernel(_world()).initialMsgSender() != ephInvOwner) &&
+          (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))
+        ) {
+          revert IAccessControlErrors.AccessControl_NoPermission(
+            IWorldKernel(_world()).initialMsgSender(),
+            bytes32("OWNER")
+          );
         } else {
           revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
         }
@@ -212,7 +225,7 @@ contract AccessModified is System {
         }
       }
       address[] memory accessListApproved = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
-    
+
       bool approvedAccess;
       for (uint256 i = 0; i < accessListApproved.length; i++) {
         if (_msgSender() == accessListApproved[i]) {
@@ -223,15 +236,25 @@ contract AccessModified is System {
 
       if (approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
         _;
-      } else if (approvedAccess && !(adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
+      } else if (
+        approvedAccess && !(adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))
+      ) {
         _;
-      } else if (!approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
+      } else if (
+        !approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))
+      ) {
         _;
       } else {
-        if(!adminAccess && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
+        if (!adminAccess && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
           revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
-        } else if ((IWorldKernel(_world()).initialMsgSender() != _getOwner(smartObjectId)) && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
-          revert IAccessControlErrors.AccessControl_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+        } else if (
+          (IWorldKernel(_world()).initialMsgSender() != _getOwner(smartObjectId)) &&
+          (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))
+        ) {
+          revert IAccessControlErrors.AccessControl_NoPermission(
+            IWorldKernel(_world()).initialMsgSender(),
+            bytes32("OWNER")
+          );
         } else {
           revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
         }

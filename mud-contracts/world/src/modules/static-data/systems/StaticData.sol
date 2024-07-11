@@ -22,7 +22,7 @@ contract StaticData is AccessModified, EveSystem {
   function setBaseURI(
     ResourceId systemId,
     string memory baseURI
-  ) public onlyAdmin() hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setBaseURI(_namespace().staticDataGlobalTableId(), systemId, baseURI);
   }
 
@@ -35,7 +35,7 @@ contract StaticData is AccessModified, EveSystem {
   function setName(
     ResourceId systemId,
     string memory name
-  ) public onlyAdmin() hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setName(_namespace().staticDataGlobalTableId(), systemId, name);
   }
 
@@ -48,7 +48,7 @@ contract StaticData is AccessModified, EveSystem {
   function setSymbol(
     ResourceId systemId,
     string memory symbol
-  ) public onlyAdmin() hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.setSymbol(_namespace().staticDataGlobalTableId(), systemId, symbol);
   }
 
@@ -61,7 +61,7 @@ contract StaticData is AccessModified, EveSystem {
   function setMetadata(
     ResourceId systemId,
     StaticDataGlobalTableData memory data
-  ) public onlyAdmin() hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(systemId)), _systemId()) {
     StaticDataGlobalTable.set(_namespace().staticDataGlobalTableId(), systemId, data);
   }
 
@@ -70,7 +70,7 @@ contract StaticData is AccessModified, EveSystem {
    * @param entityId entityId of the in-game object
    * @param cid the new CID string
    */
-  function setCid(uint256 entityId, string memory cid) public onlyAdmin() hookable(entityId, _systemId()) {
+  function setCid(uint256 entityId, string memory cid) public onlyAdmin hookable(entityId, _systemId()) {
     StaticDataTable.setCid(_namespace().staticDataTableId(), entityId, cid);
   }
 

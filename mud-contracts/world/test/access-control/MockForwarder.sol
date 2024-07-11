@@ -28,25 +28,26 @@ contract MockForwarder is EveSystem {
   bytes14 constant EVE_WORLD_NAMESPACE = "eveworld";
 
   bytes14 constant ERC721_DEPLOYABLE_NAMESPACE = "SDERC721Token";
-  
-  ResourceId ERC721_SYSTEM_ID = WorldResourceIdLib.encode({
-    typeId: RESOURCE_SYSTEM,
-    namespace: ERC721_DEPLOYABLE_NAMESPACE,
-    name: bytes16("ERC721System")
-  });
+
+  ResourceId ERC721_SYSTEM_ID =
+    WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: ERC721_DEPLOYABLE_NAMESPACE,
+      name: bytes16("ERC721System")
+    });
 
   function callERC721(address from, address to, uint256 tokenId) public returns (bytes memory) {
-    bytes memory returnData = world().call(
-      ERC721_SYSTEM_ID,
-      abi.encodeCall(IERC721.transferFrom, (from, to, tokenId))
-    );
+    bytes memory returnData = world().call(ERC721_SYSTEM_ID, abi.encodeCall(IERC721.transferFrom, (from, to, tokenId)));
     return returnData;
   }
 
-  function openEphemeralToInventoryTransfer(uint256 smartObjectId, address ephemeralInventoryOwner, InventoryItem[] memory items) public {
-    address owner = IERC721(DeployableTokenTable.getErc721Address(EVE_WORLD_NAMESPACE.deployableTokenTableId())).ownerOf(
-      smartObjectId
-    );
+  function openEphemeralToInventoryTransfer(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) public {
+    address owner = IERC721(DeployableTokenTable.getErc721Address(EVE_WORLD_NAMESPACE.deployableTokenTableId()))
+      .ownerOf(smartObjectId);
 
     // check if ephemeralInventoryOwner has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
@@ -81,10 +82,11 @@ contract MockForwarder is EveSystem {
   }
 
   function _systemId() internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({
-      typeId: RESOURCE_SYSTEM,
-      namespace: bytes14("eveworld"),
-      name: bytes16("MockForwarder")
-    });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_SYSTEM,
+        namespace: bytes14("eveworld"),
+        name: bytes16("MockForwarder")
+      });
   }
 }

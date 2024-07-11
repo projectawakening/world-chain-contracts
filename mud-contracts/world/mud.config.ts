@@ -42,7 +42,7 @@ export default mudConfig({
     InventoryInteract: {
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
-    }
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],

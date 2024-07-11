@@ -37,6 +37,7 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using StaticDataUtils for bytes14;
+
   /**
    * @dev See {IERC721-balanceOf}.
    */
@@ -83,9 +84,9 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
   /**
    * @dev bridge gap solution to make it possible to change the default Token CID
    */
-  function setCid(uint256 tokenId, string memory cid) public onlyAdmin() {
+  function setCid(uint256 tokenId, string memory cid) public onlyAdmin {
     world().call(
-      STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataSystemId(), 
+      STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataSystemId(),
       abi.encodeCall(IStaticData.setCid, (tokenId, cid))
     );
   }
@@ -96,7 +97,10 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
    */
   function _baseURI() internal virtual returns (string memory) {
     return
-      StaticDataGlobalTable.getBaseURI(STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(), _namespace().erc721SystemId());
+      StaticDataGlobalTable.getBaseURI(
+        STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(),
+        _namespace().erc721SystemId()
+      );
   }
 
   /**
@@ -132,7 +136,11 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
   /**
    * @dev See {IERC721-transferFrom}.
    */
-  function transferFrom(address from, address to, uint256 tokenId) public virtual noAccess() hookable(tokenId, _systemId()) {
+  function transferFrom(
+    address from,
+    address to,
+    uint256 tokenId
+  ) public virtual noAccess hookable(tokenId, _systemId()) {
     if (to == address(0)) {
       revert ERC721InvalidReceiver(address(0));
     }
@@ -173,7 +181,7 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
   function mint(
     address to,
     uint256 tokenId
-  ) public virtual onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public virtual onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _mint(to, tokenId);
   }
@@ -189,7 +197,10 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
    *
    * Emits a {Transfer} event.
    */
-  function safeMint(address to, uint256 tokenId) public onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function safeMint(
+    address to,
+    uint256 tokenId
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, "");
   }
@@ -202,7 +213,7 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
     address to,
     uint256 tokenId,
     bytes memory data
-  ) public virtual onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public virtual onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, data);
   }
@@ -217,7 +228,7 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
    *
    * Emits a {Transfer} event.
    */
-  function burn(uint256 tokenId) public onlyAdmin() {
+  function burn(uint256 tokenId) public onlyAdmin {
     // _requireOwner();
     _burn(tokenId);
   }

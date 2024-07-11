@@ -29,9 +29,9 @@ contract BringOnline is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    
+
     // check global state and resume if needed
-    if(GlobalDeployableState.getIsPaused(FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.globalStateTableId()) == false) {
+    if (GlobalDeployableState.getIsPaused(FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.globalStateTableId()) == false) {
       smartDeployable.globalResume();
     }
 
@@ -44,7 +44,7 @@ contract BringOnline is Script {
     if (data.fuelAmount < 10 ** FUEL_DECIMALS) {
       smartDeployable.depositFuel(smartObjectId, 200000);
     }
-    
+
     smartDeployable.bringOnline(smartObjectId); // needs to have some fuel in it to work, else it will just let the state to offline
 
     vm.stopBroadcast();

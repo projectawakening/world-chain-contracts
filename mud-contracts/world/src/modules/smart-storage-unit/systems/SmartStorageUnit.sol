@@ -65,7 +65,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     {
       uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
 
@@ -118,7 +118,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
   function createAndDepositItemsToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     for (uint256 i = 0; i < items.length; i++) {
       //Check if the item exists on-chain if not Create entityRecord
       _entityRecordLib().createEntityRecord(
@@ -145,7 +145,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public onlyAdmin() hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     //Check if the item exists on-chain if not Create entityRecord
     for (uint256 i = 0; i < items.length; i++) {
       _entityRecordLib().createEntityRecord(
@@ -160,7 +160,9 @@ contract SmartStorageUnit is AccessModified, EveSystem {
     _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
 
-  function setSSUClassId(uint256 classId) public onlyAdmin() hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function setSSUClassId(
+    uint256 classId
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
   }
 

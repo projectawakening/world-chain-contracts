@@ -71,7 +71,7 @@ contract Transfer is Script {
       volume: 10,
       quantity: 1
     });
-    
+
     vm.startBroadcast(ephemeralPrivateKey); // if triggered the createItem functions need to be called from the owner/deployer account
 
     // TRANSFER
