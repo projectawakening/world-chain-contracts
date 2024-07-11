@@ -5,6 +5,7 @@ pragma solidity >=0.8.24;
 
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
+import { IAccessControl } from "./IAccessControl.sol";
 import { IEntityRecord } from "./IEntityRecord.sol";
 import { IEphemeralInventory } from "./IEphemeralInventory.sol";
 import { IInventory } from "./IInventory.sol";
@@ -23,6 +24,7 @@ import { IStaticData } from "./IStaticData.sol";
  */
 interface IWorld is
   IBaseWorld,
+  IAccessControl,
   IEntityRecord,
   IEphemeralInventory,
   IInventory,

@@ -42,7 +42,7 @@ export default mudConfig({
     InventoryInteract: {
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
-    },
+    }
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
@@ -55,7 +55,7 @@ export default mudConfig({
      * Simple Access Control - for enforcing the most basic access rules
      */
     AccessRole: {
-      keySchema: { 
+      keySchema: {
         roleId: "bytes32",
       },
       valueSchema: {
@@ -64,7 +64,7 @@ export default mudConfig({
       tableIdArgument: true,
     },
     AccessEnforcement: {
-      keySchema: { 
+      keySchema: {
         target: "bytes32",
       },
       valueSchema: {

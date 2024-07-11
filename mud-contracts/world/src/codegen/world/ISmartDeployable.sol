@@ -46,4 +46,6 @@ interface ISmartDeployable {
   function eveworld__updateFuel(uint256 entityId) external;
 
   function eveworld__currentFuelAmount(uint256 entityId) external view returns (uint256 amount);
+
+  function eveworld__currentFuelAmountInWei(uint256 entityId) external view returns (uint256 amount);
 }
