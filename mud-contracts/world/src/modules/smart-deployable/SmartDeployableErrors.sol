@@ -9,4 +9,5 @@ interface SmartDeployableErrors {
   error SmartDeployable_StateTransitionPaused();
   error SmartDeployable_TooMuchFuelDeposited(uint256 entityId, uint256 amountDeposited);
   error SmartDeployableERC721AlreadyInitialized();
+  error SmartDeployable_InvalidFuelConsumptionInterval(uint256 entityId);
 }

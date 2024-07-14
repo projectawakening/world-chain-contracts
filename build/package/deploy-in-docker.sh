@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -eou pipefail
 
 bar_size=40
 bar_char_done="#"
@@ -142,7 +142,7 @@ show_progress 4 7
 
 #5 Deploy world features
 echo " - Deploying world features"
-pnpm nx deploy @eveworld/world --worldAddress '${WORLD_ADDRESS}' &> '/dev/null'
+pnpm nx deploy @eveworld/world --worldAddress '${WORLD_ADDRESS}' 1> '/dev/null'
 show_progress 5 7
 
 #6 Delegate Namespace Access
