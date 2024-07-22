@@ -6,4 +6,4 @@
 
 #### world-v2
 - removing module implementation 
-- implemented cross system calls using world.call and systemIds queried from registered systems in the world. 
+- implemented cross system calls using world.call(systemId, callData). `systemIds` is being queried from FunctionSelectors table in the world. 
