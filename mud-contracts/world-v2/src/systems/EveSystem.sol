@@ -9,7 +9,7 @@ import { IWorld } from "../codegen/world/IWorld.sol";
  * @title EveSystem
  * @author CCP Games
  * @notice This is the base system to be inherited by all other systems.
- * @dev Consider combining this with the SmartObjectSystem which is extended by all systems .
+ * @dev Consider combining this with the SmartObjectSystem which is extended by all systems.
  */
 contract EveSystem is System {
   /**

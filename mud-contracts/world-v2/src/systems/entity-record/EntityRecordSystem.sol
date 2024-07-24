@@ -46,9 +46,9 @@ contract EntityRecordSystem is System {
   }
 
   /**
-   * @dev sets the description of an entity
+   * @dev sets the dappURL of an entity
    * @param entityId the id of a in game entity referred as smart object id
-   * @param dappURL the description of the entity
+   * @param dappURL the dappURL of the entity
    */
   function setDappURL(uint256 entityId, string memory dappURL) public {
     EntityRecordMetadata.setDappURL(entityId, dappURL);

@@ -9,7 +9,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
 
 /**
- * @title Utils to calculate systemId by namesapce and system name
+ * @title Utils to calculate systemId by namespace and system name
  */
 library Utils {
   function entityRecordSystemId() public pure returns (ResourceId systemId) {
