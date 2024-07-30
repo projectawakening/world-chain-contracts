@@ -30,5 +30,24 @@ export default defineWorld({
       },
       key: ["entityId"],
     },
+    /**********************
+     * STATIC DATA MODULE *
+     **********************/
+    StaticData: {
+      schema: {
+        entityId: "uint256",
+        cid: "string",
+      },
+      key: ["entityId"],
+    },
+    StaticDataMetadata: {
+      schema: {
+        systemId: "uint256",
+        name: "string",
+        symbol: "string",
+        baseURI: "string",
+      },
+      key: ["systemId"],
+    },
   },
 });
