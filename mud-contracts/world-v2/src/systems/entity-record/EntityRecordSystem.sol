@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
 import { System } from "@latticexyz/world/src/System.sol";
 import { EntityRecord, EntityRecordMetadata } from "../../codegen/index.sol";
 
