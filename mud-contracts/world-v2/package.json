@@ -32,5 +32,13 @@
     "solhint": "^3.3.7",
     "solhint-config-mud": "2.0.12",
     "solhint-plugin-mud": "2.0.12"
+  },
+  "pnpm": {
+    "overrides": {
+      "follow-redirects@<1.15.6": ">=1.15.6",
+      "ejs@<3.1.10": ">=3.1.10",
+      "ws@<8.17.1": ">=8.17.1",
+      "braces@<3.0.3": ">=3.0.3"
+    }
   }
 }
