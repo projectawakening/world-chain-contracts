@@ -6,10 +6,10 @@ settings:
 
 overrides:
   follow-redirects@<1.15.6: '>=1.15.6'
-  fast-xml-parser@4.4.1: '>=4.4.1'
   ejs@<3.1.10: '>=3.1.10'
   ws@<8.17.1: '>=8.17.1'
   braces@<3.0.3: '>=3.0.3'
+  fast-xml-parser@<4.4.1: '>=4.4.1'
 
 importers:
 
@@ -626,7 +626,7 @@ packages:
       '@smithy/signature-v4': 3.1.2
       '@smithy/smithy-client': 3.1.5
       '@smithy/types': 3.3.0
-      fast-xml-parser: 4.2.5
+      fast-xml-parser: 4.4.1
       tslib: 2.6.2
     dev: false
 
@@ -3892,8 +3892,8 @@ packages:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
     dev: true
 
-  /fast-xml-parser@4.2.5:
-    resolution: {integrity: sha512-B9/wizE4WngqQftFPmdaMYlXoJlJOYxGQOanC77fq9k8+Z0v5dDSVh+3glErdIROP//s/jgb7ZuxKfB8nVyo0g==}
+  /fast-xml-parser@4.4.1:
+    resolution: {integrity: sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==}
     hasBin: true
     dependencies:
       strnum: 1.0.5
