@@ -16,12 +16,8 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-// Import user types
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-
 struct StaticDataMetadataData {
   string name;
-  string symbol;
   string baseURI;
 }
 
@@ -30,12 +26,12 @@ library StaticDataMetadata {
   ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000537461746963446174614d6574616461);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0000000300000000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0000000200000000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (bytes32)
   Schema constant _keySchema = Schema.wrap(0x002001005f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (string, string, string)
-  Schema constant _valueSchema = Schema.wrap(0x00000003c5c5c500000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (string, string)
+  Schema constant _valueSchema = Schema.wrap(0x00000002c5c50000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -43,7 +39,7 @@ library StaticDataMetadata {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "systemId";
+    keyNames[0] = "classId";
   }
 
   /**
@@ -51,10 +47,9 @@ library StaticDataMetadata {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
+    fieldNames = new string[](2);
     fieldNames[0] = "name";
-    fieldNames[1] = "symbol";
-    fieldNames[2] = "baseURI";
+    fieldNames[1] = "baseURI";
   }
 
   /**
@@ -74,9 +69,9 @@ library StaticDataMetadata {
   /**
    * @notice Get name.
    */
-  function getName(ResourceId systemId) internal view returns (string memory name) {
+  function getName(bytes32 classId) internal view returns (string memory name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -85,9 +80,9 @@ library StaticDataMetadata {
   /**
    * @notice Get name.
    */
-  function _getName(ResourceId systemId) internal view returns (string memory name) {
+  function _getName(bytes32 classId) internal view returns (string memory name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -96,9 +91,9 @@ library StaticDataMetadata {
   /**
    * @notice Set name.
    */
-  function setName(ResourceId systemId, string memory name) internal {
+  function setName(bytes32 classId, string memory name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
   }
@@ -106,9 +101,9 @@ library StaticDataMetadata {
   /**
    * @notice Set name.
    */
-  function _setName(ResourceId systemId, string memory name) internal {
+  function _setName(bytes32 classId, string memory name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
   }
@@ -116,9 +111,9 @@ library StaticDataMetadata {
   /**
    * @notice Get the length of name.
    */
-  function lengthName(ResourceId systemId) internal view returns (uint256) {
+  function lengthName(bytes32 classId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -129,9 +124,9 @@ library StaticDataMetadata {
   /**
    * @notice Get the length of name.
    */
-  function _lengthName(ResourceId systemId) internal view returns (uint256) {
+  function _lengthName(bytes32 classId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -143,9 +138,9 @@ library StaticDataMetadata {
    * @notice Get an item of name.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemName(ResourceId systemId, uint256 _index) internal view returns (string memory) {
+  function getItemName(bytes32 classId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -157,9 +152,9 @@ library StaticDataMetadata {
    * @notice Get an item of name.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemName(ResourceId systemId, uint256 _index) internal view returns (string memory) {
+  function _getItemName(bytes32 classId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -170,9 +165,9 @@ library StaticDataMetadata {
   /**
    * @notice Push a slice to name.
    */
-  function pushName(ResourceId systemId, string memory _slice) internal {
+  function pushName(bytes32 classId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -180,9 +175,9 @@ library StaticDataMetadata {
   /**
    * @notice Push a slice to name.
    */
-  function _pushName(ResourceId systemId, string memory _slice) internal {
+  function _pushName(bytes32 classId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -190,9 +185,9 @@ library StaticDataMetadata {
   /**
    * @notice Pop a slice from name.
    */
-  function popName(ResourceId systemId) internal {
+  function popName(bytes32 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -200,9 +195,9 @@ library StaticDataMetadata {
   /**
    * @notice Pop a slice from name.
    */
-  function _popName(ResourceId systemId) internal {
+  function _popName(bytes32 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -210,9 +205,9 @@ library StaticDataMetadata {
   /**
    * @notice Update a slice of name at `_index`.
    */
-  function updateName(ResourceId systemId, uint256 _index, string memory _slice) internal {
+  function updateName(bytes32 classId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -223,9 +218,9 @@ library StaticDataMetadata {
   /**
    * @notice Update a slice of name at `_index`.
    */
-  function _updateName(ResourceId systemId, uint256 _index, string memory _slice) internal {
+  function _updateName(bytes32 classId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -234,53 +229,53 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Get symbol.
+   * @notice Get baseURI.
    */
-  function getSymbol(ResourceId systemId) internal view returns (string memory symbol) {
+  function getBaseURI(bytes32 classId) internal view returns (string memory baseURI) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 1);
     return (string(_blob));
   }
 
   /**
-   * @notice Get symbol.
+   * @notice Get baseURI.
    */
-  function _getSymbol(ResourceId systemId) internal view returns (string memory symbol) {
+  function _getBaseURI(bytes32 classId) internal view returns (string memory baseURI) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 1);
     return (string(_blob));
   }
 
   /**
-   * @notice Set symbol.
+   * @notice Set baseURI.
    */
-  function setSymbol(ResourceId systemId, string memory symbol) internal {
+  function setBaseURI(bytes32 classId, string memory baseURI) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
-    StoreSwitch.setDynamicField(_tableId, _keyTuple, 1, bytes((symbol)));
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 1, bytes((baseURI)));
   }
 
   /**
-   * @notice Set symbol.
+   * @notice Set baseURI.
    */
-  function _setSymbol(ResourceId systemId, string memory symbol) internal {
+  function _setBaseURI(bytes32 classId, string memory baseURI) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
-    StoreCore.setDynamicField(_tableId, _keyTuple, 1, bytes((symbol)));
+    StoreCore.setDynamicField(_tableId, _keyTuple, 1, bytes((baseURI)));
   }
 
   /**
-   * @notice Get the length of symbol.
+   * @notice Get the length of baseURI.
    */
-  function lengthSymbol(ResourceId systemId) internal view returns (uint256) {
+  function lengthBaseURI(bytes32 classId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 1);
     unchecked {
@@ -289,11 +284,11 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Get the length of symbol.
+   * @notice Get the length of baseURI.
    */
-  function _lengthSymbol(ResourceId systemId) internal view returns (uint256) {
+  function _lengthBaseURI(bytes32 classId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 1);
     unchecked {
@@ -302,12 +297,12 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Get an item of symbol.
+   * @notice Get an item of baseURI.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemSymbol(ResourceId systemId, uint256 _index) internal view returns (string memory) {
+  function getItemBaseURI(bytes32 classId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 1, _index * 1, (_index + 1) * 1);
@@ -316,12 +311,12 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Get an item of symbol.
+   * @notice Get an item of baseURI.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemSymbol(ResourceId systemId, uint256 _index) internal view returns (string memory) {
+  function _getItemBaseURI(bytes32 classId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 1, _index * 1, (_index + 1) * 1);
@@ -330,51 +325,51 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Push a slice to symbol.
+   * @notice Push a slice to baseURI.
    */
-  function pushSymbol(ResourceId systemId, string memory _slice) internal {
+  function pushBaseURI(bytes32 classId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 1, bytes((_slice)));
   }
 
   /**
-   * @notice Push a slice to symbol.
+   * @notice Push a slice to baseURI.
    */
-  function _pushSymbol(ResourceId systemId, string memory _slice) internal {
+  function _pushBaseURI(bytes32 classId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 1, bytes((_slice)));
   }
 
   /**
-   * @notice Pop a slice from symbol.
+   * @notice Pop a slice from baseURI.
    */
-  function popSymbol(ResourceId systemId) internal {
+  function popBaseURI(bytes32 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 1, 1);
   }
 
   /**
-   * @notice Pop a slice from symbol.
+   * @notice Pop a slice from baseURI.
    */
-  function _popSymbol(ResourceId systemId) internal {
+  function _popBaseURI(bytes32 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 1, 1);
   }
 
   /**
-   * @notice Update a slice of symbol at `_index`.
+   * @notice Update a slice of baseURI at `_index`.
    */
-  function updateSymbol(ResourceId systemId, uint256 _index, string memory _slice) internal {
+  function updateBaseURI(bytes32 classId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -383,11 +378,11 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Update a slice of symbol at `_index`.
+   * @notice Update a slice of baseURI at `_index`.
    */
-  function _updateSymbol(ResourceId systemId, uint256 _index, string memory _slice) internal {
+  function _updateBaseURI(bytes32 classId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -396,173 +391,11 @@ library StaticDataMetadata {
   }
 
   /**
-   * @notice Get baseURI.
-   */
-  function getBaseURI(ResourceId systemId) internal view returns (string memory baseURI) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 2);
-    return (string(_blob));
-  }
-
-  /**
-   * @notice Get baseURI.
-   */
-  function _getBaseURI(ResourceId systemId) internal view returns (string memory baseURI) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 2);
-    return (string(_blob));
-  }
-
-  /**
-   * @notice Set baseURI.
-   */
-  function setBaseURI(ResourceId systemId, string memory baseURI) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    StoreSwitch.setDynamicField(_tableId, _keyTuple, 2, bytes((baseURI)));
-  }
-
-  /**
-   * @notice Set baseURI.
-   */
-  function _setBaseURI(ResourceId systemId, string memory baseURI) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    StoreCore.setDynamicField(_tableId, _keyTuple, 2, bytes((baseURI)));
-  }
-
-  /**
-   * @notice Get the length of baseURI.
-   */
-  function lengthBaseURI(ResourceId systemId) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 2);
-    unchecked {
-      return _byteLength / 1;
-    }
-  }
-
-  /**
-   * @notice Get the length of baseURI.
-   */
-  function _lengthBaseURI(ResourceId systemId) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 2);
-    unchecked {
-      return _byteLength / 1;
-    }
-  }
-
-  /**
-   * @notice Get an item of baseURI.
-   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
-   */
-  function getItemBaseURI(ResourceId systemId, uint256 _index) internal view returns (string memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    unchecked {
-      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 2, _index * 1, (_index + 1) * 1);
-      return (string(_blob));
-    }
-  }
-
-  /**
-   * @notice Get an item of baseURI.
-   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
-   */
-  function _getItemBaseURI(ResourceId systemId, uint256 _index) internal view returns (string memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    unchecked {
-      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 2, _index * 1, (_index + 1) * 1);
-      return (string(_blob));
-    }
-  }
-
-  /**
-   * @notice Push a slice to baseURI.
-   */
-  function pushBaseURI(ResourceId systemId, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 2, bytes((_slice)));
-  }
-
-  /**
-   * @notice Push a slice to baseURI.
-   */
-  function _pushBaseURI(ResourceId systemId, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    StoreCore.pushToDynamicField(_tableId, _keyTuple, 2, bytes((_slice)));
-  }
-
-  /**
-   * @notice Pop a slice from baseURI.
-   */
-  function popBaseURI(ResourceId systemId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 2, 1);
-  }
-
-  /**
-   * @notice Pop a slice from baseURI.
-   */
-  function _popBaseURI(ResourceId systemId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    StoreCore.popFromDynamicField(_tableId, _keyTuple, 2, 1);
-  }
-
-  /**
-   * @notice Update a slice of baseURI at `_index`.
-   */
-  function updateBaseURI(ResourceId systemId, uint256 _index, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    unchecked {
-      bytes memory _encoded = bytes((_slice));
-      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 2, uint40(_index * 1), uint40(_encoded.length), _encoded);
-    }
-  }
-
-  /**
-   * @notice Update a slice of baseURI at `_index`.
-   */
-  function _updateBaseURI(ResourceId systemId, uint256 _index, string memory _slice) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
-
-    unchecked {
-      bytes memory _encoded = bytes((_slice));
-      StoreCore.spliceDynamicData(_tableId, _keyTuple, 2, uint40(_index * 1), uint40(_encoded.length), _encoded);
-    }
-  }
-
-  /**
    * @notice Get the full data.
    */
-  function get(ResourceId systemId) internal view returns (StaticDataMetadataData memory _table) {
+  function get(bytes32 classId) internal view returns (StaticDataMetadataData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -575,9 +408,9 @@ library StaticDataMetadata {
   /**
    * @notice Get the full data.
    */
-  function _get(ResourceId systemId) internal view returns (StaticDataMetadataData memory _table) {
+  function _get(bytes32 classId) internal view returns (StaticDataMetadataData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -590,13 +423,13 @@ library StaticDataMetadata {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(ResourceId systemId, string memory name, string memory symbol, string memory baseURI) internal {
+  function set(bytes32 classId, string memory name, string memory baseURI) internal {
     bytes memory _staticData;
-    EncodedLengths _encodedLengths = encodeLengths(name, symbol, baseURI);
-    bytes memory _dynamicData = encodeDynamic(name, symbol, baseURI);
+    EncodedLengths _encodedLengths = encodeLengths(name, baseURI);
+    bytes memory _dynamicData = encodeDynamic(name, baseURI);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -604,13 +437,13 @@ library StaticDataMetadata {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(ResourceId systemId, string memory name, string memory symbol, string memory baseURI) internal {
+  function _set(bytes32 classId, string memory name, string memory baseURI) internal {
     bytes memory _staticData;
-    EncodedLengths _encodedLengths = encodeLengths(name, symbol, baseURI);
-    bytes memory _dynamicData = encodeDynamic(name, symbol, baseURI);
+    EncodedLengths _encodedLengths = encodeLengths(name, baseURI);
+    bytes memory _dynamicData = encodeDynamic(name, baseURI);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -618,13 +451,13 @@ library StaticDataMetadata {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(ResourceId systemId, StaticDataMetadataData memory _table) internal {
+  function set(bytes32 classId, StaticDataMetadataData memory _table) internal {
     bytes memory _staticData;
-    EncodedLengths _encodedLengths = encodeLengths(_table.name, _table.symbol, _table.baseURI);
-    bytes memory _dynamicData = encodeDynamic(_table.name, _table.symbol, _table.baseURI);
+    EncodedLengths _encodedLengths = encodeLengths(_table.name, _table.baseURI);
+    bytes memory _dynamicData = encodeDynamic(_table.name, _table.baseURI);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -632,13 +465,13 @@ library StaticDataMetadata {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(ResourceId systemId, StaticDataMetadataData memory _table) internal {
+  function _set(bytes32 classId, StaticDataMetadataData memory _table) internal {
     bytes memory _staticData;
-    EncodedLengths _encodedLengths = encodeLengths(_table.name, _table.symbol, _table.baseURI);
-    bytes memory _dynamicData = encodeDynamic(_table.name, _table.symbol, _table.baseURI);
+    EncodedLengths _encodedLengths = encodeLengths(_table.name, _table.baseURI);
+    bytes memory _dynamicData = encodeDynamic(_table.name, _table.baseURI);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -649,7 +482,7 @@ library StaticDataMetadata {
   function decodeDynamic(
     EncodedLengths _encodedLengths,
     bytes memory _blob
-  ) internal pure returns (string memory name, string memory symbol, string memory baseURI) {
+  ) internal pure returns (string memory name, string memory baseURI) {
     uint256 _start;
     uint256 _end;
     unchecked {
@@ -660,12 +493,6 @@ library StaticDataMetadata {
     _start = _end;
     unchecked {
       _end += _encodedLengths.atIndex(1);
-    }
-    symbol = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
-
-    _start = _end;
-    unchecked {
-      _end += _encodedLengths.atIndex(2);
     }
     baseURI = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
   }
@@ -681,15 +508,15 @@ library StaticDataMetadata {
     EncodedLengths _encodedLengths,
     bytes memory _dynamicData
   ) internal pure returns (StaticDataMetadataData memory _table) {
-    (_table.name, _table.symbol, _table.baseURI) = decodeDynamic(_encodedLengths, _dynamicData);
+    (_table.name, _table.baseURI) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(ResourceId systemId) internal {
+  function deleteRecord(bytes32 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -697,9 +524,9 @@ library StaticDataMetadata {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(ResourceId systemId) internal {
+  function _deleteRecord(bytes32 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -710,12 +537,11 @@ library StaticDataMetadata {
    */
   function encodeLengths(
     string memory name,
-    string memory symbol,
     string memory baseURI
   ) internal pure returns (EncodedLengths _encodedLengths) {
     // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
     unchecked {
-      _encodedLengths = EncodedLengthsLib.pack(bytes(name).length, bytes(symbol).length, bytes(baseURI).length);
+      _encodedLengths = EncodedLengthsLib.pack(bytes(name).length, bytes(baseURI).length);
     }
   }
 
@@ -723,12 +549,8 @@ library StaticDataMetadata {
    * @notice Tightly pack dynamic (variable length) data using this table's schema.
    * @return The dynamic data, encoded into a sequence of bytes.
    */
-  function encodeDynamic(
-    string memory name,
-    string memory symbol,
-    string memory baseURI
-  ) internal pure returns (bytes memory) {
-    return abi.encodePacked(bytes((name)), bytes((symbol)), bytes((baseURI)));
+  function encodeDynamic(string memory name, string memory baseURI) internal pure returns (bytes memory) {
+    return abi.encodePacked(bytes((name)), bytes((baseURI)));
   }
 
   /**
@@ -739,12 +561,11 @@ library StaticDataMetadata {
    */
   function encode(
     string memory name,
-    string memory symbol,
     string memory baseURI
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData;
-    EncodedLengths _encodedLengths = encodeLengths(name, symbol, baseURI);
-    bytes memory _dynamicData = encodeDynamic(name, symbol, baseURI);
+    EncodedLengths _encodedLengths = encodeLengths(name, baseURI);
+    bytes memory _dynamicData = encodeDynamic(name, baseURI);
 
     return (_staticData, _encodedLengths, _dynamicData);
   }
@@ -752,9 +573,9 @@ library StaticDataMetadata {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(ResourceId systemId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(bytes32 classId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = ResourceId.unwrap(systemId);
+    _keyTuple[0] = classId;
 
     return _keyTuple;
   }

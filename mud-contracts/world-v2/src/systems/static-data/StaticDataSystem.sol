@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-
 import { System } from "@latticexyz/world/src/System.sol";
 import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
 
 /**
- * @title EntityRecordSystem
+ * @title StaticDataS
  * @author CCP Games
- * EntityRecordSystem stores an in game entity record on chain.
+ * StaticDataS stores an in game entity record on chain.
  */
 contract StaticDataSystem is System {
   /**
@@ -22,19 +20,13 @@ contract StaticDataSystem is System {
   }
 
   /**
-   * @dev creates a new static data entry
-   * @param systemId systemId of the in-game object
+   * @dev Stores the metadata details about the IPFS gateway.
+   * @param classId classId of the in-game object
    * @param name name of the in-game object
-   * @param symbol URL of the dapp
    * @param baseURI baseURI of the in-game object
    */
-  function createStaticDataMetadata(
-    ResourceId systemId,
-    string memory name,
-    string memory symbol,
-    string memory baseURI
-  ) public {
-    StaticDataMetadata.set(systemId, name, symbol, baseURI);
+  function createStaticDataMetadata(bytes32 classId, string memory name, string memory baseURI) public {
+    StaticDataMetadata.set(classId, name, baseURI);
   }
 
   /**
@@ -47,28 +39,20 @@ contract StaticDataSystem is System {
   }
 
   /**
-   * @dev updates the cid of the in-game object
-   * @param systemId systemId of the in-game object
+   * @dev updates the name of the in-game object
+   * @param classId classId of the in-game object
    * @param name name of the in-game object
    */
-  function setName(ResourceId systemId, string memory name) public {
-    StaticDataMetadata.setName(systemId, name);
+  function setName(bytes32 classId, string memory name) public {
+    StaticDataMetadata.setName(classId, name);
   }
 
   /**
-   * @dev updates the cid of the in-game object
-   * @param systemId systemId of the in-game object
-   * @param symbol symbol of the in-game object
-   */
-  function setSymbol(ResourceId systemId, string memory symbol) public {
-    StaticDataMetadata.setSymbol(systemId, symbol);
-  }
-  /**
-   * @dev updates the cid of the in-game object
-   * @param systemId systemId of the in-game object
+   * @dev updates the baseURI of the in-game object
+   * @param classId classId of the in-game object
    * @param baseURI the baseURI of the static data
    */
-  function setBaseURI(ResourceId systemId, string memory baseURI) public {
-    StaticDataMetadata.setBaseURI(systemId, baseURI);
+  function setBaseURI(bytes32 classId, string memory baseURI) public {
+    StaticDataMetadata.setBaseURI(classId, baseURI);
   }
 }

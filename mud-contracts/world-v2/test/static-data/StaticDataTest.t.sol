@@ -47,19 +47,18 @@ contract StaticDataTest is MudTest {
 
   function testStaticDataMetadata(
     ResourceId systemId,
+    bytes32 classId,
     string memory name,
-    string memory symbol,
     string memory baseURI
   ) public {
     bytes4 functionSelector = IStaticDataSystem.eveworld__createStaticDataMetadata.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.createStaticDataMetadata, (systemId, name, symbol, baseURI)));
+    world.call(systemId, abi.encodeCall(StaticDataSystem.createStaticDataMetadata, (classId, name, baseURI)));
 
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(systemId);
+    StaticDataMetadataData memory metadata = StaticDataMetadata.get(classId);
 
     assertEq(name, metadata.name);
-    assertEq(symbol, metadata.symbol);
     assertEq(baseURI, metadata.baseURI);
   }
 
@@ -75,35 +74,24 @@ contract StaticDataTest is MudTest {
     assertEq(cid, storedCid);
   }
 
-  function testSetName(ResourceId systemId, string memory name) public {
+  function testSetName(ResourceId systemId, bytes32 classId, string memory name) public {
     bytes4 functionSelector = IStaticDataSystem.eveworld__setName.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setName, (systemId, name)));
+    world.call(systemId, abi.encodeCall(StaticDataSystem.setName, (classId, name)));
 
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(systemId);
+    StaticDataMetadataData memory metadata = StaticDataMetadata.get(classId);
 
     assertEq(name, metadata.name);
   }
 
-  function testSetSymbol(ResourceId systemId, string memory symbol) public {
-    bytes4 functionSelector = IStaticDataSystem.eveworld__setSymbol.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setSymbol, (systemId, symbol)));
-
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(systemId);
-
-    assertEq(symbol, metadata.symbol);
-  }
-
-  function testSetBaseURI(ResourceId systemId, string memory baseURI) public {
+  function testSetBaseURI(ResourceId systemId, bytes32 classId, string memory baseURI) public {
     bytes4 functionSelector = IStaticDataSystem.eveworld__setBaseURI.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (systemId, baseURI)));
+    world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (classId, baseURI)));
 
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(systemId);
+    StaticDataMetadataData memory metadata = StaticDataMetadata.get(classId);
 
     assertEq(baseURI, metadata.baseURI);
   }

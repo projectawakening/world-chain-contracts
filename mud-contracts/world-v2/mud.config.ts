@@ -45,12 +45,11 @@ export default defineWorld({
     },
     StaticDataMetadata: {
       schema: {
-        systemId: "ResourceId",
+        classId: "bytes32",
         name: "string",
-        symbol: "string",
         baseURI: "string",
       },
-      key: ["systemId"],
+      key: ["classId"],
     },
   },
 });
