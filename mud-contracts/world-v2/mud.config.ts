@@ -2,6 +2,9 @@ import { defineWorld } from "@latticexyz/world";
 
 export default defineWorld({
   namespace: "eveworld",
+  userTypes: {
+    ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", type: "bytes32" },
+  },
   tables: {
     /**********************
      * ENTITY RECORD MODULE *
@@ -29,6 +32,24 @@ export default defineWorld({
         description: "string",
       },
       key: ["entityId"],
+    },
+    /**********************
+     * STATIC DATA MODULE *
+     **********************/
+    StaticData: {
+      schema: {
+        entityId: "uint256",
+        cid: "string",
+      },
+      key: ["entityId"],
+    },
+    StaticDataMetadata: {
+      schema: {
+        classId: "bytes32",
+        name: "string",
+        baseURI: "string",
+      },
+      key: ["classId"],
     },
   },
 });
