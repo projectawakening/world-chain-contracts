@@ -26,7 +26,6 @@ import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
  * @dev Manage Class and Object creation/deletion through the use of reference Ids { see, `libs/Id.sol` and `types/entityTypes.sol`}
  */
 contract Entities is SmartObjectSystem {
-	
   /**
    * @notice register a Class Entity into the SOF with an initial set of assigned SystemTags
    * @param classId A unique ENTITY_CLASS type Id for referencing a newly registred Class Entity within SOF compatible Systems
@@ -48,7 +47,7 @@ contract Entities is SmartObjectSystem {
     Classes.set(classId, true, new bytes32[](0), new bytes32[](0));
 
     IWorld(_world()).eveworld__setSystemTags(classId, systemTags);
-	}
+  }
 
   /**
    * @notice delete a registered Class
@@ -61,7 +60,7 @@ contract Entities is SmartObjectSystem {
     }
 
     ClassesData memory class = Classes.get(classId);
-    if(class.objects.length > 0){
+    if (class.objects.length > 0) {
       revert IErrors.ClassHasObjects(classId, class.objects.length);
     }
 
@@ -111,7 +110,7 @@ contract Entities is SmartObjectSystem {
     ClassObjectMap.set(classId, objectId, true, Classes.lengthObjects(classId));
     Classes.pushObjects(classId, Id.unwrap(objectId));
     Objects.set(objectId, true, classId);
-	}
+  }
 
   /**
    * @notice delete an instantiated Object
@@ -125,9 +124,9 @@ contract Entities is SmartObjectSystem {
 
     Id classId = Objects.getClass(objectId);
     ClassObjectMapData memory classObjectMapData = ClassObjectMap.get(classId, objectId);
-    
+
     Classes.updateObjects(
-      classId, 
+      classId,
       classObjectMapData.objectIndex,
       Classes.getItemObjects(classId, Classes.lengthObjects(classId) - 1)
     );
@@ -154,5 +153,4 @@ contract Entities is SmartObjectSystem {
       deleteObject(objectIds[i]);
     }
   }
-
 }

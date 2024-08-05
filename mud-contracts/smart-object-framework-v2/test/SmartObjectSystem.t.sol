@@ -36,10 +36,14 @@ contract SmartObjectSystemTest is MudTest {
 
   bytes14 constant NAMESPACE = bytes14("eveworld");
   ResourceId constant NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, NAMESPACE)));
-  ResourceId constant ENTITIES_SYSTEM_ID = ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Entities")))));
-  ResourceId constant TAGS_SYSTEM_ID = ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Tags")))));
-  ResourceId constant TAGGED_SYSTEM_ID = ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMock")))));
-  ResourceId constant UNTAGGED_SYSTEM_ID = ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("UnTaggedSystemMo")))));
+  ResourceId constant ENTITIES_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Entities")))));
+  ResourceId constant TAGS_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Tags")))));
+  ResourceId constant TAGGED_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMock")))));
+  ResourceId constant UNTAGGED_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("UnTaggedSystemMo")))));
 
   Id classId = IdLib.encode(ENTITY_CLASS, bytes30("TEST_CLASS"));
   Id unTaggedClassId = IdLib.encode(ENTITY_CLASS, bytes30("TEST_FAIL_CLASS"));
@@ -78,28 +82,16 @@ contract SmartObjectSystemTest is MudTest {
     // register Class with TaggedSystemMock tag
     Id[] memory systemTagIds = new Id[](1);
     systemTagIds[0] = taggedSystemTagId;
-    world.call(
-      ENTITIES_SYSTEM_ID,
-      abi.encodeCall(Entities.registerClass, (classId, systemTagIds))
-    );
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, systemTagIds)));
 
     // register UnTagged Class
-    world.call(
-      ENTITIES_SYSTEM_ID,
-      abi.encodeCall(Entities.registerClass, (unTaggedClassId, new Id[](0)))
-    );
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (unTaggedClassId, new Id[](0))));
 
     // instantiate Class<>Object
-    world.call(
-      ENTITIES_SYSTEM_ID,
-      abi.encodeCall(Entities.instantiate, (classId, objectId))
-    );
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
 
     // instantiate Untagged Class<>Object
-    world.call(
-      ENTITIES_SYSTEM_ID,
-      abi.encodeCall(Entities.instantiate, (unTaggedClassId, unTaggedObjectId))
-    );
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (unTaggedClassId, unTaggedObjectId)));
     vm.stopPrank();
   }
 
@@ -109,14 +101,46 @@ contract SmartObjectSystemTest is MudTest {
     assertEq(ResourceIds.getExists(UNTAGGED_SYSTEM_ID), true);
 
     // mock functions are registered on the World
-    string memory taggedSystemNamespaceString = WorldResourceIdLib.toTrimmedString(WorldResourceIdInstance.getNamespace(TAGGED_SYSTEM_ID));
-    assertEq(ResourceId.unwrap(FunctionSelectors.getSystemId(bytes4(keccak256(bytes(string.concat(taggedSystemNamespaceString, "__", "allowClassLevelScope(bytes32)")))))), ResourceId.unwrap(TAGGED_SYSTEM_ID));
-    assertEq(ResourceId.unwrap(FunctionSelectors.getSystemId(bytes4(keccak256(bytes(string.concat(taggedSystemNamespaceString, "__", "allowObjectLevelScope(bytes32)")))))), ResourceId.unwrap(TAGGED_SYSTEM_ID));
+    string memory taggedSystemNamespaceString = WorldResourceIdLib.toTrimmedString(
+      WorldResourceIdInstance.getNamespace(TAGGED_SYSTEM_ID)
+    );
+    assertEq(
+      ResourceId.unwrap(
+        FunctionSelectors.getSystemId(
+          bytes4(keccak256(bytes(string.concat(taggedSystemNamespaceString, "__", "allowClassLevelScope(bytes32)"))))
+        )
+      ),
+      ResourceId.unwrap(TAGGED_SYSTEM_ID)
+    );
+    assertEq(
+      ResourceId.unwrap(
+        FunctionSelectors.getSystemId(
+          bytes4(keccak256(bytes(string.concat(taggedSystemNamespaceString, "__", "allowObjectLevelScope(bytes32)"))))
+        )
+      ),
+      ResourceId.unwrap(TAGGED_SYSTEM_ID)
+    );
 
-    string memory unTaggedSystemNamespaceString = WorldResourceIdLib.toTrimmedString(WorldResourceIdInstance.getNamespace(UNTAGGED_SYSTEM_ID));
-    assertEq(ResourceId.unwrap(FunctionSelectors.getSystemId(bytes4(keccak256(bytes(string.concat(unTaggedSystemNamespaceString, "__", "blockClassLevelScope(bytes32)")))))), ResourceId.unwrap(UNTAGGED_SYSTEM_ID));
-    assertEq(ResourceId.unwrap(FunctionSelectors.getSystemId(bytes4(keccak256(bytes(string.concat(unTaggedSystemNamespaceString, "__", "blockObjectLevelScope(bytes32)")))))), ResourceId.unwrap(UNTAGGED_SYSTEM_ID));
-    
+    string memory unTaggedSystemNamespaceString = WorldResourceIdLib.toTrimmedString(
+      WorldResourceIdInstance.getNamespace(UNTAGGED_SYSTEM_ID)
+    );
+    assertEq(
+      ResourceId.unwrap(
+        FunctionSelectors.getSystemId(
+          bytes4(keccak256(bytes(string.concat(unTaggedSystemNamespaceString, "__", "blockClassLevelScope(bytes32)"))))
+        )
+      ),
+      ResourceId.unwrap(UNTAGGED_SYSTEM_ID)
+    );
+    assertEq(
+      ResourceId.unwrap(
+        FunctionSelectors.getSystemId(
+          bytes4(keccak256(bytes(string.concat(unTaggedSystemNamespaceString, "__", "blockObjectLevelScope(bytes32)"))))
+        )
+      ),
+      ResourceId.unwrap(UNTAGGED_SYSTEM_ID)
+    );
+
     // check Class is registered
     assertEq(Classes.getExists(classId), true);
 
@@ -135,30 +159,12 @@ contract SmartObjectSystemTest is MudTest {
 
   function testClassScope() public {
     // revert call TaggedSystemMock using unTaggedClassId
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        IErrors.InvalidSystemCall.selector,
-        unTaggedClassId,
-        TAGGED_SYSTEM_ID
-      )
-    );
-    world.call(
-      TAGGED_SYSTEM_ID,
-      abi.encodeCall(TaggedSystemMock.allowClassLevelScope, (unTaggedClassId))
-    );
+    vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidSystemCall.selector, unTaggedClassId, TAGGED_SYSTEM_ID));
+    world.call(TAGGED_SYSTEM_ID, abi.encodeCall(TaggedSystemMock.allowClassLevelScope, (unTaggedClassId)));
 
     // revert call UntaggedSystemMock using classId
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        IErrors.InvalidSystemCall.selector,
-        classId,
-        UNTAGGED_SYSTEM_ID
-      )
-    );
-    world.call(
-      UNTAGGED_SYSTEM_ID,
-      abi.encodeCall(UnTaggedSystemMock.blockClassLevelScope, (classId))
-    );
+    vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidSystemCall.selector, classId, UNTAGGED_SYSTEM_ID));
+    world.call(UNTAGGED_SYSTEM_ID, abi.encodeCall(UnTaggedSystemMock.blockClassLevelScope, (classId)));
 
     // success call TaggedSystemMock using classId
     bytes memory returnData = world.call(
@@ -170,30 +176,12 @@ contract SmartObjectSystemTest is MudTest {
 
   function testObjectScope() public {
     // revert call TaggedSystemMock using untaggedObjectId
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        IErrors.InvalidSystemCall.selector,
-        unTaggedObjectId,
-        TAGGED_SYSTEM_ID
-      )
-    );
-    world.call(
-      TAGGED_SYSTEM_ID,
-      abi.encodeCall(TaggedSystemMock.allowObjectLevelScope, (unTaggedObjectId))
-    );
+    vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidSystemCall.selector, unTaggedObjectId, TAGGED_SYSTEM_ID));
+    world.call(TAGGED_SYSTEM_ID, abi.encodeCall(TaggedSystemMock.allowObjectLevelScope, (unTaggedObjectId)));
 
     // revert call UntaggedSystemMock using objectId
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        IErrors.InvalidSystemCall.selector,
-        objectId,
-        UNTAGGED_SYSTEM_ID
-      )
-    );
-    world.call(
-      UNTAGGED_SYSTEM_ID,
-      abi.encodeCall(UnTaggedSystemMock.blockObjectLevelScope, (objectId))
-    );
+    vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidSystemCall.selector, objectId, UNTAGGED_SYSTEM_ID));
+    world.call(UNTAGGED_SYSTEM_ID, abi.encodeCall(UnTaggedSystemMock.blockObjectLevelScope, (objectId)));
 
     // success call TaggedSystemMock using the objectId
     bytes memory returnData = world.call(

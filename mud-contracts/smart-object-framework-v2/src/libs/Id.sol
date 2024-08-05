@@ -11,7 +11,6 @@ type Id is bytes32;
 
 using IdInstance for Id global;
 
-
 /// @dev Number of bits reserved for the type in the ID.
 uint256 constant TYPE_BITS = 2 * 8; // 2 bytes * 8 bits per byte
 

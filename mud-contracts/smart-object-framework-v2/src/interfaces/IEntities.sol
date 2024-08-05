@@ -9,7 +9,7 @@ import { Id } from "../libs/Id.sol";
  * @dev An interface for the Entities System functionality
  */
 interface IEntities {
-	function registerClass(Id classId, Id[] memory systemTagIds) external;
+  function registerClass(Id classId, Id[] memory systemTagIds) external;
   function deleteClass(Id classId) external;
   function deleteClasses(Id[] memory classIds) external;
   function instantiate(Id classId, Id objectId) external;

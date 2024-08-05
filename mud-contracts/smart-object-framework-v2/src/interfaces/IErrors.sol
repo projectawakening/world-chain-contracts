@@ -17,7 +17,7 @@ interface IErrors {
   error ClassHasObjects(Id classId, uint256 numberOfObjects);
   error ObjectAlreadyExists(Id objectId, Id instanceClass);
   error ObjectDoesNotExist(Id objectId);
-  
+
   error InvalidTagId(Id tagId);
   error InvalidTagType(bytes2 givenType);
   error TagAlreadyExists(Id tagId);
@@ -26,6 +26,6 @@ interface IErrors {
   error WrongTagType(bytes2 givenType, bytes2[] expectedTypes);
   error SystemNotRegistered(ResourceId systemId);
   error EntityAlreadyHasTag(Id entityId, Id tagId);
-  
+
   error InvalidSystemCall(Id entityId, ResourceId systemId);
 }

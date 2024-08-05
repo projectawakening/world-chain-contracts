@@ -18,15 +18,14 @@ import { IErrors } from "../interfaces/IErrors.sol";
 import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
 
 contract Tags is SmartObjectSystem {
-
   /**
    * @notice set a SystemTag for a Class
    * @param classId An ENTITY_CLASS type Id referencing an existing Class to tag with `systemTagId`
    * @param systemTagId A TAG_SYSTEM type Id referencing a MUD System that has been registered on to the World which will be tagged to `classId`
    */
-	function setSystemTag(Id classId, Id systemTagId) public {
+  function setSystemTag(Id classId, Id systemTagId) public {
     _setSystemTag(classId, systemTagId);
-	}
+  }
 
   /**
    * @notice set multiple SystemTags for a Class
@@ -37,7 +36,7 @@ contract Tags is SmartObjectSystem {
     for (uint i = 0; i < systemTagIds.length; i++) {
       _setSystemTag(classId, systemTagIds[i]);
     }
-	}
+  }
 
   /**
    * @notice remove a SystemTag for a Class
@@ -47,7 +46,7 @@ contract Tags is SmartObjectSystem {
    */
   function removeSystemTag(Id classId, Id systemTagId) public {
     _removeSystemTag(classId, systemTagId);
-	}
+  }
 
   /**
    * @notice remove multiple SystemTags for a Class
@@ -58,7 +57,7 @@ contract Tags is SmartObjectSystem {
     for (uint i = 0; i < systemTagIds.length; i++) {
       _removeSystemTag(classId, systemTagIds[i]);
     }
-	}
+  }
 
   function _setSystemTag(Id classId, Id tagId) private {
     if (!Classes.getExists(classId)) {
@@ -84,19 +83,13 @@ contract Tags is SmartObjectSystem {
     }
 
     if (!ClassSystemTagMap.getHasTag(classId, tagId)) {
-      ClassSystemTagMap.set(
-        classId,
-        tagId,
-        true,
-        SystemTags.lengthClasses(tagId),
-        Classes.lengthSystemTags(classId)
-      );
+      ClassSystemTagMap.set(classId, tagId, true, SystemTags.lengthClasses(tagId), Classes.lengthSystemTags(classId));
       Classes.pushSystemTags(classId, Id.unwrap(tagId));
       SystemTags.pushClasses(tagId, Id.unwrap(classId));
     } else {
       revert IErrors.EntityAlreadyHasTag(classId, tagId);
     }
-	}
+  }
 
   function _removeSystemTag(Id classId, Id tagId) private {
     if (!Classes.getExists(classId)) {
@@ -110,7 +103,7 @@ contract Tags is SmartObjectSystem {
     ClassSystemTagMapData memory classTagMapData = ClassSystemTagMap.get(classId, tagId);
     if (classTagMapData.hasTag) {
       Classes.updateSystemTags(
-        classId, 
+        classId,
         classTagMapData.tagIndex,
         Classes.getItemSystemTags(classId, Classes.lengthSystemTags(classId) - 1)
       );
@@ -140,6 +133,5 @@ contract Tags is SmartObjectSystem {
     } else {
       revert IErrors.TagNotFound(classId, tagId);
     }
-	}
-
+  }
 }
