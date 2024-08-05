@@ -11,7 +11,8 @@
     "deploy:redstone": "mud deploy --profile=redstone",
     "dev": "mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",
-    "prettier": "prettier --write 'src/**/*.sol'",
+    "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
+    "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
     "test": "tsc --noEmit && mud test"
   },
@@ -31,5 +32,14 @@
     "solhint": "^3.3.7",
     "solhint-config-mud": "2.0.12",
     "solhint-plugin-mud": "2.0.12"
+  },
+  "pnpm": {
+    "overrides": {
+      "follow-redirects@<1.15.6": ">=1.15.6",
+      "ejs@<3.1.10": ">=3.1.10",
+      "ws@<8.17.1": ">=8.17.1",
+      "braces@<3.0.3": ">=3.0.3",
+      "fast-xml-parser@4.4.1": ">=4.4.1"
+    }
   }
 }

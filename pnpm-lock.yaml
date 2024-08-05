@@ -9,6 +9,7 @@ overrides:
   ejs@<3.1.10: '>=3.1.10'
   ws@<8.17.1: '>=8.17.1'
   braces@<3.0.3: '>=3.0.3'
+  fast-xml-parser@<4.4.1: '>=4.4.1'
 
 importers:
 
@@ -677,7 +678,7 @@ packages:
       '@smithy/signature-v4': 3.1.2
       '@smithy/smithy-client': 3.1.5
       '@smithy/types': 3.3.0
-      fast-xml-parser: 4.2.5
+      fast-xml-parser: 4.4.1
       tslib: 2.6.2
     dev: false
 
