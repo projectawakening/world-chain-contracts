@@ -36,6 +36,9 @@ export default defineWorld({
     /**********************
      * STATIC DATA MODULE *
      **********************/
+    /**
+     * Used to store the IPFS CID of a smart object
+     */
     StaticData: {
       schema: {
         entityId: "uint256",
@@ -43,6 +46,9 @@ export default defineWorld({
       },
       key: ["entityId"],
     },
+    /**
+     * Used to store the DNS which servers the IPFS gateway
+     */
     StaticDataMetadata: {
       schema: {
         classId: "bytes32",
@@ -50,6 +56,23 @@ export default defineWorld({
         baseURI: "string",
       },
       key: ["classId"],
+    },
+    /*******************
+     * LOCATION MODULE *
+     *******************/
+
+    /**
+     * Used to store the location of a in-game entity in the solar system
+     */
+    Location: {
+      schema: {
+        smartObjectId: "uint256",
+        solarSystemId: "uint256",
+        x: "uint256",
+        y: "uint256",
+        z: "uint256",
+      },
+      key: ["smartObjectId"],
     },
   },
 });
