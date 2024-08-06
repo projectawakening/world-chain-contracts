@@ -33,7 +33,6 @@ contract StaticDataTest is MudTest {
     assertTrue(codeSize > 0);
   }
 
-  // test save location
   function testSaveLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(smartObjectId != 0);
     bytes4 functionSelector = ILocationSystem.eveworld__saveLocation.selector;
@@ -65,7 +64,6 @@ contract StaticDataTest is MudTest {
     assertEq(z, location.z);
   }
 
-  // test set solar system id
   function testSetSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) public {
     vm.assume(smartObjectId != 0);
     bytes4 functionSelector = ILocationSystem.eveworld__setSolarSystemId.selector;
@@ -78,7 +76,6 @@ contract StaticDataTest is MudTest {
     assertEq(solarSystemId, location.solarSystemId);
   }
 
-  // test set x
   function testSetX(uint256 smartObjectId, uint256 x) public {
     vm.assume(smartObjectId != 0);
     bytes4 functionSelector = ILocationSystem.eveworld__setX.selector;
@@ -91,7 +88,6 @@ contract StaticDataTest is MudTest {
     assertEq(x, location.x);
   }
 
-  // test set y
   function testSetY(uint256 smartObjectId, uint256 y) public {
     vm.assume(smartObjectId != 0);
     bytes4 functionSelector = ILocationSystem.eveworld__setY.selector;
@@ -104,7 +100,6 @@ contract StaticDataTest is MudTest {
     assertEq(y, location.y);
   }
 
-  // test set z
   function testSetZ(uint256 smartObjectId, uint256 z) public {
     vm.assume(smartObjectId != 0);
     bytes4 functionSelector = ILocationSystem.eveworld__setZ.selector;
