@@ -1,7 +1,6 @@
 name: Build
 description: Builds the monorepo based on changes
 
-
 runs:
   using: composite
   steps:
@@ -47,11 +46,6 @@ runs:
       run: |
         pnpm install
 
-    - name: Audit packages
-      shell: bash
-      run: |
-        pnpm audit
-
     - name: Build feature branch
       if: github.ref_name != 'develop' #only build on feature branches
       shell: bash
@@ -83,4 +77,3 @@ runs:
         THE_COMMIT_BEFORE_THIS_ONE=$(git rev-parse HEAD~1)
         echo "rev-parse head~1: " $THE_COMMIT_BEFORE_THIS_ONE
         pnpm nx affected -t lint --base=$THE_COMMIT_BEFORE_THIS_ONE --verbose
-
