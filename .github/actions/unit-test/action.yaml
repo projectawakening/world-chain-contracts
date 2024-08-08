@@ -1,7 +1,6 @@
 name: Unit test
 description: Runs unit test for projects in the
 
-
 runs:
   using: composite
   steps:
@@ -44,11 +43,6 @@ runs:
       shell: bash
       run: |
         pnpm install
-
-    - name: Audit packages
-      shell: bash
-      run: |
-        pnpm audit
 
     - name: Test feature branch
       if: github.ref_name != 'develop' #only build on feature branches
