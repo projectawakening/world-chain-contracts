@@ -34,14 +34,6 @@ contract PostDeploy is Script {
     uint256 amount = vm.envUint("ERC20_INITIAL_SUPPLY");
     address to = vm.envAddress("EVE_TOKEN_ADMIN");
 
-    // string memory namespace = "eve";
-    // string memory name = "EVE Token";
-    // string memory symbol = "EVE";
-
-    // uint8 decimals = uint8(18);
-    // uint256 amount = 10000000000;
-    // address to = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-
     // ERC20 TOKEN DEPLOYMENT
     world.installModule(new PuppetModule(), new bytes(0));
     StoreSwitch.setStoreAddress(address(world));
