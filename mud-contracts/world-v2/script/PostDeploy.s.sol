@@ -11,8 +11,11 @@ import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/Puppe
 import { IERC20Mintable } from "@latticexyz/world-modules/src/modules/erc20-puppet/IERC20Mintable.sol";
 import { ERC20Module } from "@latticexyz/world-modules/src/modules/erc20-puppet/ERC20Module.sol";
 import { registerERC20 } from "@latticexyz/world-modules/src/modules/erc20-puppet/registerERC20.sol";
-
+import { registerERC721 } from "@latticexyz/world-modules/src/modules/erc721-puppet/registerERC721.sol";
+import { IERC721Mintable } from "@latticexyz/world-modules/src/modules/erc721-puppet/IERC721Mintable.sol";
 import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-puppet/tables/ERC20Metadata.sol";
+import { ERC721MetadataData } from "@latticexyz/world-modules/src/modules/erc721-puppet/tables/ERC721Metadata.sol";
+
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 
 contract PostDeploy is Script {
@@ -26,6 +29,16 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
+    // register new ERC20 EVE Token
+    _initERC20(world);
+
+    // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
+    _initERC721(world);
+
+    vm.stopBroadcast();
+  }
+
+  function _initERC20(IBaseWorld world) internal {
     string memory namespace = vm.envString("EVE_TOKEN_NAMESPACE");
     string memory name = vm.envString("ERC20_TOKEN_NAME");
     string memory symbol = vm.envString("ERC20_TOKEN_SYMBOL");
@@ -54,8 +67,30 @@ contract PostDeploy is Script {
 
     console.log("minting to: ", address(to));
     console.log("amount: ", amount * 1 ether);
+  }
 
-    vm.stopBroadcast();
+  function _initERC721(IBaseWorld world) internal {
+    string memory baseURI = vm.envString("BASE_URI");
+
+    // SmartCharacter
+    IERC721Mintable erc721SmartCharacter = registerERC721(
+      world,
+      "erc721deploybl",
+      ERC721MetadataData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
+    );
+
+    console.log("Deploying Smart Character token with address: ", address(erc721SmartCharacter));
+
+    // SmartDeployable
+    IERC721Mintable erc721SmartDeployableToken = registerERC721(
+      world,
+      "erc721charactr",
+      ERC721MetadataData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
+    );
+
+    console.log("Deploying Smart Deployable token with address: ", address(erc721SmartDeployableToken));
+
+    // regiseter token address for smart character and smart deployable
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {
