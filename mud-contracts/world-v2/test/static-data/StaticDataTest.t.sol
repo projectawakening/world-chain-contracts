@@ -45,12 +45,7 @@ contract StaticDataTest is MudTest {
     assertEq(cid, storedCid);
   }
 
-  function testStaticDataMetadata(
-    ResourceId systemId,
-    bytes32 classId,
-    string memory name,
-    string memory baseURI
-  ) public {
+  function testStaticDataMetadata(bytes32 classId, string memory name, string memory baseURI) public {
     bytes4 functionSelector = IStaticDataSystem.eveworld__createStaticDataMetadata.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
@@ -74,7 +69,7 @@ contract StaticDataTest is MudTest {
     assertEq(cid, storedCid);
   }
 
-  function testSetName(ResourceId systemId, bytes32 classId, string memory name) public {
+  function testSetName(bytes32 classId, string memory name) public {
     bytes4 functionSelector = IStaticDataSystem.eveworld__setName.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
@@ -85,7 +80,7 @@ contract StaticDataTest is MudTest {
     assertEq(name, metadata.name);
   }
 
-  function testSetBaseURI(ResourceId systemId, bytes32 classId, string memory baseURI) public {
+  function testSetBaseURI(bytes32 classId, string memory baseURI) public {
     bytes4 functionSelector = IStaticDataSystem.eveworld__setBaseURI.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);

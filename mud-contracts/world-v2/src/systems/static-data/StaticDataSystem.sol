@@ -5,9 +5,9 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
 
 /**
- * @title StaticDataS
+ * @title StaticData
  * @author CCP Games
- * StaticDataS stores an in game entity record on chain.
+ * StaticDataSystem stores an in game entity record on chain.
  */
 contract StaticDataSystem is System {
   /**
