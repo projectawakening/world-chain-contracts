@@ -15,6 +15,7 @@ import { IEntityRecordSystem } from "../../src/codegen/world/IEntityRecordSystem
 import { EntityRecordSystem } from "../../src/systems/entity-record/EntityRecordSystem.sol";
 import { EntityRecord, EntityRecordData } from "../../src/codegen/tables/EntityRecord.sol";
 import { EntityRecordMetadata, EntityRecordMetadataData } from "../../src/codegen/tables/EntityRecordMetadata.sol";
+import { EntityRecordData as EntityRecordInput, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 
 contract EntityRecordTest is MudTest {
   IBaseWorld world;
@@ -38,7 +39,14 @@ contract EntityRecordTest is MudTest {
     bytes4 functionSelector = IEntityRecordSystem.eveworld__createEntityRecord.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, (entityId, itemId, typeId, volume)));
+    EntityRecordInput memory entityRecordInput = EntityRecordInput({
+      entityId: entityId,
+      typeId: typeId,
+      itemId: itemId,
+      volume: volume
+    });
+
+    world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, (entityRecordInput)));
 
     EntityRecordData memory entityRecord = EntityRecord.get(entityId);
 
@@ -57,10 +65,13 @@ contract EntityRecordTest is MudTest {
     bytes4 functionSelector = IEntityRecordSystem.eveworld__createEntityRecordMetadata.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(
-      systemId,
-      abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, (entityId, name, dappURL, description))
-    );
+    EntityMetadata memory entityMetadata = EntityMetadata({
+      entityId: entityId,
+      name: name,
+      dappURL: dappURL,
+      description: description
+    });
+    world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, (entityMetadata)));
 
     EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(entityId);
 
