@@ -1,5 +1,11 @@
 # @eveworld/world
 
+## 0.0.9
+
+### Patch Changes
+
+- Fixes the fuel consumption formula
+
 ## 0.0.8
 
 ### Patch Changes

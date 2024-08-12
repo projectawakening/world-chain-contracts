@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/world",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "MIT",
   "scripts": {
     "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
