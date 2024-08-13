@@ -1,5 +1,12 @@
 # @eveworld/world
 
+## 0.0.10
+
+### Patch Changes
+
+- Fix incorrect import in world feature PostDeploy script.
+  Update nx
+
 ## 0.0.9
 
 ### Patch Changes
