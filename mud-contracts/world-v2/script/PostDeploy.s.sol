@@ -15,6 +15,11 @@ import { registerERC721 } from "@latticexyz/world-modules/src/modules/erc721-pup
 import { IERC721Mintable } from "@latticexyz/world-modules/src/modules/erc721-puppet/IERC721Mintable.sol";
 import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-puppet/tables/ERC20Metadata.sol";
 import { ERC721MetadataData } from "@latticexyz/world-modules/src/modules/erc721-puppet/tables/ERC721Metadata.sol";
+import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+import { ISmartCharacterSystem } from "../src/codegen/world/ISmartCharacterSystem.sol";
+import { SmartCharacterSystem } from "../src/systems/smart-character/SmartCharacterSystem.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 
@@ -75,7 +80,7 @@ contract PostDeploy is Script {
     // SmartCharacter
     IERC721Mintable erc721SmartCharacter = registerERC721(
       world,
-      "erc721deploybl",
+      "erc721charactr",
       ERC721MetadataData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
     );
 
@@ -84,13 +89,16 @@ contract PostDeploy is Script {
     // SmartDeployable
     IERC721Mintable erc721SmartDeployableToken = registerERC721(
       world,
-      "erc721charactr",
+      "erc721deploybl",
       ERC721MetadataData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
     );
 
     console.log("Deploying Smart Deployable token with address: ", address(erc721SmartDeployableToken));
 
     // regiseter token address for smart character and smart deployable
+    bytes4 functionSelector = ISmartCharacterSystem.eveworld__registerCharacterToken.selector;
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(erc721SmartCharacter))));
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {

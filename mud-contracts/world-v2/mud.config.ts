@@ -51,5 +51,22 @@ export default defineWorld({
       },
       key: ["classId"],
     },
+    /*************************
+     * SMART CHARACTER MODULE *
+     *************************/
+    Characters: {
+      schema: {
+        characterId: "uint256",
+        characterAddress: "address",
+        createdAt: "uint256",
+      },
+      key: ["characterId"],
+    },
+    CharacterToken: {
+      schema: {
+        erc721Address: "address"
+      },
+      key: [],
+    }
   },
 });

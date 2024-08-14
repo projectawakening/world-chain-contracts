@@ -7,3 +7,5 @@ import { EntityRecord, EntityRecordData } from "./tables/EntityRecord.sol";
 import { EntityRecordMetadata, EntityRecordMetadataData } from "./tables/EntityRecordMetadata.sol";
 import { StaticData } from "./tables/StaticData.sol";
 import { StaticDataMetadata, StaticDataMetadataData } from "./tables/StaticDataMetadata.sol";
+import { Characters, CharactersData } from "./tables/Characters.sol";
+import { CharacterToken } from "./tables/CharacterToken.sol";
