@@ -4,6 +4,7 @@ pragma solidity >=0.8.24;
 import { Test } from "forge-std/Test.sol";
 import { console } from "forge-std/console.sol";
 
+import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { World } from "@latticexyz/world/src/World.sol";
@@ -64,18 +65,16 @@ contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
 
 contract NonERC721Recipient {}
 
-contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
+contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
   ERC721Module erc721Module;
   IERC721Mintable token;
 
-  function setUp() public {
-    world = IBaseWorld(address(new World()));
-    world.installModule(new PuppetModule(), new bytes(0));
-    StoreSwitch.setStoreAddress(address(world));
-
+  function setUp() public virtual override {
+    super.setUp();
+    world = IBaseWorld(worldAddress);
     // Register a new ERC721 token
     token = registerERC721(
       world,
