@@ -45,11 +45,9 @@ export default defineWorld({
     },
     StaticDataMetadata: {
       schema: {
-        classId: "bytes32",
-        name: "string",
         baseURI: "string",
       },
-      key: ["classId"],
+      key: [],
     },
     /*************************
      * SMART CHARACTER MODULE *

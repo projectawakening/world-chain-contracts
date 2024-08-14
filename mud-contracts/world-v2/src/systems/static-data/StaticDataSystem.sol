@@ -20,16 +20,6 @@ contract StaticDataSystem is System {
   }
 
   /**
-   * @dev Stores the metadata details about the IPFS gateway.
-   * @param classId classId of the in-game object
-   * @param name name of the in-game object
-   * @param baseURI baseURI of the in-game object
-   */
-  function createStaticDataMetadata(bytes32 classId, string memory name, string memory baseURI) public {
-    StaticDataMetadata.set(classId, name, baseURI);
-  }
-
-  /**
    * @dev updates the cid of the in-game object
    * @param entityId entityId of the in-game object
    * @param cid the content identifier of the static data
@@ -39,20 +29,10 @@ contract StaticDataSystem is System {
   }
 
   /**
-   * @dev updates the name of the in-game object
-   * @param classId classId of the in-game object
-   * @param name name of the in-game object
-   */
-  function setName(bytes32 classId, string memory name) public {
-    StaticDataMetadata.setName(classId, name);
-  }
-
-  /**
    * @dev updates the baseURI of the in-game object
-   * @param classId classId of the in-game object
    * @param baseURI the baseURI of the static data
    */
-  function setBaseURI(bytes32 classId, string memory baseURI) public {
-    StaticDataMetadata.setBaseURI(classId, baseURI);
+  function setBaseURI(string memory baseURI) public {
+    StaticDataMetadata.set(baseURI);
   }
 }

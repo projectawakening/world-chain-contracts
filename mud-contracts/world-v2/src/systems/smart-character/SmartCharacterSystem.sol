@@ -57,7 +57,7 @@ contract SmartCharacterSystem is EveSystem {
     world().call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, entityRecordMetadata));
 
     //Mint a new character token
-    IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
+    // IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
 
     //TODO: Store the tokenCid
   }
