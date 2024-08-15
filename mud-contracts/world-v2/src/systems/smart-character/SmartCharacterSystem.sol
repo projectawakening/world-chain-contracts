@@ -5,12 +5,12 @@ pragma solidity >=0.8.24;
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
-import { IERC721Mintable } from "@latticexyz/world-modules/src/modules/erc721-puppet/IERC721Mintable.sol";
 
 import { Characters, CharacterToken } from "../../codegen/index.sol";
 import { IEntityRecordSystem } from "../../codegen/world/IEntityRecordSystem.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
 import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
+import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 import { EveSystem } from "../EveSystem.sol";
 
 import { console } from "forge-std/console.sol";
@@ -57,8 +57,7 @@ contract SmartCharacterSystem is EveSystem {
     world().call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, entityRecordMetadata));
 
     //Mint a new character token
-    // IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
-
-    //TODO: Store the tokenCid
+    IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
+    // IERC721Mintable(CharacterToken.get()).setCid(characterId, tokenCid);
   }
 }

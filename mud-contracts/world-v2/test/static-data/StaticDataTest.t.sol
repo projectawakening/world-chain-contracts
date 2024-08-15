@@ -16,8 +16,11 @@ import { StaticDataSystem } from "../../src/systems/static-data/StaticDataSystem
 import { StaticData } from "../../src/codegen/tables/StaticData.sol";
 import { StaticDataMetadata } from "../../src/codegen/tables/StaticDataMetadata.sol";
 
+import { Utils as StaticDataUtils } from "../../src/systems/static-data/Utils.sol";
+
 contract StaticDataTest is MudTest {
   IBaseWorld world;
+  using StaticDataUtils for bytes14;
 
   function setUp() public virtual override {
     super.setUp();
@@ -35,9 +38,8 @@ contract StaticDataTest is MudTest {
 
   function testStaticData(uint256 entityId, string memory cid) public {
     vm.assume(entityId != 0);
-    bytes4 functionSelector = IStaticDataSystem.eveworld__createStaticData.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.createStaticData, (entityId, cid)));
 
     string memory storedCid = StaticData.get(entityId);
@@ -46,9 +48,7 @@ contract StaticDataTest is MudTest {
   }
 
   function testSetBaseURI(string memory baseURI) public {
-    bytes4 functionSelector = IStaticDataSystem.eveworld__setBaseURI.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
 
     string memory baseuri = StaticDataMetadata.get();
@@ -57,9 +57,7 @@ contract StaticDataTest is MudTest {
 
   function testSetCid(uint256 entityId, string memory cid) public {
     vm.assume(entityId != 0);
-    bytes4 functionSelector = IStaticDataSystem.eveworld__setCid.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, cid)));
 
     string memory storedCid = StaticData.get(entityId);

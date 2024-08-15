@@ -11,39 +11,57 @@ import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/Puppe
 import { IERC20Mintable } from "@latticexyz/world-modules/src/modules/erc20-puppet/IERC20Mintable.sol";
 import { ERC20Module } from "@latticexyz/world-modules/src/modules/erc20-puppet/ERC20Module.sol";
 import { registerERC20 } from "@latticexyz/world-modules/src/modules/erc20-puppet/registerERC20.sol";
-import { registerERC721 } from "@latticexyz/world-modules/src/modules/erc721-puppet/registerERC721.sol";
-import { IERC721Mintable } from "@latticexyz/world-modules/src/modules/erc721-puppet/IERC721Mintable.sol";
 import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-puppet/tables/ERC20Metadata.sol";
-import { ERC721MetadataData } from "@latticexyz/world-modules/src/modules/erc721-puppet/tables/ERC721Metadata.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { ISmartCharacterSystem } from "../src/codegen/world/ISmartCharacterSystem.sol";
+import { ERC721MetadataData } from "../src/codegen/tables/ERC721Metadata.sol";
 import { SmartCharacterSystem } from "../src/systems/smart-character/SmartCharacterSystem.sol";
+import { registerERC721 } from "../src/systems/eve-erc721-puppet/registerERC721.sol";
+import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
+
+import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 
 contract PostDeploy is Script {
+  using SmartCharacterUtils for bytes14;
+
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
     IBaseWorld world = IBaseWorld(worldAddress);
 
     // Private Key loaded from environment
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    address deployer = vm.addr(deployerPrivateKey);
+    StoreSwitch.setStoreAddress(address(world));
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
+    _installPuppet(world, deployer);
+
     // register new ERC20 EVE Token
-    _initERC20(world);
+    _createEVEToken(world);
 
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
-    _initERC721(world);
+    _createCharacterToken(world);
+
+    _createDeployableToken(world);
 
     vm.stopBroadcast();
   }
 
-  function _initERC20(IBaseWorld world) internal {
+  function _installPuppet(IBaseWorld world, address deployer) internal {
+    StoreSwitch.setStoreAddress(address(world));
+    // creating all module contracts
+    PuppetModule puppetModule = new PuppetModule();
+    // puppetModule is conventionally installed as such
+    world.installModule(puppetModule, new bytes(0));
+  }
+
+  function _createEVEToken(IBaseWorld world) internal {
     string memory namespace = vm.envString("EVE_TOKEN_NAMESPACE");
     string memory name = vm.envString("ERC20_TOKEN_NAME");
     string memory symbol = vm.envString("ERC20_TOKEN_SYMBOL");
@@ -53,9 +71,6 @@ contract PostDeploy is Script {
     address to = vm.envAddress("EVE_TOKEN_ADMIN");
 
     // ERC20 TOKEN DEPLOYMENT
-    world.installModule(new PuppetModule(), new bytes(0));
-    StoreSwitch.setStoreAddress(address(world));
-
     IERC20Mintable erc20Token;
     erc20Token = registerERC20(
       world,
@@ -74,7 +89,7 @@ contract PostDeploy is Script {
     console.log("amount: ", amount * 1 ether);
   }
 
-  function _initERC721(IBaseWorld world) internal {
+  function _createCharacterToken(IBaseWorld world) internal {
     string memory baseURI = vm.envString("BASE_URI");
 
     // SmartCharacter
@@ -86,6 +101,14 @@ contract PostDeploy is Script {
 
     console.log("Deploying Smart Character token with address: ", address(erc721SmartCharacter));
 
+    // regiseter token address for smart character and smart deployable
+    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
+    world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(erc721SmartCharacter))));
+  }
+
+  function _createDeployableToken(IBaseWorld world) internal {
+    string memory baseURI = vm.envString("BASE_URI");
+
     // SmartDeployable
     IERC721Mintable erc721SmartDeployableToken = registerERC721(
       world,
@@ -94,11 +117,6 @@ contract PostDeploy is Script {
     );
 
     console.log("Deploying Smart Deployable token with address: ", address(erc721SmartDeployableToken));
-
-    // regiseter token address for smart character and smart deployable
-    bytes4 functionSelector = ISmartCharacterSystem.eveworld__registerCharacterToken.selector;
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(erc721SmartCharacter))));
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {

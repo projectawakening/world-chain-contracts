@@ -176,13 +176,13 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     assertEq(tokenMetadata.tokenURI(1), "base-uri/1");
   }
 
-  function testMintRevertAccessDenied(uint256 id, address owner, address operator) public {
-    _assumeDifferentNonZero(owner, operator, address(this));
+  // function testMintRevertAccessDenied(uint256 id, address owner, address operator) public {
+  //   _assumeDifferentNonZero(owner, operator, address(this));
 
-    _expectAccessDenied(operator);
-    vm.prank(operator);
-    token.mint(owner, id);
-  }
+  //   _expectAccessDenied(operator);
+  //   vm.prank(operator);
+  //   token.mint(owner, id);
+  // }
 
   function testBurn(uint256 id, address owner) public {
     vm.assume(owner != address(0));

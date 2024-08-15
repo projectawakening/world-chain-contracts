@@ -17,8 +17,11 @@ import { EntityRecord, EntityRecordData } from "../../src/codegen/tables/EntityR
 import { EntityRecordMetadata, EntityRecordMetadataData } from "../../src/codegen/tables/EntityRecordMetadata.sol";
 import { EntityRecordData as EntityRecordInput, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 
+import { Utils as EntityRecordUtils } from "../../src/systems/entity-record/Utils.sol";
+
 contract EntityRecordTest is MudTest {
   IBaseWorld world;
+  using EntityRecordUtils for bytes14;
 
   function setUp() public virtual override {
     super.setUp();
@@ -36,9 +39,8 @@ contract EntityRecordTest is MudTest {
 
   function testEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(entityId != 0);
-    bytes4 functionSelector = IEntityRecordSystem.eveworld__createEntityRecord.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
     EntityRecordInput memory entityRecordInput = EntityRecordInput({
       entityId: entityId,
       typeId: typeId,
@@ -62,9 +64,7 @@ contract EntityRecordTest is MudTest {
     string memory description
   ) public {
     vm.assume(entityId != 0);
-    bytes4 functionSelector = IEntityRecordSystem.eveworld__createEntityRecordMetadata.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
     EntityMetadata memory entityMetadata = EntityMetadata({
       entityId: entityId,
       name: name,
@@ -82,9 +82,7 @@ contract EntityRecordTest is MudTest {
 
   function testSetName(uint256 entityId, string memory name) public {
     vm.assume(entityId != 0);
-    bytes4 functionSelector = IEntityRecordSystem.eveworld__setName.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
     world.call(systemId, abi.encodeCall(EntityRecordSystem.setName, (entityId, name)));
 
     EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(entityId);

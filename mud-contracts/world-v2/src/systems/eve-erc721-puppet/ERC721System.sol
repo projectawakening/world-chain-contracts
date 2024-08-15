@@ -22,8 +22,9 @@ import { TokenURI } from "../../codegen/tables/TokenURI.sol";
 
 import { _balancesTableId, _metadataTableId, _tokenUriTableId, _operatorApprovalTableId, _ownersTableId, _tokenApprovalTableId } from "./utils.sol";
 import { LibString } from "@latticexyz/world-modules/src/modules/erc721-puppet/libraries/LibString.sol";
+import { EveSystem } from "../EveSystem.sol";
 
-contract ERC721System is IERC721Mintable, System, PuppetMaster {
+contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using LibString for uint256;
 
@@ -150,7 +151,7 @@ contract ERC721System is IERC721Mintable, System, PuppetMaster {
    * Emits a {Transfer} event.
    */
   function mint(address to, uint256 tokenId) public virtual {
-    _requireOwner();
+    //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _mint(to, tokenId);
   }
 

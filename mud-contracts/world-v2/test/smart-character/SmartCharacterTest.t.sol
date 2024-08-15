@@ -21,8 +21,11 @@ import { SmartCharacterSystem } from "../../src/systems/smart-character/SmartCha
 import { EntityRecordData, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 import { Characters, CharacterToken } from "../../src/codegen/index.sol";
 
+import { Utils as SmartCharacterUtils } from "../../src/systems/smart-character/Utils.sol";
+
 contract SmartCharacterTest is MudTest {
   IBaseWorld world;
+  using SmartCharacterUtils for bytes14;
 
   function setUp() public virtual override {
     super.setUp();
@@ -40,7 +43,6 @@ contract SmartCharacterTest is MudTest {
 
   /// forge-config: default.fuzz.runs = 100
   function testSmartCharacter() public {
-    
     uint256 characterId = 123;
     address characterAddress = address(0x123);
     EntityRecordData memory entityRecord = EntityRecordData({
@@ -58,9 +60,7 @@ contract SmartCharacterTest is MudTest {
     });
     string memory cid = "cid";
 
-    bytes4 functionSelector = ISmartCharacterSystem.eveworld__createCharacter.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
     world.call(
       systemId,
       abi.encodeCall(
