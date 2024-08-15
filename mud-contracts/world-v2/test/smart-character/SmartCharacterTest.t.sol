@@ -18,6 +18,8 @@ import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { Characters, CharactersData } from "../../src/codegen/index.sol";
 import { ISmartCharacterSystem } from "../../src/codegen/world/ISmartCharacterSystem.sol";
 import { SmartCharacterSystem } from "../../src/systems/smart-character/SmartCharacterSystem.sol";
+import { ISmartCharacterErrors } from "../../src/systems/smart-character/ISmartCharacterErrors.sol";
+import { EntityRecord, EntityRecordData as RecordData } from "../../src/codegen/index.sol";
 import { EntityRecordData, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 import { Characters, CharacterToken } from "../../src/codegen/index.sol";
 
@@ -39,6 +41,12 @@ contract SmartCharacterTest is MudTest {
       codeSize := extcodesize(addr)
     }
     assertTrue(codeSize > 0);
+  }
+
+  function testRevertTokenAlreadyInitialized() public {
+    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
+    vm.expectRevert(abi.encodeWithSelector(ISmartCharacterErrors.SmartCharacter_ERC721AlreadyInitialized.selector));
+    world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(0x123))));
   }
 
   /// forge-config: default.fuzz.runs = 100
@@ -68,7 +76,12 @@ contract SmartCharacterTest is MudTest {
       )
     );
 
-    // CharactersData memory character = Characters.get(characterId);
-    // assertEq(characterAddress, character.characterAddress);
+    CharactersData memory character = Characters.get(characterId);
+    assertEq(characterAddress, character.characterAddress);
+
+    RecordData memory storedEntityRecord = EntityRecord.get(entityRecord.entityId);
+    assertEq(entityRecord.typeId, storedEntityRecord.typeId);
+    assertEq(entityRecord.itemId, storedEntityRecord.itemId);
+    assertEq(entityRecord.volume, storedEntityRecord.volume);
   }
 }

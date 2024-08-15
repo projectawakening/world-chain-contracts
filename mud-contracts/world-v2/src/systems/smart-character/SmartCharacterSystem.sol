@@ -15,6 +15,7 @@ import { EveSystem } from "../EveSystem.sol";
 
 import { Utils as EntityRecordUtils } from "../entity-record/Utils.sol";
 import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
+import { ISmartCharacterErrors } from "./ISmartCharacterErrors.sol";
 
 contract SmartCharacterSystem is EveSystem {
   using StaticDataUtils for bytes14;
@@ -26,7 +27,7 @@ contract SmartCharacterSystem is EveSystem {
    */
   function registerCharacterToken(address tokenAddress) public {
     if (CharacterToken.get() != address(0)) {
-      //throw error
+      revert ISmartCharacterErrors.SmartCharacter_ERC721AlreadyInitialized();
     }
     CharacterToken.set(tokenAddress);
   }
