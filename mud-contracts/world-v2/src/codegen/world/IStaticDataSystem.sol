@@ -9,8 +9,6 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IStaticDataSystem {
-  function eveworld__createStaticData(uint256 entityId, string memory cid) external;
-
   function eveworld__setCid(uint256 entityId, string memory cid) external;
 
   function eveworld__setBaseURI(string memory baseURI) external;

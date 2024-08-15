@@ -22,11 +22,17 @@ import { TokenURI } from "../../codegen/tables/TokenURI.sol";
 
 import { _balancesTableId, _metadataTableId, _tokenUriTableId, _operatorApprovalTableId, _ownersTableId, _tokenApprovalTableId } from "./utils.sol";
 import { LibString } from "@latticexyz/world-modules/src/modules/erc721-puppet/libraries/LibString.sol";
+
+import { Utils as StatiDataUtils } from "../static-data/Utils.sol";
+import { StaticDataSystem } from "../static-data/StaticDataSystem.sol";
+import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
+
 import { EveSystem } from "../EveSystem.sol";
 
 contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using LibString for uint256;
+  using StatiDataUtils for bytes14;
 
   /**
    * @dev See {IERC721-balanceOf}.
@@ -66,7 +72,7 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
     _requireOwned(tokenId);
 
     string memory baseURI = _baseURI();
-    string memory _tokenURI = TokenURI.get(_tokenUriTableId(_namespace()), tokenId);
+    string memory _tokenURI = StaticData.get(tokenId);
     _tokenURI = bytes(_tokenURI).length > 0 ? _tokenURI : tokenId.toString();
     return bytes(baseURI).length > 0 ? string.concat(baseURI, _tokenURI) : _tokenURI;
   }
@@ -76,7 +82,7 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
    * token will be the concatenation of the `baseURI` and the `tokenId`.
    */
   function _baseURI() internal view virtual returns (string memory) {
-    return ERC721Metadata.getBaseURI(_metadataTableId(_namespace()));
+    return StaticDataMetadata.get();
   }
 
   /**

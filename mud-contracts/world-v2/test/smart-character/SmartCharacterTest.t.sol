@@ -58,14 +58,13 @@ contract SmartCharacterTest is MudTest {
       dappURL: "dappURL",
       description: "description"
     });
-    string memory cid = "cid";
 
     ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
     world.call(
       systemId,
       abi.encodeCall(
         SmartCharacterSystem.createCharacter,
-        (characterId, characterAddress, entityRecord, entityRecordMetadata, cid)
+        (characterId, characterAddress, entityRecord, entityRecordMetadata)
       )
     );
 

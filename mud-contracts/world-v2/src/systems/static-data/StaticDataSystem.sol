@@ -7,18 +7,9 @@ import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
 /**
  * @title StaticData
  * @author CCP Games
- * StaticDataS stores an in game entity record on chain.
+ * StaticData stores an in game entity record on chain.
  */
 contract StaticDataSystem is System {
-  /**
-   * @dev creates a new static data entry
-   * @param entityId entityId of the in-game object
-   * @param cid the content identifier of the static data
-   */
-  function createStaticData(uint256 entityId, string memory cid) public {
-    StaticData.set(entityId, cid);
-  }
-
   /**
    * @dev updates the cid of the in-game object
    * @param entityId entityId of the in-game object

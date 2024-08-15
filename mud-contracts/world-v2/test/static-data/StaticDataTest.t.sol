@@ -36,16 +36,7 @@ contract StaticDataTest is MudTest {
     assertTrue(codeSize > 0);
   }
 
-  function testStaticData(uint256 entityId, string memory cid) public {
-    vm.assume(entityId != 0);
 
-    ResourceId systemId = StaticDataUtils.staticDataSystemId();
-    world.call(systemId, abi.encodeCall(StaticDataSystem.createStaticData, (entityId, cid)));
-
-    string memory storedCid = StaticData.get(entityId);
-
-    assertEq(cid, storedCid);
-  }
 
   function testSetBaseURI(string memory baseURI) public {
     ResourceId systemId = StaticDataUtils.staticDataSystemId();

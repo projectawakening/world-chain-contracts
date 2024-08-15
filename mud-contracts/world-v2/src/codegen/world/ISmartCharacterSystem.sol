@@ -17,7 +17,6 @@ interface ISmartCharacterSystem {
     uint256 characterId,
     address characterAddress,
     EntityRecordData memory entityRecord,
-    EntityMetadata memory entityRecordMetadata,
-    string memory tokenCid
+    EntityMetadata memory entityRecordMetadata
   ) external;
 }

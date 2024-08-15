@@ -13,9 +13,13 @@ import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 import { EveSystem } from "../EveSystem.sol";
 
-import { console } from "forge-std/console.sol";
+import { Utils as EntityRecordUtils } from "../entity-record/Utils.sol";
+import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 
 contract SmartCharacterSystem is EveSystem {
+  using StaticDataUtils for bytes14;
+  using EntityRecordUtils for bytes14;
+
   /**
    * @notice Register a new character token
    * @param tokenAddress The address of the token to register
@@ -33,31 +37,25 @@ contract SmartCharacterSystem is EveSystem {
    * @param characterAddress The address of the character
    * @param entityRecord The entity record data
    * @param entityRecordMetadata The entity record metadata
-   * @param tokenCid The CID of the token
    */
   function createCharacter(
     uint256 characterId,
     address characterAddress,
     EntityRecordData memory entityRecord,
-    EntityMetadata memory entityRecordMetadata,
-    string memory tokenCid
+    EntityMetadata memory entityRecordMetadata
   ) public {
     uint256 createdAt = block.timestamp;
     Characters.set(characterId, characterAddress, createdAt);
 
     //Save the entity record in EntityRecord Module
-    bytes4 functionSelector = IEntityRecordSystem.eveworld__createEntityRecord.selector;
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-
-    world().call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, entityRecord));
-
-    functionSelector = IEntityRecordSystem.eveworld__createEntityRecordMetadata.selector;
-    systemId = FunctionSelectors.getSystemId(functionSelector);
-
-    world().call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, entityRecordMetadata));
+    ResourceId entityRecordSystemId = EntityRecordUtils.entityRecordSystemId();
+    world().call(entityRecordSystemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, entityRecord));
+    world().call(
+      entityRecordSystemId,
+      abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, entityRecordMetadata)
+    );
 
     //Mint a new character token
     IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
-    // IERC721Mintable(CharacterToken.get()).setCid(characterId, tokenCid);
   }
 }

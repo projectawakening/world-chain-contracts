@@ -20,13 +20,16 @@ import { ERC721MetadataData } from "../src/codegen/tables/ERC721Metadata.sol";
 import { SmartCharacterSystem } from "../src/systems/smart-character/SmartCharacterSystem.sol";
 import { registerERC721 } from "../src/systems/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
+import { StaticDataSystem } from "../src/systems/static-data/StaticDataSystem.sol";
 
 import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
+import { Utils as StaticDataUtils } from "../src/systems/static-data/Utils.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterUtils for bytes14;
+  using StaticDataUtils for bytes14;
 
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -101,9 +104,15 @@ contract PostDeploy is Script {
 
     console.log("Deploying Smart Character token with address: ", address(erc721SmartCharacter));
 
-    // regiseter token address for smart character and smart deployable
-    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
-    world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(erc721SmartCharacter))));
+    ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+    world.call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
+
+    // regiseter token address for smart character
+    ResourceId smartCharacterSystemId = SmartCharacterUtils.smartCharacterSystemId();
+    world.call(
+      smartCharacterSystemId,
+      abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(erc721SmartCharacter)))
+    );
   }
 
   function _createDeployableToken(IBaseWorld world) internal {
@@ -117,6 +126,10 @@ contract PostDeploy is Script {
     );
 
     console.log("Deploying Smart Deployable token with address: ", address(erc721SmartDeployableToken));
+    ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+    world.call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
+
+    // regiseter token address for smart deployable
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {
