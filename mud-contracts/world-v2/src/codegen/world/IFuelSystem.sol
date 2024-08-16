@@ -8,4 +8,26 @@ pragma solidity >=0.8.24;
  * @author MUD (https://mud.dev) by Lattice (https://lattice.xyz)
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
-interface IFuelSystem {}
+interface IFuelSystem {
+  function eveworld__setFuelBalance(
+    uint256 smartObjectId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
+  ) external;
+
+  function eveworld__setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) external;
+
+  function eveworld__setFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds
+  ) external;
+
+  function eveworld__setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) external;
+
+  function eveworld__setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) external;
+
+  function eveworld__setLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) external;
+}

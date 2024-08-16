@@ -16,17 +16,17 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct DeployableFuelBalanceData {
+struct FuelData {
   uint256 fuelUnitVolume;
-  uint256 fuelConsumptionPerMinute;
+  uint256 fuelConsumptionIntervalInSeconds;
   uint256 fuelMaxCapacity;
   uint256 fuelAmount;
   uint256 lastUpdatedAt;
 }
 
-library DeployableFuelBalance {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "DeployableFuelBa", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004465706c6f7961626c654675656c4261);
+library Fuel {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "Fuel", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004675656c000000000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x00a0050020202020200000000000000000000000000000000000000000000000);
@@ -52,7 +52,7 @@ library DeployableFuelBalance {
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](5);
     fieldNames[0] = "fuelUnitVolume";
-    fieldNames[1] = "fuelConsumptionPerMinute";
+    fieldNames[1] = "fuelConsumptionIntervalInSeconds";
     fieldNames[2] = "fuelMaxCapacity";
     fieldNames[3] = "fuelAmount";
     fieldNames[4] = "lastUpdatedAt";
@@ -115,9 +115,11 @@ library DeployableFuelBalance {
   }
 
   /**
-   * @notice Get fuelConsumptionPerMinute.
+   * @notice Get fuelConsumptionIntervalInSeconds.
    */
-  function getFuelConsumptionPerMinute(uint256 smartObjectId) internal view returns (uint256 fuelConsumptionPerMinute) {
+  function getFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId
+  ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -126,11 +128,11 @@ library DeployableFuelBalance {
   }
 
   /**
-   * @notice Get fuelConsumptionPerMinute.
+   * @notice Get fuelConsumptionIntervalInSeconds.
    */
-  function _getFuelConsumptionPerMinute(
+  function _getFuelConsumptionIntervalInSeconds(
     uint256 smartObjectId
-  ) internal view returns (uint256 fuelConsumptionPerMinute) {
+  ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -139,23 +141,41 @@ library DeployableFuelBalance {
   }
 
   /**
-   * @notice Set fuelConsumptionPerMinute.
+   * @notice Set fuelConsumptionIntervalInSeconds.
    */
-  function setFuelConsumptionPerMinute(uint256 smartObjectId, uint256 fuelConsumptionPerMinute) internal {
+  function setFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds
+  ) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((fuelConsumptionPerMinute)), _fieldLayout);
+    StoreSwitch.setStaticField(
+      _tableId,
+      _keyTuple,
+      1,
+      abi.encodePacked((fuelConsumptionIntervalInSeconds)),
+      _fieldLayout
+    );
   }
 
   /**
-   * @notice Set fuelConsumptionPerMinute.
+   * @notice Set fuelConsumptionIntervalInSeconds.
    */
-  function _setFuelConsumptionPerMinute(uint256 smartObjectId, uint256 fuelConsumptionPerMinute) internal {
+  function _setFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds
+  ) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((fuelConsumptionPerMinute)), _fieldLayout);
+    StoreCore.setStaticField(
+      _tableId,
+      _keyTuple,
+      1,
+      abi.encodePacked((fuelConsumptionIntervalInSeconds)),
+      _fieldLayout
+    );
   }
 
   /**
@@ -287,7 +307,7 @@ library DeployableFuelBalance {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId) internal view returns (DeployableFuelBalanceData memory _table) {
+  function get(uint256 smartObjectId) internal view returns (FuelData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -302,7 +322,7 @@ library DeployableFuelBalance {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 smartObjectId) internal view returns (DeployableFuelBalanceData memory _table) {
+  function _get(uint256 smartObjectId) internal view returns (FuelData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -320,14 +340,14 @@ library DeployableFuelBalance {
   function set(
     uint256 smartObjectId,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
     uint256 lastUpdatedAt
   ) internal {
     bytes memory _staticData = encodeStatic(
       fuelUnitVolume,
-      fuelConsumptionPerMinute,
+      fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity,
       fuelAmount,
       lastUpdatedAt
@@ -348,14 +368,14 @@ library DeployableFuelBalance {
   function _set(
     uint256 smartObjectId,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
     uint256 lastUpdatedAt
   ) internal {
     bytes memory _staticData = encodeStatic(
       fuelUnitVolume,
-      fuelConsumptionPerMinute,
+      fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity,
       fuelAmount,
       lastUpdatedAt
@@ -373,10 +393,10 @@ library DeployableFuelBalance {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, DeployableFuelBalanceData memory _table) internal {
+  function set(uint256 smartObjectId, FuelData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.fuelUnitVolume,
-      _table.fuelConsumptionPerMinute,
+      _table.fuelConsumptionIntervalInSeconds,
       _table.fuelMaxCapacity,
       _table.fuelAmount,
       _table.lastUpdatedAt
@@ -394,10 +414,10 @@ library DeployableFuelBalance {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, DeployableFuelBalanceData memory _table) internal {
+  function _set(uint256 smartObjectId, FuelData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.fuelUnitVolume,
-      _table.fuelConsumptionPerMinute,
+      _table.fuelConsumptionIntervalInSeconds,
       _table.fuelMaxCapacity,
       _table.fuelAmount,
       _table.lastUpdatedAt
@@ -422,7 +442,7 @@ library DeployableFuelBalance {
     pure
     returns (
       uint256 fuelUnitVolume,
-      uint256 fuelConsumptionPerMinute,
+      uint256 fuelConsumptionIntervalInSeconds,
       uint256 fuelMaxCapacity,
       uint256 fuelAmount,
       uint256 lastUpdatedAt
@@ -430,7 +450,7 @@ library DeployableFuelBalance {
   {
     fuelUnitVolume = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    fuelConsumptionPerMinute = (uint256(Bytes.getBytes32(_blob, 32)));
+    fuelConsumptionIntervalInSeconds = (uint256(Bytes.getBytes32(_blob, 32)));
 
     fuelMaxCapacity = (uint256(Bytes.getBytes32(_blob, 64)));
 
@@ -449,10 +469,10 @@ library DeployableFuelBalance {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (DeployableFuelBalanceData memory _table) {
+  ) internal pure returns (FuelData memory _table) {
     (
       _table.fuelUnitVolume,
-      _table.fuelConsumptionPerMinute,
+      _table.fuelConsumptionIntervalInSeconds,
       _table.fuelMaxCapacity,
       _table.fuelAmount,
       _table.lastUpdatedAt
@@ -485,12 +505,13 @@ library DeployableFuelBalance {
    */
   function encodeStatic(
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
     uint256 lastUpdatedAt
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, fuelAmount, lastUpdatedAt);
+    return
+      abi.encodePacked(fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt);
   }
 
   /**
@@ -501,14 +522,14 @@ library DeployableFuelBalance {
    */
   function encode(
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
     uint256 lastUpdatedAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData = encodeStatic(
       fuelUnitVolume,
-      fuelConsumptionPerMinute,
+      fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity,
       fuelAmount,
       lastUpdatedAt

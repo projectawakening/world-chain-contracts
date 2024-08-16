@@ -84,11 +84,11 @@ export default defineWorld({
     /**
      * Used to store the fuel balance of a Smart Deployable
      */
-    DeployableFuelBalance: {
+    Fuel: {
       schema: {
         smartObjectId: "uint256",
         fuelUnitVolume: "uint256",
-        fuelConsumptionPerMinute: "uint256",
+        fuelConsumptionIntervalInSeconds: "uint256",
         fuelMaxCapacity: "uint256",
         fuelAmount: "uint256",
         lastUpdatedAt: "uint256", // unix time in seconds
