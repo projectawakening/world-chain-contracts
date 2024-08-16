@@ -48,7 +48,6 @@ contract StaticDataTest is MudTest {
     assertEq(z, location.z);
   }
 
-  // test get location
   function testGetLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(smartObjectId != 0);
     bytes4 functionSelector = ILocationSystem.eveworld__saveLocation.selector;

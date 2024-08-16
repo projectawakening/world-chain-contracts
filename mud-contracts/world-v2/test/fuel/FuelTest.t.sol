@@ -31,4 +31,120 @@ contract StaticDataTest is MudTest {
     }
     assertTrue(codeSize > 0);
   }
+
+  function testSetFuel(
+    uint256 smartObjectId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
+  ) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setFuelBalance.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(
+      systemId,
+      abi.encodeCall(
+        FuelSystem.setFuelBalance,
+        (smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt)
+      )
+    );
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelAmount, fuel.fuelAmount);
+  }
+
+  function testGetFuel(
+    uint256 smartObjectId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
+  ) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setFuelBalance.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(
+      systemId,
+      abi.encodeCall(
+        FuelSystem.setFuelBalance,
+        (smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt)
+      )
+    );
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelAmount, fuel.fuelAmount);
+  }
+
+  function testSetFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setFuelUnitVolume.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(FuelSystem.setFuelUnitVolume, (smartObjectId, fuelUnitVolume)));
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelUnitVolume, fuel.fuelUnitVolume);
+  }
+
+  function testSetFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds
+  ) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setFuelConsumptionIntervalInSeconds.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(
+      systemId,
+      abi.encodeCall(FuelSystem.setFuelConsumptionIntervalInSeconds, (smartObjectId, fuelConsumptionIntervalInSeconds))
+    );
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelConsumptionIntervalInSeconds, fuel.fuelConsumptionIntervalInSeconds);
+  }
+
+  function testSetFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setFuelMaxCapacity.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(FuelSystem.setFuelMaxCapacity, (smartObjectId, fuelMaxCapacity)));
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelMaxCapacity, fuel.fuelMaxCapacity);
+  }
+
+  function testSetFuelAmount(uint256 smartObjectId, uint256 fuelAmount) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setFuelAmount.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(FuelSystem.setFuelAmount, (smartObjectId, fuelAmount)));
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelAmount, fuel.fuelAmount);
+  }
+
+  function testSetLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__setLastUpdatedAt.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (smartObjectId, lastUpdatedAt)));
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(lastUpdatedAt, fuel.lastUpdatedAt);
+  }
 }
