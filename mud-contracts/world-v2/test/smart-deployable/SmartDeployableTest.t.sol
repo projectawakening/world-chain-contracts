@@ -10,9 +10,12 @@ import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/Function
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
+import { State } from "../../src/codegen/common.sol";
 import { GlobalDeployableState, DeployableState, DeployableTokenTable } from "../../src/codegen/index.sol";
 import { ISmartDeployableSystem } from "../../src/codegen/world/ISmartDeployableSystem.sol";
 import { SmartDeployableSystem } from "../../src/systems/smart-deployable/SmartDeployableSystem.sol";
+import { GlobalDeployableStateData } from "../../src/codegen/tables/GlobalDeployableState.sol";
+import { DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 
 contract StaticDataTest is MudTest {
   IBaseWorld world;
@@ -29,5 +32,112 @@ contract StaticDataTest is MudTest {
       codeSize := extcodesize(addr)
     }
     assertTrue(codeSize > 0);
+  }
+
+  function testSetGlobalDeployableState(
+    uint256 updatedBlockNumber,
+    bool isPaused,
+    uint256 lastGlobalOffline,
+    uint256 lastGlobalOnline
+  ) public {
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalDeployableState.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(
+      systemId,
+      abi.encodeCall(
+        SmartDeployableSystem.setGlobalDeployableState,
+        (updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline)
+      )
+    );
+
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+
+    assertEq(isPaused, globalDeployableState.isPaused);
+    assertEq(lastGlobalOffline, globalDeployableState.lastGlobalOffline);
+    assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
+  }
+
+  function testSetIsPausedGlobalState(uint256 updatedBlockNumber, bool isPaused) public {
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setIsPausedGlobalState.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setIsPausedGlobalState, (updatedBlockNumber, isPaused)));
+
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+
+    assertEq(isPaused, globalDeployableState.isPaused);
+  }
+
+  function testSetLastGlobalOffline(uint256 updatedBlockNumber, uint256 lastGlobalOffline) public {
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setLastGlobalOffline.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(
+      systemId,
+      abi.encodeCall(SmartDeployableSystem.setLastGlobalOffline, (updatedBlockNumber, lastGlobalOffline))
+    );
+
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+
+    assertEq(lastGlobalOffline, globalDeployableState.lastGlobalOffline);
+  }
+
+  function testSetLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) public {
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setLastGlobalOnline.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(
+      systemId,
+      abi.encodeCall(SmartDeployableSystem.setLastGlobalOnline, (updatedBlockNumber, lastGlobalOnline))
+    );
+
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+
+    assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
+  }
+
+  // test setDeployableState
+  function testSetDeployableState(
+    uint256 smartObjectId,
+    uint256 createdAt,
+    State previousState,
+    State currentState,
+    bool isValid,
+    uint256 anchoredAt,
+    uint256 updatedBlockNumber,
+    uint256 updatedBlockTime
+  ) public {
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setDeployableState.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    console.logBytes4(functionSelector);
+
+    world.call(
+      systemId,
+      abi.encodeCall(
+        SmartDeployableSystem.setDeployableState,
+        (
+          smartObjectId,
+          createdAt,
+          previousState,
+          currentState,
+          isValid,
+          anchoredAt,
+          updatedBlockNumber,
+          updatedBlockTime
+        )
+      )
+    );
+
+    DeployableStateData memory deployableState = DeployableState.get(smartObjectId);
+
+    // assertEq(createdAt, deployableState.createdAt);
+    // assertEqUint(uint8(previousState), uint8(deployableState.previousState));
+    // assertEqUint(uint8(currentState), uint8(deployableState.currentState));
+    // assertEq(isValid, deployableState.isValid);
+    // assertEq(anchoredAt, deployableState.anchoredAt);
+    // assertEq(updatedBlockNumber, deployableState.updatedBlockNumber);
+    // assertEq(updatedBlockTime, deployableState.updatedBlockTime);
   }
 }

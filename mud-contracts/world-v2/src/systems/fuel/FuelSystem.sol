@@ -83,8 +83,33 @@ contract FuelSystem is System {
     Fuel.setLastUpdatedAt(smartObjectId, lastUpdatedAt);
   }
 
-  // depositFuel
-  // withdrawFuel
-  // updateFuel
-  // get currentFuelAmount
+  /**
+   * @dev deposit an amount of fuel for a Smart Deployable
+   * @param smartObjectId to deposit fuel to
+   * @param fuelAmount of fuel in full units
+   * TODO: make this function admin only
+   */
+  function depositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+    FuelData memory fuel = Fuel.get(smartObjectId);
+    require(fuel.fuelAmount + fuelAmount <= fuel.fuelMaxCapacity, "FuelSystem: deposit exceeds max capacity");
+
+    Fuel.setFuelAmount(smartObjectId, fuel.fuelAmount + fuelAmount);
+
+    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
+  }
+
+  /**
+   * @dev withdraw an amount of fuel for a Smart Deployable
+   * @param smartObjectId to withdraw fuel from
+   * @param fuelAmount of fuel in full units
+   * TODO: make this function admin only
+   */
+  function withdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+    FuelData memory fuel = Fuel.get(smartObjectId);
+    require(fuel.fuelAmount - fuelAmount >= 0, "FuelSystem: withdraw exceeds current fuel amount");
+
+    Fuel.setFuelAmount(smartObjectId, fuel.fuelAmount - fuelAmount);
+
+    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
+  }
 }

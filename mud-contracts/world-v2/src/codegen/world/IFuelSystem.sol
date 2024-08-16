@@ -30,4 +30,8 @@ interface IFuelSystem {
   function eveworld__setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) external;
 
   function eveworld__setLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) external;
+
+  function eveworld__depositFuel(uint256 smartObjectId, uint256 fuelAmount) external;
+
+  function eveworld__withdrawFuel(uint256 smartObjectId, uint256 fuelAmount) external;
 }
