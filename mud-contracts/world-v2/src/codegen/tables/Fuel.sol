@@ -42,7 +42,7 @@ library Fuel {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "smartObjectId";
+    keyNames[0] = "entityId";
   }
 
   /**
@@ -75,9 +75,9 @@ library Fuel {
   /**
    * @notice Get fuelUnitVolume.
    */
-  function getFuelUnitVolume(uint256 smartObjectId) internal view returns (uint256 fuelUnitVolume) {
+  function getFuelUnitVolume(uint256 entityId) internal view returns (uint256 fuelUnitVolume) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -86,9 +86,9 @@ library Fuel {
   /**
    * @notice Get fuelUnitVolume.
    */
-  function _getFuelUnitVolume(uint256 smartObjectId) internal view returns (uint256 fuelUnitVolume) {
+  function _getFuelUnitVolume(uint256 entityId) internal view returns (uint256 fuelUnitVolume) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -97,9 +97,9 @@ library Fuel {
   /**
    * @notice Set fuelUnitVolume.
    */
-  function setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) internal {
+  function setFuelUnitVolume(uint256 entityId, uint256 fuelUnitVolume) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((fuelUnitVolume)), _fieldLayout);
   }
@@ -107,9 +107,9 @@ library Fuel {
   /**
    * @notice Set fuelUnitVolume.
    */
-  function _setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) internal {
+  function _setFuelUnitVolume(uint256 entityId, uint256 fuelUnitVolume) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((fuelUnitVolume)), _fieldLayout);
   }
@@ -118,10 +118,10 @@ library Fuel {
    * @notice Get fuelConsumptionIntervalInSeconds.
    */
   function getFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId
+    uint256 entityId
   ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -131,10 +131,10 @@ library Fuel {
    * @notice Get fuelConsumptionIntervalInSeconds.
    */
   function _getFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId
+    uint256 entityId
   ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -143,12 +143,9 @@ library Fuel {
   /**
    * @notice Set fuelConsumptionIntervalInSeconds.
    */
-  function setFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId,
-    uint256 fuelConsumptionIntervalInSeconds
-  ) internal {
+  function setFuelConsumptionIntervalInSeconds(uint256 entityId, uint256 fuelConsumptionIntervalInSeconds) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(
       _tableId,
@@ -162,12 +159,9 @@ library Fuel {
   /**
    * @notice Set fuelConsumptionIntervalInSeconds.
    */
-  function _setFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId,
-    uint256 fuelConsumptionIntervalInSeconds
-  ) internal {
+  function _setFuelConsumptionIntervalInSeconds(uint256 entityId, uint256 fuelConsumptionIntervalInSeconds) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(
       _tableId,
@@ -181,9 +175,9 @@ library Fuel {
   /**
    * @notice Get fuelMaxCapacity.
    */
-  function getFuelMaxCapacity(uint256 smartObjectId) internal view returns (uint256 fuelMaxCapacity) {
+  function getFuelMaxCapacity(uint256 entityId) internal view returns (uint256 fuelMaxCapacity) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -192,9 +186,9 @@ library Fuel {
   /**
    * @notice Get fuelMaxCapacity.
    */
-  function _getFuelMaxCapacity(uint256 smartObjectId) internal view returns (uint256 fuelMaxCapacity) {
+  function _getFuelMaxCapacity(uint256 entityId) internal view returns (uint256 fuelMaxCapacity) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -203,9 +197,9 @@ library Fuel {
   /**
    * @notice Set fuelMaxCapacity.
    */
-  function setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
+  function setFuelMaxCapacity(uint256 entityId, uint256 fuelMaxCapacity) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((fuelMaxCapacity)), _fieldLayout);
   }
@@ -213,9 +207,9 @@ library Fuel {
   /**
    * @notice Set fuelMaxCapacity.
    */
-  function _setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
+  function _setFuelMaxCapacity(uint256 entityId, uint256 fuelMaxCapacity) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((fuelMaxCapacity)), _fieldLayout);
   }
@@ -223,9 +217,9 @@ library Fuel {
   /**
    * @notice Get fuelAmount.
    */
-  function getFuelAmount(uint256 smartObjectId) internal view returns (uint256 fuelAmount) {
+  function getFuelAmount(uint256 entityId) internal view returns (uint256 fuelAmount) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -234,9 +228,9 @@ library Fuel {
   /**
    * @notice Get fuelAmount.
    */
-  function _getFuelAmount(uint256 smartObjectId) internal view returns (uint256 fuelAmount) {
+  function _getFuelAmount(uint256 entityId) internal view returns (uint256 fuelAmount) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -245,9 +239,9 @@ library Fuel {
   /**
    * @notice Set fuelAmount.
    */
-  function setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) internal {
+  function setFuelAmount(uint256 entityId, uint256 fuelAmount) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((fuelAmount)), _fieldLayout);
   }
@@ -255,9 +249,9 @@ library Fuel {
   /**
    * @notice Set fuelAmount.
    */
-  function _setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) internal {
+  function _setFuelAmount(uint256 entityId, uint256 fuelAmount) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((fuelAmount)), _fieldLayout);
   }
@@ -265,9 +259,9 @@ library Fuel {
   /**
    * @notice Get lastUpdatedAt.
    */
-  function getLastUpdatedAt(uint256 smartObjectId) internal view returns (uint256 lastUpdatedAt) {
+  function getLastUpdatedAt(uint256 entityId) internal view returns (uint256 lastUpdatedAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -276,9 +270,9 @@ library Fuel {
   /**
    * @notice Get lastUpdatedAt.
    */
-  function _getLastUpdatedAt(uint256 smartObjectId) internal view returns (uint256 lastUpdatedAt) {
+  function _getLastUpdatedAt(uint256 entityId) internal view returns (uint256 lastUpdatedAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -287,9 +281,9 @@ library Fuel {
   /**
    * @notice Set lastUpdatedAt.
    */
-  function setLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) internal {
+  function setLastUpdatedAt(uint256 entityId, uint256 lastUpdatedAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
   }
@@ -297,9 +291,9 @@ library Fuel {
   /**
    * @notice Set lastUpdatedAt.
    */
-  function _setLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) internal {
+  function _setLastUpdatedAt(uint256 entityId, uint256 lastUpdatedAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
   }
@@ -307,9 +301,9 @@ library Fuel {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId) internal view returns (FuelData memory _table) {
+  function get(uint256 entityId) internal view returns (FuelData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -322,9 +316,9 @@ library Fuel {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 smartObjectId) internal view returns (FuelData memory _table) {
+  function _get(uint256 entityId) internal view returns (FuelData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -338,7 +332,7 @@ library Fuel {
    * @notice Set the full data using individual values.
    */
   function set(
-    uint256 smartObjectId,
+    uint256 entityId,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
@@ -357,7 +351,7 @@ library Fuel {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -366,7 +360,7 @@ library Fuel {
    * @notice Set the full data using individual values.
    */
   function _set(
-    uint256 smartObjectId,
+    uint256 entityId,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
@@ -385,7 +379,7 @@ library Fuel {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -393,7 +387,7 @@ library Fuel {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, FuelData memory _table) internal {
+  function set(uint256 entityId, FuelData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.fuelUnitVolume,
       _table.fuelConsumptionIntervalInSeconds,
@@ -406,7 +400,7 @@ library Fuel {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -414,7 +408,7 @@ library Fuel {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, FuelData memory _table) internal {
+  function _set(uint256 entityId, FuelData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.fuelUnitVolume,
       _table.fuelConsumptionIntervalInSeconds,
@@ -427,7 +421,7 @@ library Fuel {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -482,9 +476,9 @@ library Fuel {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 smartObjectId) internal {
+  function deleteRecord(uint256 entityId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -492,9 +486,9 @@ library Fuel {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 smartObjectId) internal {
+  function _deleteRecord(uint256 entityId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -544,9 +538,9 @@ library Fuel {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 entityId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     return _keyTuple;
   }

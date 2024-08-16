@@ -47,7 +47,7 @@ library DeployableState {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "smartObjectId";
+    keyNames[0] = "entityId";
   }
 
   /**
@@ -82,9 +82,9 @@ library DeployableState {
   /**
    * @notice Get createdAt.
    */
-  function getCreatedAt(uint256 smartObjectId) internal view returns (uint256 createdAt) {
+  function getCreatedAt(uint256 entityId) internal view returns (uint256 createdAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -93,9 +93,9 @@ library DeployableState {
   /**
    * @notice Get createdAt.
    */
-  function _getCreatedAt(uint256 smartObjectId) internal view returns (uint256 createdAt) {
+  function _getCreatedAt(uint256 entityId) internal view returns (uint256 createdAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -104,9 +104,9 @@ library DeployableState {
   /**
    * @notice Set createdAt.
    */
-  function setCreatedAt(uint256 smartObjectId, uint256 createdAt) internal {
+  function setCreatedAt(uint256 entityId, uint256 createdAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((createdAt)), _fieldLayout);
   }
@@ -114,9 +114,9 @@ library DeployableState {
   /**
    * @notice Set createdAt.
    */
-  function _setCreatedAt(uint256 smartObjectId, uint256 createdAt) internal {
+  function _setCreatedAt(uint256 entityId, uint256 createdAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((createdAt)), _fieldLayout);
   }
@@ -124,9 +124,9 @@ library DeployableState {
   /**
    * @notice Get previousState.
    */
-  function getPreviousState(uint256 smartObjectId) internal view returns (State previousState) {
+  function getPreviousState(uint256 entityId) internal view returns (State previousState) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return State(uint8(bytes1(_blob)));
@@ -135,9 +135,9 @@ library DeployableState {
   /**
    * @notice Get previousState.
    */
-  function _getPreviousState(uint256 smartObjectId) internal view returns (State previousState) {
+  function _getPreviousState(uint256 entityId) internal view returns (State previousState) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return State(uint8(bytes1(_blob)));
@@ -146,9 +146,9 @@ library DeployableState {
   /**
    * @notice Set previousState.
    */
-  function setPreviousState(uint256 smartObjectId, State previousState) internal {
+  function setPreviousState(uint256 entityId, State previousState) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked(uint8(previousState)), _fieldLayout);
   }
@@ -156,9 +156,9 @@ library DeployableState {
   /**
    * @notice Set previousState.
    */
-  function _setPreviousState(uint256 smartObjectId, State previousState) internal {
+  function _setPreviousState(uint256 entityId, State previousState) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked(uint8(previousState)), _fieldLayout);
   }
@@ -166,9 +166,9 @@ library DeployableState {
   /**
    * @notice Get currentState.
    */
-  function getCurrentState(uint256 smartObjectId) internal view returns (State currentState) {
+  function getCurrentState(uint256 entityId) internal view returns (State currentState) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return State(uint8(bytes1(_blob)));
@@ -177,9 +177,9 @@ library DeployableState {
   /**
    * @notice Get currentState.
    */
-  function _getCurrentState(uint256 smartObjectId) internal view returns (State currentState) {
+  function _getCurrentState(uint256 entityId) internal view returns (State currentState) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return State(uint8(bytes1(_blob)));
@@ -188,9 +188,9 @@ library DeployableState {
   /**
    * @notice Set currentState.
    */
-  function setCurrentState(uint256 smartObjectId, State currentState) internal {
+  function setCurrentState(uint256 entityId, State currentState) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked(uint8(currentState)), _fieldLayout);
   }
@@ -198,9 +198,9 @@ library DeployableState {
   /**
    * @notice Set currentState.
    */
-  function _setCurrentState(uint256 smartObjectId, State currentState) internal {
+  function _setCurrentState(uint256 entityId, State currentState) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked(uint8(currentState)), _fieldLayout);
   }
@@ -208,9 +208,9 @@ library DeployableState {
   /**
    * @notice Get isValid.
    */
-  function getIsValid(uint256 smartObjectId) internal view returns (bool isValid) {
+  function getIsValid(uint256 entityId) internal view returns (bool isValid) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -219,9 +219,9 @@ library DeployableState {
   /**
    * @notice Get isValid.
    */
-  function _getIsValid(uint256 smartObjectId) internal view returns (bool isValid) {
+  function _getIsValid(uint256 entityId) internal view returns (bool isValid) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -230,9 +230,9 @@ library DeployableState {
   /**
    * @notice Set isValid.
    */
-  function setIsValid(uint256 smartObjectId, bool isValid) internal {
+  function setIsValid(uint256 entityId, bool isValid) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((isValid)), _fieldLayout);
   }
@@ -240,9 +240,9 @@ library DeployableState {
   /**
    * @notice Set isValid.
    */
-  function _setIsValid(uint256 smartObjectId, bool isValid) internal {
+  function _setIsValid(uint256 entityId, bool isValid) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((isValid)), _fieldLayout);
   }
@@ -250,9 +250,9 @@ library DeployableState {
   /**
    * @notice Get anchoredAt.
    */
-  function getAnchoredAt(uint256 smartObjectId) internal view returns (uint256 anchoredAt) {
+  function getAnchoredAt(uint256 entityId) internal view returns (uint256 anchoredAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -261,9 +261,9 @@ library DeployableState {
   /**
    * @notice Get anchoredAt.
    */
-  function _getAnchoredAt(uint256 smartObjectId) internal view returns (uint256 anchoredAt) {
+  function _getAnchoredAt(uint256 entityId) internal view returns (uint256 anchoredAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -272,9 +272,9 @@ library DeployableState {
   /**
    * @notice Set anchoredAt.
    */
-  function setAnchoredAt(uint256 smartObjectId, uint256 anchoredAt) internal {
+  function setAnchoredAt(uint256 entityId, uint256 anchoredAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((anchoredAt)), _fieldLayout);
   }
@@ -282,9 +282,9 @@ library DeployableState {
   /**
    * @notice Set anchoredAt.
    */
-  function _setAnchoredAt(uint256 smartObjectId, uint256 anchoredAt) internal {
+  function _setAnchoredAt(uint256 entityId, uint256 anchoredAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((anchoredAt)), _fieldLayout);
   }
@@ -292,9 +292,9 @@ library DeployableState {
   /**
    * @notice Get updatedBlockNumber.
    */
-  function getUpdatedBlockNumber(uint256 smartObjectId) internal view returns (uint256 updatedBlockNumber) {
+  function getUpdatedBlockNumber(uint256 entityId) internal view returns (uint256 updatedBlockNumber) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -303,9 +303,9 @@ library DeployableState {
   /**
    * @notice Get updatedBlockNumber.
    */
-  function _getUpdatedBlockNumber(uint256 smartObjectId) internal view returns (uint256 updatedBlockNumber) {
+  function _getUpdatedBlockNumber(uint256 entityId) internal view returns (uint256 updatedBlockNumber) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -314,9 +314,9 @@ library DeployableState {
   /**
    * @notice Set updatedBlockNumber.
    */
-  function setUpdatedBlockNumber(uint256 smartObjectId, uint256 updatedBlockNumber) internal {
+  function setUpdatedBlockNumber(uint256 entityId, uint256 updatedBlockNumber) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 5, abi.encodePacked((updatedBlockNumber)), _fieldLayout);
   }
@@ -324,9 +324,9 @@ library DeployableState {
   /**
    * @notice Set updatedBlockNumber.
    */
-  function _setUpdatedBlockNumber(uint256 smartObjectId, uint256 updatedBlockNumber) internal {
+  function _setUpdatedBlockNumber(uint256 entityId, uint256 updatedBlockNumber) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 5, abi.encodePacked((updatedBlockNumber)), _fieldLayout);
   }
@@ -334,9 +334,9 @@ library DeployableState {
   /**
    * @notice Get updatedBlockTime.
    */
-  function getUpdatedBlockTime(uint256 smartObjectId) internal view returns (uint256 updatedBlockTime) {
+  function getUpdatedBlockTime(uint256 entityId) internal view returns (uint256 updatedBlockTime) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 6, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -345,9 +345,9 @@ library DeployableState {
   /**
    * @notice Get updatedBlockTime.
    */
-  function _getUpdatedBlockTime(uint256 smartObjectId) internal view returns (uint256 updatedBlockTime) {
+  function _getUpdatedBlockTime(uint256 entityId) internal view returns (uint256 updatedBlockTime) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 6, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -356,9 +356,9 @@ library DeployableState {
   /**
    * @notice Set updatedBlockTime.
    */
-  function setUpdatedBlockTime(uint256 smartObjectId, uint256 updatedBlockTime) internal {
+  function setUpdatedBlockTime(uint256 entityId, uint256 updatedBlockTime) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 6, abi.encodePacked((updatedBlockTime)), _fieldLayout);
   }
@@ -366,9 +366,9 @@ library DeployableState {
   /**
    * @notice Set updatedBlockTime.
    */
-  function _setUpdatedBlockTime(uint256 smartObjectId, uint256 updatedBlockTime) internal {
+  function _setUpdatedBlockTime(uint256 entityId, uint256 updatedBlockTime) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 6, abi.encodePacked((updatedBlockTime)), _fieldLayout);
   }
@@ -376,9 +376,9 @@ library DeployableState {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId) internal view returns (DeployableStateData memory _table) {
+  function get(uint256 entityId) internal view returns (DeployableStateData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -391,9 +391,9 @@ library DeployableState {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 smartObjectId) internal view returns (DeployableStateData memory _table) {
+  function _get(uint256 entityId) internal view returns (DeployableStateData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -407,7 +407,7 @@ library DeployableState {
    * @notice Set the full data using individual values.
    */
   function set(
-    uint256 smartObjectId,
+    uint256 entityId,
     uint256 createdAt,
     State previousState,
     State currentState,
@@ -430,7 +430,7 @@ library DeployableState {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -439,7 +439,7 @@ library DeployableState {
    * @notice Set the full data using individual values.
    */
   function _set(
-    uint256 smartObjectId,
+    uint256 entityId,
     uint256 createdAt,
     State previousState,
     State currentState,
@@ -462,7 +462,7 @@ library DeployableState {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -470,7 +470,7 @@ library DeployableState {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, DeployableStateData memory _table) internal {
+  function set(uint256 entityId, DeployableStateData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.createdAt,
       _table.previousState,
@@ -485,7 +485,7 @@ library DeployableState {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -493,7 +493,7 @@ library DeployableState {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, DeployableStateData memory _table) internal {
+  function _set(uint256 entityId, DeployableStateData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.createdAt,
       _table.previousState,
@@ -508,7 +508,7 @@ library DeployableState {
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -571,9 +571,9 @@ library DeployableState {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 smartObjectId) internal {
+  function deleteRecord(uint256 entityId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -581,9 +581,9 @@ library DeployableState {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 smartObjectId) internal {
+  function _deleteRecord(uint256 entityId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -647,9 +647,9 @@ library DeployableState {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 entityId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[0] = bytes32(uint256(entityId));
 
     return _keyTuple;
   }

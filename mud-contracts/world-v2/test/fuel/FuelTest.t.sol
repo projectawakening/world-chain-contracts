@@ -147,4 +147,30 @@ contract StaticDataTest is MudTest {
 
     assertEq(lastUpdatedAt, fuel.lastUpdatedAt);
   }
+
+  // test deposit fuel
+  function testDepositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__depositFuel.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelAmount, fuel.fuelAmount);
+  }
+
+  // test withdraw fuel
+  function testWithdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+    vm.assume(smartObjectId != 0);
+    bytes4 functionSelector = IFuelSystem.eveworld__withdrawFuel.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(FuelSystem.withdrawFuel, (smartObjectId, fuelAmount)));
+
+    FuelData memory fuel = Fuel.get(smartObjectId);
+
+    assertEq(fuelAmount, fuel.fuelAmount);
+  }
 }

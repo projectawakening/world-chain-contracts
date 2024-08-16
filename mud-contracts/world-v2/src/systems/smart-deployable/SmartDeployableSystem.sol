@@ -16,6 +16,19 @@ import { State } from "../../codegen/common.sol";
 
 contract SmartDeployableSystem is System {
   /**
+   * @dev registers a new smart deployable (must be "NULL" state)
+   * @param entityId entityId
+   * TODO: restrict this to entityIds that exist
+   */
+  function registerDeployable(uint256 entityId) public {}
+
+  // destroyDeployable
+  // bringOnline
+  // bringOffline
+  // anchor
+  // unanchor
+
+  /**
    * @dev sets the global deployable state
    * @param updatedBlockNumber the block number at which the state was updated
    * @param isPaused the state of the deployable
@@ -32,12 +45,21 @@ contract SmartDeployableSystem is System {
   }
 
   /**
-   * @dev toggles the global state status
+   * @dev brings all smart deployables online
    * @param updatedBlockNumber the block number at which the state was updated
-   * @param isPaused the state of the deployable
+   * TODO: limit to admin use only
    */
-  function setIsPausedGlobalState(uint256 updatedBlockNumber, bool isPaused) public {
-    GlobalDeployableState.setIsPaused(updatedBlockNumber, isPaused);
+  function setGlobalPause(uint256 updatedBlockNumber) public {
+    GlobalDeployableState.setIsPaused(updatedBlockNumber, false);
+  }
+
+  /**
+   * @dev brings all smart deployables offline
+   * @param updatedBlockNumber the block number at which the state was updated
+   * TODO: limit to admin use only
+   */
+  function setGlobalResume(uint256 updatedBlockNumber) public {
+    GlobalDeployableState.setIsPaused(updatedBlockNumber, true);
   }
 
   /**
@@ -60,8 +82,17 @@ contract SmartDeployableSystem is System {
   }
 
   /**
+   * @dev sets the ERC721 address for a deployable token
+   * @param entityId entityId of the in-game object
+   * @param erc721Address the address of the ERC721 contract
+   */
+  function registerDeployableToken(uint256 entityId, address erc721Address) public {
+    DeployableTokenTable.set(entityId, erc721Address);
+  }
+
+  /**
    * @dev sets the deployable state
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param createdAt the time the object was created
    * @param previousState the previous state of the object
    * @param currentState the current state of the object
@@ -71,7 +102,7 @@ contract SmartDeployableSystem is System {
    * @param updatedBlockTime the time at which the state was updated
    */
   function setDeployableState(
-    uint256 smartObjectId,
+    uint256 entityId,
     uint256 createdAt,
     State previousState,
     State currentState,
@@ -81,7 +112,7 @@ contract SmartDeployableSystem is System {
     uint256 updatedBlockTime
   ) public {
     DeployableState.set(
-      smartObjectId,
+      entityId,
       createdAt,
       previousState,
       currentState,
@@ -94,69 +125,64 @@ contract SmartDeployableSystem is System {
 
   /**
    * @dev sets the time the object was created
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param createdAt the time the object was created
    */
-  function setCreatedAt(uint256 smartObjectId, uint256 createdAt) public {
-    DeployableState.setCreatedAt(smartObjectId, createdAt);
+  function setCreatedAt(uint256 entityId, uint256 createdAt) public {
+    DeployableState.setCreatedAt(entityId, createdAt);
   }
 
   /**
    * @dev sets the previous state of the object
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param previousState the previous state of the object
    */
-  function setPreviousState(uint256 smartObjectId, State previousState) public {
-    DeployableState.setPreviousState(smartObjectId, previousState);
+  function setPreviousState(uint256 entityId, State previousState) public {
+    DeployableState.setPreviousState(entityId, previousState);
   }
 
   /**
    * @dev sets the current state of the object
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param currentState the current state of the object
    */
-  function setCurrentState(uint256 smartObjectId, State currentState) public {
-    DeployableState.setCurrentState(smartObjectId, currentState);
+  function setCurrentState(uint256 entityId, State currentState) public {
+    DeployableState.setCurrentState(entityId, currentState);
   }
 
   /**
    * @dev sets the validity of the object
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param isValid the validity of the object
    */
-  function setIsValid(uint256 smartObjectId, bool isValid) public {
-    DeployableState.setIsValid(smartObjectId, isValid);
+  function setIsValid(uint256 entityId, bool isValid) public {
+    DeployableState.setIsValid(entityId, isValid);
   }
 
   /**
    * @dev sets the time the object was anchored
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param anchoredAt the time the object was anchored
    */
-  function setAnchoredAt(uint256 smartObjectId, uint256 anchoredAt) public {
-    DeployableState.setAnchoredAt(smartObjectId, anchoredAt);
+  function setAnchoredAt(uint256 entityId, uint256 anchoredAt) public {
+    DeployableState.setAnchoredAt(entityId, anchoredAt);
   }
 
   /**
    * @dev sets the block number at which the state was updated
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param updatedBlockNumber the block number at which the state was updated
    */
-  function setUpdatedBlockNumber(uint256 smartObjectId, uint256 updatedBlockNumber) public {
-    DeployableState.setUpdatedBlockNumber(smartObjectId, updatedBlockNumber);
+  function setUpdatedBlockNumber(uint256 entityId, uint256 updatedBlockNumber) public {
+    DeployableState.setUpdatedBlockNumber(entityId, updatedBlockNumber);
   }
 
   /**
    * @dev sets the time at which the state was updated
-   * @param smartObjectId smartObjectId of the in-game object
+   * @param entityId entityId of the in-game object
    * @param updatedBlockTime the time at which the state was updated
    */
-  function setUpdatedBlockTime(uint256 smartObjectId, uint256 updatedBlockTime) public {
-    DeployableState.setUpdatedBlockTime(smartObjectId, updatedBlockTime);
-  }
-
-  // set deployable token table
-  function setDeployableTokenTable(uint256 smartObjectId, address erc721Address) public {
-    DeployableTokenTable.set(smartObjectId, erc721Address);
+  function setUpdatedBlockTime(uint256 entityId, uint256 updatedBlockTime) public {
+    DeployableState.setUpdatedBlockTime(entityId, updatedBlockTime);
   }
 }

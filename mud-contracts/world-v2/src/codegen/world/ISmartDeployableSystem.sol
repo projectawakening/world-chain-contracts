@@ -24,8 +24,10 @@ interface ISmartDeployableSystem {
 
   function eveworld__setLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) external;
 
+  function eveworld__registerDeployableToken(uint256 entityId, address erc721Address) external;
+
   function eveworld__setDeployableState(
-    uint256 smartObjectId,
+    uint256 entityId,
     uint256 createdAt,
     State previousState,
     State currentState,
@@ -35,19 +37,17 @@ interface ISmartDeployableSystem {
     uint256 updatedBlockTime
   ) external;
 
-  function eveworld__setCreatedAt(uint256 smartObjectId, uint256 createdAt) external;
+  function eveworld__setCreatedAt(uint256 entityId, uint256 createdAt) external;
 
-  function eveworld__setPreviousState(uint256 smartObjectId, State previousState) external;
+  function eveworld__setPreviousState(uint256 entityId, State previousState) external;
 
-  function eveworld__setCurrentState(uint256 smartObjectId, State currentState) external;
+  function eveworld__setCurrentState(uint256 entityId, State currentState) external;
 
-  function eveworld__setIsValid(uint256 smartObjectId, bool isValid) external;
+  function eveworld__setIsValid(uint256 entityId, bool isValid) external;
 
-  function eveworld__setAnchoredAt(uint256 smartObjectId, uint256 anchoredAt) external;
+  function eveworld__setAnchoredAt(uint256 entityId, uint256 anchoredAt) external;
 
-  function eveworld__setUpdatedBlockNumber(uint256 smartObjectId, uint256 updatedBlockNumber) external;
+  function eveworld__setUpdatedBlockNumber(uint256 entityId, uint256 updatedBlockNumber) external;
 
-  function eveworld__setUpdatedBlockTime(uint256 smartObjectId, uint256 updatedBlockTime) external;
-
-  function eveworld__setDeployableTokenTable(uint256 smartObjectId, address erc721Address) external;
+  function eveworld__setUpdatedBlockTime(uint256 entityId, uint256 updatedBlockTime) external;
 }

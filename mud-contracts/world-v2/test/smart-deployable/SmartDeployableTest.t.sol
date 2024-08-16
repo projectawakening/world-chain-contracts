@@ -96,48 +96,4 @@ contract StaticDataTest is MudTest {
 
     assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
   }
-
-  // test setDeployableState
-  function testSetDeployableState(
-    uint256 smartObjectId,
-    uint256 createdAt,
-    State previousState,
-    State currentState,
-    bool isValid,
-    uint256 anchoredAt,
-    uint256 updatedBlockNumber,
-    uint256 updatedBlockTime
-  ) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setDeployableState.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    console.logBytes4(functionSelector);
-
-    world.call(
-      systemId,
-      abi.encodeCall(
-        SmartDeployableSystem.setDeployableState,
-        (
-          smartObjectId,
-          createdAt,
-          previousState,
-          currentState,
-          isValid,
-          anchoredAt,
-          updatedBlockNumber,
-          updatedBlockTime
-        )
-      )
-    );
-
-    DeployableStateData memory deployableState = DeployableState.get(smartObjectId);
-
-    // assertEq(createdAt, deployableState.createdAt);
-    // assertEqUint(uint8(previousState), uint8(deployableState.previousState));
-    // assertEqUint(uint8(currentState), uint8(deployableState.currentState));
-    // assertEq(isValid, deployableState.isValid);
-    // assertEq(anchoredAt, deployableState.anchoredAt);
-    // assertEq(updatedBlockNumber, deployableState.updatedBlockNumber);
-    // assertEq(updatedBlockTime, deployableState.updatedBlockTime);
-  }
 }

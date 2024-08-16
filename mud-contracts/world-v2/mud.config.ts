@@ -86,14 +86,14 @@ export default defineWorld({
      */
     Fuel: {
       schema: {
-        smartObjectId: "uint256",
+        entityId: "uint256",
         fuelUnitVolume: "uint256",
         fuelConsumptionIntervalInSeconds: "uint256",
         fuelMaxCapacity: "uint256",
         fuelAmount: "uint256",
         lastUpdatedAt: "uint256", // unix time in seconds
       },
-      key: ["smartObjectId"],
+      key: ["entityId"],
     },
 
     /***************************
@@ -117,7 +117,7 @@ export default defineWorld({
      */
     DeployableState: {
       schema: {
-        smartObjectId: "uint256",
+        entityId: "uint256",
         createdAt: "uint256",
         previousState: "State",
         currentState: "State",
@@ -126,17 +126,17 @@ export default defineWorld({
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },
-      key: ["smartObjectId"],
+      key: ["entityId"],
     },
     /**
      * Used to store the deployable details of a in-game entity
      */
     DeployableTokenTable: {
       schema: {
-        smartObjectId: "uint256",
+        entityId: "uint256",
         erc721Address: "address",
       },
-      key: ["smartObjectId"],
+      key: ["entityId"],
     },
   },
 });
