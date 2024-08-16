@@ -133,9 +133,10 @@ export default defineWorld({
      */
     DeployableTokenTable: {
       schema: {
+        smartObjectId: "uint256",
         erc721Address: "address",
       },
-      key: ["erc721Address"],
+      key: ["smartObjectId"],
     },
   },
 });
