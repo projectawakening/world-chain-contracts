@@ -3,3 +3,4 @@ packages:
   - "mud-contracts/**/**"
   - "standard-contracts"
   - "end-to-end-tests"
+  - "end-to-end-tests-v2"
