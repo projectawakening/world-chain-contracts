@@ -6,6 +6,13 @@ This repository contains the smart contract code supporting Project Awakening an
 
 # Quickstart
 
+Install necessary dependencies:
+
+```
+npm install -g pnpm
+pnpm install 
+``` 
+
 To start developing against the world and all of the CCP modules run:
 
 ```
@@ -32,7 +39,7 @@ Pull the latest released docker image: Current version [0.0.7](https://github.co
 docker pull ghcr.io/projectawakening/world-chain-deployer-image:0.0.7
 ```
 
-Or run it directly against a running local node:
+Run it directly against a running local node:
 ```bash
 export TEST_PRIVATE_KEY=0xPRIVATE_KEY_FOR_FUNDED_EOA
 export RPC_URL=http://LOCAL_RPC_ENDPOINT # For OS X this would be host.docker.internal:8545 docker can acess localhost

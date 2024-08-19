@@ -7,7 +7,7 @@ import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
 /**
  * @title StaticData
  * @author CCP Games
- * StaticData stores an in game entity record on chain.
+ * StaticDataSystem stores an in game entity record on chain.
  */
 contract StaticDataSystem is System {
   /**
