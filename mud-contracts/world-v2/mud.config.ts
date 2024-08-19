@@ -68,14 +68,14 @@ export default defineWorld({
     },
     CharacterToken: {
       schema: {
-        erc721Address: "address"
+        erc721Address: "address",
       },
       key: [],
     },
 
     /*************************
-    * ERC721 PUPPET MODULE *
-    ************************/
+     * ERC721 PUPPET MODULE *
+     ************************/
     Balances: {
       schema: {
         account: "address",

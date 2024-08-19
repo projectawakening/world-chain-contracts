@@ -1,3 +1,6 @@
+//SPDX-License-Identifier: MIT
+pragma solidity >=0.8.24;
+
 /**
  * EntityRecord system stores an in game entity record on chain.
  * @param entityId the id of a in game entity referred as smart object id
