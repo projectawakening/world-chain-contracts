@@ -36,25 +36,12 @@ contract StaticDataTest is MudTest {
     assertTrue(codeSize > 0);
   }
 
-
-
   function testSetBaseURI(string memory baseURI) public {
     ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
 
-    assertEq(cid, storedCid);
-  }
-
-  function testStaticDataMetadata(bytes32 classId, string memory name, string memory baseURI) public {
-    bytes4 functionSelector = IStaticDataSystem.eveworld__createStaticDataMetadata.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.createStaticDataMetadata, (classId, name, baseURI)));
-
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(classId);
-
-    assertEq(name, metadata.name);
-    assertEq(baseURI, metadata.baseURI);
+    string memory baseuri = StaticDataMetadata.get();
+    assertEq(baseURI, baseuri);
   }
 
   function testSetCid(uint256 entityId, string memory cid) public {
@@ -65,27 +52,5 @@ contract StaticDataTest is MudTest {
     string memory storedCid = StaticData.get(entityId);
 
     assertEq(cid, storedCid);
-  }
-
-  function testSetName(bytes32 classId, string memory name) public {
-    bytes4 functionSelector = IStaticDataSystem.eveworld__setName.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setName, (classId, name)));
-
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(classId);
-
-    assertEq(name, metadata.name);
-  }
-
-  function testSetBaseURI(bytes32 classId, string memory baseURI) public {
-    bytes4 functionSelector = IStaticDataSystem.eveworld__setBaseURI.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (classId, baseURI)));
-
-    StaticDataMetadataData memory metadata = StaticDataMetadata.get(classId);
-
-    assertEq(baseURI, metadata.baseURI);
   }
 }
