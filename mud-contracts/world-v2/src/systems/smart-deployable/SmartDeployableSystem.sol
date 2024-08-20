@@ -10,6 +10,7 @@ import { Fuel, FuelData } from "../../codegen/index.sol";
 
 import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
+import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
 
 /**
  * @title SmartDeployableSystem
@@ -69,9 +70,19 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
+    _setDeployableState(entityId, previousState, State.DESTROYED);
+    DeployableState.setIsValid(entityId, false);
   }
 
   // bringOnline
+  function bringOnline(uint256 entityId) public {
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (previousState != State.ANCHORED) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+    _setDeployableState(entityId, previousState, State.ONLINE);
+  }
+
   // bringOffline
   // anchor
   // unanchor
@@ -234,9 +245,10 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     DeployableState.setUpdatedBlockTime(entityId, updatedBlockTime);
   }
 
-  /********************
-   * INTERNAL METHODS *
-   ********************/
+  /*******************************
+   * INTERNAL DEPLOYABLE METHODS *
+   *******************************/
+
   /**
    * @dev brings offline smart deployable (internal method)
    * @param entityId entityId
@@ -264,5 +276,61 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
   function _updateBlockInfo(uint256 entityId) internal {
     DeployableState.setUpdatedBlockNumber(entityId, block.number);
     DeployableState.setUpdatedBlockTime(entityId, block.timestamp);
+  }
+
+  /*************************
+   * INTERNAL FUEL METHODS *
+   **************************/
+
+  // update fuel
+  function _updateFuel(uint256 entityId, uint256 fuelAmount) internal {
+    Fuel.setFuelAmount(entityId, fuelAmount);
+    Fuel.setLastUpdatedAt(entityId, block.timestamp);
+  }
+
+  // get current fuel amount
+  function _currentFuelAmount(uint256 entityId) internal view returns (uint256) {
+    // Check if the entity is not online. If it's not online, return the fuel amount directly.
+    if (DeployableState.getCurrentState(entityId) != State.ONLINE) {
+      return Fuel.getFuelAmount(entityId);
+    }
+
+    // Fetch the fuel balance data for the entity.
+    FuelData memory fuelData = Fuel.get(entityId);
+
+    uint256 oneFuelUnitConsumptionIntervalInSec = fuelData.fuelConsumptionIntervalInSeconds;
+
+    // Calculate the fuel consumed since the last update.
+    uint256 fuelConsumed = ((block.timestamp - fuelData.lastUpdatedAt) * ONE_UNIT_IN_WEI) /
+      oneFuelUnitConsumptionIntervalInSec;
+
+    // Subtract any global offline fuel refund from the consumed fuel.
+    fuelConsumed -= _globalOfflineFuelRefund(entityId);
+
+    // If the consumed fuel is greater than or equal to the current fuel amount, return 0.
+    if (fuelConsumed >= fuelData.fuelAmount) {
+      return 0;
+    }
+
+    // Return the remaining fuel amount.
+    return fuelData.fuelAmount - fuelConsumed;
+  }
+
+  // get global offline fuel refund
+  function _globalOfflineFuelRefund(uint256 entityId) internal view returns (uint256) {
+    // Fetch the global deployable state data.
+    GlobalDeployableStateData memory globalData = GlobalDeployableState.get(entityId);
+
+    if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
+    if (DeployableState.getCurrentState(entityId) != State.ONLINE) return 0;
+
+    uint256 bringOnlineTimestamp = DeployableState.getUpdatedBlockTime(entityId);
+    if (bringOnlineTimestamp < globalData.lastGlobalOffline) bringOnlineTimestamp = globalData.lastGlobalOffline;
+
+    uint256 lastGlobalOnline = globalData.lastGlobalOnline;
+    if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
+
+    uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spend online during server downtime
+    return ((elapsedRefundTime * ONE_UNIT_IN_WEI) / (Fuel.getFuelConsumptionIntervalInSeconds(entityId)));
   }
 }
