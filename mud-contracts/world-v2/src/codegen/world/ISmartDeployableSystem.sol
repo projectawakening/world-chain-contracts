@@ -19,6 +19,8 @@ interface ISmartDeployableSystem {
     uint256 fuelMaxCapacityInWei
   ) external;
 
+  function eveworld__destroyDeployable(uint256 entityId) external;
+
   function eveworld__setGlobalDeployableState(
     uint256 updatedBlockNumber,
     bool isPaused,

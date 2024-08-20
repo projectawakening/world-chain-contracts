@@ -6,8 +6,9 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { DeployableTokenTable } from "../../codegen/index.sol";
-import { State, SmartObjectData } from "./types.sol";
+import { Fuel, FuelData } from "../../codegen/index.sol";
 
+import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 
 /**
@@ -43,8 +44,8 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     }
 
     if (previousState == State.NULL) {
-      // mint erc721 token to owner
-      // set uri
+      // TODO: mint erc721 token to owner
+      // TODO: set uri
     }
 
     DeployableState.set(
@@ -57,9 +58,19 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
       block.number,
       block.timestamp
     );
+
+    // set fuel data
+    Fuel.set(entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp);
   }
 
   // destroyDeployable
+  function destroyDeployable(uint256 entityId) public {
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+  }
+
   // bringOnline
   // bringOffline
   // anchor
@@ -221,5 +232,37 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
    */
   function setUpdatedBlockTime(uint256 entityId, uint256 updatedBlockTime) public {
     DeployableState.setUpdatedBlockTime(entityId, updatedBlockTime);
+  }
+
+  /********************
+   * INTERNAL METHODS *
+   ********************/
+  /**
+   * @dev brings offline smart deployable (internal method)
+   * @param entityId entityId
+   */
+  function _bringOffline(uint256 entityId, State previousState) internal {
+    _setDeployableState(entityId, previousState, State.ANCHORED);
+  }
+
+  /**
+   * @dev internal method to set the state of a deployable
+   * @param entityId to update
+   * @param previousState to set
+   * @param currentState to set
+   */
+  function _setDeployableState(uint256 entityId, State previousState, State currentState) internal {
+    DeployableState.setPreviousState(entityId, previousState);
+    DeployableState.setCurrentState(entityId, currentState);
+    _updateBlockInfo(entityId);
+  }
+
+  /**
+   * @dev update block information for a given entity
+   * @param entityId to update
+   */
+  function _updateBlockInfo(uint256 entityId) internal {
+    DeployableState.setUpdatedBlockNumber(entityId, block.number);
+    DeployableState.setUpdatedBlockTime(entityId, block.timestamp);
   }
 }
