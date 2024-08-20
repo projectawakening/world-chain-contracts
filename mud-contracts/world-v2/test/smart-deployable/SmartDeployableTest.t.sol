@@ -104,9 +104,11 @@ contract SmartDeployableTest is MudTest {
     uint256 lastGlobalOffline,
     uint256 lastGlobalOnline
   ) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalDeployableState.selector;
-
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalPause.selector;
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+
+    // ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
+
     world.call(
       systemId,
       abi.encodeCall(

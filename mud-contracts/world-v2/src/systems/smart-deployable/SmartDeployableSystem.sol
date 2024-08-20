@@ -7,14 +7,20 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { DeployableTokenTable } from "../../codegen/index.sol";
+import { FuelSystem } from "../fuel/FuelSystem.sol";
 import { Fuel, FuelData } from "../../codegen/index.sol";
+import { LocationSystem } from "../location/LocationSystem.sol";
 import { LocationData } from "../../codegen/tables/Location.sol";
 import { Location, LocationData } from "../../codegen/index.sol";
+import { EveSystem } from "../EveSystem.sol";
 
 import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
 import { Utils } from "./Utils.sol";
+
+import { Utils as LocationUtils } from "../location/Utils.sol";
+import { Utils as FuelUtils } from "../fuel/Utils.sol";
 
 /**
  * @title SmartDeployableSystem
@@ -22,9 +28,10 @@ import { Utils } from "./Utils.sol";
  * SmartDeployableSystem stores the deployable state of a smart object on-chain
  */
 
-contract SmartDeployableSystem is System, SmartDeployableErrors {
+contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
-  using Utils for bytes14;
+  using LocationUtils for bytes14;
+  using FuelUtils for bytes14;
 
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
@@ -79,7 +86,14 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
       block.timestamp
     );
 
-    Fuel.set(entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp);
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+    world().call(
+      fuelSystemId,
+      abi.encodeCall(
+        FuelSystem.setFuelBalance,
+        (entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp)
+      )
+    );
   }
 
   /**
@@ -107,9 +121,12 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     _updateFuel(entityId);
     uint256 currentFuel = Fuel.getFuelAmount(entityId);
     if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);
-    Fuel.setFuelAmount(entityId, currentFuel - ONE_UNIT_IN_WEI); //forces it to tick
+
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+    world().call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelAmount, (entityId, currentFuel - ONE_UNIT_IN_WEI)));
+    world().call(fuelSystemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (entityId, block.timestamp)));
+
     _setDeployableState(entityId, previousState, State.ONLINE);
-    Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
   /**
@@ -136,7 +153,10 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
     _setDeployableState(entityId, previousState, State.ANCHORED);
-    Location.set(entityId, locationData);
+
+    ResourceId locationSystemId = LocationUtils.locationSystemId();
+    world().call(locationSystemId, abi.encodeCall(LocationSystem.saveLocationData, (entityId, locationData)));
+
     DeployableState.setIsValid(entityId, true);
     DeployableState.setAnchoredAt(entityId, block.timestamp);
   }
@@ -153,7 +173,9 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
 
     _setDeployableState(entityId, previousState, State.UNANCHORED);
 
-    Location.set(entityId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
+    ResourceId locationSystemId = LocationUtils.locationSystemId();
+    world().call(locationSystemId, abi.encodeCall(LocationSystem.saveLocation, (entityId, 0, 0, 0, 0)));
+
     DeployableState.setIsValid(entityId, false);
   }
 
@@ -359,13 +381,17 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
   function _updateFuel(uint256 entityId) internal {
     uint256 currentFuel = _currentFuelAmount(entityId);
     State previousState = DeployableState.getCurrentState(entityId);
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+
     if (currentFuel == 0 && (previousState == State.ONLINE)) {
       _bringOffline(entityId, previousState);
-      Fuel.setFuelAmount(entityId, 0);
+
+      world().call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelAmount, (entityId, 0)));
     } else {
-      Fuel.setFuelAmount(entityId, currentFuel);
+      world().call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelAmount, (entityId, currentFuel)));
     }
-    Fuel.setLastUpdatedAt(entityId, block.timestamp);
+
+    world().call(fuelSystemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (entityId, block.timestamp)));
   }
 
   /**
@@ -418,7 +444,7 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     uint256 lastGlobalOnline = globalData.lastGlobalOnline;
     if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
 
-    uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spend online during server downtime
+    uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spent online during server downtime
     return ((elapsedRefundTime * ONE_UNIT_IN_WEI) / (Fuel.getFuelConsumptionIntervalInSeconds(entityId)));
   }
 }
