@@ -98,12 +98,7 @@ contract SmartDeployableTest is MudTest {
     LocationData memory location
   ) public {}
 
-  function testSetGlobalDeployableState(
-    uint256 updatedBlockNumber,
-    bool isPaused,
-    uint256 lastGlobalOffline,
-    uint256 lastGlobalOnline
-  ) public {
+  function testSetGlobalDeployableState(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) public {
     bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalPause.selector;
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
 
@@ -111,65 +106,56 @@ contract SmartDeployableTest is MudTest {
 
     world.call(
       systemId,
-      abi.encodeCall(
-        SmartDeployableSystem.setGlobalDeployableState,
-        (updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline)
-      )
+      abi.encodeCall(SmartDeployableSystem.setGlobalDeployableState, (isPaused, lastGlobalOffline, lastGlobalOnline))
     );
 
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
     assertEq(isPaused, globalDeployableState.isPaused);
     assertEq(lastGlobalOffline, globalDeployableState.lastGlobalOffline);
     assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
   }
 
-  function testPauseGlobalState(uint256 updatedBlockNumber) public {
+  function testPauseGlobalState() public {
     bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalPause.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalPause, (updatedBlockNumber)));
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalPause, ()));
 
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
     assertEq(true, globalDeployableState.isPaused);
   }
 
-  function testResumeGlobalState(uint256 updatedBlockNumber) public {
+  function testResumeGlobalState() public {
     bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalResume.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalResume, (updatedBlockNumber)));
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalResume, ()));
 
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
     assertEq(false, globalDeployableState.isPaused);
   }
 
-  function testSetLastGlobalOffline(uint256 updatedBlockNumber, uint256 lastGlobalOffline) public {
+  function testSetLastGlobalOffline(uint256 lastGlobalOffline) public {
     bytes4 functionSelector = ISmartDeployableSystem.eveworld__setLastGlobalOffline.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(
-      systemId,
-      abi.encodeCall(SmartDeployableSystem.setLastGlobalOffline, (updatedBlockNumber, lastGlobalOffline))
-    );
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setLastGlobalOffline, (lastGlobalOffline)));
 
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
     assertEq(lastGlobalOffline, globalDeployableState.lastGlobalOffline);
   }
 
-  function testSetLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) public {
+  function testSetLastGlobalOnline(uint256 lastGlobalOnline) public {
     bytes4 functionSelector = ISmartDeployableSystem.eveworld__setLastGlobalOnline.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(
-      systemId,
-      abi.encodeCall(SmartDeployableSystem.setLastGlobalOnline, (updatedBlockNumber, lastGlobalOnline))
-    );
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setLastGlobalOnline, (lastGlobalOnline)));
 
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
     assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
   }

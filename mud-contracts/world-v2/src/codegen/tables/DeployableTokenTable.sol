@@ -23,8 +23,8 @@ library DeployableTokenTable {
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0014010014000000000000000000000000000000000000000000000000000000);
 
-  // Hex-encoded key schema of (uint256)
-  Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded key schema of ()
+  Schema constant _keySchema = Schema.wrap(0x0000000000000000000000000000000000000000000000000000000000000000);
   // Hex-encoded value schema of (address)
   Schema constant _valueSchema = Schema.wrap(0x0014010061000000000000000000000000000000000000000000000000000000);
 
@@ -33,8 +33,7 @@ library DeployableTokenTable {
    * @return keyNames An array of strings with the names of key fields.
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
-    keyNames = new string[](1);
-    keyNames[0] = "entityId";
+    keyNames = new string[](0);
   }
 
   /**
@@ -63,9 +62,8 @@ library DeployableTokenTable {
   /**
    * @notice Get erc721Address.
    */
-  function getErc721Address(uint256 entityId) internal view returns (address erc721Address) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function getErc721Address() internal view returns (address erc721Address) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -74,9 +72,8 @@ library DeployableTokenTable {
   /**
    * @notice Get erc721Address.
    */
-  function _getErc721Address(uint256 entityId) internal view returns (address erc721Address) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function _getErc721Address() internal view returns (address erc721Address) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -85,9 +82,8 @@ library DeployableTokenTable {
   /**
    * @notice Get erc721Address.
    */
-  function get(uint256 entityId) internal view returns (address erc721Address) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function get() internal view returns (address erc721Address) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -96,9 +92,8 @@ library DeployableTokenTable {
   /**
    * @notice Get erc721Address.
    */
-  function _get(uint256 entityId) internal view returns (address erc721Address) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function _get() internal view returns (address erc721Address) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -107,9 +102,8 @@ library DeployableTokenTable {
   /**
    * @notice Set erc721Address.
    */
-  function setErc721Address(uint256 entityId, address erc721Address) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function setErc721Address(address erc721Address) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((erc721Address)), _fieldLayout);
   }
@@ -117,9 +111,8 @@ library DeployableTokenTable {
   /**
    * @notice Set erc721Address.
    */
-  function _setErc721Address(uint256 entityId, address erc721Address) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function _setErc721Address(address erc721Address) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((erc721Address)), _fieldLayout);
   }
@@ -127,9 +120,8 @@ library DeployableTokenTable {
   /**
    * @notice Set erc721Address.
    */
-  function set(uint256 entityId, address erc721Address) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function set(address erc721Address) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((erc721Address)), _fieldLayout);
   }
@@ -137,9 +129,8 @@ library DeployableTokenTable {
   /**
    * @notice Set erc721Address.
    */
-  function _set(uint256 entityId, address erc721Address) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function _set(address erc721Address) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((erc721Address)), _fieldLayout);
   }
@@ -147,9 +138,8 @@ library DeployableTokenTable {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 entityId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function deleteRecord() internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -157,9 +147,8 @@ library DeployableTokenTable {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 entityId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function _deleteRecord() internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -190,9 +179,8 @@ library DeployableTokenTable {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 entityId) internal pure returns (bytes32[] memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+  function encodeKeyTuple() internal pure returns (bytes32[] memory) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     return _keyTuple;
   }

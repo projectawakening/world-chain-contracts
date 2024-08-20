@@ -37,7 +37,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
   modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused(block.timestamp) == false) {
+    if (GlobalDeployableState.getIsPaused() == false) {
       revert SmartDeployable_StateTransitionPaused();
     }
     _;
@@ -181,64 +181,53 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
 
   /**
    * @dev sets the global deployable state
-   * @param updatedBlockNumber the block number at which the state was updated
    * @param isPaused the state of the deployable
    * @param lastGlobalOffline the last time the deployable was offline
    * @param lastGlobalOnline the last time the deployable was online
    */
-  function setGlobalDeployableState(
-    uint256 updatedBlockNumber,
-    bool isPaused,
-    uint256 lastGlobalOffline,
-    uint256 lastGlobalOnline
-  ) public {
-    GlobalDeployableState.set(updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline);
+  function setGlobalDeployableState(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) public {
+    GlobalDeployableState.set(isPaused, lastGlobalOffline, lastGlobalOnline);
   }
 
   /**
    * @dev brings all smart deployables online
-   * @param updatedBlockNumber the block number at which the state was updated
    * TODO: limit to admin use only
    */
-  function setGlobalPause(uint256 updatedBlockNumber) public {
-    GlobalDeployableState.setIsPaused(updatedBlockNumber, true);
+  function setGlobalPause() public {
+    GlobalDeployableState.setIsPaused(true);
   }
 
   /**
    * @dev brings all smart deployables offline
-   * @param updatedBlockNumber the block number at which the state was updated
    * TODO: limit to admin use only
    */
-  function setGlobalResume(uint256 updatedBlockNumber) public {
-    GlobalDeployableState.setIsPaused(updatedBlockNumber, false);
+  function setGlobalResume() public {
+    GlobalDeployableState.setIsPaused(false);
   }
 
   /**
    * @dev sets the last time the deployable was offline
-   * @param updatedBlockNumber the block number at which the state was updated
    * @param lastGlobalOffline the last time the deployable was offline
    */
-  function setLastGlobalOffline(uint256 updatedBlockNumber, uint256 lastGlobalOffline) public {
-    GlobalDeployableState.setLastGlobalOffline(updatedBlockNumber, lastGlobalOffline);
+  function setLastGlobalOffline(uint256 lastGlobalOffline) public {
+    GlobalDeployableState.setLastGlobalOffline(lastGlobalOffline);
   }
 
   /**
    * @dev sets the last time the deployable was online
-   * @param updatedBlockNumber the block number at which the state was updated
    * @param lastGlobalOnline the last time the deployable was online
    */
 
-  function setLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) public {
-    GlobalDeployableState.setLastGlobalOnline(updatedBlockNumber, lastGlobalOnline);
+  function setLastGlobalOnline(uint256 lastGlobalOnline) public {
+    GlobalDeployableState.setLastGlobalOnline(lastGlobalOnline);
   }
 
   /**
    * @dev sets the ERC721 address for a deployable token
-   * @param entityId entityId of the in-game object
    * @param erc721Address the address of the ERC721 contract
    */
-  function registerDeployableToken(uint256 entityId, address erc721Address) public {
-    DeployableTokenTable.set(entityId, erc721Address);
+  function registerDeployableToken(address erc721Address) public {
+    DeployableTokenTable.set(erc721Address);
   }
 
   /**
@@ -433,7 +422,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
    */
   function _globalOfflineFuelRefund(uint256 entityId) internal view returns (uint256) {
     // Fetch the global deployable state data.
-    GlobalDeployableStateData memory globalData = GlobalDeployableState.get(entityId);
+    GlobalDeployableStateData memory globalData = GlobalDeployableState.get();
 
     if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
     if (DeployableState.getCurrentState(entityId) != State.ONLINE) return 0;

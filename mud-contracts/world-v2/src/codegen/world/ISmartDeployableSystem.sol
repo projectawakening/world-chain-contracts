@@ -31,21 +31,20 @@ interface ISmartDeployableSystem {
   function eveworld__unanchor(uint256 entityId) external;
 
   function eveworld__setGlobalDeployableState(
-    uint256 updatedBlockNumber,
     bool isPaused,
     uint256 lastGlobalOffline,
     uint256 lastGlobalOnline
   ) external;
 
-  function eveworld__setGlobalPause(uint256 updatedBlockNumber) external;
+  function eveworld__setGlobalPause() external;
 
-  function eveworld__setGlobalResume(uint256 updatedBlockNumber) external;
+  function eveworld__setGlobalResume() external;
 
-  function eveworld__setLastGlobalOffline(uint256 updatedBlockNumber, uint256 lastGlobalOffline) external;
+  function eveworld__setLastGlobalOffline(uint256 lastGlobalOffline) external;
 
-  function eveworld__setLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) external;
+  function eveworld__setLastGlobalOnline(uint256 lastGlobalOnline) external;
 
-  function eveworld__registerDeployableToken(uint256 entityId, address erc721Address) external;
+  function eveworld__registerDeployableToken(address erc721Address) external;
 
   function eveworld__setDeployableState(
     uint256 entityId,

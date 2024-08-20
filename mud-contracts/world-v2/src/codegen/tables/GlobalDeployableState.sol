@@ -29,8 +29,8 @@ library GlobalDeployableState {
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0041030001202000000000000000000000000000000000000000000000000000);
 
-  // Hex-encoded key schema of (uint256)
-  Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded key schema of ()
+  Schema constant _keySchema = Schema.wrap(0x0000000000000000000000000000000000000000000000000000000000000000);
   // Hex-encoded value schema of (bool, uint256, uint256)
   Schema constant _valueSchema = Schema.wrap(0x00410300601f1f00000000000000000000000000000000000000000000000000);
 
@@ -39,8 +39,7 @@ library GlobalDeployableState {
    * @return keyNames An array of strings with the names of key fields.
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
-    keyNames = new string[](1);
-    keyNames[0] = "updatedBlockNumber";
+    keyNames = new string[](0);
   }
 
   /**
@@ -71,9 +70,8 @@ library GlobalDeployableState {
   /**
    * @notice Get isPaused.
    */
-  function getIsPaused(uint256 updatedBlockNumber) internal view returns (bool isPaused) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function getIsPaused() internal view returns (bool isPaused) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -82,9 +80,8 @@ library GlobalDeployableState {
   /**
    * @notice Get isPaused.
    */
-  function _getIsPaused(uint256 updatedBlockNumber) internal view returns (bool isPaused) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _getIsPaused() internal view returns (bool isPaused) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -93,9 +90,8 @@ library GlobalDeployableState {
   /**
    * @notice Set isPaused.
    */
-  function setIsPaused(uint256 updatedBlockNumber, bool isPaused) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function setIsPaused(bool isPaused) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((isPaused)), _fieldLayout);
   }
@@ -103,9 +99,8 @@ library GlobalDeployableState {
   /**
    * @notice Set isPaused.
    */
-  function _setIsPaused(uint256 updatedBlockNumber, bool isPaused) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _setIsPaused(bool isPaused) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((isPaused)), _fieldLayout);
   }
@@ -113,9 +108,8 @@ library GlobalDeployableState {
   /**
    * @notice Get lastGlobalOffline.
    */
-  function getLastGlobalOffline(uint256 updatedBlockNumber) internal view returns (uint256 lastGlobalOffline) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function getLastGlobalOffline() internal view returns (uint256 lastGlobalOffline) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -124,9 +118,8 @@ library GlobalDeployableState {
   /**
    * @notice Get lastGlobalOffline.
    */
-  function _getLastGlobalOffline(uint256 updatedBlockNumber) internal view returns (uint256 lastGlobalOffline) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _getLastGlobalOffline() internal view returns (uint256 lastGlobalOffline) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -135,9 +128,8 @@ library GlobalDeployableState {
   /**
    * @notice Set lastGlobalOffline.
    */
-  function setLastGlobalOffline(uint256 updatedBlockNumber, uint256 lastGlobalOffline) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function setLastGlobalOffline(uint256 lastGlobalOffline) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((lastGlobalOffline)), _fieldLayout);
   }
@@ -145,9 +137,8 @@ library GlobalDeployableState {
   /**
    * @notice Set lastGlobalOffline.
    */
-  function _setLastGlobalOffline(uint256 updatedBlockNumber, uint256 lastGlobalOffline) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _setLastGlobalOffline(uint256 lastGlobalOffline) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((lastGlobalOffline)), _fieldLayout);
   }
@@ -155,9 +146,8 @@ library GlobalDeployableState {
   /**
    * @notice Get lastGlobalOnline.
    */
-  function getLastGlobalOnline(uint256 updatedBlockNumber) internal view returns (uint256 lastGlobalOnline) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function getLastGlobalOnline() internal view returns (uint256 lastGlobalOnline) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -166,9 +156,8 @@ library GlobalDeployableState {
   /**
    * @notice Get lastGlobalOnline.
    */
-  function _getLastGlobalOnline(uint256 updatedBlockNumber) internal view returns (uint256 lastGlobalOnline) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _getLastGlobalOnline() internal view returns (uint256 lastGlobalOnline) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -177,9 +166,8 @@ library GlobalDeployableState {
   /**
    * @notice Set lastGlobalOnline.
    */
-  function setLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function setLastGlobalOnline(uint256 lastGlobalOnline) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lastGlobalOnline)), _fieldLayout);
   }
@@ -187,9 +175,8 @@ library GlobalDeployableState {
   /**
    * @notice Set lastGlobalOnline.
    */
-  function _setLastGlobalOnline(uint256 updatedBlockNumber, uint256 lastGlobalOnline) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _setLastGlobalOnline(uint256 lastGlobalOnline) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lastGlobalOnline)), _fieldLayout);
   }
@@ -197,9 +184,8 @@ library GlobalDeployableState {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 updatedBlockNumber) internal view returns (GlobalDeployableStateData memory _table) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function get() internal view returns (GlobalDeployableStateData memory _table) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -212,9 +198,8 @@ library GlobalDeployableState {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 updatedBlockNumber) internal view returns (GlobalDeployableStateData memory _table) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _get() internal view returns (GlobalDeployableStateData memory _table) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -227,19 +212,13 @@ library GlobalDeployableState {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(
-    uint256 updatedBlockNumber,
-    bool isPaused,
-    uint256 lastGlobalOffline,
-    uint256 lastGlobalOnline
-  ) internal {
+  function set(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) internal {
     bytes memory _staticData = encodeStatic(isPaused, lastGlobalOffline, lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -247,19 +226,13 @@ library GlobalDeployableState {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(
-    uint256 updatedBlockNumber,
-    bool isPaused,
-    uint256 lastGlobalOffline,
-    uint256 lastGlobalOnline
-  ) internal {
+  function _set(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) internal {
     bytes memory _staticData = encodeStatic(isPaused, lastGlobalOffline, lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -267,14 +240,13 @@ library GlobalDeployableState {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 updatedBlockNumber, GlobalDeployableStateData memory _table) internal {
+  function set(GlobalDeployableStateData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.isPaused, _table.lastGlobalOffline, _table.lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -282,14 +254,13 @@ library GlobalDeployableState {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 updatedBlockNumber, GlobalDeployableStateData memory _table) internal {
+  function _set(GlobalDeployableStateData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.isPaused, _table.lastGlobalOffline, _table.lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -324,9 +295,8 @@ library GlobalDeployableState {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 updatedBlockNumber) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function deleteRecord() internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -334,9 +304,8 @@ library GlobalDeployableState {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 updatedBlockNumber) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function _deleteRecord() internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -375,9 +344,8 @@ library GlobalDeployableState {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 updatedBlockNumber) internal pure returns (bytes32[] memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(updatedBlockNumber));
+  function encodeKeyTuple() internal pure returns (bytes32[] memory) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
 
     return _keyTuple;
   }

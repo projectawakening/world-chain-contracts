@@ -105,12 +105,11 @@ export default defineWorld({
      */
     GlobalDeployableState: {
       schema: {
-        updatedBlockNumber: "uint256",
         isPaused: "bool",
         lastGlobalOffline: "uint256",
         lastGlobalOnline: "uint256",
       },
-      key: ["updatedBlockNumber"],
+      key: [],
     },
     /**
      * Used to store the current state of a deployable
@@ -133,10 +132,9 @@ export default defineWorld({
      */
     DeployableTokenTable: {
       schema: {
-        entityId: "uint256",
         erc721Address: "address",
       },
-      key: ["entityId"],
+      key: [],
     },
   },
 });
