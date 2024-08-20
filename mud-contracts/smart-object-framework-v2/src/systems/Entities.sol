@@ -9,7 +9,6 @@ import { Classes, ClassesData } from "../codegen/tables/Classes.sol";
 import { ClassSystemTagMap } from "../codegen/tables/ClassSystemTagMap.sol";
 import { ClassObjectMap, ClassObjectMapData } from "../codegen/tables/ClassObjectMap.sol";
 import { Objects } from "../codegen/tables/Objects.sol";
-import { IWorld } from "../codegen/world/IWorld.sol";
 
 import { Id, IdLib } from "../libs/Id.sol";
 import { ENTITY_CLASS, ENTITY_OBJECT } from "../types/entityTypes.sol";
@@ -17,6 +16,8 @@ import { TAG_SYSTEM } from "../types/tagTypes.sol";
 
 import { ITags } from "../interfaces/ITags.sol";
 import { IErrors } from "../interfaces/IErrors.sol";
+
+import { Utils as TagsUtils } from "./tags/Utils.sol";
 
 import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
 
@@ -46,7 +47,7 @@ contract Entities is SmartObjectSystem {
 
     Classes.set(classId, true, new bytes32[](0), new bytes32[](0));
 
-    IWorld(_world()).eveworld__setSystemTags(classId, systemTags);
+    IWorldKernel(_world()).call(TagsUtils.tagsSystemId(), abi.encodeCall(ITags.setSystemTags, (classId, systemTags)));
   }
 
   /**
@@ -69,7 +70,10 @@ contract Entities is SmartObjectSystem {
       systemTags[i] = Id.wrap(class.systemTags[i]);
     }
 
-    IWorld(_world()).eveworld__removeSystemTags(classId, systemTags);
+    IWorldKernel(_world()).call(
+      TagsUtils.tagsSystemId(),
+      abi.encodeCall(ITags.removeSystemTags, (classId, systemTags))
+    );
 
     Classes.deleteRecord(classId);
   }

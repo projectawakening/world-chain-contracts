@@ -14,8 +14,11 @@ import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/world
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 
+import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 import { Entities } from "../src/systems/Entities.sol";
+import { Utils as EntitiesUtils } from "../src/systems/entities/Utils.sol";
 import { Tags } from "../src/systems/Tags.sol";
+import { Utils as TagsUtils } from "../src/systems/tags/Utils.sol";
 import { TaggedSystemMock } from "./mocks/TaggedSystemMock.sol";
 import { TaggedSystemMock2 } from "./mocks/TaggedSystemMock2.sol";
 import { TaggedSystemMock3 } from "./mocks/TaggedSystemMock3.sol";
@@ -38,12 +41,10 @@ contract TagsTest is MudTest {
   TaggedSystemMock3 taggedSystemMock3;
   UnTaggedSystemMock unTaggedSystemMock;
 
-  bytes14 constant NAMESPACE = bytes14("eveworld");
+  bytes14 constant NAMESPACE = DEPLOYMENT_NAMESPACE;
   ResourceId constant NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, NAMESPACE)));
-  ResourceId constant ENTITIES_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Entities")))));
-  ResourceId constant TAGS_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Tags")))));
+  ResourceId ENTITIES_SYSTEM_ID = EntitiesUtils.entitiesSystemId();
+  ResourceId TAGS_SYSTEM_ID = TagsUtils.tagsSystemId();
   ResourceId constant TAGGED_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMock")))));
   ResourceId constant TAGGED_SYSTEM_ID_2 =

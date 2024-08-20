@@ -27,5 +27,10 @@ interface IErrors {
   error SystemNotRegistered(ResourceId systemId);
   error EntityAlreadyHasTag(Id entityId, Id tagId);
 
-  error InvalidSystemCall(Id entityId, ResourceId systemId);
+  error UnscopedSystemCall(Id entityId, ResourceId systemId);
+
+  error InvalidExecution(bytes32 executionId, bytes32 expectedExecutionId);
+  error InvalidCall(bytes32 callId, bytes32 expectedCallId);
+  error InvalidExecutionId(bytes32 executionId);
+  error InvalidCallId(bytes32 callId);
 }

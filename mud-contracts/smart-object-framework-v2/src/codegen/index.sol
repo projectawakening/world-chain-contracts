@@ -8,3 +8,6 @@ import { ClassSystemTagMap, ClassSystemTagMapData } from "./tables/ClassSystemTa
 import { ClassObjectMap, ClassObjectMapData } from "./tables/ClassObjectMap.sol";
 import { Objects, ObjectsData } from "./tables/Objects.sol";
 import { SystemTags, SystemTagsData } from "./tables/SystemTags.sol";
+import { Nonces, NoncesData } from "./tables/Nonces.sol";
+import { ExecutionContext, ExecutionContextData } from "./tables/ExecutionContext.sol";
+import { CallContext, CallContextData } from "./tables/CallContext.sol";
