@@ -334,6 +334,12 @@ importers:
 
   mud-contracts/world-v2:
     dependencies:
+      '@eveworld/common-constants':
+        specifier: 0.0.7
+        version: link:../common/constants
+      '@eveworld/smart-object-framework':
+        specifier: 0.0.7
+        version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.12
         version: 2.0.12

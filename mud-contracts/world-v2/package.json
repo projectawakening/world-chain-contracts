@@ -21,7 +21,9 @@
     "@latticexyz/schema-type": "2.0.12",
     "@latticexyz/store": "2.0.12",
     "@latticexyz/world": "2.0.12",
-    "@latticexyz/world-modules": "2.0.12"
+    "@latticexyz/world-modules": "2.0.12",
+    "@eveworld/smart-object-framework": "0.0.7",
+    "@eveworld/common-constants": "0.0.7"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",

@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { DeployableTokenTable } from "../../codegen/index.sol";
 import { Fuel, FuelData } from "../../codegen/index.sol";
+import { LocationData } from "../../codegen/tables/Location.sol";
+import { Location, LocationData } from "../../codegen/index.sol";
 
 import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
+import { Utils } from "./Utils.sol";
 
 /**
  * @title SmartDeployableSystem
@@ -19,6 +23,19 @@ import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
  */
 
 contract SmartDeployableSystem is System, SmartDeployableErrors {
+  using WorldResourceIdInstance for ResourceId;
+  using Utils for bytes14;
+
+  /**
+   * modifier to enforce deployable state changes can happen only when the game server is running
+   */
+  modifier onlyActive() {
+    if (GlobalDeployableState.getIsPaused(block.timestamp) == false) {
+      revert SmartDeployable_StateTransitionPaused();
+    }
+    _;
+  }
+
   /**
    * TODO: restrict this to entityIds that exist
    * @dev registers a new smart deployable (must be "NULL" state)
@@ -34,7 +51,7 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     uint256 fuelUnitVolumeInWei,
     uint256 fuelConsumptionPerMinuteInWei,
     uint256 fuelMaxCapacityInWei
-  ) public {
+  ) public onlyActive {
     State previousState = DeployableState.getCurrentState(entityId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -60,12 +77,14 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
       block.timestamp
     );
 
-    // set fuel data
     Fuel.set(entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp);
   }
 
-  // destroyDeployable
-  function destroyDeployable(uint256 entityId) public {
+  /**
+   * @dev destroys a smart deployable
+   * @param entityId entityId
+   */
+  function destroyDeployable(uint256 entityId) public onlyActive {
     State previousState = DeployableState.getCurrentState(entityId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -74,18 +93,66 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     DeployableState.setIsValid(entityId, false);
   }
 
-  // bringOnline
-  function bringOnline(uint256 entityId) public {
+  /**
+   * @dev brings a smart deployable online
+   * @param entityId entityId
+   */
+  function bringOnline(uint256 entityId) public onlyActive {
     State previousState = DeployableState.getCurrentState(entityId);
     if (previousState != State.ANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
+    _updateFuel(entityId);
+    uint256 currentFuel = Fuel.getFuelAmount(entityId);
+    if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);
+    Fuel.setFuelAmount(entityId, currentFuel - ONE_UNIT_IN_WEI); //forces it to tick
     _setDeployableState(entityId, previousState, State.ONLINE);
+    Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
-  // bringOffline
-  // anchor
-  // unanchor
+  /**
+   * @dev brings a smart deployable offline
+   * @param entityId entityId
+   */
+  function bringOffline(uint256 entityId) public onlyActive {
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (previousState != State.ONLINE) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+    _updateFuel(entityId);
+    _bringOffline(entityId, previousState);
+  }
+
+  /**
+   * @dev anchors a smart deployable
+   * @param entityId entityId
+   * @param locationData the location data of the object
+   */
+  function anchor(uint256 entityId, LocationData memory locationData) public onlyActive {
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (previousState != State.UNANCHORED) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+    _setDeployableState(entityId, previousState, State.ANCHORED);
+    Location.set(entityId, locationData);
+    DeployableState.setIsValid(entityId, true);
+    DeployableState.setAnchoredAt(entityId, block.timestamp);
+  }
+
+  /**
+   * @dev unanchors a smart deployable
+   * @param entityId entityId
+   */
+  function unanchor(uint256 entityId) public onlyActive {
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+
+    _setDeployableState(entityId, previousState, State.UNANCHORED);
+    Location.set(entityId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
+    DeployableState.setIsValid(entityId, false);
+  }
 
   /**
    * @dev sets the global deployable state
@@ -282,13 +349,27 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
    * INTERNAL FUEL METHODS *
    **************************/
 
-  // update fuel
-  function _updateFuel(uint256 entityId, uint256 fuelAmount) internal {
-    Fuel.setFuelAmount(entityId, fuelAmount);
+  /**
+   * @dev Deposit fuel into a smart deployable.
+   * @param entityId The entity ID to deposit fuel into.
+   */
+  function _updateFuel(uint256 entityId) internal {
+    uint256 currentFuel = _currentFuelAmount(entityId);
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (currentFuel == 0 && (previousState == State.ONLINE)) {
+      _bringOffline(entityId, previousState);
+      Fuel.setFuelAmount(entityId, 0);
+    } else {
+      Fuel.setFuelAmount(entityId, currentFuel);
+    }
     Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
-  // get current fuel amount
+  /**
+   * @dev Calculate the current fuel amount for a given entity.
+   * @param entityId The entity ID to calculate the fuel amount for.
+   * @return The current fuel amount.
+   */
   function _currentFuelAmount(uint256 entityId) internal view returns (uint256) {
     // Check if the entity is not online. If it's not online, return the fuel amount directly.
     if (DeployableState.getCurrentState(entityId) != State.ONLINE) {
@@ -316,7 +397,11 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     return fuelData.fuelAmount - fuelConsumed;
   }
 
-  // get global offline fuel refund
+  /**
+   * @dev Calculate the global offline fuel refund for a given entity.
+   * @param entityId The entity ID to calculate the refund for.
+   * @return The amount of fuel to refund.
+   */
   function _globalOfflineFuelRefund(uint256 entityId) internal view returns (uint256) {
     // Fetch the global deployable state data.
     GlobalDeployableStateData memory globalData = GlobalDeployableState.get(entityId);
