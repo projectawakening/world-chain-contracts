@@ -6,6 +6,13 @@ This repository contains the smart contract code supporting Project Awakening an
 
 # Quickstart
 
+Install necessary dependencies:
+
+```
+npm install -g pnpm
+pnpm install 
+``` 
+
 To start developing against the world and all of the CCP modules run:
 
 ```
