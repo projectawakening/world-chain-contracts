@@ -59,10 +59,21 @@ contract StaticDataTest is MudTest {
   }
 
   function testSetIsPausedGlobalState(uint256 updatedBlockNumber, bool isPaused) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setIsPausedGlobalState.selector;
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalPause.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setIsPausedGlobalState, (updatedBlockNumber, isPaused)));
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalPause, (updatedBlockNumber)));
+
+    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
+
+    assertEq(isPaused, globalDeployableState.isPaused);
+  }
+
+  function testSetIsResumedGlobalState(uint256 updatedBlockNumber, bool isPaused) public {
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalResume.selector;
+
+    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalResume, (updatedBlockNumber)));
 
     GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get(updatedBlockNumber);
 

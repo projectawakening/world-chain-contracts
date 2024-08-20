@@ -6,7 +6,9 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { DeployableTokenTable } from "../../codegen/index.sol";
-import { State } from "../../codegen/common.sol";
+import { State, SmartObjectData } from "./types.sol";
+
+import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 
 /**
  * @title SmartDeployableSystem
@@ -14,13 +16,48 @@ import { State } from "../../codegen/common.sol";
  * SmartDeployableSystem stores the deployable state of a smart object on-chain
  */
 
-contract SmartDeployableSystem is System {
+contract SmartDeployableSystem is System, SmartDeployableErrors {
   /**
+   * TODO: restrict this to entityIds that exist
    * @dev registers a new smart deployable (must be "NULL" state)
    * @param entityId entityId
-   * TODO: restrict this to entityIds that exist
+   * @param smartObjectData the data of the smart object
+   * @param fuelUnitVolumeInWei the fuel unit volume in wei
+   * @param fuelConsumptionPerMinuteInWei the fuel consumption per minute in wei
+   * @param fuelMaxCapacityInWei the fuel max capacity in wei
    */
-  function registerDeployable(uint256 entityId) public {}
+  function registerDeployable(
+    uint256 entityId,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolumeInWei,
+    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelMaxCapacityInWei
+  ) public {
+    State previousState = DeployableState.getCurrentState(entityId);
+    if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
+      revert SmartDeployable_IncorrectState(entityId, previousState);
+    }
+
+    if (fuelConsumptionPerMinuteInWei < 1) {
+      revert SmartDeployable_InvalidFuelConsumptionInterval(entityId);
+    }
+
+    if (previousState == State.NULL) {
+      // mint erc721 token to owner
+      // set uri
+    }
+
+    DeployableState.set(
+      entityId,
+      block.timestamp,
+      State.NULL,
+      State.UNANCHORED,
+      true,
+      0,
+      block.number,
+      block.timestamp
+    );
+  }
 
   // destroyDeployable
   // bringOnline
