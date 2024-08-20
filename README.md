@@ -23,6 +23,17 @@ cast send $DEV_WORLD_ADDRESS --rpc-url http://localhost:8545 --private-key $DEV_
 
 In the example above the method being invoked belongs to a system in the root namespace. To invoke a method in a different namespace i.e. the non-root namespace. The method name should be prefixed with the namespace name and an underscore e.g. `namespaced_createSmartStorageUnit`.
 
+
+# Run tests 
+Navigate to the `world-v2` folder and run test with the following command 
+
+```
+pnpm run test
+
+# To show Foundry logs for tests, run: 
+pnpm run test --forgeOptions=-vvvv
+```
+
 # Running with docker
 
 You can also run a deployer image for the Awakening world against a local node to replicate the world in a local environment.

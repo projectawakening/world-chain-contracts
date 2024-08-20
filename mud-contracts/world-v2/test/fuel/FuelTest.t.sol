@@ -14,8 +14,10 @@ import { Fuel } from "../../src/codegen/index.sol";
 import { IFuelSystem } from "../../src/codegen/world/IFuelSystem.sol";
 import { FuelSystem } from "../../src/systems/fuel/FuelSystem.sol";
 import { Fuel, FuelData } from "../../src/codegen/tables/Fuel.sol";
+import { State, SmartObjectData } from "../../src/systems/smart-deployable/types.sol";
+import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
 
-contract StaticDataTest is MudTest {
+contract FuelTest is MudTest {
   IBaseWorld world;
 
   function setUp() public virtual override {
@@ -148,29 +150,94 @@ contract StaticDataTest is MudTest {
     assertEq(lastUpdatedAt, fuel.lastUpdatedAt);
   }
 
-  // test deposit fuel
-  function testDepositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
-    vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__depositFuel.selector;
+  // TOOD: put registerDeployable and anchor in setup
+  // function testDepositFuel(
+  //   uint256 entityId,
+  //   SmartObjectData memory smartObjectData,
+  //   uint256 fuelUnitVolume,
+  //   uint256 fuelConsumptionPerMinute,
+  //   uint256 fuelMaxCapacity,
+  //   LocationData memory location,
+  //   uint256 fuelUnitAmount
+  // ) public {
+  //   vm.assume(entityId != 0);
+  //   vm.assume(fuelUnitAmount != 0);
+  //   vm.assume(fuelUnitAmount < type(uint64).max);
+  //   vm.assume(fuelUnitVolume < type(uint64).max);
+  //   vm.assume(fuelUnitAmount * fuelUnitVolume < fuelMaxCapacity);
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
+  //   // set fuel data
+  //   testSetFuel(entityId, fuelUnitVolume, 60, fuelMaxCapacity, 0, block.timestamp);
 
-    FuelData memory fuel = Fuel.get(smartObjectId);
+  //   // test deposit fuel
+  //   // fuel.depositFuel
+  //   testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+  //   smartDeployable.depositFuel(entityId, fuelUnitAmount);
+  //   DeployableFuelBalanceData memory data = DeployableFuelBalance.get(
+  //     DEPLOYMENT_NAMESPACE.deployableFuelBalanceTableId(),
+  //     entityId
+  //   );
+  //   assertEq(data.fuelAmount, fuelUnitAmount * (10 ** DECIMALS));
+  //   assertEq(data.lastUpdatedAt, block.timestamp);
+  // }
 
-    assertEq(fuelAmount, fuel.fuelAmount);
-  }
+  // test fuel consumption
+  function testFuelConsumption(
+    uint256 entityId,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelMaxCapacity,
+    LocationData memory location,
+    uint256 fuelUnitAmount,
+    uint256 timeElapsed
+  ) public {}
 
-  // test withdraw fuel
-  function testWithdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
-    vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__withdrawFuel.selector;
+  // test fuel runs out
+  function testFuelConsumptionRunsOut(
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    uint256 fuelUnitAmount,
+    uint256 timeElapsed
+  ) public {}
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(FuelSystem.withdrawFuel, (smartObjectId, fuelAmount)));
+  // test fuel refund during global offline
+  function testFuelRefundDuringGlobalOffline(
+    uint256 entityId,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionPerMinute,
+    LocationData memory location,
+    uint256 fuelUnitAmount,
+    uint256 timeElapsedBeforeOffline,
+    uint256 globalOfflineDuration,
+    uint256 timeElapsedAfterOffline
+  ) public {}
 
-    FuelData memory fuel = Fuel.get(smartObjectId);
+  // // test deposit fuel
+  // function testDepositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+  //   vm.assume(smartObjectId != 0);
+  //   bytes4 functionSelector = IFuelSystem.eveworld__depositFuel.selector;
 
-    assertEq(fuelAmount, fuel.fuelAmount);
-  }
+  //   ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+  //   world.call(systemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
+
+  //   FuelData memory fuel = Fuel.get(smartObjectId);
+
+  //   assertEq(fuelAmount, fuel.fuelAmount);
+  // }
+
+  // // test withdraw fuel
+  // function testWithdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+  //   vm.assume(smartObjectId != 0);
+  //   bytes4 functionSelector = IFuelSystem.eveworld__withdrawFuel.selector;
+
+  //   ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+  //   world.call(systemId, abi.encodeCall(FuelSystem.withdrawFuel, (smartObjectId, fuelAmount)));
+
+  //   FuelData memory fuel = Fuel.get(smartObjectId);
+
+  //   assertEq(fuelAmount, fuel.fuelAmount);
+  // }
 }

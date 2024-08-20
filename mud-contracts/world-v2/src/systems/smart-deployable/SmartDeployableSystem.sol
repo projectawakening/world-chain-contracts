@@ -52,6 +52,8 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     uint256 fuelConsumptionPerMinuteInWei,
     uint256 fuelMaxCapacityInWei
   ) public onlyActive {
+    // create entity if it doesn't exist
+
     State previousState = DeployableState.getCurrentState(entityId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -150,6 +152,7 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
     }
 
     _setDeployableState(entityId, previousState, State.UNANCHORED);
+
     Location.set(entityId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
     DeployableState.setIsValid(entityId, false);
   }
@@ -176,7 +179,7 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
    * TODO: limit to admin use only
    */
   function setGlobalPause(uint256 updatedBlockNumber) public {
-    GlobalDeployableState.setIsPaused(updatedBlockNumber, false);
+    GlobalDeployableState.setIsPaused(updatedBlockNumber, true);
   }
 
   /**
@@ -185,7 +188,7 @@ contract SmartDeployableSystem is System, SmartDeployableErrors {
    * TODO: limit to admin use only
    */
   function setGlobalResume(uint256 updatedBlockNumber) public {
-    GlobalDeployableState.setIsPaused(updatedBlockNumber, true);
+    GlobalDeployableState.setIsPaused(updatedBlockNumber, false);
   }
 
   /**
