@@ -6,10 +6,12 @@ pragma solidity >=0.8.24;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
+import { IERC721System } from "./IERC721System.sol";
 import { IEveSystem } from "./IEveSystem.sol";
 import { IFuelSystem } from "./IFuelSystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartDeployableSystem } from "./ISmartDeployableSystem.sol";
+import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
 import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
 /**
@@ -26,5 +28,7 @@ interface IWorld is
   IFuelSystem,
   ILocationSystem,
   ISmartDeployableSystem,
+  IERC721System,
+  ISmartCharacterSystem,
   IStaticDataSystem
 {}
