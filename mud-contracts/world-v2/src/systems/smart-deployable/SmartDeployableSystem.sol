@@ -12,15 +12,19 @@ import { Fuel, FuelData } from "../../codegen/index.sol";
 import { LocationSystem } from "../location/LocationSystem.sol";
 import { LocationData } from "../../codegen/tables/Location.sol";
 import { Location, LocationData } from "../../codegen/index.sol";
+import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
+import { StaticDataSystem } from "../static-data/StaticDataSystem.sol";
+
 import { EveSystem } from "../EveSystem.sol";
 
 import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
-import { Utils } from "./Utils.sol";
 
+import { Utils } from "./Utils.sol";
 import { Utils as LocationUtils } from "../location/Utils.sol";
 import { Utils as FuelUtils } from "../fuel/Utils.sol";
+import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 
 /**
  * @title SmartDeployableSystem
@@ -32,6 +36,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
   using WorldResourceIdInstance for ResourceId;
   using LocationUtils for bytes14;
   using FuelUtils for bytes14;
+  using StaticDataUtils for bytes14;
 
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
@@ -71,10 +76,10 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     }
 
     if (previousState == State.NULL) {
-      // IERC721Mintable(DeployableTokenTable.getErc721Address()).mint(smartObjectData.owner, entityId);
-      // IERC721Mintable(DeployableTokenTable.getErc721Address()).setCid(entityId, smartObjectData.tokenURI);
-      // TODO: mint erc721 token to owner
-      // TODO: set uri
+      IERC721Mintable(DeployableTokenTable.getErc721Address()).mint(smartObjectData.owner, entityId);
+
+      ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+      world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
     }
 
     DeployableState.set(

@@ -10,8 +10,8 @@ import { IERC721System } from "./IERC721System.sol";
 import { IEveSystem } from "./IEveSystem.sol";
 import { IFuelSystem } from "./IFuelSystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
-import { ISmartDeployableSystem } from "./ISmartDeployableSystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
+import { ISmartDeployableSystem } from "./ISmartDeployableSystem.sol";
 import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
 /**
@@ -24,11 +24,11 @@ import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 interface IWorld is
   IBaseWorld,
   IEntityRecordSystem,
+  IERC721System,
   IEveSystem,
   IFuelSystem,
   ILocationSystem,
-  ISmartDeployableSystem,
-  IERC721System,
   ISmartCharacterSystem,
+  ISmartDeployableSystem,
   IStaticDataSystem
 {}
