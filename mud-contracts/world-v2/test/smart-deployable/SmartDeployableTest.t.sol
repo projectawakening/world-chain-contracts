@@ -9,6 +9,7 @@ import { getKeysWithValue } from "@latticexyz/world-modules/src/modules/keyswith
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { State, SmartObjectData } from "../../src/systems/smart-deployable/types.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { State } from "../../src/codegen/common.sol";
@@ -16,13 +17,15 @@ import { GlobalDeployableState, DeployableState, DeployableTokenTable } from "..
 import { ISmartDeployableSystem } from "../../src/codegen/world/ISmartDeployableSystem.sol";
 import { SmartDeployableSystem } from "../../src/systems/smart-deployable/SmartDeployableSystem.sol";
 import { GlobalDeployableStateData } from "../../src/codegen/tables/GlobalDeployableState.sol";
-import { DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
+import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
 
 import { Utils as SmartDeployableUtils } from "../../src/systems/smart-deployable/Utils.sol";
 
 contract SmartDeployableTest is MudTest {
   IBaseWorld world;
+  SmartDeployableSystem smartDeployable;
+
   using SmartDeployableUtils for bytes14;
 
   function setUp() public virtual override {
@@ -46,7 +49,22 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
-  ) public {}
+  ) public {
+    vm.assume(entityId != 0);
+    vm.assume(fuelUnitVolume != 0);
+    vm.assume(fuelConsumptionPerMinute != 0);
+    vm.assume(fuelMaxCapacity != 0);
+
+    ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
+
+    world.call(
+      systemId,
+      abi.encodeCall(
+        SmartDeployableSystem.registerDeployable,
+        (entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity)
+      )
+    );
+  }
 
   // test anchor
   function testAnchor(

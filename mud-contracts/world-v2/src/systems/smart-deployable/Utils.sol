@@ -15,25 +15,43 @@ import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME, DEPLOYABLE_TOKEN_
 
 library Utils {
   function globalStateTableId() internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: DEPLOYMENT_NAMESPACE, name: GLOBAL_STATE_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: DEPLOYMENT_NAMESPACE,
+        name: GLOBAL_STATE_TABLE_NAME
+      });
   }
 
   function deployableStateTableId() internal pure returns (ResourceId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: DEPLOYMENT_NAMESPACE, name: DEPLOYABLE_STATE_TABLE_NAME });
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: DEPLOYMENT_NAMESPACE,
+        name: DEPLOYABLE_STATE_TABLE_NAME
+      });
   }
 
   function deployableTokenTableId() internal pure returns (ResourceId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: DEPLOYMENT_NAMESPACE, name: DEPLOYABLE_TOKEN_TABLE_NAME });
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: DEPLOYMENT_NAMESPACE,
+        name: DEPLOYABLE_TOKEN_TABLE_NAME
+      });
   }
 
   function deployableFuelBalanceTableId() internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: DEPLOYMENT_NAMESPACE, name: FUEL_BALANCE_TABLE_NAME });
+    return
+      WorldResourceIdLib.encode({
+        typeId: RESOURCE_TABLE,
+        namespace: DEPLOYMENT_NAMESPACE,
+        name: FUEL_BALANCE_TABLE_NAME
+      });
   }
 
   function smartDeployableSystemId() public pure returns (ResourceId systemId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartCharacterSy" });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartDeploySys" });
   }
 }
