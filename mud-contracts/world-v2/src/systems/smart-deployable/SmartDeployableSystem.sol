@@ -71,6 +71,8 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     }
 
     if (previousState == State.NULL) {
+      // IERC721Mintable(DeployableTokenTable.getErc721Address()).mint(smartObjectData.owner, entityId);
+      // IERC721Mintable(DeployableTokenTable.getErc721Address()).setCid(entityId, smartObjectData.tokenURI);
       // TODO: mint erc721 token to owner
       // TODO: set uri
     }
