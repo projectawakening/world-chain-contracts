@@ -8,11 +8,14 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 
 import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
 
+import "forge-std/console.sol";
+
 /**
  * @title Utils to calculate systemId by namespace and system name
  */
 library Utils {
-  function staticDataSystemId() public pure returns (ResourceId systemId) {
+  function staticDataSystemId() public view returns (ResourceId systemId) {
+    console.log("utils: static data");
     return
       WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "StaticDataSystem" });
   }

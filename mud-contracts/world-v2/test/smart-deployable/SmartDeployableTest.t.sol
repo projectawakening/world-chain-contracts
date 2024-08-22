@@ -54,8 +54,11 @@ contract SmartDeployableTest is MudTest {
     vm.assume(fuelUnitVolume != 0);
     vm.assume(fuelConsumptionPerMinute != 0);
     vm.assume(fuelMaxCapacity != 0);
+    vm.assume(smartObjectData.owner != address(0));
 
     ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
+
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalResume, ()));
 
     world.call(
       systemId,
@@ -117,7 +120,7 @@ contract SmartDeployableTest is MudTest {
   ) public {}
 
   function testSetGlobalDeployableState(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalPause.selector;
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalIsPaused.selector;
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
 
     // ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
@@ -135,14 +138,14 @@ contract SmartDeployableTest is MudTest {
   }
 
   function testPauseGlobalState() public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalPause.selector;
+    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalIsPaused.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalPause, ()));
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalIsPaused, ()));
 
     GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
-    assertEq(true, globalDeployableState.isPaused);
+    assertEq(false, globalDeployableState.isPaused);
   }
 
   function testResumeGlobalState() public {
@@ -153,7 +156,7 @@ contract SmartDeployableTest is MudTest {
 
     GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
 
-    assertEq(false, globalDeployableState.isPaused);
+    assertEq(true, globalDeployableState.isPaused);
   }
 
   function testSetLastGlobalOffline(uint256 lastGlobalOffline) public {

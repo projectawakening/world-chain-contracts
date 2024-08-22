@@ -36,7 +36,7 @@ interface ISmartDeployableSystem {
     uint256 lastGlobalOnline
   ) external;
 
-  function eveworld__setGlobalPause() external;
+  function eveworld__setGlobalIsPaused() external;
 
   function eveworld__setGlobalResume() external;
 

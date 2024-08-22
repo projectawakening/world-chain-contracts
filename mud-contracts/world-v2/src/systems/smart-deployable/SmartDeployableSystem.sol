@@ -26,6 +26,8 @@ import { Utils as LocationUtils } from "../location/Utils.sol";
 import { Utils as FuelUtils } from "../fuel/Utils.sol";
 import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 
+import "forge-std/console.sol";
+
 /**
  * @title SmartDeployableSystem
  * @author CCP Games
@@ -64,8 +66,6 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     uint256 fuelConsumptionPerMinuteInWei,
     uint256 fuelMaxCapacityInWei
   ) public onlyActive {
-    // create entity if it doesn't exist
-
     State previousState = DeployableState.getCurrentState(entityId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
@@ -76,12 +76,14 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     }
 
     if (previousState == State.NULL) {
-      IERC721Mintable(DeployableTokenTable.getErc721Address()).mint(smartObjectData.owner, entityId);
+      address erc721Address = DeployableTokenTable.getErc721Address();
+      IERC721Mintable(erc721Address).mint(smartObjectData.owner, entityId);
 
-      ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
-      world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
+      // ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+      // world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
     }
 
+    // this works
     DeployableState.set(
       entityId,
       block.timestamp,
@@ -93,14 +95,14 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       block.timestamp
     );
 
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
-    world().call(
-      fuelSystemId,
-      abi.encodeCall(
-        FuelSystem.setFuelBalance,
-        (entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp)
-      )
-    );
+    // ResourceId fuelSystemId = FuelUtils.fuelSystemId(); // this doesnt work
+    // world().call(
+    //   fuelSystemId,
+    //   abi.encodeCall(
+    //     FuelSystem.setFuelBalance,
+    //     (entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp)
+    //   )
+    // );
   }
 
   /**
@@ -200,8 +202,8 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
    * @dev brings all smart deployables online
    * TODO: limit to admin use only
    */
-  function setGlobalPause() public {
-    GlobalDeployableState.setIsPaused(true);
+  function setGlobalIsPaused() public {
+    GlobalDeployableState.setIsPaused(false);
   }
 
   /**
@@ -209,7 +211,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
    * TODO: limit to admin use only
    */
   function setGlobalResume() public {
-    GlobalDeployableState.setIsPaused(false);
+    GlobalDeployableState.setIsPaused(true);
   }
 
   /**

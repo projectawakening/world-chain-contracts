@@ -14,44 +14,8 @@ import { SMART_DEPLOYABLE_SYSTEM_NAME } from "@eveworld/common-constants/src/con
 import { GLOBAL_STATE_TABLE_NAME, DEPLOYABLE_STATE_TABLE_NAME, DEPLOYABLE_TOKEN_TABLE_NAME, FUEL_BALANCE_TABLE_NAME } from "./constants.sol";
 
 library Utils {
-  function globalStateTableId() internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: DEPLOYMENT_NAMESPACE,
-        name: GLOBAL_STATE_TABLE_NAME
-      });
-  }
-
-  function deployableStateTableId() internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: DEPLOYMENT_NAMESPACE,
-        name: DEPLOYABLE_STATE_TABLE_NAME
-      });
-  }
-
-  function deployableTokenTableId() internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: DEPLOYMENT_NAMESPACE,
-        name: DEPLOYABLE_TOKEN_TABLE_NAME
-      });
-  }
-
-  function deployableFuelBalanceTableId() internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: DEPLOYMENT_NAMESPACE,
-        name: FUEL_BALANCE_TABLE_NAME
-      });
-  }
-
   function smartDeployableSystemId() public pure returns (ResourceId systemId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartDeploySys" });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartDeployableS" });
   }
 }
