@@ -17,8 +17,11 @@ import { Fuel, FuelData } from "../../src/codegen/tables/Fuel.sol";
 import { State, SmartObjectData } from "../../src/systems/smart-deployable/types.sol";
 import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
 
+import { Utils as FuelUtils } from "../../src/systems/fuel/Utils.sol";
+
 contract FuelTest is MudTest {
   IBaseWorld world;
+  using FuelUtils for bytes14;
 
   function setUp() public virtual override {
     super.setUp();
@@ -43,9 +46,9 @@ contract FuelTest is MudTest {
     uint256 lastUpdatedAt
   ) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setFuelBalance.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
+
     world.call(
       systemId,
       abi.encodeCall(
@@ -68,9 +71,8 @@ contract FuelTest is MudTest {
     uint256 lastUpdatedAt
   ) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setFuelBalance.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(
       systemId,
       abi.encodeCall(
@@ -86,9 +88,8 @@ contract FuelTest is MudTest {
 
   function testSetFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setFuelUnitVolume.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(systemId, abi.encodeCall(FuelSystem.setFuelUnitVolume, (smartObjectId, fuelUnitVolume)));
 
     FuelData memory fuel = Fuel.get(smartObjectId);
@@ -101,9 +102,8 @@ contract FuelTest is MudTest {
     uint256 fuelConsumptionIntervalInSeconds
   ) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setFuelConsumptionIntervalInSeconds.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(
       systemId,
       abi.encodeCall(FuelSystem.setFuelConsumptionIntervalInSeconds, (smartObjectId, fuelConsumptionIntervalInSeconds))
@@ -116,9 +116,8 @@ contract FuelTest is MudTest {
 
   function testSetFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setFuelMaxCapacity.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(systemId, abi.encodeCall(FuelSystem.setFuelMaxCapacity, (smartObjectId, fuelMaxCapacity)));
 
     FuelData memory fuel = Fuel.get(smartObjectId);
@@ -128,9 +127,8 @@ contract FuelTest is MudTest {
 
   function testSetFuelAmount(uint256 smartObjectId, uint256 fuelAmount) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setFuelAmount.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(systemId, abi.encodeCall(FuelSystem.setFuelAmount, (smartObjectId, fuelAmount)));
 
     FuelData memory fuel = Fuel.get(smartObjectId);
@@ -140,9 +138,8 @@ contract FuelTest is MudTest {
 
   function testSetLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = IFuelSystem.eveworld__setLastUpdatedAt.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(systemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (smartObjectId, lastUpdatedAt)));
 
     FuelData memory fuel = Fuel.get(smartObjectId);
@@ -218,9 +215,7 @@ contract FuelTest is MudTest {
   // // test deposit fuel
   // function testDepositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
   //   vm.assume(smartObjectId != 0);
-  //   bytes4 functionSelector = IFuelSystem.eveworld__depositFuel.selector;
-
-  //   ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+  //    ResourceId systemId = FuelUtils.fuelSystemId();
   //   world.call(systemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
 
   //   FuelData memory fuel = Fuel.get(smartObjectId);
@@ -231,9 +226,7 @@ contract FuelTest is MudTest {
   // // test withdraw fuel
   // function testWithdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
   //   vm.assume(smartObjectId != 0);
-  //   bytes4 functionSelector = IFuelSystem.eveworld__withdrawFuel.selector;
-
-  //   ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+  //    ResourceId systemId = FuelUtils.fuelSystemId() ;
   //   world.call(systemId, abi.encodeCall(FuelSystem.withdrawFuel, (smartObjectId, fuelAmount)));
 
   //   FuelData memory fuel = Fuel.get(smartObjectId);

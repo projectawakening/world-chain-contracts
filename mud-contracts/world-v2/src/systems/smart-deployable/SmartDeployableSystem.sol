@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
@@ -14,14 +14,13 @@ import { LocationData } from "../../codegen/tables/Location.sol";
 import { Location, LocationData } from "../../codegen/index.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 import { StaticDataSystem } from "../static-data/StaticDataSystem.sol";
-
 import { EveSystem } from "../EveSystem.sol";
 
 import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
 
-import { Utils } from "./Utils.sol";
+// import { Utils } from "./Utils.sol";
 import { Utils as LocationUtils } from "../location/Utils.sol";
 import { Utils as FuelUtils } from "../fuel/Utils.sol";
 import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
@@ -35,7 +34,6 @@ import "forge-std/console.sol";
  */
 
 contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
-  using WorldResourceIdInstance for ResourceId;
   using LocationUtils for bytes14;
   using FuelUtils for bytes14;
   using StaticDataUtils for bytes14;
@@ -79,8 +77,8 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       address erc721Address = DeployableTokenTable.getErc721Address();
       IERC721Mintable(erc721Address).mint(smartObjectData.owner, entityId);
 
-      // ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
-      // world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
+      ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+      world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
     }
 
     // this works
