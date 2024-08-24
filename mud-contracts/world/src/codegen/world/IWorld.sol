@@ -13,6 +13,7 @@ import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartCharacter } from "./ISmartCharacter.sol";
 import { ISmartDeployable } from "./ISmartDeployable.sol";
 import { ISmartStorageUnit } from "./ISmartStorageUnit.sol";
+import { ISmartTurret } from "./ISmartTurret.sol";
 import { IStaticData } from "./IStaticData.sol";
 
 /**
@@ -31,6 +32,7 @@ interface IWorld is
   ISmartCharacter,
   ISmartDeployable,
   ISmartStorageUnit,
+  ISmartTurret,
   IStaticData
 {
 

@@ -8,7 +8,8 @@
     "LOCATION_DEPLOYMENT_NAMESPACE": "eveworld",
     "SMART_CHARACTER_DEPLOYMENT": "eveworld",
     "EVE_ERC721_PUPPET_DEPLOYMENT": "eveworld",
-    "SMART_DEPLOYABLE_DEPLOYMENT": "eveworld"
+    "SMART_DEPLOYABLE_DEPLOYMENT": "eveworld",
+    "SMART_TURRET_DEPLOYMENT": "eveworld"
   },
   "systemName": {
     "ENTITY_CORE": "EntityCore",
@@ -22,6 +23,7 @@
     "SMART_STORAGE_UNIT": "SmartStorageUnit",
     "INVENTORY": "Inventory",
     "EPHEMERAL_INVENTORY": "EphemeralInv",
-    "INVENTORY_INTERACT": "InventoryInterac"
+    "INVENTORY_INTERACT": "InventoryInterac",
+    "SMART_TURRET": "SmartTurret"
   }
 }

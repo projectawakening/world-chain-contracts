@@ -43,6 +43,10 @@ export default mudConfig({
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
     },
+    SmartTurret: {
+      name: constants.systemName.SMART_TURRET,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
@@ -326,6 +330,19 @@ export default mudConfig({
       },
       tableIdArgument: true,
       // offchainOnly: true,
+    },
+
+    /*************************
+     * SMART Turret MODULE *
+     *************************/
+    SmartTurretConfigTable: {
+      keySchema: {
+        smartTurretId: "uint256",
+      },
+      valueSchema: {
+        systemId: "ResourceId",
+      },
+      tableIdArgument: true,
     },
 
     /************************

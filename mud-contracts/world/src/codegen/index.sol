@@ -21,6 +21,7 @@ import { EphemeralInvCapacityTable } from "./tables/EphemeralInvCapacityTable.so
 import { EphemeralInvTable, EphemeralInvTableData } from "./tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "./tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable, ItemTransferOffchainTableData } from "./tables/ItemTransferOffchainTable.sol";
+import { SmartTurretConfigTable } from "./tables/SmartTurretConfigTable.sol";
 import { Balances } from "./tables/Balances.sol";
 import { TokenURI } from "./tables/TokenURI.sol";
 import { Owners } from "./tables/Owners.sol";
