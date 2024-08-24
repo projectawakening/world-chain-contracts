@@ -101,7 +101,6 @@ contract SmartDeployableTest is MudTest {
     ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.anchor, (entityId, location)));
 
-    ResourceId locationSystemId = LocationUtils.locationSystemId();
     LocationData memory tableData = Location.get(entityId);
 
     assertEq(location.solarSystemId, tableData.solarSystemId);
@@ -130,9 +129,9 @@ contract SmartDeployableTest is MudTest {
     world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (entityId, 1)));
 
     world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
+    assertEq(uint8(State.ONLINE), uint8(DeployableState.getCurrentState(entityId)));
   }
 
-  // test bringoffline
   function testBringOffline(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
@@ -140,9 +139,14 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationData memory location
-  ) public {}
+  ) public {
+    vm.assume(entityId != 0);
+    testBringOnline(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOffline, (entityId)));
+    assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(entityId)));
+  }
 
-  // test unanchor
   function testUnanchor(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
@@ -150,9 +154,16 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationData memory location
-  ) public {}
+  ) public {
+    vm.assume(entityId != 0);
+    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
 
-  // test destroyDeployable
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.unanchor, (entityId)));
+
+    assertEq(uint8(State.UNANCHORED), uint8(DeployableState.getCurrentState(entityId)));
+  }
+
   function testDestroyDeployable(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
@@ -160,5 +171,13 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationData memory location
-  ) public {}
+  ) public {
+    vm.assume(entityId != 0);
+    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.destroyDeployable, (entityId)));
+
+    assertEq(uint8(State.DESTROYED), uint8(DeployableState.getCurrentState(entityId)));
+  }
 }
