@@ -3,6 +3,7 @@ pragma solidity >=0.8.24;
 
 import { System } from "@latticexyz/world/src/System.sol";
 import { Fuel, FuelData } from "../../codegen/index.sol";
+import { State } from "../../codegen/common.sol";
 
 /**
  * @title FuelSystem
@@ -20,7 +21,7 @@ contract FuelSystem is System {
    * @param lastUpdatedAt the last time the fuel was updated
    *
    */
-  function setFuelBalance(
+  function configureFuelParameters(
     uint256 entityId,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
@@ -65,15 +66,7 @@ contract FuelSystem is System {
    */
   function setFuelAmount(uint256 entityId, uint256 fuelAmount) public {
     Fuel.setFuelAmount(entityId, fuelAmount);
-  }
-
-  /**
-   * @dev sets the last time the fuel was updated
-   * @param entityId entityId of the deployable
-   * @param lastUpdatedAt the last time the fuel was updated
-   */
-  function setLastUpdatedAt(uint256 entityId, uint256 lastUpdatedAt) public {
-    Fuel.setLastUpdatedAt(entityId, lastUpdatedAt);
+    Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
   /**

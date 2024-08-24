@@ -109,8 +109,8 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     world().call(
       fuelSystemId,
       abi.encodeCall(
-        FuelSystem.setFuelBalance,
-        (entityId, fuelUnitVolumeInWei, 60, fuelConsumptionIntervalInSeconds, 0, block.timestamp)
+        FuelSystem.configureFuelParameters,
+        (entityId, fuelUnitVolumeInWei, fuelConsumptionIntervalInSeconds, fuelMaxCapacityInWei, 0, block.timestamp)
       )
     );
   }
@@ -137,13 +137,14 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     if (previousState != State.ANCHORED) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
+
     _updateFuel(entityId);
+
     uint256 currentFuel = Fuel.getFuelAmount(entityId);
     if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);
 
     ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world().call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelAmount, (entityId, currentFuel - ONE_UNIT_IN_WEI)));
-    world().call(fuelSystemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (entityId, block.timestamp)));
 
     _setDeployableState(entityId, previousState, State.ONLINE);
   }
@@ -157,6 +158,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     if (previousState != State.ONLINE) {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
+
     _updateFuel(entityId);
     _bringOffline(entityId, previousState);
   }
@@ -218,71 +220,6 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     GlobalDeployableState.setLastGlobalOnline(block.timestamp);
   }
 
-
-
-  /**
-   * @dev sets the time the object was created
-   * @param entityId entityId of the in-game object
-   * @param createdAt the time the object was created
-   */
-  function setCreatedAt(uint256 entityId, uint256 createdAt) public {
-    DeployableState.setCreatedAt(entityId, createdAt);
-  }
-
-  /**
-   * @dev sets the previous state of the object
-   * @param entityId entityId of the in-game object
-   * @param previousState the previous state of the object
-   */
-  function setPreviousState(uint256 entityId, State previousState) public {
-    DeployableState.setPreviousState(entityId, previousState);
-  }
-
-  /**
-   * @dev sets the current state of the object
-   * @param entityId entityId of the in-game object
-   * @param currentState the current state of the object
-   */
-  function setCurrentState(uint256 entityId, State currentState) public {
-    DeployableState.setCurrentState(entityId, currentState);
-  }
-
-  /**
-   * @dev sets the validity of the object
-   * @param entityId entityId of the in-game object
-   * @param isValid the validity of the object
-   */
-  function setIsValid(uint256 entityId, bool isValid) public {
-    DeployableState.setIsValid(entityId, isValid);
-  }
-
-  /**
-   * @dev sets the time the object was anchored
-   * @param entityId entityId of the in-game object
-   * @param anchoredAt the time the object was anchored
-   */
-  function setAnchoredAt(uint256 entityId, uint256 anchoredAt) public {
-    DeployableState.setAnchoredAt(entityId, anchoredAt);
-  }
-
-  /**
-   * @dev sets the block number at which the state was updated
-   * @param entityId entityId of the in-game object
-   * @param updatedBlockNumber the block number at which the state was updated
-   */
-  function setUpdatedBlockNumber(uint256 entityId, uint256 updatedBlockNumber) public {
-    DeployableState.setUpdatedBlockNumber(entityId, updatedBlockNumber);
-  }
-
-  /**
-   * @dev sets the time at which the state was updated
-   * @param entityId entityId of the in-game object
-   * @param updatedBlockTime the time at which the state was updated
-   */
-  function setUpdatedBlockTime(uint256 entityId, uint256 updatedBlockTime) public {
-    DeployableState.setUpdatedBlockTime(entityId, updatedBlockTime);
-  }
-
   /*******************************
    * INTERNAL DEPLOYABLE METHODS *
    *******************************/
@@ -336,8 +273,6 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     } else {
       world().call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelAmount, (entityId, currentFuel)));
     }
-
-    world().call(fuelSystemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (entityId, block.timestamp)));
   }
 
   /**

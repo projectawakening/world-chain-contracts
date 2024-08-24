@@ -52,7 +52,7 @@ contract FuelTest is MudTest {
     world.call(
       systemId,
       abi.encodeCall(
-        FuelSystem.setFuelBalance,
+        FuelSystem.configureFuelParameters,
         (smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt)
       )
     );
@@ -76,7 +76,7 @@ contract FuelTest is MudTest {
     world.call(
       systemId,
       abi.encodeCall(
-        FuelSystem.setFuelBalance,
+        FuelSystem.configureFuelParameters,
         (smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt)
       )
     );
@@ -134,17 +134,6 @@ contract FuelTest is MudTest {
     FuelData memory fuel = Fuel.get(smartObjectId);
 
     assertEq(fuelAmount, fuel.fuelAmount);
-  }
-
-  function testSetLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) public {
-    vm.assume(smartObjectId != 0);
-
-    ResourceId systemId = FuelUtils.fuelSystemId();
-    world.call(systemId, abi.encodeCall(FuelSystem.setLastUpdatedAt, (smartObjectId, lastUpdatedAt)));
-
-    FuelData memory fuel = Fuel.get(smartObjectId);
-
-    assertEq(lastUpdatedAt, fuel.lastUpdatedAt);
   }
 
   // TOOD: put registerDeployable and anchor in setup

@@ -9,7 +9,7 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IFuelSystem {
-  function eveworld__setFuelBalance(
+  function eveworld__configureFuelParameters(
     uint256 entityId,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
@@ -28,8 +28,6 @@ interface IFuelSystem {
   function eveworld__setFuelMaxCapacity(uint256 entityId, uint256 fuelMaxCapacity) external;
 
   function eveworld__setFuelAmount(uint256 entityId, uint256 fuelAmount) external;
-
-  function eveworld__setLastUpdatedAt(uint256 entityId, uint256 lastUpdatedAt) external;
 
   function eveworld__depositFuel(uint256 entityId, uint256 fuelAmount) external;
 
