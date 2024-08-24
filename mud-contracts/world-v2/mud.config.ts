@@ -196,6 +196,7 @@ export default defineWorld({
      */
     GlobalDeployableState: {
       schema: {
+        updatedBlockNumber: "uint256",
         isPaused: "bool",
         lastGlobalOffline: "uint256",
         lastGlobalOnline: "uint256",

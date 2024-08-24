@@ -21,9 +21,10 @@ import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
 
 // import { Utils } from "./Utils.sol";
-import { Utils as LocationUtils } from "../location/Utils.sol";
-import { Utils as FuelUtils } from "../fuel/Utils.sol";
-import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
+import { LocationUtils } from "../location/LocationUtils.sol";
+import { FuelUtils } from "../fuel/FuelUtils.sol";
+import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
+import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
 
 import "forge-std/console.sol";
 
@@ -32,7 +33,6 @@ import "forge-std/console.sol";
  * @author CCP Games
  * SmartDeployableSystem stores the deployable state of a smart object on-chain
  */
-
 contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
   using LocationUtils for bytes14;
   using FuelUtils for bytes14;
@@ -49,19 +49,30 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
   }
 
   /**
+   * @dev sets the ERC721 address for a deployable token
+   * @param erc721Address the address of the ERC721 contract
+   */
+  function registerDeployableToken(address erc721Address) public {
+    if (DeployableTokenTable.getErc721Address() != address(0)) {
+      revert SmartDeployableERC721AlreadyInitialized();
+    }
+    DeployableTokenTable.set(erc721Address);
+  }
+
+  /**
    * TODO: restrict this to entityIds that exist
    * @dev registers a new smart deployable (must be "NULL" state)
    * @param entityId entityId
    * @param smartObjectData the data of the smart object
    * @param fuelUnitVolumeInWei the fuel unit volume in wei
-   * @param fuelConsumptionPerMinuteInWei the fuel consumption per minute in wei
+   * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
    * @param fuelMaxCapacityInWei the fuel max capacity in wei
    */
   function registerDeployable(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolumeInWei,
-    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacityInWei
   ) public onlyActive {
     State previousState = DeployableState.getCurrentState(entityId);
@@ -69,7 +80,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
-    if (fuelConsumptionPerMinuteInWei < 1) {
+    if (fuelConsumptionIntervalInSeconds < 1) {
       revert SmartDeployable_InvalidFuelConsumptionInterval(entityId);
     }
 
@@ -78,6 +89,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       IERC721Mintable(erc721Address).mint(smartObjectData.owner, entityId);
 
       ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+      console.logBytes32(ResourceId.unwrap(staticDataSystemId));
       world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
     }
 
@@ -87,20 +99,20 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       block.timestamp,
       State.NULL,
       State.UNANCHORED,
-      true,
+      false,
       0,
       block.number,
       block.timestamp
     );
 
-    // ResourceId fuelSystemId = FuelUtils.fuelSystemId(); // this doesnt work
-    // world().call(
-    //   fuelSystemId,
-    //   abi.encodeCall(
-    //     FuelSystem.setFuelBalance,
-    //     (entityId, fuelUnitVolumeInWei, 60, fuelMaxCapacityInWei, 0, block.timestamp)
-    //   )
-    // );
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId(); // this doesnt work
+    world().call(
+      fuelSystemId,
+      abi.encodeCall(
+        FuelSystem.setFuelBalance,
+        (entityId, fuelUnitVolumeInWei, 60, fuelConsumptionIntervalInSeconds, 0, block.timestamp)
+      )
+    );
   }
 
   /**
@@ -187,88 +199,26 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
   }
 
   /**
-   * @dev sets the global deployable state
-   * @param isPaused the state of the deployable
-   * @param lastGlobalOffline the last time the deployable was offline
-   * @param lastGlobalOnline the last time the deployable was online
-   */
-  function setGlobalDeployableState(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) public {
-    GlobalDeployableState.set(isPaused, lastGlobalOffline, lastGlobalOnline);
-  }
-
-  /**
    * @dev brings all smart deployables online
    * TODO: limit to admin use only
    */
-  function setGlobalIsPaused() public {
+  function globalPause() public {
     GlobalDeployableState.setIsPaused(false);
+    GlobalDeployableState.setUpdatedBlockNumber(block.number);
+    GlobalDeployableState.setLastGlobalOffline(block.timestamp);
   }
 
   /**
    * @dev brings all smart deployables offline
    * TODO: limit to admin use only
    */
-  function setGlobalResume() public {
+  function globalResume() public {
     GlobalDeployableState.setIsPaused(true);
+    GlobalDeployableState.setUpdatedBlockNumber(block.number);
+    GlobalDeployableState.setLastGlobalOnline(block.timestamp);
   }
 
-  /**
-   * @dev sets the last time the deployable was offline
-   * @param lastGlobalOffline the last time the deployable was offline
-   */
-  function setLastGlobalOffline(uint256 lastGlobalOffline) public {
-    GlobalDeployableState.setLastGlobalOffline(lastGlobalOffline);
-  }
 
-  /**
-   * @dev sets the last time the deployable was online
-   * @param lastGlobalOnline the last time the deployable was online
-   */
-
-  function setLastGlobalOnline(uint256 lastGlobalOnline) public {
-    GlobalDeployableState.setLastGlobalOnline(lastGlobalOnline);
-  }
-
-  /**
-   * @dev sets the ERC721 address for a deployable token
-   * @param erc721Address the address of the ERC721 contract
-   */
-  function registerDeployableToken(address erc721Address) public {
-    DeployableTokenTable.set(erc721Address);
-  }
-
-  /**
-   * @dev sets the deployable state
-   * @param entityId entityId of the in-game object
-   * @param createdAt the time the object was created
-   * @param previousState the previous state of the object
-   * @param currentState the current state of the object
-   * @param isValid the validity of the object
-   * @param anchoredAt the time the object was anchored
-   * @param updatedBlockNumber the block number at which the state was updated
-   * @param updatedBlockTime the time at which the state was updated
-   */
-  function setDeployableState(
-    uint256 entityId,
-    uint256 createdAt,
-    State previousState,
-    State currentState,
-    bool isValid,
-    uint256 anchoredAt,
-    uint256 updatedBlockNumber,
-    uint256 updatedBlockTime
-  ) public {
-    DeployableState.set(
-      entityId,
-      createdAt,
-      previousState,
-      currentState,
-      isValid,
-      anchoredAt,
-      updatedBlockNumber,
-      updatedBlockTime
-    );
-  }
 
   /**
    * @dev sets the time the object was created

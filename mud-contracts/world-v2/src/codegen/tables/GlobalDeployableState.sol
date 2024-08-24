@@ -17,6 +17,7 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct GlobalDeployableStateData {
+  uint256 updatedBlockNumber;
   bool isPaused;
   uint256 lastGlobalOffline;
   uint256 lastGlobalOnline;
@@ -27,12 +28,12 @@ library GlobalDeployableState {
   ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000476c6f62616c4465706c6f7961626c65);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0041030001202000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0061040020012020000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of ()
   Schema constant _keySchema = Schema.wrap(0x0000000000000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (bool, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x00410300601f1f00000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, bool, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x006104001f601f1f000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,10 +48,11 @@ library GlobalDeployableState {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
-    fieldNames[0] = "isPaused";
-    fieldNames[1] = "lastGlobalOffline";
-    fieldNames[2] = "lastGlobalOnline";
+    fieldNames = new string[](4);
+    fieldNames[0] = "updatedBlockNumber";
+    fieldNames[1] = "isPaused";
+    fieldNames[2] = "lastGlobalOffline";
+    fieldNames[3] = "lastGlobalOnline";
   }
 
   /**
@@ -68,12 +70,50 @@ library GlobalDeployableState {
   }
 
   /**
+   * @notice Get updatedBlockNumber.
+   */
+  function getUpdatedBlockNumber() internal view returns (uint256 updatedBlockNumber) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get updatedBlockNumber.
+   */
+  function _getUpdatedBlockNumber() internal view returns (uint256 updatedBlockNumber) {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set updatedBlockNumber.
+   */
+  function setUpdatedBlockNumber(uint256 updatedBlockNumber) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((updatedBlockNumber)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set updatedBlockNumber.
+   */
+  function _setUpdatedBlockNumber(uint256 updatedBlockNumber) internal {
+    bytes32[] memory _keyTuple = new bytes32[](0);
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((updatedBlockNumber)), _fieldLayout);
+  }
+
+  /**
    * @notice Get isPaused.
    */
   function getIsPaused() internal view returns (bool isPaused) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
   }
 
@@ -83,7 +123,7 @@ library GlobalDeployableState {
   function _getIsPaused() internal view returns (bool isPaused) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
   }
 
@@ -93,7 +133,7 @@ library GlobalDeployableState {
   function setIsPaused(bool isPaused) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((isPaused)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((isPaused)), _fieldLayout);
   }
 
   /**
@@ -102,7 +142,7 @@ library GlobalDeployableState {
   function _setIsPaused(bool isPaused) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((isPaused)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((isPaused)), _fieldLayout);
   }
 
   /**
@@ -111,7 +151,7 @@ library GlobalDeployableState {
   function getLastGlobalOffline() internal view returns (uint256 lastGlobalOffline) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -121,7 +161,7 @@ library GlobalDeployableState {
   function _getLastGlobalOffline() internal view returns (uint256 lastGlobalOffline) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -131,7 +171,7 @@ library GlobalDeployableState {
   function setLastGlobalOffline(uint256 lastGlobalOffline) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((lastGlobalOffline)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lastGlobalOffline)), _fieldLayout);
   }
 
   /**
@@ -140,7 +180,7 @@ library GlobalDeployableState {
   function _setLastGlobalOffline(uint256 lastGlobalOffline) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((lastGlobalOffline)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lastGlobalOffline)), _fieldLayout);
   }
 
   /**
@@ -149,7 +189,7 @@ library GlobalDeployableState {
   function getLastGlobalOnline() internal view returns (uint256 lastGlobalOnline) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -159,7 +199,7 @@ library GlobalDeployableState {
   function _getLastGlobalOnline() internal view returns (uint256 lastGlobalOnline) {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -169,7 +209,7 @@ library GlobalDeployableState {
   function setLastGlobalOnline(uint256 lastGlobalOnline) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lastGlobalOnline)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((lastGlobalOnline)), _fieldLayout);
   }
 
   /**
@@ -178,7 +218,7 @@ library GlobalDeployableState {
   function _setLastGlobalOnline(uint256 lastGlobalOnline) internal {
     bytes32[] memory _keyTuple = new bytes32[](0);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((lastGlobalOnline)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((lastGlobalOnline)), _fieldLayout);
   }
 
   /**
@@ -212,8 +252,13 @@ library GlobalDeployableState {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) internal {
-    bytes memory _staticData = encodeStatic(isPaused, lastGlobalOffline, lastGlobalOnline);
+  function set(
+    uint256 updatedBlockNumber,
+    bool isPaused,
+    uint256 lastGlobalOffline,
+    uint256 lastGlobalOnline
+  ) internal {
+    bytes memory _staticData = encodeStatic(updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -226,8 +271,13 @@ library GlobalDeployableState {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) internal {
-    bytes memory _staticData = encodeStatic(isPaused, lastGlobalOffline, lastGlobalOnline);
+  function _set(
+    uint256 updatedBlockNumber,
+    bool isPaused,
+    uint256 lastGlobalOffline,
+    uint256 lastGlobalOnline
+  ) internal {
+    bytes memory _staticData = encodeStatic(updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -241,7 +291,12 @@ library GlobalDeployableState {
    * @notice Set the full data using the data struct.
    */
   function set(GlobalDeployableStateData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.isPaused, _table.lastGlobalOffline, _table.lastGlobalOnline);
+    bytes memory _staticData = encodeStatic(
+      _table.updatedBlockNumber,
+      _table.isPaused,
+      _table.lastGlobalOffline,
+      _table.lastGlobalOnline
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -255,7 +310,12 @@ library GlobalDeployableState {
    * @notice Set the full data using the data struct.
    */
   function _set(GlobalDeployableStateData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.isPaused, _table.lastGlobalOffline, _table.lastGlobalOnline);
+    bytes memory _staticData = encodeStatic(
+      _table.updatedBlockNumber,
+      _table.isPaused,
+      _table.lastGlobalOffline,
+      _table.lastGlobalOnline
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -270,12 +330,18 @@ library GlobalDeployableState {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) {
-    isPaused = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
+  )
+    internal
+    pure
+    returns (uint256 updatedBlockNumber, bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline)
+  {
+    updatedBlockNumber = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    lastGlobalOffline = (uint256(Bytes.getBytes32(_blob, 1)));
+    isPaused = (_toBool(uint8(Bytes.getBytes1(_blob, 32))));
 
-    lastGlobalOnline = (uint256(Bytes.getBytes32(_blob, 33)));
+    lastGlobalOffline = (uint256(Bytes.getBytes32(_blob, 33)));
+
+    lastGlobalOnline = (uint256(Bytes.getBytes32(_blob, 65)));
   }
 
   /**
@@ -289,7 +355,9 @@ library GlobalDeployableState {
     EncodedLengths,
     bytes memory
   ) internal pure returns (GlobalDeployableStateData memory _table) {
-    (_table.isPaused, _table.lastGlobalOffline, _table.lastGlobalOnline) = decodeStatic(_staticData);
+    (_table.updatedBlockNumber, _table.isPaused, _table.lastGlobalOffline, _table.lastGlobalOnline) = decodeStatic(
+      _staticData
+    );
   }
 
   /**
@@ -315,11 +383,12 @@ library GlobalDeployableState {
    * @return The static data, encoded into a sequence of bytes.
    */
   function encodeStatic(
+    uint256 updatedBlockNumber,
     bool isPaused,
     uint256 lastGlobalOffline,
     uint256 lastGlobalOnline
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(isPaused, lastGlobalOffline, lastGlobalOnline);
+    return abi.encodePacked(updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline);
   }
 
   /**
@@ -329,11 +398,12 @@ library GlobalDeployableState {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
+    uint256 updatedBlockNumber,
     bool isPaused,
     uint256 lastGlobalOffline,
     uint256 lastGlobalOnline
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(isPaused, lastGlobalOffline, lastGlobalOnline);
+    bytes memory _staticData = encodeStatic(updatedBlockNumber, isPaused, lastGlobalOffline, lastGlobalOnline);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

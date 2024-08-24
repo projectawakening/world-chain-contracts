@@ -9,7 +9,6 @@ import { getKeysWithValue } from "@latticexyz/world-modules/src/modules/keyswith
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { State, SmartObjectData } from "../../src/systems/smart-deployable/types.sol";
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE, STATIC_DATA_DEPLOYMENT_NAMESPACE, EVE_ERC721_PUPPET_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { State } from "../../src/codegen/common.sol";
@@ -20,7 +19,7 @@ import { GlobalDeployableStateData } from "../../src/codegen/tables/GlobalDeploy
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
 
-import { Utils as SmartDeployableUtils } from "../../src/systems/smart-deployable/Utils.sol";
+import { SmartDeployableUtils } from "../../src/systems/smart-deployable/SmartDeployableUtils.sol";
 
 contract SmartDeployableTest is MudTest {
   IBaseWorld world;
@@ -58,7 +57,7 @@ contract SmartDeployableTest is MudTest {
 
     ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
 
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalResume, ()));
+    world.call(systemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
 
     world.call(
       systemId,
@@ -119,65 +118,5 @@ contract SmartDeployableTest is MudTest {
     LocationData memory location
   ) public {}
 
-  function testSetGlobalDeployableState(bool isPaused, uint256 lastGlobalOffline, uint256 lastGlobalOnline) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalIsPaused.selector;
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
 
-    // ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
-
-    world.call(
-      systemId,
-      abi.encodeCall(SmartDeployableSystem.setGlobalDeployableState, (isPaused, lastGlobalOffline, lastGlobalOnline))
-    );
-
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
-
-    assertEq(isPaused, globalDeployableState.isPaused);
-    assertEq(lastGlobalOffline, globalDeployableState.lastGlobalOffline);
-    assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
-  }
-
-  function testPauseGlobalState() public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalIsPaused.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalIsPaused, ()));
-
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
-
-    assertEq(false, globalDeployableState.isPaused);
-  }
-
-  function testResumeGlobalState() public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setGlobalResume.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setGlobalResume, ()));
-
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
-
-    assertEq(true, globalDeployableState.isPaused);
-  }
-
-  function testSetLastGlobalOffline(uint256 lastGlobalOffline) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setLastGlobalOffline.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setLastGlobalOffline, (lastGlobalOffline)));
-
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
-
-    assertEq(lastGlobalOffline, globalDeployableState.lastGlobalOffline);
-  }
-
-  function testSetLastGlobalOnline(uint256 lastGlobalOnline) public {
-    bytes4 functionSelector = ISmartDeployableSystem.eveworld__setLastGlobalOnline.selector;
-
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(SmartDeployableSystem.setLastGlobalOnline, (lastGlobalOnline)));
-
-    GlobalDeployableStateData memory globalDeployableState = GlobalDeployableState.get();
-
-    assertEq(lastGlobalOnline, globalDeployableState.lastGlobalOnline);
-  }
 }
