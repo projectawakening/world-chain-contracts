@@ -11,8 +11,9 @@ import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
 /**
  * @title Utils to calculate systemId by namespace and system name
  */
-library Utils {
-  function fuelSystemId() public pure returns (ResourceId systemId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "FuelSystem" });
+library EntityRecordUtils {
+  function entityRecordSystemId() public pure returns (ResourceId systemId) {
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "EntityRecordSyst" });
   }
 }

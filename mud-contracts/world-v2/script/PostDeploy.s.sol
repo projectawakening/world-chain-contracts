@@ -23,9 +23,9 @@ import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintabl
 import { StaticDataSystem } from "../src/systems/static-data/StaticDataSystem.sol";
 import { SmartDeployableSystem } from "../src/systems/smart-deployable/SmartDeployableSystem.sol";
 
-import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
-import { Utils as SmartDeployableUtils } from "../src/systems/smart-deployable/Utils.sol";
-import { Utils as StaticDataUtils } from "../src/systems/static-data/Utils.sol";
+import { SmartCharacterUtils } from "../src/systems/smart-character/SmartCharacterUtils.sol";
+import { SmartDeployableUtils } from "../src/systems/smart-deployable/SmartDeployableUtils.sol";
+import { StaticDataUtils } from "../src/systems/static-data/StaticDataUtils.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 

@@ -16,7 +16,7 @@ import { LocationSystem } from "../../src/systems/location/LocationSystem.sol";
 import { Location } from "../../src/codegen/tables/Location.sol";
 import { LocationData } from "../../src/codegen/tables/Location.sol";
 
-import { Utils as LocationUtils } from "../../src/systems/location/Utils.sol";
+import { LocationUtils } from "../../src/systems/location/LocationUtils.sol";
 
 contract StaticDataTest is MudTest {
   IBaseWorld world;

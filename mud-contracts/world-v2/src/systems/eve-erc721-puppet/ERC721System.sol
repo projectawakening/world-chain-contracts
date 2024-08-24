@@ -23,7 +23,7 @@ import { TokenURI } from "../../codegen/tables/TokenURI.sol";
 import { _balancesTableId, _metadataTableId, _tokenUriTableId, _operatorApprovalTableId, _ownersTableId, _tokenApprovalTableId } from "./utils.sol";
 import { LibString } from "@latticexyz/world-modules/src/modules/erc721-puppet/libraries/LibString.sol";
 
-import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
+import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
 import { StaticDataSystem } from "../static-data/StaticDataSystem.sol";
 import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
 

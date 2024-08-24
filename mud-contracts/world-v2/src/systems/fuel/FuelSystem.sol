@@ -32,15 +32,6 @@ contract FuelSystem is System {
   }
 
   /**
-   * @dev gets the fuel balance of a smart deployable
-   * @param entityId entityId of the in-game object
-   * @return FuelData struct of the fuel balance
-   */
-  function getFuelBalance(uint256 entityId) public view returns (FuelData memory) {
-    return Fuel.get(entityId);
-  }
-
-  /**
    * @dev sets the volume of a single unit of fuel
    * @param entityId entityId of the deployable
    * @param fuelUnitVolume the volume of a single unit of fuel
@@ -83,15 +74,6 @@ contract FuelSystem is System {
    */
   function setLastUpdatedAt(uint256 entityId, uint256 lastUpdatedAt) public {
     Fuel.setLastUpdatedAt(entityId, lastUpdatedAt);
-  }
-
-  /**
-   * @dev get the fuel amount of a Smart Deployable
-   * @param entityId to get fuel amount of
-   * @return fuelAmount of the Smart Deployable
-   */
-  function getFuelAmount(uint256 entityId) public view returns (uint256 fuelAmount) {
-    return Fuel.getFuelAmount(entityId);
   }
 
   /**

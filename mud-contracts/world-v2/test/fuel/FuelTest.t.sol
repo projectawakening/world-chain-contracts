@@ -17,7 +17,7 @@ import { Fuel, FuelData } from "../../src/codegen/tables/Fuel.sol";
 import { State, SmartObjectData } from "../../src/systems/smart-deployable/types.sol";
 import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
 
-import { Utils as FuelUtils } from "../../src/systems/fuel/Utils.sol";
+import { FuelUtils } from "../../src/systems/fuel/FuelUtils.sol";
 
 contract FuelTest is MudTest {
   IBaseWorld world;
