@@ -8,7 +8,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/systems/entity-record/types.sol";
 import { SmartCharacterSystem } from "@eveworld/world-v2/src/systems/smart-character/SmartCharacterSystem.sol";
-import { Utils as SmartCharacterUtils } from "@eveworld/world-v2/src/systems/smart-character/Utils.sol";
+import { SmartCharacterUtils } from "@eveworld/world-v2/src/systems/smart-character/SmartCharacterUtils.sol";
 
 contract CreateSmartCharacter is Script {
   using SmartCharacterUtils for bytes14;
