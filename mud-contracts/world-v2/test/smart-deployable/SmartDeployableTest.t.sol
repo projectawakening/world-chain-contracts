@@ -20,6 +20,7 @@ import { DeployableState, DeployableStateData } from "../../src/codegen/tables/D
 import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
 
 import { SmartDeployableUtils } from "../../src/systems/smart-deployable/SmartDeployableUtils.sol";
+import { LocationUtils } from "../../src/systems/location/LocationUtils.sol";
 
 contract SmartDeployableTest is MudTest {
   IBaseWorld world;
@@ -41,7 +42,6 @@ contract SmartDeployableTest is MudTest {
     assertTrue(codeSize > 0);
   }
 
-  // test registerDeployable
   function testRegisterDeployable(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
@@ -56,8 +56,17 @@ contract SmartDeployableTest is MudTest {
     vm.assume(smartObjectData.owner != address(0));
 
     ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
-
     world.call(systemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
+
+    DeployableStateData memory data = DeployableStateData({
+      createdAt: block.timestamp,
+      previousState: State.NULL,
+      currentState: State.UNANCHORED,
+      isValid: true,
+      anchoredAt: block.timestamp,
+      updatedBlockNumber: block.number,
+      updatedBlockTime: block.timestamp
+    });
 
     world.call(
       systemId,
@@ -66,6 +75,12 @@ contract SmartDeployableTest is MudTest {
         (entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity)
       )
     );
+
+    DeployableStateData memory tableData = DeployableState.get(entityId);
+
+    assertEq(data.createdAt, tableData.createdAt);
+    assertEq(uint8(data.currentState), uint8(tableData.currentState));
+    assertEq(data.updatedBlockNumber, tableData.updatedBlockNumber);
   }
 
   // test anchor
@@ -76,7 +91,22 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationData memory location
-  ) public {}
+  ) public {
+    vm.assume(entityId != 0);
+    testRegisterDeployable(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
+
+    ResourceId deplyableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deplyableSystemId, abi.encodeCall(SmartDeployableSystem.anchor, (entityId, location)));
+
+    ResourceId locationSystemId = LocationUtils.locationSystemId();
+    LocationData memory tableData = Location.get(entityId);
+
+    assertEq(location.solarSystemId, tableData.solarSystemId);
+    assertEq(location.x, tableData.x);
+    assertEq(location.y, tableData.y);
+    assertEq(location.z, tableData.z);
+    assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(entityId)));
+  }
 
   // test bringonline
   function testBringOnline(
@@ -117,6 +147,4 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelMaxCapacity,
     LocationData memory location
   ) public {}
-
-
 }
