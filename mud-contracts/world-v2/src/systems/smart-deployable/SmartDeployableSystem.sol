@@ -20,7 +20,6 @@ import { State, SmartObjectData } from "./types.sol";
 import { SmartDeployableErrors } from "./SmartDeployableErrors.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./constants.sol";
 
-// import { Utils } from "./Utils.sol";
 import { LocationUtils } from "../location/LocationUtils.sol";
 import { FuelUtils } from "../fuel/FuelUtils.sol";
 import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
@@ -138,7 +137,9 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
+    console.log("updating fuel");
     _updateFuel(entityId);
+    console.log("success updating fuel");
 
     uint256 currentFuel = Fuel.getFuelAmount(entityId);
     if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);

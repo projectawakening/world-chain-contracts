@@ -3,6 +3,11 @@ pragma solidity >=0.8.24;
 
 import { System } from "@latticexyz/world/src/System.sol";
 import { Fuel, FuelData } from "../../codegen/index.sol";
+import { DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
+import { FuelErrors } from "./FuelErrors.sol"; //
+
+import { DECIMALS, ONE_UNIT_IN_WEI } from "../smart-deployable/constants.sol";
+
 import { State } from "../../codegen/common.sol";
 
 /**
@@ -10,7 +15,7 @@ import { State } from "../../codegen/common.sol";
  * @author CCP Games
  * FuelSystem: stores the Fuel balance of a Smart Deployable
  */
-contract FuelSystem is System {
+contract FuelSystem is System, FuelErrors {
   /**
    * @dev sets fuel parameters for a smart deployable
    * @param entityId entityId of the in-game object
@@ -76,11 +81,17 @@ contract FuelSystem is System {
    * TODO: make this function admin only
    */
   function depositFuel(uint256 entityId, uint256 fuelAmount) public {
+    _updateFuel(entityId);
     FuelData memory fuel = Fuel.get(entityId);
-    require(fuel.fuelAmount + fuelAmount <= fuel.fuelMaxCapacity, "FuelSystem: deposit exceeds max capacity");
+    if (
+      (((Fuel.getFuelAmount(entityId) + fuelAmount * ONE_UNIT_IN_WEI) * Fuel.getFuelUnitVolume(entityId))) /
+        ONE_UNIT_IN_WEI >
+      Fuel.getFuelMaxCapacity(entityId)
+    ) {
+      revert Fuel_TooMuchFuelDeposited(entityId, fuelAmount);
+    }
 
-    Fuel.setFuelAmount(entityId, fuel.fuelAmount + fuelAmount);
-
+    Fuel.setFuelAmount(entityId, _currentFuelAmount(entityId) + fuelAmount * ONE_UNIT_IN_WEI);
     Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
@@ -91,11 +102,91 @@ contract FuelSystem is System {
    * TODO: make this function admin only
    */
   function withdrawFuel(uint256 entityId, uint256 fuelAmount) public {
-    FuelData memory fuel = Fuel.get(entityId);
-    require(fuel.fuelAmount - fuelAmount >= 0, "FuelSystem: withdraw exceeds current fuel amount");
+    _updateFuel(entityId);
 
-    Fuel.setFuelAmount(entityId, fuel.fuelAmount - fuelAmount);
-
+    Fuel.setFuelAmount(
+      entityId,
+      (_currentFuelAmount(entityId) - fuelAmount * ONE_UNIT_IN_WEI) // will revert if underflow
+    );
     Fuel.setLastUpdatedAt(entityId, block.timestamp);
+  }
+
+  /*************************
+   * INTERNAL FUEL METHODS *
+   **************************/
+
+  /**
+   * @dev Deposit fuel into a smart deployable.
+   * @param entityId The entity ID to deposit fuel into.
+   */
+  function _updateFuel(uint256 entityId) internal {
+    uint256 currentFuel = _currentFuelAmount(entityId);
+    State previousState = DeployableState.getCurrentState(entityId);
+
+    if (currentFuel == 0 && (previousState == State.ONLINE)) {
+      // _bringOffline() with manual function calls to avoid circular references (TODO: refactor decoupling to avoid redundancy)
+      DeployableState.setPreviousState(entityId, previousState);
+      DeployableState.setCurrentState(entityId, State.ANCHORED);
+      DeployableState.setUpdatedBlockNumber(entityId, block.number);
+      DeployableState.setUpdatedBlockTime(entityId, block.timestamp);
+
+      Fuel.setFuelAmount(entityId, 0);
+    } else {
+      Fuel.setFuelAmount(entityId, currentFuel);
+    }
+  }
+
+  /**
+   * @dev Calculate the current fuel amount for a given entity.
+   * @param entityId The entity ID to calculate the fuel amount for.
+   * @return The current fuel amount.
+   */
+  function _currentFuelAmount(uint256 entityId) internal view returns (uint256) {
+    // Check if the entity is not online. If it's not online, return the fuel amount directly.
+    if (DeployableState.getCurrentState(entityId) != State.ONLINE) {
+      return Fuel.getFuelAmount(entityId);
+    }
+
+    // Fetch the fuel balance data for the entity.
+    FuelData memory fuelData = Fuel.get(entityId);
+
+    uint256 oneFuelUnitConsumptionIntervalInSec = fuelData.fuelConsumptionIntervalInSeconds;
+
+    // Calculate the fuel consumed since the last update.
+    uint256 fuelConsumed = ((block.timestamp - fuelData.lastUpdatedAt) * ONE_UNIT_IN_WEI) /
+      oneFuelUnitConsumptionIntervalInSec;
+
+    // Subtract any global offline fuel refund from the consumed fuel.
+    fuelConsumed -= _globalOfflineFuelRefund(entityId);
+
+    // If the consumed fuel is greater than or equal to the current fuel amount, return 0.
+    if (fuelConsumed >= fuelData.fuelAmount) {
+      return 0;
+    }
+
+    // Return the remaining fuel amount.
+    return fuelData.fuelAmount - fuelConsumed;
+  }
+
+  /**
+   * @dev Calculate the global offline fuel refund for a given entity.
+   * @param entityId The entity ID to calculate the refund for.
+   * @return The amount of fuel to refund.
+   */
+  function _globalOfflineFuelRefund(uint256 entityId) internal view returns (uint256) {
+    // Fetch the global deployable state data.
+    GlobalDeployableStateData memory globalData = GlobalDeployableState.get();
+
+    if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
+    if (DeployableState.getCurrentState(entityId) != State.ONLINE) return 0;
+
+    uint256 bringOnlineTimestamp = DeployableState.getUpdatedBlockTime(entityId);
+    if (bringOnlineTimestamp < globalData.lastGlobalOffline) bringOnlineTimestamp = globalData.lastGlobalOffline;
+
+    uint256 lastGlobalOnline = globalData.lastGlobalOnline;
+    if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
+
+    uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spent online during server downtime
+    return ((elapsedRefundTime * ONE_UNIT_IN_WEI) / (Fuel.getFuelConsumptionIntervalInSeconds(entityId)));
   }
 }

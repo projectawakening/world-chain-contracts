@@ -18,9 +18,12 @@ import { SmartDeployableSystem } from "../../src/systems/smart-deployable/SmartD
 import { GlobalDeployableStateData } from "../../src/codegen/tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { Location, LocationData } from "../../src/codegen/tables/Location.sol";
+import { Fuel, FuelData } from "../../src/codegen/tables/Fuel.sol";
+import { FuelSystem } from "../../src/systems/fuel/FuelSystem.sol";
 
 import { SmartDeployableUtils } from "../../src/systems/smart-deployable/SmartDeployableUtils.sol";
 import { LocationUtils } from "../../src/systems/location/LocationUtils.sol";
+import { FuelUtils } from "../../src/systems/fuel/FuelUtils.sol";
 
 contract SmartDeployableTest is MudTest {
   IBaseWorld world;
@@ -95,8 +98,8 @@ contract SmartDeployableTest is MudTest {
     vm.assume(entityId != 0);
     testRegisterDeployable(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
 
-    ResourceId deplyableSystemId = SmartDeployableUtils.smartDeployableSystemId();
-    world.call(deplyableSystemId, abi.encodeCall(SmartDeployableSystem.anchor, (entityId, location)));
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.anchor, (entityId, location)));
 
     ResourceId locationSystemId = LocationUtils.locationSystemId();
     LocationData memory tableData = Location.get(entityId);
@@ -108,7 +111,6 @@ contract SmartDeployableTest is MudTest {
     assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(entityId)));
   }
 
-  // test bringonline
   function testBringOnline(
     uint256 entityId,
     SmartObjectData memory smartObjectData,
@@ -116,7 +118,19 @@ contract SmartDeployableTest is MudTest {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationData memory location
-  ) public {}
+  ) public {
+    vm.assume(entityId != 0);
+
+    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    vm.assume(fuelUnitVolume < type(uint64).max / 2);
+    vm.assume(fuelUnitVolume < fuelMaxCapacity);
+
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (entityId, 1)));
+
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
+  }
 
   // test bringoffline
   function testBringOffline(
