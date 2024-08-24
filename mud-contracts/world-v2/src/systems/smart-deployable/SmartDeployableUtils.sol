@@ -9,7 +9,6 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 import { RESOURCE_TABLE } from "@latticexyz/store/src/storeResourceTypes.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
-import { SMART_DEPLOYABLE_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
 
 library SmartDeployableUtils {
   function smartDeployableSystemId() public pure returns (ResourceId systemId) {

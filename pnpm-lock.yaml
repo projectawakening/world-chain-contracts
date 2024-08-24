@@ -389,12 +389,6 @@ importers:
 
   mud-contracts/world-v2:
     dependencies:
-      '@eveworld/common-constants':
-        specifier: 0.0.7
-        version: link:../common/constants
-      '@eveworld/smart-object-framework':
-        specifier: 0.0.7
-        version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.0.12
         version: 2.0.12
@@ -4969,7 +4963,6 @@ packages:
 
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
-    dev: false
 
   /isomorphic-ws@5.0.0(ws@8.17.1):
     resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
