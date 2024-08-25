@@ -169,7 +169,7 @@ export default defineWorld({
     /*******************
      * INVENTORY MODULE *
      *******************/
-    Inventory: {
+    InventoryTable: {
       schema: {
         smartObjectId: "uint256",
         capacity: "uint256",
@@ -178,7 +178,7 @@ export default defineWorld({
       },
       key: ["smartObjectId"],
     },
-    InventoryItem: {
+    InventoryItemTable: {
       schema: {
         smartObjectId: "uint256",
         itemId: "uint256",

@@ -16,15 +16,15 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct InventoryItemData {
+struct InventoryItemTableData {
   uint256 quantity;
   uint256 index;
   uint256 stateUpdate;
 }
 
-library InventoryItem {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "InventoryItem", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000496e76656e746f72794974656d000000);
+library InventoryItemTable {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "InventoryItemTab", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000496e76656e746f72794974656d546162);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0060030020202000000000000000000000000000000000000000000000000000);
@@ -210,7 +210,7 @@ library InventoryItem {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId, uint256 itemId) internal view returns (InventoryItemData memory _table) {
+  function get(uint256 smartObjectId, uint256 itemId) internal view returns (InventoryItemTableData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemId));
@@ -226,7 +226,7 @@ library InventoryItem {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 smartObjectId, uint256 itemId) internal view returns (InventoryItemData memory _table) {
+  function _get(uint256 smartObjectId, uint256 itemId) internal view returns (InventoryItemTableData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemId));
@@ -274,7 +274,7 @@ library InventoryItem {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, uint256 itemId, InventoryItemData memory _table) internal {
+  function set(uint256 smartObjectId, uint256 itemId, InventoryItemTableData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.quantity, _table.index, _table.stateUpdate);
 
     EncodedLengths _encodedLengths;
@@ -290,7 +290,7 @@ library InventoryItem {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, uint256 itemId, InventoryItemData memory _table) internal {
+  function _set(uint256 smartObjectId, uint256 itemId, InventoryItemTableData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.quantity, _table.index, _table.stateUpdate);
 
     EncodedLengths _encodedLengths;
@@ -326,7 +326,7 @@ library InventoryItem {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (InventoryItemData memory _table) {
+  ) internal pure returns (InventoryItemTableData memory _table) {
     (_table.quantity, _table.index, _table.stateUpdate) = decodeStatic(_staticData);
   }
 
