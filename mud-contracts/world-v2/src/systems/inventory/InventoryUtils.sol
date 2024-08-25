@@ -12,15 +12,15 @@ import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
  * @title Utils to calculate systemId by namespace and system name
  */
 library InventoryUtils {
-  function inventorySystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: "InventorySystem" });
+  function inventorySystemId() internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "InventorySystem" });
   }
 
-  function ephemeralInventorySystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: "EphemeralInvento" });
+  function ephemeralInventorySystemId() internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "EphemeralInvento" });
   }
 
-  function inventoryInteractSystemId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: "InventoryInterac" });
+  function inventoryInteractSystemId() internal pure returns (ResourceId) {
+    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "InventoryInterac" });
   }
 }

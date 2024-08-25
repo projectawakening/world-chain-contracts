@@ -8,7 +8,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
 import { IERC721System } from "./IERC721System.sol";
 import { IEveSystem } from "./IEveSystem.sol";
-import { IEphermeralInventorySystem } from "./IEphermeralInventorySystem.sol";
+import { IEphemeralInventorySystem } from "./IEphemeralInventorySystem.sol";
 import { IInventoryInteractSystem } from "./IInventoryInteractSystem.sol";
 import { IInventorySystem } from "./IInventorySystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
@@ -27,7 +27,7 @@ interface IWorld is
   IEntityRecordSystem,
   IERC721System,
   IEveSystem,
-  IEphermeralInventorySystem,
+  IEphemeralInventorySystem,
   IInventoryInteractSystem,
   IInventorySystem,
   ILocationSystem,

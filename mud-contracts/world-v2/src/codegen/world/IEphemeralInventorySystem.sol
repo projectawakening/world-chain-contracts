@@ -6,11 +6,11 @@ pragma solidity >=0.8.24;
 import { InventoryItem } from "./../../systems/inventory/types.sol";
 
 /**
- * @title IEphermeralInventorySystem
+ * @title IEphemeralInventorySystem
  * @author MUD (https://mud.dev) by Lattice (https://lattice.xyz)
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
-interface IEphermeralInventorySystem {
+interface IEphemeralInventorySystem {
   function eveworld__setEphemeralInventoryCapacity(uint256 smartObjectId, uint256 ephemeralStorageCapacity) external;
 
   function eveworld__depositToEphemeralInventory(

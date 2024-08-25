@@ -189,7 +189,7 @@ export default defineWorld({
       key: ["smartObjectId", "itemId"],
     },
     /*****************************
-     * EPHERMAL INVENTORY MODULE *
+     * EPHEMERAL INVENTORY MODULE *
      *****************************/
     EphemeralInvCapacity: {
       schema: {
