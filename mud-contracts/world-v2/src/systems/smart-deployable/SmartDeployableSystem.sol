@@ -137,9 +137,7 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
-    console.log("updating fuel");
     _updateFuel(entityId);
-    console.log("success updating fuel");
 
     uint256 currentFuel = Fuel.getFuelAmount(entityId);
     if (currentFuel < 1) revert SmartDeployable_NoFuel(entityId);

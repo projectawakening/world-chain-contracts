@@ -86,7 +86,6 @@ contract SmartDeployableTest is MudTest {
     assertEq(data.updatedBlockNumber, tableData.updatedBlockNumber);
   }
 
-  // test anchor
   function testAnchor(
     uint256 entityId,
     SmartObjectData memory smartObjectData,

@@ -32,4 +32,6 @@ interface IFuelSystem {
   function eveworld__depositFuel(uint256 entityId, uint256 fuelAmount) external;
 
   function eveworld__withdrawFuel(uint256 entityId, uint256 fuelAmount) external;
+
+  function eveworld__updateFuel(uint256 entityId) external;
 }

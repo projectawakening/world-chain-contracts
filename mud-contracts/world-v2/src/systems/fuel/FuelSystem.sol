@@ -6,9 +6,10 @@ import { Fuel, FuelData } from "../../codegen/index.sol";
 import { DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { FuelErrors } from "./FuelErrors.sol"; //
 
+import { State } from "../../codegen/common.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "../smart-deployable/constants.sol";
 
-import { State } from "../../codegen/common.sol";
+import "forge-std/console.sol";
 
 /**
  * @title FuelSystem
@@ -82,7 +83,6 @@ contract FuelSystem is System, FuelErrors {
    */
   function depositFuel(uint256 entityId, uint256 fuelAmount) public {
     _updateFuel(entityId);
-    FuelData memory fuel = Fuel.get(entityId);
     if (
       (((Fuel.getFuelAmount(entityId) + fuelAmount * ONE_UNIT_IN_WEI) * Fuel.getFuelUnitVolume(entityId))) /
         ONE_UNIT_IN_WEI >
@@ -109,6 +109,16 @@ contract FuelSystem is System, FuelErrors {
       (_currentFuelAmount(entityId) - fuelAmount * ONE_UNIT_IN_WEI) // will revert if underflow
     );
     Fuel.setLastUpdatedAt(entityId, block.timestamp);
+  }
+
+  /**
+   * @dev updates the amount of fuel on tables (allows event firing through table write op)
+   * TODO: this should be a class-level hook that we attach to all and any function related to smart-deployables,
+   * or that compose with it
+   * @param entityId to update
+   */
+  function updateFuel(uint256 entityId) public {
+    _updateFuel(entityId);
   }
 
   /*************************
@@ -178,7 +188,7 @@ contract FuelSystem is System, FuelErrors {
     GlobalDeployableStateData memory globalData = GlobalDeployableState.get();
 
     if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
-    if (DeployableState.getCurrentState(entityId) != State.ONLINE) return 0;
+    if (DeployableState.getCurrentState(entityId) != State.ONLINE) return 0; // no refunds if it's not running
 
     uint256 bringOnlineTimestamp = DeployableState.getUpdatedBlockTime(entityId);
     if (bringOnlineTimestamp < globalData.lastGlobalOffline) bringOnlineTimestamp = globalData.lastGlobalOffline;
