@@ -11,7 +11,7 @@ import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
 /**
  * @title Utils to calculate systemId by namespace and system name
  */
-library Utils {
+library InventoryUtils {
   function inventorySystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: "InventorySystem" });
   }
