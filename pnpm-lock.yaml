@@ -107,13 +107,13 @@ importers:
         version: 2.0.12(typescript@5.4.5)(zod@3.23.8)
       '@latticexyz/store':
         specifier: 2.0.12
-        version: 2.0.12
+        version: 2.0.12(@aws-sdk/client-kms@3.609.0)(asn1.js@5.4.1)(typescript@5.4.2)
       '@latticexyz/world':
         specifier: 2.0.12
-        version: 2.0.12
+        version: 2.0.12(@aws-sdk/client-kms@3.609.0)(asn1.js@5.4.1)(typescript@5.4.2)
       '@latticexyz/world-modules':
         specifier: 2.0.12
-        version: 2.0.12
+        version: 2.0.12(typescript@5.4.5)
     devDependencies:
       '@types/debug':
         specifier: 4.1.7
@@ -4619,7 +4619,6 @@ packages:
 
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
-    dev: false
 
   /isomorphic-ws@5.0.0(ws@8.17.1):
     resolution: {integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==}
