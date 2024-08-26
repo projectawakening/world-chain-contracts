@@ -4,7 +4,8 @@ pragma solidity >=0.8.24;
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { EntityRecord, EntityRecordMetadata } from "../../codegen/index.sol";
+import { EntityRecord, EntityRecordMetadata, EntityRecordMetadataData } from "../../codegen/index.sol";
+import { EntityRecordData, EntityMetadata } from "./types.sol";
 
 /**
  * @title EntityRecordSystem
@@ -14,28 +15,23 @@ import { EntityRecord, EntityRecordMetadata } from "../../codegen/index.sol";
 contract EntityRecordSystem is System {
   /**
    * @dev creates a new entity record
-   * @param entityId the id of a in game entity referred as smart object id
-   * @param itemId the id of a item in game
-   * @param volume the volume of the item
+   * @param entityRecord is the EnityRecordData struct with all the data needed to create a new entity record
    */
-  function createEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
-    EntityRecord.set(entityId, itemId, typeId, volume, true);
+  function createEntityRecord(EntityRecordData memory entityRecord) public {
+    EntityRecord.set(entityRecord.entityId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume, true);
   }
 
   /**
    * @dev creates the metadata for an entity record
-   * @param entityId the id of a in game entity referred as smart object id
-   * @param name the name of the entity
-   * @param dappURL stores the URL where the dapp for an entity is hosted
-   * @param description the description of the entity
+   * @param entityRecordMetadata is the EntityMetadata struct with all the data needed to create a new entity record metadata
    */
-  function createEntityRecordMetadata(
-    uint256 entityId,
-    string memory name,
-    string memory dappURL,
-    string memory description
-  ) public {
-    EntityRecordMetadata.set(entityId, name, dappURL, description);
+  function createEntityRecordMetadata(EntityMetadata memory entityRecordMetadata) public {
+    EntityRecordMetadata.set(
+      entityRecordMetadata.entityId,
+      entityRecordMetadata.name,
+      entityRecordMetadata.dappURL,
+      entityRecordMetadata.description
+    );
   }
 
   /**

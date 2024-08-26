@@ -1,9 +1,10 @@
 [profile.default]
 solc = "0.8.24"
+evm_version="cancun"
 ffi = false
-fuzz_runs = 256
 optimizer = true
-optimizer_runs = 3000
+optimizer_runs = 300
+seed = '0x2'
 verbosity = 2
 src = "src"
 test = "test"
@@ -27,3 +28,7 @@ eth_rpc_url = "https://rpc.garnetchain.com"
 
 [profile.redstone]
 eth_rpc_url = "https://rpc.redstonechain.com"
+
+[fuzz]
+fuzz_runs = 10000
+max_test_rejects = 65536
