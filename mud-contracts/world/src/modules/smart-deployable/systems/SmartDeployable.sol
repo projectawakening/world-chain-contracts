@@ -9,7 +9,7 @@ import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.so
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { LOCATION_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
-import { AccessModified } from "../../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { LocationLib } from "../../location/LocationLib.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";

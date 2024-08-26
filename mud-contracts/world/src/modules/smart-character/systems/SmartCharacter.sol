@@ -14,7 +14,7 @@ import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObject
 import { registerERC721 } from "../../eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 
-import { AccessModified } from "../../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";

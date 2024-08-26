@@ -335,6 +335,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testUnanchorAndreAnchor(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,

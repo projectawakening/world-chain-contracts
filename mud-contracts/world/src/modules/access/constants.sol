@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
+
 // System Names - must be unique per Namespace, must match one of the System names provided to the mud.config.ts file
 // standard convention is to use the first 16 characters of the System contract name
-bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControl";
+bytes16 constant ACCESS_SYSTEM_NAME = "AccessSystem";
 
 // Table Names - must be unique per Namespace, must match one of the Table names provided to the mud.config.ts file
 bytes16 constant ACCESS_ROLE_TABLE_NAME = "AccessRole";

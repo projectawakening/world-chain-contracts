@@ -5,7 +5,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 
-import { AccessModified } from "../../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { Utils } from "../Utils.sol";
 import { LocationTable, LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 

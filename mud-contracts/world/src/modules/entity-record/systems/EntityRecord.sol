@@ -6,7 +6,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
-import { AccessModified } from "../../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { Utils } from "../Utils.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";

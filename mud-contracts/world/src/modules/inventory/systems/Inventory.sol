@@ -13,7 +13,7 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { State } from "../../../codegen/common.sol";
 
-import { AccessModified } from "../../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";

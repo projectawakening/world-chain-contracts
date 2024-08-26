@@ -14,7 +14,7 @@ import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTab
 
 import { AccessRole, AccessEnforcement } from "../../../codegen/index.sol";
 
-import { IAccessControlErrors } from "../interfaces/IAccessControlErrors.sol";
+import { IAccessErrors } from "../interfaces/IAccessErrors.sol";
 import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_ENFORCEMENT_TABLE_NAME } from "../constants.sol";
 
 contract AccessModified is System {
@@ -40,7 +40,7 @@ contract AccessModified is System {
         }
       }
       if (!access) {
-        revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
+        revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
       }
     }
     _;
@@ -50,10 +50,7 @@ contract AccessModified is System {
     // check enforcement
     if (_isEnforced()) {
       if (IWorldKernel(_world()).initialMsgSender() != _getOwner(smartObjectId)) {
-        revert IAccessControlErrors.AccessControl_NoPermission(
-          IWorldKernel(_world()).initialMsgSender(),
-          bytes32("OWNER")
-        );
+        revert IAccessErrors.Access_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
       }
     }
     _;
@@ -71,7 +68,7 @@ contract AccessModified is System {
         }
       }
       if (!access) {
-        revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
+        revert IAccessErrors.Access_NoPermission(_msgSender(), APPROVED);
       }
     }
     _;
@@ -90,12 +87,9 @@ contract AccessModified is System {
       }
       if (!(adminAccess || IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
         if (!adminAccess) {
-          revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
+          revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(
-            IWorldKernel(_world()).initialMsgSender(),
-            bytes32("OWNER")
-          );
+          revert IAccessErrors.Access_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
         }
       }
     }
@@ -115,12 +109,9 @@ contract AccessModified is System {
       }
       if (!adminAccess || IWorldKernel(_world()).initialMsgSender() != ephInvOwner) {
         if (!adminAccess) {
-          revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
+          revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(
-            IWorldKernel(_world()).initialMsgSender(),
-            bytes32("OWNER")
-          );
+          revert IAccessErrors.Access_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
         }
       }
     }
@@ -130,7 +121,7 @@ contract AccessModified is System {
   modifier noAccess() {
     // check enforcement
     if (_isEnforced()) {
-      revert IAccessControlErrors.AccessControl_NoPermission(address(0), bytes32(0));
+      revert IAccessErrors.Access_NoPermission(address(0), bytes32(0));
     }
     _;
   }
@@ -158,105 +149,9 @@ contract AccessModified is System {
 
       if (!(adminAccess || approvedAccess)) {
         if (!adminAccess && ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0)) {
-          revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
+          revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
-        }
-      }
-    }
-    _;
-  }
-
-  modifier onlyAdminWithEphInvOwnerOrApproved(uint256 smartObjectId, address ephInvOwner) {
-    // check enforcement
-    if (_isEnforced()) {
-      address[] memory accessListAdmin = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
-      bool adminAccess;
-
-      for (uint256 i = 0; i < accessListAdmin.length; i++) {
-        if (tx.origin == accessListAdmin[i]) {
-          adminAccess = true;
-          break;
-        }
-      }
-      address[] memory accessListApproved = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
-      bool approvedAccess;
-      for (uint256 i = 0; i < accessListApproved.length; i++) {
-        if (_msgSender() == accessListApproved[i]) {
-          approvedAccess = true;
-          break;
-        }
-      }
-
-      if (approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == ephInvOwner)) {
-        _;
-      } else if (approvedAccess && !(adminAccess && IWorldKernel(_world()).initialMsgSender() == ephInvOwner)) {
-        _;
-      } else if (!approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == ephInvOwner)) {
-        _;
-      } else {
-        if (!adminAccess && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
-          revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
-        } else if (
-          (IWorldKernel(_world()).initialMsgSender() != ephInvOwner) &&
-          (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))
-        ) {
-          revert IAccessControlErrors.AccessControl_NoPermission(
-            IWorldKernel(_world()).initialMsgSender(),
-            bytes32("OWNER")
-          );
-        } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
-        }
-      }
-    }
-    _;
-  }
-
-  modifier onlyAdminWithObjectOwnerOrApproved(uint256 smartObjectId) {
-    // check enforcement
-    if (_isEnforced()) {
-      address[] memory accessListAdmin = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
-      bool adminAccess;
-      for (uint256 i = 0; i < accessListAdmin.length; i++) {
-        if (tx.origin == accessListAdmin[i]) {
-          adminAccess = true;
-          break;
-        }
-      }
-      address[] memory accessListApproved = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
-
-      bool approvedAccess;
-      for (uint256 i = 0; i < accessListApproved.length; i++) {
-        if (_msgSender() == accessListApproved[i]) {
-          approvedAccess = true;
-          break;
-        }
-      }
-
-      if (approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
-        _;
-      } else if (
-        approvedAccess && !(adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))
-      ) {
-        _;
-      } else if (
-        !approvedAccess && (adminAccess && IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))
-      ) {
-        _;
-      } else {
-        if (!adminAccess && (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))) {
-          revert IAccessControlErrors.AccessControl_NoPermission(tx.origin, ADMIN);
-        } else if (
-          (IWorldKernel(_world()).initialMsgSender() != _getOwner(smartObjectId)) &&
-          (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0))
-        ) {
-          revert IAccessControlErrors.AccessControl_NoPermission(
-            IWorldKernel(_world()).initialMsgSender(),
-            bytes32("OWNER")
-          );
-        } else {
-          revert IAccessControlErrors.AccessControl_NoPermission(_msgSender(), APPROVED);
+          revert IAccessErrors.Access_NoPermission(_msgSender(), APPROVED);
         }
       }
     }

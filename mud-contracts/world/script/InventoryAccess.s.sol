@@ -12,14 +12,13 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { Utils as InventoryUtils } from "../src/modules/inventory/Utils.sol";
 import { Utils as SmartStorageUnitUtils } from "../src/modules/smart-storage-unit/Utils.sol";
-// import { IAccessControl } from "../src/modules/access-control/interfaces/IAccessControl.sol";
 import { IInventory } from "../src/modules/inventory/interfaces/IInventory.sol";
 import { IEphemeralInventory } from "../src/modules/inventory/interfaces/IEphemeralInventory.sol";
 import { ISmartStorageUnit } from "../src/modules/smart-storage-unit/interfaces/ISmartStorageUnit.sol";
 
 
 // not included in the @eveworld package yet, so include here for the time being
-interface IAccessControl {
+interface IAccess {
   function setAccessListByRole(bytes32 accessRoleId, address[] memory accessList) external;
   function setAccessEnforcement(bytes32 target, bool isEnforced) external;
 }
@@ -30,8 +29,8 @@ contract InventoryAccess is Script {
   using SmartStorageUnitUtils for bytes14;
 
   bytes14 constant EVE_WORLD_NAMESPACE = bytes14("eveworld");
-  bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControl";
-  ResourceId ACCESS_CONTROL_SYSTEM_ID = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_CONTROL_SYSTEM_NAME });
+  bytes16 constant ACCESS_SYSTEM_NAME = "AccessSystem";
+  ResourceId ACCESS_SYSTEM_ID = WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_SYSTEM_NAME });
   
   bytes16 constant ACCESS_ROLE_TABLE_NAME = "AccessRole";
   ResourceId ACCESS_ROLE_TABLE_ID = WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ROLE_TABLE_NAME });
@@ -59,7 +58,7 @@ contract InventoryAccess is Script {
     IBaseWorld world = IBaseWorld(worldAddress);
 
     // assumes AccessRole has been deployed into the eveworld namespace, and the current privkey is the eveworld namespace owner
-    // if no access, grant self access to this resource allowing for AccessControl configuration access
+    // if no access, grant self access to this resource allowing for Access configuration access
     if(!ResourceAccess.get(ACCESS_ROLE_TABLE_ID, deployer)) {
       world.grantAccess(ACCESS_ROLE_TABLE_ID, deployer);
     }
@@ -69,9 +68,9 @@ contract InventoryAccess is Script {
     address interactAddr = Systems.getSystem(EVE_WORLD_NAMESPACE.inventoryInteractSystemId());
     approvedAccessList[0] = interactAddr;
     // set access ADMIN accounts
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
     // set access APPROVED account
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessListByRole, (APPROVED, approvedAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (APPROVED, approvedAccessList)));
 
     // target functions to set access control enforcement for
     // Inventory.depositToInventory
@@ -88,12 +87,12 @@ contract InventoryAccess is Script {
     bytes32 ephInvCreateAndDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartStorageUnitSystemId(), ISmartStorageUnit.createAndDepositItemsToEphemeralInventory.selector));
 
     // set enforcement to true for all
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (invDeposit, true)));
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (invWithdraw, true)));
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (ephInvDeposit, true)));
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (ephInvWithdraw, true)));
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (invCreateAndDeposit, true)));
-    world.call(ACCESS_CONTROL_SYSTEM_ID, abi.encodeCall(IAccessControl.setAccessEnforcement, (ephInvCreateAndDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (invDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (invWithdraw, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (ephInvDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (ephInvWithdraw, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (invCreateAndDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (ephInvCreateAndDeposit, true)));
 
     vm.stopBroadcast();
   }

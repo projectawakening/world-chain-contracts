@@ -357,7 +357,7 @@ contract EphemeralInventoryTest is Test {
       .getItems(INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(), smartObjectId, owner)
       .length;
     // ALTHOUGH THIS LITLERALLY RETURNS THE VALUE 4 EVERY SINGLE TIME, this assertion fails for me, so I'm commenting out for now
-    // assertEq(itemsLength, 4);
+    assertEq(itemsLength, 4);
 
     EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
       INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),

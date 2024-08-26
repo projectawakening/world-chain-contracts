@@ -3,10 +3,14 @@ import { mudConfig } from "@latticexyz/world/register";
 import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
 export default mudConfig({
-  //having a short namespace as the MUD Namespace must be <= 14 characters
+  // having a short namespace as the MUD Namespace must be <= 14 characters
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
-  excludeSystems: ["ERC721System"],
+  excludeSystems: ["ERC721System", "AccessModified"],
   systems: {
+    Access: {
+      name: constants.systemName.ACCESS,
+      openAccess: true,
+    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,

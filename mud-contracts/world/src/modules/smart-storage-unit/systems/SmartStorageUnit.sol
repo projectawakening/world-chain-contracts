@@ -22,7 +22,7 @@ import { InventoryLib } from "../../inventory/InventoryLib.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
-import { AccessModified } from "../../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";

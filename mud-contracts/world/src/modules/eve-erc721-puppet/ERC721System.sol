@@ -16,7 +16,7 @@ import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol"
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
-import { AccessModified } from "../access-control/systems/AccessModified.sol";
+import { AccessModified } from "../access/systems/AccessModified.sol";
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
 import { IStaticData } from "../static-data/interfaces/IStaticData.sol";
@@ -560,7 +560,7 @@ contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSy
     }
   }
 
-  // DON"T NEED THIS, we now permission these with our own access-control modifiers
+  // DON"T NEED THIS, we now permission these with our own access modifiers
   // function _requireOwner() internal {
   //   AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   // }

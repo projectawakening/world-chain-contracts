@@ -227,7 +227,7 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
     token.ownerOf(id);
   }
 
-  // WE NO LONGER REQUIRE burn functionality to be System owner only, we require ADMIN account access currently, this can be tested in the access-control tests
+  // WE NO LONGER REQUIRE burn functionality to be System owner only, we require ADMIN account access currently, this can be tested in the access tests
   // function testBurnRevertAccessDenied(uint256 id, address owner, address operator) public {
   //   _assumeDifferentNonZero(owner, operator, address(this));
 
