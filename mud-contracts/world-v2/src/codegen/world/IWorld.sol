@@ -9,6 +9,9 @@ import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
 import { IERC721System } from "./IERC721System.sol";
 import { IEveSystem } from "./IEveSystem.sol";
 import { IFuelSystem } from "./IFuelSystem.sol";
+import { IEphemeralInventorySystem } from "./IEphemeralInventorySystem.sol";
+import { IInventoryInteractSystem } from "./IInventoryInteractSystem.sol";
+import { IInventorySystem } from "./IInventorySystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
 import { ISmartDeployableSystem } from "./ISmartDeployableSystem.sol";
@@ -27,6 +30,9 @@ interface IWorld is
   IERC721System,
   IEveSystem,
   IFuelSystem,
+  IEphemeralInventorySystem,
+  IInventoryInteractSystem,
+  IInventorySystem,
   ILocationSystem,
   ISmartCharacterSystem,
   ISmartDeployableSystem,
