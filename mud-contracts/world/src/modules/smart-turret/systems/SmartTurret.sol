@@ -111,8 +111,10 @@ contract SmartTurret is EveSystem {
    * @param targetQueue is the queue of the Targets in proximity
    * @param remainingAmmo is the remaining ammo of the Smart Turret
    * @param hpRatio is the hp ratio of the Smart Turret
+   * ??TODO make sure the smart Turret is online
    */
   function inProximity(
+    uint256 smartTurretId,
     uint256 characterId,
     Target[] memory targetQueue,
     uint256 remainingAmmo,
@@ -120,11 +122,11 @@ contract SmartTurret is EveSystem {
   ) public returns (Target[] memory returnTargetQueue) {
     // Delegate the call to the implementation inProximity view function
 
-    ResourceId systemId = SmartTurretConfigTable.get(_namespace().smartTurretConfigTableId(), characterId);
+    ResourceId systemId = SmartTurretConfigTable.get(_namespace().smartTurretConfigTableId(), smartTurretId);
 
     bytes memory returnData = world().call(
       systemId,
-      abi.encodeCall(this.inProximity, (characterId, targetQueue, remainingAmmo, hpRatio))
+      abi.encodeCall(this.inProximity, (smartTurretId, characterId, targetQueue, remainingAmmo, hpRatio))
     );
 
     returnTargetQueue = abi.decode(returnData, (Target[]));

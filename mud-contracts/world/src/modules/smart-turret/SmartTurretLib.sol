@@ -9,6 +9,7 @@ import { SmartObjectData } from "../smart-deployable/types.sol";
 import { Target } from "./types.sol";
 
 import { Utils } from "./Utils.sol";
+import { console } from "forge-std/console.sol";
 
 /**
  * @title Smart Turret Library (makes interacting with the underlying Systems cleaner)
@@ -16,7 +17,7 @@ import { Utils } from "./Utils.sol";
  * @dev To preserve _msgSender() and other context-dependant properties, Library methods like those MUST be `internal`.
  * That way, the compiler is forced to inline the method's implementation in the contract they're imported into.
  */
-contract SmartTurretLib {
+library SmartTurretLib {
   using Utils for bytes14;
 
   struct World {
@@ -49,5 +50,27 @@ contract SmartTurretLib {
         )
       )
     );
+  }
+
+  function configureSmartTurret(World memory world, uint256 smartTurretId, ResourceId systemId) internal {
+    world.iface.call(
+      world.namespace.smartTurretSystemId(),
+      abi.encodeCall(ISmartTurret.configureSmartTurret, (smartTurretId, systemId))
+    );
+  }
+
+  function inProximity(
+    World memory world,
+    uint256 smartTurretId,
+    uint256 characterId,
+    Target[] memory targetQueue,
+    uint256 remainingAmmo,
+    uint256 hpRatio
+  ) internal returns (Target[] memory returnTargetQueue) {
+    bytes memory data = world.iface.call(
+      world.namespace.smartTurretSystemId(),
+      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, characterId, targetQueue, remainingAmmo, hpRatio))
+    );
+    return abi.decode(data, (Target[]));
   }
 }

@@ -21,9 +21,10 @@ interface ISmartTurret {
   function configureSmartTurret(uint256 smartTurretId, ResourceId systemId) external;
 
   function inProximity(
+    uint256 smartTurretId,
     uint256 characterId,
-    uint256 queue,
+    Target[] memory targetQueue,
     uint256 remainingAmmo,
     uint256 hpRatio
-  ) external returns (Target[] memory targetQueue);
+  ) external returns (Target[] memory returnTargetQueue);
 }

@@ -28,6 +28,7 @@ interface ISmartTurret {
   function eveworld__configureSmartTurret(uint256 smartTurretId, ResourceId systemId) external;
 
   function eveworld__inProximity(
+    uint256 smartTurretId,
     uint256 characterId,
     Target[] memory targetQueue,
     uint256 remainingAmmo,
