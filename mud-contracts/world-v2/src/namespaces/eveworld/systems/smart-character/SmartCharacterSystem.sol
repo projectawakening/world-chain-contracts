@@ -7,7 +7,6 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 
 import { Characters, CharacterToken } from "../../codegen/index.sol";
-import { IEntityRecordSystem } from "../../codegen/world/IEntityRecordSystem.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
 import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";

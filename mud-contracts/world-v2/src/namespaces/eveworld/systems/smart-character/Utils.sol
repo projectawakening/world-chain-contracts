@@ -6,14 +6,14 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
+import { DEPLOYMENT_NAMESPACE } from "../constants.sol";
 
 /**
  * @title Utils to calculate systemId by namespace and system name
  */
 library Utils {
-  function locationSystemId() public pure returns (ResourceId systemId) {
+  function smartCharacterSystemId() public pure returns (ResourceId systemId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "LocationSystem" });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartCharacterSy" });
   }
 }

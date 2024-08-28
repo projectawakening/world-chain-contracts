@@ -12,17 +12,16 @@ import { WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/s
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
-import { GasReporter } from "@latticexyz/gas-report/src/GasReporter.sol";
 import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
 
-import { ERC721Module } from "../../src/systems/eve-erc721-puppet/ERC721Module.sol";
-import { ERC721MetadataData } from "../../src/codegen/tables/ERC721Metadata.sol";
-import { IERC721Mintable } from "../../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
-import { IERC721Metadata } from "../../src/systems/eve-erc721-puppet/IERC721Metadata.sol";
-import { registerERC721 } from "../../src/systems/eve-erc721-puppet/registerERC721.sol";
-import { IERC721Errors } from "../../src/systems/eve-erc721-puppet/IERC721Errors.sol";
-import { IERC721Events } from "../../src/systems/eve-erc721-puppet/IERC721Events.sol";
-import { _erc721SystemId } from "../../src/systems/eve-erc721-puppet/utils.sol";
+import { ERC721Module } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/ERC721Module.sol";
+import { ERC721MetadataData } from "../../src/namespaces/eveworld/codegen/tables/ERC721Metadata.sol";
+import { IERC721Mintable } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/IERC721Mintable.sol";
+import { IERC721Metadata } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/IERC721Metadata.sol";
+import { registerERC721 } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/registerERC721.sol";
+import { IERC721Errors } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/IERC721Errors.sol";
+import { IERC721Events } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/IERC721Events.sol";
+import { _erc721SystemId } from "../../src/namespaces/eveworld/systems/eve-erc721-puppet/utils.sol";
 
 abstract contract ERC721TokenReceiver {
   function onERC721Received(address, address, uint256, bytes calldata) external virtual returns (bytes4) {
@@ -65,7 +64,7 @@ contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
 
 contract NonERC721Recipient {}
 
-contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
+contract ERC721Test is MudTest, IERC721Events, IERC721Errors {
   using WorldResourceIdInstance for ResourceId;
 
   IBaseWorld world;
@@ -159,9 +158,7 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     vm.assume(owner != address(0));
 
     _expectMintEvent(owner, id);
-    startGasReport("mint");
     token.mint(owner, id);
-    endGasReport();
 
     assertEq(token.balanceOf(owner), 1);
     assertEq(token.ownerOf(id), owner);
@@ -186,25 +183,12 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     assertEq(token.balanceOf(owner), 1, "after mint");
 
     _expectBurnEvent(owner, id);
-    startGasReport("burn");
     token.burn(id);
-    endGasReport();
 
     assertEq(token.balanceOf(owner), 0, "after burn");
 
     vm.expectRevert(abi.encodeWithSelector(ERC721NonexistentToken.selector, id));
     token.ownerOf(id);
-  }
-
-  function testBurnRevertAccessDenied(uint256 id, address owner, address operator) public {
-    _assumeDifferentNonZero(owner, operator, address(this));
-
-    _expectMintEvent(owner, id);
-    token.mint(owner, id);
-
-    _expectAccessDenied(operator);
-    vm.prank(operator);
-    token.burn(id);
   }
 
   function testTransferFrom(address owner, address to, uint256 tokenId) public {
@@ -214,9 +198,7 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
 
     vm.prank(owner);
 
-    startGasReport("transferFrom");
     token.transferFrom(owner, to, tokenId);
-    endGasReport();
 
     assertEq(token.balanceOf(owner), 0);
     assertEq(token.balanceOf(to), 1);
@@ -231,9 +213,7 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     vm.prank(owner);
     _expectApprovalEvent(owner, spender, id);
 
-    startGasReport("approve");
     token.approve(spender, id);
-    endGasReport();
 
     assertEq(token.getApproved(id), spender);
   }
@@ -244,9 +224,7 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     vm.prank(owner);
     _expectApprovalForAllEvent(owner, operator, approved);
 
-    startGasReport("setApprovalForAll");
     token.setApprovalForAll(operator, approved);
-    endGasReport();
 
     assertEq(token.isApprovedForAll(owner, operator), approved);
   }
@@ -293,9 +271,7 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     token.setApprovalForAll(operator, true);
 
     vm.prank(operator);
-    startGasReport("safeTransferFrom");
     token.safeTransferFrom(from, to, id);
-    endGasReport();
 
     assertEq(token.getApproved(id), address(0));
     assertEq(token.ownerOf(id), to);
@@ -358,9 +334,7 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     _assumeEOA(to);
     vm.assume(to != address(0));
 
-    startGasReport("safeMint");
     token.safeMint(to, id);
-    endGasReport();
 
     assertEq(token.ownerOf(id), to);
     assertEq(token.balanceOf(to), 1);

@@ -16,16 +16,16 @@ import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/Function
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { ISmartCharacterSystem } from "../src/codegen/world/ISmartCharacterSystem.sol";
-import { ERC721MetadataData } from "../src/codegen/tables/ERC721Metadata.sol";
-import { SmartCharacterSystem } from "../src/systems/smart-character/SmartCharacterSystem.sol";
-import { registerERC721 } from "../src/systems/eve-erc721-puppet/registerERC721.sol";
-import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
-import { StaticDataSystem } from "../src/systems/static-data/StaticDataSystem.sol";
+import { ERC721MetadataData } from "../src/namespaces/eveworld/codegen/tables/ERC721Metadata.sol";
+import { SmartCharacterSystem } from "../src/namespaces/eveworld/systems/smart-character/SmartCharacterSystem.sol";
+import { registerERC721 } from "../src/namespaces/eveworld/systems/eve-erc721-puppet/registerERC721.sol";
+import { IERC721Mintable } from "../src/namespaces/eveworld/systems/eve-erc721-puppet/IERC721Mintable.sol";
+import { StaticDataSystem } from "../src/namespaces/eveworld/systems/static-data/StaticDataSystem.sol";
 
-import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
-import { Utils as StaticDataUtils } from "../src/systems/static-data/Utils.sol";
+import { Utils as SmartCharacterUtils } from "../src/namespaces/eveworld/systems/smart-character/Utils.sol";
+import { Utils as StaticDataUtils } from "../src/namespaces/eveworld/systems/static-data/Utils.sol";
 
-import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
+import { DEPLOYMENT_NAMESPACE } from "../src/namespaces/eveworld/systems/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterUtils for bytes14;
