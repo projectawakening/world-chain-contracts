@@ -12,4 +12,3 @@ ResourceId constant SMART_TURRET_MODULE_NAMESPACE_ID = ResourceId.wrap(
 );
 
 bytes16 constant SMART_TURRET_CONFIG_TABLE_NAME = "SmartTurretConfi";
-

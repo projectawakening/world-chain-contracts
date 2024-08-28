@@ -11,6 +11,7 @@ import { SmartObjectData } from "../smart-deployable/types.sol";
 import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
 import { Target } from "./types.sol";
 import { Utils } from "./Utils.sol";
+
 /**
  * @title Smart Turret Library (makes interacting with the underlying Systems cleaner)
  * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
