@@ -30,8 +30,18 @@ interface ISmartTurret {
   function eveworld__inProximity(
     uint256 smartTurretId,
     uint256 characterId,
-    Target[] memory targetQueue,
+    Target[] memory priorityQueue,
     uint256 remainingAmmo,
     uint256 hpRatio
+  ) external returns (Target[] memory returnTargetQueue);
+
+  function eveworld__aggression(
+    uint256 smartTurretId,
+    uint256 aggressorCharacterId,
+    uint256 aggressorHp,
+    uint256 victimItemId,
+    uint256 victimHp,
+    Target[] memory priorityQueue,
+    uint256 chargesLeft
   ) external returns (Target[] memory returnTargetQueue);
 }

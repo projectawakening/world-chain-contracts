@@ -1,16 +1,16 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+
 import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol";
-import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
 import { SmartObjectData } from "../smart-deployable/types.sol";
+
+import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
 import { Target } from "./types.sol";
-
 import { Utils } from "./Utils.sol";
-import { console } from "forge-std/console.sol";
-
 /**
  * @title Smart Turret Library (makes interacting with the underlying Systems cleaner)
  * Works similarly to direct calls to world, without having to deal with dynamic method's function selectors due to namespacing.
@@ -70,6 +70,26 @@ library SmartTurretLib {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, characterId, targetQueue, remainingAmmo, hpRatio))
+    );
+    return abi.decode(data, (Target[]));
+  }
+
+  function aggression(
+    World memory world,
+    uint256 smartTurretId,
+    uint256 aggressorCharacterId,
+    uint256 aggressorHp,
+    uint256 victimItemId,
+    uint256 victimHp,
+    Target[] memory priorityQueue,
+    uint256 chargesLeft
+  ) internal returns (Target[] memory returnTargetQueue) {
+    bytes memory data = world.iface.call(
+      world.namespace.smartTurretSystemId(),
+      abi.encodeCall(
+        ISmartTurret.aggression,
+        (smartTurretId, aggressorCharacterId, aggressorHp, victimItemId, victimHp, priorityQueue, chargesLeft)
+      )
     );
     return abi.decode(data, (Target[]));
   }

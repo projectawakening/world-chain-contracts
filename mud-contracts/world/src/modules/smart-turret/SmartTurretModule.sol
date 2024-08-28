@@ -6,14 +6,13 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Module } from "@latticexyz/world/src/Module.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { System } from "@latticexyz/world/src/System.sol";
 
 import { SMART_TURRET_MODULE_NAME as MODULE_NAME, SMART_TURRET_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 
-import { SmartTurretConfigTable } from "../../codegen/tables/SmartTurretConfigTable.sol";
-
 import { SmartTurret } from "./systems/SmartTurret.sol";
+
+import { SmartTurretConfigTable } from "../../codegen/tables/SmartTurretConfigTable.sol";
 
 contract SmartTurretModule is Module {
   error SmartTurretModule_InvalidNamespace(bytes14 namespace);
@@ -42,7 +41,7 @@ contract SmartTurretModule is Module {
     requireNotInstalled(__self, encodedArgs);
 
     // Extract args
-    (bytes14 namespace, address smartTurret) = abi.decode(encodedArgs, (bytes14, address));
+    bytes14 namespace = abi.decode(encodedArgs, (bytes14));
 
     // Require the namespace to not be the module's namespace
     if (namespace == MODULE_NAMESPACE) {
@@ -55,7 +54,7 @@ contract SmartTurretModule is Module {
     // Register the smart turret's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
-      abi.encodeCall(SmartTurretModuleRegistrationLibrary.register, (world, namespace, smartTurret))
+      abi.encodeCall(SmartTurretModuleRegistrationLibrary.register, (world, namespace))
     );
     require(success, string(returnedData));
 
@@ -74,9 +73,9 @@ contract SmartTurretModuleRegistrationLibrary {
   using Utils for bytes14;
 
   /**
-   * Register systems and tables for a new smart turretin a given namespace
+   * Register systems and tables for a new smart turret in a given namespace
    */
-  function register(IBaseWorld world, bytes14 namespace, address smartTurret) public {
+  function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
@@ -86,6 +85,6 @@ contract SmartTurretModuleRegistrationLibrary {
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartTurretSystemId()))
-      world.registerSystem(namespace.smartTurretSystemId(), System(smartTurret), true);
+      world.registerSystem(namespace.smartTurretSystemId(), new SmartTurret(), true);
   }
 }

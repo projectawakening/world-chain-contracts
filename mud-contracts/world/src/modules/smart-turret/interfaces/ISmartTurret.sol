@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { EntityRecordData, WorldPosition } from "../../smart-storage-unit/types.sol";
 import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { Target } from "../types.sol";
 
+/**
+ * @title ISmartTurret
+ * @notice Interface for Smart Turret module
+ */
 interface ISmartTurret {
   function createAndAnchorSmartTurret(
     uint256 smartTurretId,
@@ -23,8 +27,18 @@ interface ISmartTurret {
   function inProximity(
     uint256 smartTurretId,
     uint256 characterId,
-    Target[] memory targetQueue,
+    Target[] memory priorityQueue,
     uint256 remainingAmmo,
     uint256 hpRatio
+  ) external returns (Target[] memory returnTargetQueue);
+
+  function aggression(
+    uint256 smartTurretId,
+    uint256 aggressorCharacterId,
+    uint256 aggressorHp,
+    uint256 victimItemId,
+    uint256 victimHp,
+    Target[] memory priorityQueue,
+    uint256 chargesLeft
   ) external returns (Target[] memory returnTargetQueue);
 }
