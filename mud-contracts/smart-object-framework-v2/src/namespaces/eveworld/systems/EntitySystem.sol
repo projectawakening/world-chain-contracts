@@ -9,23 +9,23 @@ import { Classes, ClassesData } from "../codegen/tables/Classes.sol";
 import { ClassSystemTagMap } from "../codegen/tables/ClassSystemTagMap.sol";
 import { ClassObjectMap, ClassObjectMapData } from "../codegen/tables/ClassObjectMap.sol";
 import { Objects } from "../codegen/tables/Objects.sol";
-import { IWorld } from "../codegen/world/IWorld.sol";
+import { IWorld } from "../../../codegen/world/IWorld.sol";
 
-import { Id, IdLib } from "../libs/Id.sol";
-import { ENTITY_CLASS, ENTITY_OBJECT } from "../types/entityTypes.sol";
-import { TAG_SYSTEM } from "../types/tagTypes.sol";
+import { Id, IdLib } from "../../../libs/Id.sol";
+import { ENTITY_CLASS, ENTITY_OBJECT } from "../../../types/entityTypes.sol";
+import { TAG_SYSTEM } from "../../../types/tagTypes.sol";
 
-import { ITags } from "../interfaces/ITags.sol";
-import { IErrors } from "../interfaces/IErrors.sol";
+import { ITagSystem } from "../../../interfaces/ITagSystem.sol";
+import { IErrors } from "../../../interfaces/IErrors.sol";
 
-import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
+import { SmartObjectFramework } from "../../../inherit/SmartObjectFramework.sol";
 
 /**
- * @title Entities
+ * @title EntitySystem
  * @author CCP Games
  * @dev Manage Class and Object creation/deletion through the use of reference Ids { see, `libs/Id.sol` and `types/entityTypes.sol`}
  */
-contract Entities is SmartObjectSystem {
+contract EntitySystem is SmartObjectFramework {
   /**
    * @notice register a Class Entity into the SOF with an initial set of assigned SystemTags
    * @param classId A unique ENTITY_CLASS type Id for referencing a newly registred Class Entity within SOF compatible Systems

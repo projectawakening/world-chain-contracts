@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { SmartObjectSystem } from "../../src/systems/inherit/SmartObjectSystem.sol";
+import { SmartObjectFramework } from "../../src/inherit/SmartObjectFramework.sol";
 import { Id } from "../../src/libs/Id.sol";
 
-contract TaggedSystemMock is SmartObjectSystem {
+contract TaggedSystemMock is SmartObjectFramework {
   function allowClassLevelScope(Id classId) public scope(classId) returns (bool) {
     return true;
   }

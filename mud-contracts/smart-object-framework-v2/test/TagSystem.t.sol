@@ -14,14 +14,14 @@ import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/world
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 
-import { Entities } from "../src/systems/Entities.sol";
-import { Tags } from "../src/systems/Tags.sol";
+import { EntitySystem } from "../src/namespaces/eveworld/systems/EntitySystem.sol";
+import { TagSystem } from "../src/namespaces/eveworld/systems/TagSystem.sol";
 import { TaggedSystemMock } from "./mocks/TaggedSystemMock.sol";
 import { TaggedSystemMock2 } from "./mocks/TaggedSystemMock2.sol";
 import { TaggedSystemMock3 } from "./mocks/TaggedSystemMock3.sol";
 import { UnTaggedSystemMock } from "./mocks/UnTaggedSystemMock.sol";
 
-import "../src/codegen/index.sol";
+import "../src/namespaces/eveworld/codegen/index.sol";
 
 import { Id, IdLib } from "../src/libs/Id.sol";
 import { ENTITY_CLASS, ENTITY_OBJECT } from "../src/types/entityTypes.sol";
@@ -29,10 +29,8 @@ import { TAG_SYSTEM } from "../src/types/tagTypes.sol";
 
 import { IErrors } from "../src/interfaces/IErrors.sol";
 
-contract TagsTest is MudTest {
+contract TagSystemTest is MudTest {
   IBaseWorld world;
-  Entities entities;
-  Tags tags;
   TaggedSystemMock taggedSystemMock;
   TaggedSystemMock2 taggedSystemMock2;
   TaggedSystemMock3 taggedSystemMock3;
@@ -40,10 +38,10 @@ contract TagsTest is MudTest {
 
   bytes14 constant NAMESPACE = bytes14("eveworld");
   ResourceId constant NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, NAMESPACE)));
-  ResourceId constant ENTITIES_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Entities")))));
-  ResourceId constant TAGS_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Tags")))));
+  ResourceId constant ENTITY_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("EntitySystem")))));
+  ResourceId constant TAG_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TagSystem")))));
   ResourceId constant TAGGED_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMock")))));
   ResourceId constant TAGGED_SYSTEM_ID_2 =
@@ -99,7 +97,7 @@ contract TagsTest is MudTest {
     world.registerFunctionSelector(UNTAGGED_SYSTEM_ID, "blockObjectLevelScope(bytes32)");
 
     // register Class without any tags
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, new Id[](0))));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, new Id[](0))));
     vm.stopPrank();
   }
 
@@ -196,21 +194,21 @@ contract TagsTest is MudTest {
   function testSetSystemTag() public {
     // reverts if classId has NOT been registered
     vm.expectRevert(abi.encodeWithSelector(IErrors.ClassDoesNotExist.selector, unregisteredClassId));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (unregisteredClassId, taggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (unregisteredClassId, taggedSystemTagId)));
 
     // revert for bytes32(0) tagId
     vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidTagId.selector, Id.wrap(bytes32(0))));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (classId, Id.wrap(bytes32(0)))));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (classId, Id.wrap(bytes32(0)))));
 
     // revert if tag type is not TAG_SYSTEM
     bytes2[] memory expected = new bytes2[](1);
     expected[0] = TAG_SYSTEM;
     vm.expectRevert(abi.encodeWithSelector(IErrors.WrongTagType.selector, nonSystemTagId.getType(), expected));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (classId, nonSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (classId, nonSystemTagId)));
 
     // reverts if correlated systemId has not been registered on the World
     vm.expectRevert(abi.encodeWithSelector(IErrors.SystemNotRegistered.selector, UNREGISTERED_SYSTEM_ID));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (classId, unregisteredSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (classId, unregisteredSystemTagId)));
 
     // check that the data tables have been correctly updated
 
@@ -227,7 +225,7 @@ contract TagsTest is MudTest {
     ClassSystemTagMapData memory class1Tag1MapDataBefore = ClassSystemTagMap.get(classId, taggedSystemTagId);
     assertEq(class1Tag1MapDataBefore.hasTag, false);
     // successfull call
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (classId, taggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (classId, taggedSystemTagId)));
     // after
     bytes32[] memory class1SystemTagsAfter = Classes.getSystemTags(classId);
     assertEq(class1SystemTagsAfter.length, 1);
@@ -245,13 +243,13 @@ contract TagsTest is MudTest {
 
     // revert if Class already has this SystemTag
     vm.expectRevert(abi.encodeWithSelector(IErrors.EntityAlreadyHasTag.selector, classId, taggedSystemTagId));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (classId, taggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (classId, taggedSystemTagId)));
 
     // check multi-class tagging data
     // register TEST_CLASS_2 without any tags
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId2, new Id[](0))));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId2, new Id[](0))));
     // add our tag to classId2
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTag, (classId2, taggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTag, (classId2, taggedSystemTagId)));
     bytes32[] memory systemTagClassesAfter = SystemTags.getClasses(taggedSystemTagId);
     assertEq(systemTagClassesAfter.length, 2);
     assertEq(systemTagClassesAfter[0], Id.unwrap(classId));
@@ -281,7 +279,7 @@ contract TagsTest is MudTest {
     ids[1] = taggedSystemTagId2;
     ids[2] = taggedSystemTagId3;
 
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTags, (classId, ids)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTags, (classId, ids)));
     // after
     bytes32[] memory classSystemTagsAfter = Classes.getSystemTags(classId);
     assertEq(classSystemTagsAfter.length, 3);
@@ -320,17 +318,17 @@ contract TagsTest is MudTest {
     ids[1] = taggedSystemTagId2;
     ids[2] = taggedSystemTagId3;
 
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTags, (classId, ids)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTags, (classId, ids)));
     // register TEST_CLASS_2 with the same tags as TEST_CLASS
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId2, ids)));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId2, ids)));
 
     // reverts if classId has NOT been registered
     vm.expectRevert(abi.encodeWithSelector(IErrors.ClassDoesNotExist.selector, unregisteredClassId));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.removeSystemTag, (unregisteredClassId, taggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.removeSystemTag, (unregisteredClassId, taggedSystemTagId)));
 
     // reverts if tagId does NOT exist
     vm.expectRevert(abi.encodeWithSelector(IErrors.TagDoesNotExist.selector, untaggedSystemTagId));
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.removeSystemTag, (classId, untaggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.removeSystemTag, (classId, untaggedSystemTagId)));
 
     // correctly updates data: Classes.systemTags, SystemTags.classes, ClasSystemTagMap
     // before
@@ -392,7 +390,7 @@ contract TagsTest is MudTest {
     assertEq(class2Tag3MapDataBefore.tagIndex, 2);
 
     // successful call
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.removeSystemTag, (classId, taggedSystemTagId)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.removeSystemTag, (classId, taggedSystemTagId)));
 
     // after
     bytes32[] memory class1SystemTagsAfter = Classes.getSystemTags(classId);
@@ -458,9 +456,9 @@ contract TagsTest is MudTest {
     ids[1] = taggedSystemTagId2;
     ids[2] = taggedSystemTagId3;
 
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.setSystemTags, (classId, ids)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.setSystemTags, (classId, ids)));
     // register TEST_CLASS_2 with the same tags as TEST_CLASS
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId2, ids)));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId2, ids)));
 
     // correctly updates data: Classes.systemTags, SystemTags.classes, ClasSystemTagMap
     // before
@@ -526,12 +524,12 @@ contract TagsTest is MudTest {
     Id[] memory class1RemoveIds = new Id[](2);
     class1RemoveIds[0] = taggedSystemTagId3;
     class1RemoveIds[1] = taggedSystemTagId;
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.removeSystemTags, (classId, class1RemoveIds)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.removeSystemTags, (classId, class1RemoveIds)));
 
     Id[] memory class2RemoveIds = new Id[](2);
     class2RemoveIds[0] = taggedSystemTagId;
     class2RemoveIds[1] = taggedSystemTagId2;
-    world.call(TAGS_SYSTEM_ID, abi.encodeCall(Tags.removeSystemTags, (classId2, class2RemoveIds)));
+    world.call(TAG_SYSTEM_ID, abi.encodeCall(TagSystem.removeSystemTags, (classId2, class2RemoveIds)));
 
     // after
     bytes32[] memory class1SystemTagsAfter = Classes.getSystemTags(classId);

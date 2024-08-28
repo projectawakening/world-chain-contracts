@@ -17,7 +17,7 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 // Import user types
-import { Id } from "./../../libs/Id.sol";
+import { Id } from "../../../../libs/Id.sol";
 
 struct ClassesData {
   bool exists;

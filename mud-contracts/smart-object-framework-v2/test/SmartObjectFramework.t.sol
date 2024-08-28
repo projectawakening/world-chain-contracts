@@ -14,12 +14,12 @@ import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/world
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 
-import { Entities } from "../src/systems/Entities.sol";
-import { Tags } from "../src/systems/Tags.sol";
+import { EntitySystem } from "../src/namespaces/eveworld/systems/EntitySystem.sol";
+import { TagSystem } from "../src/namespaces/eveworld/systems/TagSystem.sol";
 import { TaggedSystemMock } from "./mocks/TaggedSystemMock.sol";
 import { UnTaggedSystemMock } from "./mocks/UnTaggedSystemMock.sol";
 
-import "../src/codegen/index.sol";
+import "../src/namespaces/eveworld/codegen/index.sol";
 
 import { Id, IdLib } from "../src/libs/Id.sol";
 import { ENTITY_CLASS, ENTITY_OBJECT } from "../src/types/entityTypes.sol";
@@ -27,19 +27,15 @@ import { TAG_SYSTEM } from "../src/types/tagTypes.sol";
 
 import { IErrors } from "../src/interfaces/IErrors.sol";
 
-contract SmartObjectSystemTest is MudTest {
+contract SmartObjectFrameworkTest is MudTest {
   IBaseWorld world;
-  Entities entities;
-  Tags tags;
   TaggedSystemMock taggedSystemMock;
   UnTaggedSystemMock unTaggedSystemMock;
 
   bytes14 constant NAMESPACE = bytes14("eveworld");
   ResourceId constant NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, NAMESPACE)));
-  ResourceId constant ENTITIES_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Entities")))));
-  ResourceId constant TAGS_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Tags")))));
+  ResourceId constant ENTITY_SYSTEM_ID =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("EntitySystem")))));
   ResourceId constant TAGGED_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMock")))));
   ResourceId constant UNTAGGED_SYSTEM_ID =
@@ -82,16 +78,16 @@ contract SmartObjectSystemTest is MudTest {
     // register Class with TaggedSystemMock tag
     Id[] memory systemTagIds = new Id[](1);
     systemTagIds[0] = taggedSystemTagId;
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, systemTagIds)));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, systemTagIds)));
 
     // register UnTagged Class
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (unTaggedClassId, new Id[](0))));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (unTaggedClassId, new Id[](0))));
 
     // instantiate Class<>Object
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
 
     // instantiate Untagged Class<>Object
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (unTaggedClassId, unTaggedObjectId)));
+    world.call(ENTITY_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (unTaggedClassId, unTaggedObjectId)));
     vm.stopPrank();
   }
 

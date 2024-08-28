@@ -5,19 +5,24 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-import { Id, IdLib } from "../libs/Id.sol";
-import { ENTITY_CLASS } from "../types/entityTypes.sol";
-import { TAG_SYSTEM } from "../types/tagTypes.sol";
+import { Id, IdLib } from "../../../libs/Id.sol";
+import { ENTITY_CLASS } from "../../../types/entityTypes.sol";
+import { TAG_SYSTEM } from "../../../types/tagTypes.sol";
 
 import { Classes } from "../codegen/tables/Classes.sol";
 import { ClassSystemTagMap, ClassSystemTagMapData } from "../codegen/tables/ClassSystemTagMap.sol";
 import { SystemTags } from "../codegen/tables/SystemTags.sol";
 
-import { IErrors } from "../interfaces/IErrors.sol";
+import { IErrors } from "../../../interfaces/IErrors.sol";
 
-import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
+import { SmartObjectFramework} from "../../../inherit/SmartObjectFramework.sol";
 
-contract Tags is SmartObjectSystem {
+/**
+ * @title TagSystem
+ * @author CCP Games
+ * @dev Manage Tag setting/removal for Class linking through the use of reference Ids { see, `libs/Id.sol` and `types/tagTypes.sol`}
+ */
+contract TagSystem is SmartObjectFramework {
   /**
    * @notice set a SystemTag for a Class
    * @param classId An ENTITY_CLASS type Id referencing an existing Class to tag with `systemTagId`

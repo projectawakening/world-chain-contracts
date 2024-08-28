@@ -5,20 +5,20 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { Id, IdLib } from "../../libs/Id.sol";
-import { TAG_SYSTEM } from "../../types/tagTypes.sol";
-import { ENTITY_CLASS, ENTITY_OBJECT } from "../../types/entityTypes.sol";
-import { Objects } from "../../codegen/tables/Objects.sol";
-import { ClassSystemTagMap } from "../../codegen/tables/ClassSystemTagMap.sol";
+import { Id, IdLib } from "../libs/Id.sol";
+import { TAG_SYSTEM } from "../types/tagTypes.sol";
+import { ENTITY_CLASS, ENTITY_OBJECT } from "../types/entityTypes.sol";
+import { Objects } from "../namespaces/eveworld/codegen/tables/Objects.sol";
+import { ClassSystemTagMap } from "../namespaces/eveworld/codegen/tables/ClassSystemTagMap.sol";
 
-import { IErrors } from "../../interfaces/IErrors.sol";
+import { IErrors } from "../interfaces/IErrors.sol";
 
 /**
  * @title SmartObjectSystem
  * @author CCP Games
  * @dev Extends the standard MUD System.sol with Smart Object Framework functionality
  */
-contract SmartObjectSystem is System {
+contract SmartObjectFramework is System {
   /**
    * @dev A modifier to enforce Entity based System accessibility scope
    * @param entityId The Object (or Class) Entity to enforce System accessibility for

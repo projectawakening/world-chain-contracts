@@ -17,25 +17,24 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 // Import user types
-import { Id } from "./../../libs/Id.sol";
+import { Id } from "../../../../libs/Id.sol";
 
-struct ClassSystemTagMapData {
-  bool hasTag;
-  uint256 classIndex;
-  uint256 tagIndex;
+struct ClassObjectMapData {
+  bool instanceOf;
+  uint256 objectIndex;
 }
 
-library ClassSystemTagMap {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "ClassSystemTagMa", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000436c61737353797374656d5461674d61);
+library ClassObjectMap {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "ClassObjectMap", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000436c6173734f626a6563744d61700000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0041030001202000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0021020001200000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (bytes32, bytes32)
   Schema constant _keySchema = Schema.wrap(0x004002005f5f0000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (bool, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x00410300601f1f00000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x00210200601f0000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -44,7 +43,7 @@ library ClassSystemTagMap {
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](2);
     keyNames[0] = "classId";
-    keyNames[1] = "tagId";
+    keyNames[1] = "objectId";
   }
 
   /**
@@ -52,10 +51,9 @@ library ClassSystemTagMap {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
-    fieldNames[0] = "hasTag";
-    fieldNames[1] = "classIndex";
-    fieldNames[2] = "tagIndex";
+    fieldNames = new string[](2);
+    fieldNames[0] = "instanceOf";
+    fieldNames[1] = "objectIndex";
   }
 
   /**
@@ -73,150 +71,104 @@ library ClassSystemTagMap {
   }
 
   /**
-   * @notice Get hasTag.
+   * @notice Get instanceOf.
    */
-  function getHasTag(Id classId, Id tagId) internal view returns (bool hasTag) {
+  function getInstanceOf(Id classId, Id objectId) internal view returns (bool instanceOf) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Get hasTag.
+   * @notice Get instanceOf.
    */
-  function _getHasTag(Id classId, Id tagId) internal view returns (bool hasTag) {
+  function _getInstanceOf(Id classId, Id objectId) internal view returns (bool instanceOf) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
   }
 
   /**
-   * @notice Set hasTag.
+   * @notice Set instanceOf.
    */
-  function setHasTag(Id classId, Id tagId, bool hasTag) internal {
+  function setInstanceOf(Id classId, Id objectId, bool instanceOf) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((hasTag)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((instanceOf)), _fieldLayout);
   }
 
   /**
-   * @notice Set hasTag.
+   * @notice Set instanceOf.
    */
-  function _setHasTag(Id classId, Id tagId, bool hasTag) internal {
+  function _setInstanceOf(Id classId, Id objectId, bool instanceOf) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((hasTag)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((instanceOf)), _fieldLayout);
   }
 
   /**
-   * @notice Get classIndex.
+   * @notice Get objectIndex.
    */
-  function getClassIndex(Id classId, Id tagId) internal view returns (uint256 classIndex) {
+  function getObjectIndex(Id classId, Id objectId) internal view returns (uint256 objectIndex) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get classIndex.
+   * @notice Get objectIndex.
    */
-  function _getClassIndex(Id classId, Id tagId) internal view returns (uint256 classIndex) {
+  function _getObjectIndex(Id classId, Id objectId) internal view returns (uint256 objectIndex) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set classIndex.
+   * @notice Set objectIndex.
    */
-  function setClassIndex(Id classId, Id tagId, uint256 classIndex) internal {
+  function setObjectIndex(Id classId, Id objectId, uint256 objectIndex) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((classIndex)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((objectIndex)), _fieldLayout);
   }
 
   /**
-   * @notice Set classIndex.
+   * @notice Set objectIndex.
    */
-  function _setClassIndex(Id classId, Id tagId, uint256 classIndex) internal {
+  function _setObjectIndex(Id classId, Id objectId, uint256 objectIndex) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((classIndex)), _fieldLayout);
-  }
-
-  /**
-   * @notice Get tagIndex.
-   */
-  function getTagIndex(Id classId, Id tagId) internal view returns (uint256 tagIndex) {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get tagIndex.
-   */
-  function _getTagIndex(Id classId, Id tagId) internal view returns (uint256 tagIndex) {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Set tagIndex.
-   */
-  function setTagIndex(Id classId, Id tagId, uint256 tagIndex) internal {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((tagIndex)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set tagIndex.
-   */
-  function _setTagIndex(Id classId, Id tagId, uint256 tagIndex) internal {
-    bytes32[] memory _keyTuple = new bytes32[](2);
-    _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((tagIndex)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((objectIndex)), _fieldLayout);
   }
 
   /**
    * @notice Get the full data.
    */
-  function get(Id classId, Id tagId) internal view returns (ClassSystemTagMapData memory _table) {
+  function get(Id classId, Id objectId) internal view returns (ClassObjectMapData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -229,10 +181,10 @@ library ClassSystemTagMap {
   /**
    * @notice Get the full data.
    */
-  function _get(Id classId, Id tagId) internal view returns (ClassSystemTagMapData memory _table) {
+  function _get(Id classId, Id objectId) internal view returns (ClassObjectMapData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -245,15 +197,15 @@ library ClassSystemTagMap {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(Id classId, Id tagId, bool hasTag, uint256 classIndex, uint256 tagIndex) internal {
-    bytes memory _staticData = encodeStatic(hasTag, classIndex, tagIndex);
+  function set(Id classId, Id objectId, bool instanceOf, uint256 objectIndex) internal {
+    bytes memory _staticData = encodeStatic(instanceOf, objectIndex);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -261,15 +213,15 @@ library ClassSystemTagMap {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(Id classId, Id tagId, bool hasTag, uint256 classIndex, uint256 tagIndex) internal {
-    bytes memory _staticData = encodeStatic(hasTag, classIndex, tagIndex);
+  function _set(Id classId, Id objectId, bool instanceOf, uint256 objectIndex) internal {
+    bytes memory _staticData = encodeStatic(instanceOf, objectIndex);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -277,15 +229,15 @@ library ClassSystemTagMap {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(Id classId, Id tagId, ClassSystemTagMapData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.hasTag, _table.classIndex, _table.tagIndex);
+  function set(Id classId, Id objectId, ClassObjectMapData memory _table) internal {
+    bytes memory _staticData = encodeStatic(_table.instanceOf, _table.objectIndex);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -293,15 +245,15 @@ library ClassSystemTagMap {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(Id classId, Id tagId, ClassSystemTagMapData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.hasTag, _table.classIndex, _table.tagIndex);
+  function _set(Id classId, Id objectId, ClassObjectMapData memory _table) internal {
+    bytes memory _staticData = encodeStatic(_table.instanceOf, _table.objectIndex);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -309,12 +261,10 @@ library ClassSystemTagMap {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (bool hasTag, uint256 classIndex, uint256 tagIndex) {
-    hasTag = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
+  function decodeStatic(bytes memory _blob) internal pure returns (bool instanceOf, uint256 objectIndex) {
+    instanceOf = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
 
-    classIndex = (uint256(Bytes.getBytes32(_blob, 1)));
-
-    tagIndex = (uint256(Bytes.getBytes32(_blob, 33)));
+    objectIndex = (uint256(Bytes.getBytes32(_blob, 1)));
   }
 
   /**
@@ -327,17 +277,17 @@ library ClassSystemTagMap {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (ClassSystemTagMapData memory _table) {
-    (_table.hasTag, _table.classIndex, _table.tagIndex) = decodeStatic(_staticData);
+  ) internal pure returns (ClassObjectMapData memory _table) {
+    (_table.instanceOf, _table.objectIndex) = decodeStatic(_staticData);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(Id classId, Id tagId) internal {
+  function deleteRecord(Id classId, Id objectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -345,10 +295,10 @@ library ClassSystemTagMap {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(Id classId, Id tagId) internal {
+  function _deleteRecord(Id classId, Id objectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -357,8 +307,8 @@ library ClassSystemTagMap {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(bool hasTag, uint256 classIndex, uint256 tagIndex) internal pure returns (bytes memory) {
-    return abi.encodePacked(hasTag, classIndex, tagIndex);
+  function encodeStatic(bool instanceOf, uint256 objectIndex) internal pure returns (bytes memory) {
+    return abi.encodePacked(instanceOf, objectIndex);
   }
 
   /**
@@ -368,11 +318,10 @@ library ClassSystemTagMap {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    bool hasTag,
-    uint256 classIndex,
-    uint256 tagIndex
+    bool instanceOf,
+    uint256 objectIndex
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(hasTag, classIndex, tagIndex);
+    bytes memory _staticData = encodeStatic(instanceOf, objectIndex);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -383,10 +332,10 @@ library ClassSystemTagMap {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(Id classId, Id tagId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(Id classId, Id objectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = Id.unwrap(classId);
-    _keyTuple[1] = Id.unwrap(tagId);
+    _keyTuple[1] = Id.unwrap(objectId);
 
     return _keyTuple;
   }

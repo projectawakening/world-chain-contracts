@@ -5,10 +5,10 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { Id } from "../libs/Id.sol";
 
 /**
- * @title IEntities
- * @dev An interface for the Entities System functionality
+ * @title IEntitySystem
+ * @dev An interface for the Entity System functionality
  */
-interface IEntities {
+interface IEntitySystem {
   function registerClass(Id classId, Id[] memory systemTagIds) external;
   function deleteClass(Id classId) external;
   function deleteClasses(Id[] memory classIds) external;
