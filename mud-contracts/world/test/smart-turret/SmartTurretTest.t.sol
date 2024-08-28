@@ -19,13 +19,14 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-import { SMART_TURRET_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_TURRET_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
 import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
 import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
 import { Utils } from "../../src/modules/smart-turret/Utils.sol";
 import { SmartTurretModule } from "../../src/modules/smart-turret/SmartTurretModule.sol";
@@ -44,22 +45,39 @@ import { Target, HPratio } from "../../src/modules/smart-turret/types.sol";
 import { SmartTurret as SmartTurretSystem } from "../../src/modules/smart-turret/systems/SmartTurret.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { EntityRecordData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
+import { SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
+import { Utils as SmartCharacterUtils } from "../../src/modules/smart-character/Utils.sol";
+import { SmartCharacterModule } from "../../src/modules/smart-character/SmartCharacterModule.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordData as EntityRecordCharacter } from "../../src/modules/smart-character/types.sol";
+
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { SmartTurretConfigTable } from "../../src/codegen/tables/SmartTurretConfigTable.sol";
-import { SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
+import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
+
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 contract SmartTurretTestSystem is System {
+  using SmartCharacterUtils for bytes14;
+
   function inProximity(
     uint256 smartTurretId,
     uint256 characterId,
-    Target[] memory targetQueue,
+    Target[] memory priorityQueue,
     uint256 remainingAmmo,
     uint256 hpRatio
   ) public returns (Target[] memory returnTargetQueue) {
     //TODO: Implement the logic for the system
+    CharactersTableData memory characterData = CharactersTable.get(
+      DEPLOYMENT_NAMESPACE.charactersTableId(),
+      characterId
+    );
+    if (characterData.corpId == 100) {
+      return priorityQueue;
+    }
 
-    return targetQueue;
+    return returnTargetQueue;
   }
 
   function aggression(
@@ -81,20 +99,29 @@ contract SmartTurretTestSystem is System {
  */
 contract SmartTurretTest is Test {
   using Utils for bytes14;
+  using SmartCharacterUtils for bytes14;
+  using SmartCharacterLib for SmartCharacterLib.World;
   using SmartTurretLib for SmartTurretLib.World;
   using WorldResourceIdInstance for ResourceId;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartObjectLib for SmartObjectLib.World;
 
   IBaseWorld world;
+  SmartCharacterLib.World smartCharacter;
   SmartTurretLib.World smartTurret;
   SmartDeployableLib.World smartDeployable;
-  IERC721Mintable erc721DeployableToken;
+  IERC721Mintable erc721TurretToken;
+  IERC721Mintable erc721CharacterToken;
+  SmartObjectLib.World SOFInterface;
 
   SmartTurretTestSystem smartTurretTestSystem = new SmartTurretTestSystem();
   ResourceId smartTurretTesStystemId =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, "SmartTurretTestS"))));
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
+  bytes14 constant SMART_CHAR_ERC721 = "ERC721Char";
+  uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
+  uint256[] smartCharClassIds;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -107,6 +134,11 @@ contract SmartTurretTest is Test {
       new SmartObjectFrameworkModule(),
       abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
     );
+    SOFInterface = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);
+
+    // install smartCharacterModule
+    _installModule(new SmartCharacterModule(), SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
+    smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
 
     SmartDeployableModule deployableModule = new SmartDeployableModule();
     if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(DEPLOYMENT_NAMESPACE)) == address(this))
@@ -120,20 +152,46 @@ contract SmartTurretTest is Test {
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
     _installModule(new SmartTurretModule(), DEPLOYMENT_NAMESPACE);
 
-    erc721DeployableToken = registerERC721(
+    erc721TurretToken = registerERC721(
       world,
       ERC721_DEPLOYABLE,
       StaticDataGlobalTableData({ name: "SmartTurret", symbol: "ST", baseURI: "" })
     );
-    smartDeployable.registerDeployableToken(address(erc721DeployableToken));
+    erc721CharacterToken = registerERC721(
+      world,
+      SMART_CHAR_ERC721,
+      StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: "" })
+    );
+
+    // create class and object types
+    SOFInterface.registerEntityType(2, "CLASS");
+    SOFInterface.registerEntityType(1, "OBJECT");
+    // allow object to class tagging
+    SOFInterface.registerEntityTypeAssociation(1, 2);
+
+    // initalize the smart character class
+    SOFInterface.registerEntity(smartCharacterClassId, 2);
+    smartCharacter.setCharClassId(smartCharacterClassId);
+
+    smartCharacter.registerERC721Token(address(erc721CharacterToken));
+    smartDeployable.registerDeployableToken(address(erc721TurretToken));
 
     smartTurret = SmartTurretLib.World(world, DEPLOYMENT_NAMESPACE);
 
     // register the smart turret system
     world.registerSystem(smartTurretTesStystemId, smartTurretTestSystem, true);
-
     //register the function selector
     world.registerFunctionSelector(smartTurretTesStystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
+
+    //Create a smart character
+    smartCharacter.createCharacter(
+      11111,
+      address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266),
+      100,
+      EntityRecordCharacter({ typeId: 111, itemId: 1, volume: 10 }),
+      EntityRecordOffchainTableData({ name: "characterName", dappURL: "noURL", description: "." }),
+      "tokenCid"
+    );
   }
 
   // helper function to guard against multiple module registrations on the same namespace
@@ -192,7 +250,7 @@ contract SmartTurretTest is Test {
     targetQueue[0] = Target({ char: "ch", shipType: "sp", weight: 100, hpRatio: hpRatio });
     uint256 remainingAmmo = 100;
     uint256 charHpRatio = 100;
-    uint256 characterId = 1234;
+    uint256 characterId = 11111;
 
     Target[] memory returnTargetQueue = smartTurret.inProximity(
       smartObjectId,
@@ -208,6 +266,27 @@ contract SmartTurretTest is Test {
     assertEq(returnTargetQueue[0].weight, 100);
   }
 
+  function testInProximityWrongCorpId() public {
+    testConfigureSmartTurret();
+    uint256 smartObjectId = 1234;
+    Target[] memory targetQueue = new Target[](1);
+    HPratio memory hpRatio = HPratio({ armor: 100, hp: 100, shield: 100 });
+    targetQueue[0] = Target({ char: "ch", shipType: "sp", weight: 100, hpRatio: hpRatio });
+    uint256 remainingAmmo = 100;
+    uint256 charHpRatio = 100;
+    uint256 characterId = 5555;
+
+    Target[] memory returnTargetQueue = smartTurret.inProximity(
+      smartObjectId,
+      characterId,
+      targetQueue,
+      remainingAmmo,
+      charHpRatio
+    );
+
+    assertEq(returnTargetQueue.length, 0);
+  }
+
   function testAggression() public {
     testConfigureSmartTurret();
     uint256 smartObjectId = 1234;
@@ -215,7 +294,7 @@ contract SmartTurretTest is Test {
     HPratio memory hpRatio = HPratio({ armor: 100, hp: 100, shield: 100 });
     priorityQueue[0] = Target({ char: "ch", shipType: "sp", weight: 100, hpRatio: hpRatio });
     uint256 chargesLeft = 100;
-    uint256 aggressorCharacterId = 1234;
+    uint256 aggressorCharacterId = 11111;
     uint256 aggressorHp = 100;
     uint256 victimItemId = 1234;
     uint256 victimHp = 100;
@@ -243,7 +322,7 @@ contract SmartTurretTest is Test {
     targetQueue[0] = Target({ char: "ch", shipType: "sp", weight: 100, hpRatio: hpRatio });
     uint256 remainingAmmo = 100;
     uint256 charHpRatio = 100;
-    uint256 characterId = 1234;
+    uint256 characterId = 11111;
 
     vm.expectRevert(abi.encodeWithSelector(SmartTurretSystem.SmartTurret_NotConfigured.selector, smartObjectId));
 
@@ -257,7 +336,7 @@ contract SmartTurretTest is Test {
     targetQueue[0] = Target({ char: "ch", shipType: "sp", weight: 100, hpRatio: hpRatio });
     uint256 remainingAmmo = 100;
     uint256 charHpRatio = 100;
-    uint256 characterId = 1234;
+    uint256 characterId = 11111;
 
     vm.expectRevert(
       abi.encodeWithSelector(
