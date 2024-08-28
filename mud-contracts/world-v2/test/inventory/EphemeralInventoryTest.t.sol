@@ -179,45 +179,309 @@ contract EphemeralInventoryTest is MudTest {
     uint256 smartObjectId,
     uint256 storageCapacity,
     address owner
-  ) public {}
+  ) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(owner != address(0));
+    vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
 
-  function testRevertDepositToEphemeralInventory(
-    uint256 smartObjectId,
-    uint256 storageCapacity,
-    address owner
-  ) public {}
+    testSetDeployableStateToValid(smartObjectId);
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
 
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
+
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+    );
+
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+    );
+
+    EphemeralInvItemData memory inventoryItem1 = EphemeralInvItem.get(
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemData memory inventoryItem2 = EphemeralInvItem.get(
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemData memory inventoryItem3 = EphemeralInvItem.get(
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, items[0].quantity * 2);
+    assertEq(inventoryItem2.quantity, items[1].quantity * 2);
+    assertEq(inventoryItem3.quantity, items[2].quantity * 2);
+
+    uint256 itemsLength = EphemeralInv.getItems(smartObjectId, owner).length;
+    assertEq(itemsLength, 3);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 1);
+  }
+
+  function testRevertDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(owner != address(0));
+    vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
+    testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
+
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InsufficientCapacity.selector,
+        "InventoryEphemeralSystem: insufficient capacity",
+        storageCapacity,
+        items[0].volume * items[0].quantity
+      )
+    );
+
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+    );
+  }
+
+  // "InventoryEphemeralSystem: ephemeralInventoryOwner and item owner should be the same"
   function testDepositToExistingEphemeralInventory(
     uint256 smartObjectId,
     uint256 storageCapacity,
     address owner
-  ) public {}
+  ) public {
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+    vm.assume(owner != address(0));
 
-  function testWithdrawFromEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {}
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(8235, owner, 8235, 0, 1, 3);
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+    );
 
-  function testWithdrawCompletely(uint256 smartObjectId, uint256 storageCapacity, address owner) public {}
+    uint256 itemsLength = EphemeralInv.getItems(smartObjectId, owner).length;
+    assertEq(itemsLength, 4);
 
-  function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity, address owner) public {}
+    EphemeralInvItemData memory inventoryItem1 = EphemeralInvItem.get(
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    assertEq(inventoryItem1.index, 3);
+
+    items = new InventoryItem[](1);
+    address differentOwner = address(5);
+    items[0] = InventoryItem(8235, differentOwner, 8235, 0, 1, 3);
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+    );
+
+    itemsLength = EphemeralInv.getItems(smartObjectId, differentOwner).length;
+    assertEq(itemsLength, 1);
+
+    inventoryItem1 = EphemeralInvItem.get(smartObjectId, items[0].inventoryItemId, items[0].owner);
+    assertEq(inventoryItem1.index, 0);
+  }
+
+  function testWithdrawFromEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+    vm.assume(owner != address(0));
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 1);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 1);
+
+    EphemeralInvData memory inventoryTableData = EphemeralInv.get(smartObjectId, owner);
+
+    uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
+    uint256 capacityAfterWithdrawal = 0;
+    assertEq(capacityBeforeWithdrawal, 1000);
+
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+
+    for (uint256 i = 0; i < items.length; i++) {
+      uint256 itemVolume = items[i].volume * items[i].quantity;
+      capacityAfterWithdrawal += itemVolume;
+    }
+
+    inventoryTableData = EphemeralInv.get(smartObjectId, owner);
+    assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - capacityAfterWithdrawal);
+
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 2);
+    assertEq(existingItems[0], items[0].inventoryItemId);
+    assertEq(existingItems[1], items[2].inventoryItemId);
+
+    //Check weather the items quantity is reduced
+    EphemeralInvItemData memory inventoryItem1 = EphemeralInvItem.get(
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemData memory inventoryItem2 = EphemeralInvItem.get(
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemData memory inventoryItem3 = EphemeralInvItem.get(
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, 2);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 1);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.index, 1);
+  }
+
+  function testWithdrawCompletely(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+    vm.assume(owner != address(0));
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+
+    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    InventoryItem[] memory items = new InventoryItem[](3);
+    items[0] = InventoryItem(4235, owner, 4235, 0, 100, 3);
+    items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
+    items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
+
+    EphemeralInvData memory inventoryTableData = EphemeralInv.get(smartObjectId, owner);
+
+    uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
+    uint256 capacityAfterWithdrawal = 0;
+    assertEq(capacityBeforeWithdrawal, 1000);
+
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+
+    for (uint256 i = 0; i < items.length; i++) {
+      uint256 itemVolume = items[i].volume * items[i].quantity;
+      capacityAfterWithdrawal += itemVolume;
+    }
+
+    inventoryTableData = EphemeralInv.get(smartObjectId, owner);
+    assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - capacityAfterWithdrawal);
+
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 0);
+
+    //Check weather the items quantity is reduced
+    EphemeralInvItemData memory inventoryItem1 = EphemeralInvItem.get(
+      smartObjectId,
+      items[0].inventoryItemId,
+      items[0].owner
+    );
+    EphemeralInvItemData memory inventoryItem2 = EphemeralInvItem.get(
+      smartObjectId,
+      items[1].inventoryItemId,
+      items[1].owner
+    );
+    EphemeralInvItemData memory inventoryItem3 = EphemeralInvItem.get(
+      smartObjectId,
+      items[2].inventoryItemId,
+      items[2].owner
+    );
+    assertEq(inventoryItem1.quantity, 0);
+    assertEq(inventoryItem2.quantity, 0);
+    assertEq(inventoryItem3.quantity, 0);
+  }
+
+  function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+    testWithdrawFromEphemeralInventory(smartObjectId, storageCapacity, owner);
+
+    EphemeralInvData memory inventoryTableData = EphemeralInv.get(smartObjectId, owner);
+    uint256[] memory existingItems = inventoryTableData.items;
+    assertEq(existingItems.length, 2);
+
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(4237, owner, 4237, 0, 200, 1);
+
+    // Try withdraw again
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+
+    uint256 itemId1 = uint256(4235);
+    uint256 itemId3 = uint256(4237);
+
+    EphemeralInvItemData memory inventoryItem1 = EphemeralInvItem.get(smartObjectId, itemId1, owner);
+    EphemeralInvItemData memory inventoryItem3 = EphemeralInvItem.get(smartObjectId, itemId3, owner);
+
+    assertEq(inventoryItem1.quantity, 2);
+    assertEq(inventoryItem3.quantity, 0);
+
+    assertEq(inventoryItem1.index, 0);
+    assertEq(inventoryItem3.index, 0);
+
+    existingItems = EphemeralInv.getItems(smartObjectId, owner);
+    assertEq(existingItems.length, 1);
+  }
 
   function testRevertWithdrawFromEphemeralInventory(
     uint256 smartObjectId,
     uint256 storageCapacity,
     address owner
-  ) public {}
+  ) public {
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+
+    InventoryItem[] memory items = new InventoryItem[](1);
+    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InvalidQuantity.selector,
+        "InventoryEphemeralSystem: invalid quantity",
+        3,
+        items[0].quantity
+      )
+    );
+    ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
+    world.call(
+      ephemeralInventorySystemId,
+      abi.encodeCall(EphemeralInventorySystem.withdrawFromEphemeralInventory, (smartObjectId, owner, items))
+    );
+  }
 
   function testOnlyAdminCanSetEphemeralInventoryCapacity(
     uint256 smartObjectId,
     address owner,
     uint256 storageCapacity
   ) public {
-    //TODO: Implement the logic to check if the caller is admin after RBAC implementation
+    // TODO: Implement the logic to check if the caller is admin after RBAC implementation
   }
 
   function testAnyoneCanDepositToInventory() public {
-    //TODO : Add test case for only owner can withdraw from inventory after RBAC
+    // TODO : Add test case for only owner can withdraw from inventory after RBAC
   }
 
   function testOnlyItemOwnerCanWithdrawFromInventory() public {
-    //TODO : Add test case for only owner can withdraw from inventory after RBAC
+    // TODO : Add test case for only owner can withdraw from inventory after RBAC
   }
 }
