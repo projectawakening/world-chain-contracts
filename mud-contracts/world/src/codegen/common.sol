@@ -9,3 +9,9 @@ enum State {
   ONLINE,
   DESTROYED
 }
+
+enum SmartAssemblyType {
+  SMART_STORAGE_UNIT,
+  SMART_TURRET,
+  SMART_GATE
+}

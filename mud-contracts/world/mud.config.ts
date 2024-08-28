@@ -54,6 +54,7 @@ export default mudConfig({
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
+    SmartAssemblyType: ["SMART_STORAGE_UNIT", "SMART_TURRET", "SMART_GATE"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -207,6 +208,20 @@ export default mudConfig({
       },
       tableIdArgument: true,
     },
+
+    /***************************
+     * SMART ASSEMBLY MODULE *
+     ***************************/
+    SmartAssemblyTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        smartAssemblyType: "SmartAssemblyType",
+      },
+      tableIdArgument: true,
+    },
+
 
     /***************************
      * SMART DEPLOYABLE MODULE *

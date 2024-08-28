@@ -13,6 +13,7 @@ import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "./tabl
 import { CharactersTable, CharactersTableData } from "./tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "./tables/CharactersConstantsTable.sol";
 import { LocationTable, LocationTableData } from "./tables/LocationTable.sol";
+import { SmartAssemblyTable } from "./tables/SmartAssemblyTable.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "./tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "./tables/DeployableState.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "./tables/DeployableFuelBalance.sol";
