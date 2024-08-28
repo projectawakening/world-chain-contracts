@@ -62,7 +62,6 @@ contract EphemeralInventoryTest is MudTest {
     vm.assume(smartObjectId != 0);
 
     ResourceId systemId = SmartDeployableUtils.smartDeployableSystemId();
-
     world.call(systemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
 
     world.call(
@@ -83,7 +82,6 @@ contract EphemeralInventoryTest is MudTest {
     );
 
     DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-
     assertTrue(deployableStateData.isValid == true);
   }
 
