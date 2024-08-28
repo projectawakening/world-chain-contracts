@@ -6,9 +6,10 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { EveSystem } from "../EveSystem.sol";
 
 import { ItemTransferOffchainTable, EphemeralInvItem, InventoryItemTable } from "../../codegen/index.sol";
-// import { DeployableTokenTable } from "../../codegen/index.sol";
+import { DeployableTokenTable } from "../../codegen/index.sol";
 import { InventorySystem } from "./InventorySystem.sol";
 import { EphemeralInventorySystem } from "./EphemeralInventorySystem.sol";
+import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
 
 import { InventoryUtils } from "./InventoryUtils.sol";
 import { IInventoryErrors } from "./IInventoryErrors.sol";
@@ -26,7 +27,7 @@ contract InventoryInteractSystem is EveSystem {
    * @param outItems is the array of items to transfer
    */
   function inventoryToEphemeralTransfer(uint256 smartObjectId, InventoryItem[] memory outItems) public {
-    // address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
+    address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
     address ephemeralInventoryOwner = msg.sender; // TODO: check new _initialMsgSender() implementation
     InventoryItem[] memory inItems = new InventoryItem[](outItems.length);
 
@@ -51,23 +52,21 @@ contract InventoryInteractSystem is EveSystem {
       });
 
       // Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
-      //   ItemTransferOffchainTable.set(
-      //     smartObjectId,
-      //     item.inventoryItemId,
-      //     owner,
-      //     ephemeralInventoryOwner,
-      //     item.quantity,
-      //     block.timestamp
-      //   );
+      ItemTransferOffchainTable.set(
+        smartObjectId,
+        item.inventoryItemId,
+        owner,
+        ephemeralInventoryOwner,
+        item.quantity,
+        block.timestamp
+      );
     }
 
     // withdraw the items from inventory and deposit to ephemeral table
-
     ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
     world().call(inventorySystemId, abi.encodeCall(InventorySystem.withdrawFromInventory, (smartObjectId, outItems)));
 
     // transfer the items to ephemeral owner who is the caller of this function
-
     ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
     world().call(
       ephemeralInventorySystemId,
@@ -90,7 +89,7 @@ contract InventoryInteractSystem is EveSystem {
     address ephemeralInventoryOwner,
     InventoryItem[] memory outItems
   ) public {
-    // address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
+    address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
     InventoryItem[] memory inItems = new InventoryItem[](outItems.length);
 
     for (uint i = 0; i < outItems.length; i++) {
@@ -103,7 +102,7 @@ contract InventoryInteractSystem is EveSystem {
         );
       }
 
-      //Ephemeral Inventory Owner is the address of the caller of this function to whom the items are being transferred
+      // Ephemeral Inventory Owner is the address of the caller of this function to whom the items are being transferred
       inItems[i] = InventoryItem({
         inventoryItemId: item.inventoryItemId,
         owner: ephemeralInventoryOwner,
@@ -113,15 +112,15 @@ contract InventoryInteractSystem is EveSystem {
         quantity: item.quantity
       });
 
-      //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
-      //   ItemTransferOffchainTable.set(
-      //     smartObjectId,
-      //     item.inventoryItemId,
-      //     owner,
-      //     ephemeralInventoryOwner,
-      //     item.quantity,
-      //     block.timestamp
-      //   );
+      // Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
+      ItemTransferOffchainTable.set(
+        smartObjectId,
+        item.inventoryItemId,
+        owner,
+        ephemeralInventoryOwner,
+        item.quantity,
+        block.timestamp
+      );
     }
 
     // withdraw the items from inventory and deposit to ephemeral table
@@ -146,8 +145,8 @@ contract InventoryInteractSystem is EveSystem {
    * @param items is the array of items to transfer
    */
   function ephemeralToInventoryTransfer(uint256 smartObjectId, InventoryItem[] memory items) public {
-    // address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
-    address ephemeralInventoryOwner = msg.sender; // TODO: check new _initialMsgSender() implementation();
+    address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
+    address ephemeralInventoryOwner = msg.sender; // TODO: check new _initialMsgSender() implementation
 
     //check the caller of this function has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
@@ -161,15 +160,15 @@ contract InventoryInteractSystem is EveSystem {
         );
       }
 
-      //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
-      //   ItemTransferOffchainTable.set(
-      //     smartObjectId,
-      //     item.inventoryItemId,
-      //     ephemeralInventoryOwner,
-      //     owner,
-      //     item.quantity,
-      //     block.timestamp
-      //   );
+      // Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
+      ItemTransferOffchainTable.set(
+        smartObjectId,
+        item.inventoryItemId,
+        ephemeralInventoryOwner,
+        owner,
+        item.quantity,
+        block.timestamp
+      );
     }
     ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
     world().call(

@@ -9,9 +9,12 @@ import { EphemeralInvCapacity } from "../../codegen/index.sol";
 import { EphemeralInv, EphemeralInvData } from "../../codegen/index.sol";
 import { EphemeralInvItem, EphemeralInvItemData } from "../../codegen/index.sol";
 import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
+import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
+import { SmartDeployableErrors } from "../smart-deployable/SmartDeployableErrors.sol";
+import { State } from "../smart-deployable/types.sol";
 
 import { IInventoryErrors } from "./IInventoryErrors.sol";
-
 import { InventoryUtils } from "./InventoryUtils.sol";
 import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
 
@@ -23,12 +26,12 @@ contract EphemeralInventorySystem is EveSystem {
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
-  //   modifier onlyActive() {
-  //     if (GlobalDeployableState.getIsPaused(_namespace().globalStateTableId()) == false) {
-  //       revert SmartDeployableErrors.SmartDeployable_StateTransitionPaused();
-  //     }
-  //     _;
-  //   }
+  modifier onlyActive() {
+    if (GlobalDeployableState.getIsPaused() == false) {
+      revert SmartDeployableErrors.SmartDeployable_StateTransitionPaused();
+    }
+    _;
+  }
 
   /**
    * // TODO Only owner of the smart storage unit can set the capacity
@@ -48,14 +51,11 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public {
-    // State currentState = DeployableState.getCurrentState(
-    //   SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-    //   smartObjectId
-    // );
-    // if (currentState != State.ONLINE) {
-    //   revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
-    // }
+  ) public onlyActive {
+    State currentState = DeployableState.getCurrentState(smartObjectId);
+    if (currentState != State.ONLINE) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    }
 
     uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
     uint256 maxCapacity = EphemeralInvCapacity.getCapacity(smartObjectId);
@@ -97,11 +97,11 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public {
-    // State currentState = DeployableState.getCurrentState(smartObjectId);
-    // if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
-    //   revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
-    // }
+  ) public onlyActive {
+    State currentState = DeployableState.getCurrentState(smartObjectId);
+    if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    }
 
     uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
     uint256 itemsLength = items.length;
@@ -156,16 +156,16 @@ contract EphemeralInventorySystem is EveSystem {
       ephemeralInventoryOwner
     );
 
-    // DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
+    DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
 
-    // // Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
-    // if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.anchoredAt) {
-    //   //Item does not exist in the inventory
-    //   _depositNewItem(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
-    // } else {
-    //   //Deployable is valid and item exists in the inventory
-    //   _increaseItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemData.index);
-    // }
+    // Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
+    if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.anchoredAt) {
+      //Item does not exist in the inventory
+      _depositNewItem(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
+    } else {
+      //Deployable is valid and item exists in the inventory
+      _increaseItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemData.index);
+    }
   }
 
   function _increaseItemQuantity(
@@ -237,22 +237,22 @@ contract EphemeralInventorySystem is EveSystem {
     InventoryItem memory item,
     EphemeralInvItemData memory itemData
   ) internal {
-    // DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-    // if (itemData.stateUpdate < deployableStateData.anchoredAt) {
-    //   //Disable withdraw if its has been re-anchored
-    //   revert IInventoryErrors.Inventory_InvalidItemQuantity(
-    //     "Inventory: invalid quantity",
-    //     smartObjectId,
-    //     item.quantity
-    //   );
-    // } else {
-    //   //Deployable is valid and item exists in the inventory
-    //   if (item.quantity == itemData.quantity) {
-    //     _removeItemCompletely(smartObjectId, ephemeralInventoryOwner, item, itemData);
-    //   } else if (item.quantity < itemData.quantity) {
-    //     _reduceItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemData);
-    //   }
-    // }
+    DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
+    if (itemData.stateUpdate < deployableStateData.anchoredAt) {
+      //Disable withdraw if its has been re-anchored
+      revert IInventoryErrors.Inventory_InvalidItemQuantity(
+        "Inventory: invalid quantity",
+        smartObjectId,
+        item.quantity
+      );
+    } else {
+      //Deployable is valid and item exists in the inventory
+      if (item.quantity == itemData.quantity) {
+        _removeItemCompletely(smartObjectId, ephemeralInventoryOwner, item, itemData);
+      } else if (item.quantity < itemData.quantity) {
+        _reduceItemQuantity(smartObjectId, ephemeralInventoryOwner, item, itemData);
+      }
+    }
   }
 
   function _removeItemCompletely(
