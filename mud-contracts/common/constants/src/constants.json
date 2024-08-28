@@ -2,7 +2,7 @@
   "namespace": {
     "FRONTIER_WORLD_DEPLOYMENT": "eveworld",
     "SMART_OBJECT_DEPLOYMENT": "eveworld",
-    "ACCESS_CONTROL_DEPLOYMENT": "eveworld",
+    "ACCESS_DEPLOYMENT": "eveworld",
     "ENTITY_RECORD_DEPLOYMENT": "eveworld",
     "STATIC_DATA_DEPLOYMENT": "eveworld",
     "LOCATION_DEPLOYMENT_NAMESPACE": "eveworld",
@@ -24,6 +24,7 @@
     "INVENTORY": "Inventory",
     "EPHEMERAL_INVENTORY": "EphemeralInv",
     "INVENTORY_INTERACT": "InventoryInterac",
-    "SMART_TURRET": "SmartTurret"
+    "SMART_TURRET": "SmartTurret",
+    "ACCESS": "AccessSystem"
   }
 }

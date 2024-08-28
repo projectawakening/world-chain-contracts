@@ -14,6 +14,7 @@ import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObject
 import { registerERC721 } from "../../eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";
@@ -24,7 +25,7 @@ import { Utils } from "../Utils.sol";
 import { EntityRecordData } from "../types.sol";
 import { ISmartCharacterErrors } from "../ISmartCharacterErrors.sol";
 
-contract SmartCharacter is EveSystem {
+contract SmartCharacter is AccessModified, EveSystem {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
@@ -33,7 +34,7 @@ contract SmartCharacter is EveSystem {
   // TODO: this alone weighs more than 25kbytes, find alternative
   function registerERC721Token(
     address tokenAddress
-  ) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     if (CharactersConstantsTable.getErc721Address(_namespace().charactersConstantsTableId()) != address(0)) {
       revert ISmartCharacterErrors.SmartCharacter_ERC721AlreadyInitialized();
     }
@@ -47,7 +48,7 @@ contract SmartCharacter is EveSystem {
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
-  ) public hookable(characterId, _systemId()) {
+  ) public onlyAdmin hookable(characterId, _systemId()) {
     // TODO: uncomment this if/when static data flows off-chain are ready
     // if (bytes(tokenCid).length == 0) revert SmartCharacterTokenCidCannotBeEmpty(characterId, tokenCid);
 
@@ -85,7 +86,9 @@ contract SmartCharacter is EveSystem {
     );
   }
 
-  function setCharClassId(uint256 classId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function setCharClassId(
+    uint256 classId
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
   }
 
