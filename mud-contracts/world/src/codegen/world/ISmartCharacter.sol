@@ -16,6 +16,7 @@ interface ISmartCharacter {
   function eveworld__createCharacter(
     uint256 characterId,
     address characterAddress,
+    uint256 corpId,
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid

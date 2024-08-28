@@ -27,6 +27,7 @@ library SmartCharacterLib {
     World memory world,
     uint256 characterId,
     address characterAddress,
+    uint256 corpId,
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
@@ -35,7 +36,7 @@ library SmartCharacterLib {
       world.namespace.smartCharacterSystemId(),
       abi.encodeCall(
         ISmartCharacter.createCharacter,
-        (characterId, characterAddress, entityRecord, entityRecordOffchain, tokenCid)
+        (characterId, characterAddress, corpId, entityRecord, entityRecordOffchain, tokenCid)
       )
     );
   }

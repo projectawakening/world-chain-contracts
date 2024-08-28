@@ -149,6 +149,7 @@ export default mudConfig({
       },
       valueSchema: {
         characterAddress: "address",
+        corpId: "uint256",
         createdAt: "uint256",
       },
       tableIdArgument: true,

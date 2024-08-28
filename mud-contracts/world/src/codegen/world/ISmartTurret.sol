@@ -14,6 +14,7 @@ import { Target } from "./../../modules/smart-turret/types.sol";
  */
 interface ISmartTurret {
   error SmartTurret_UndefinedClassId();
+  error SmartTurret_NotConfigured(uint256 smartTurretId);
 
   function eveworld__createAndAnchorSmartTurret(
     uint256 smartTurretId,
