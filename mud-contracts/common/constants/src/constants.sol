@@ -5,7 +5,7 @@ pragma solidity >=0.8.21;
 
 bytes14 constant FRONTIER_WORLD_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_OBJECT_DEPLOYMENT_NAMESPACE = "eveworld";
-bytes14 constant ACCESS_CONTROL_DEPLOYMENT_NAMESPACE = "eveworld";
+bytes14 constant ACCESS_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant ENTITY_RECORD_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant LOCATION_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant STATIC_DATA_DEPLOYMENT_NAMESPACE = "eveworld";
@@ -28,8 +28,7 @@ bytes16 constant SMART_STORAGE_UNIT_SYSTEM_NAME = "SmartStorageUnit";
 bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
-
-bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";
+bytes16 constant ACCESS_SYSTEM_NAME = "AccessSystem";
 
 //Constants for Entity
 uint8 constant OBJECT = 1;

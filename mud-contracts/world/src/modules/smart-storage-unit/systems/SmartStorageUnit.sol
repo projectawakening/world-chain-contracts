@@ -22,6 +22,7 @@ import { InventoryLib } from "../../inventory/InventoryLib.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
@@ -31,7 +32,7 @@ import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 import { ISmartStorageUnitErrors } from "../ISmartStorageUnitErrors.sol";
 
-contract SmartStorageUnit is EveSystem {
+contract SmartStorageUnit is AccessModified, EveSystem {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
@@ -64,7 +65,7 @@ contract SmartStorageUnit is EveSystem {
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     {
       uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
 
@@ -117,7 +118,7 @@ contract SmartStorageUnit is EveSystem {
   function createAndDepositItemsToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     for (uint256 i = 0; i < items.length; i++) {
       //Check if the item exists on-chain if not Create entityRecord
       _entityRecordLib().createEntityRecord(
@@ -144,7 +145,7 @@ contract SmartStorageUnit is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     //Check if the item exists on-chain if not Create entityRecord
     for (uint256 i = 0; i < items.length; i++) {
       _entityRecordLib().createEntityRecord(
@@ -159,7 +160,9 @@ contract SmartStorageUnit is EveSystem {
     _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
 
-  function setSSUClassId(uint256 classId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function setSSUClassId(
+    uint256 classId
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     ClassConfig.setClassId(_namespace().classConfigTableId(), _systemId(), classId);
   }
 
@@ -177,7 +180,7 @@ contract SmartStorageUnit is EveSystem {
     string memory name,
     string memory dappURL,
     string memory description
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdminOrObjectOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
     _entityRecordLib().createEntityRecordOffchain(smartObjectId, name, dappURL, description);
   }
 

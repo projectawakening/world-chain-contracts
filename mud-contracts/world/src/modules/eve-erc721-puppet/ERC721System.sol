@@ -16,9 +16,10 @@ import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol"
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
+import { AccessModified } from "../access/systems/AccessModified.sol";
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
-import { StaticDataLib } from "../static-data/StaticDataLib.sol";
+import { IStaticData } from "../static-data/interfaces/IStaticData.sol";
 import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
 
 import { IERC721Receiver } from "./IERC721Receiver.sol";
@@ -32,11 +33,10 @@ import { Balances } from "../../codegen/tables/Balances.sol";
 
 import { Utils } from "./Utils.sol";
 
-contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMaster {
+contract ERC721System is AccessModified, IERC721Mintable, IERC721Metadata, EveSystem, PuppetMaster {
   using WorldResourceIdInstance for ResourceId;
   using Utils for bytes14;
   using StaticDataUtils for bytes14;
-  using StaticDataLib for StaticDataLib.World;
 
   /**
    * @dev See {IERC721-balanceOf}.
@@ -59,14 +59,14 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    * @dev See {IERC721Metadata-name}.
    */
   function name() public virtual returns (string memory) {
-    return StaticDataGlobalTable.getName(_systemId(), _staticDataNamespace().staticDataGlobalTableId());
+    return StaticDataGlobalTable.getName(_systemId(), STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId());
   }
 
   /**
    * @dev See {IERC721Metadata-symbol}.
    */
   function symbol() public virtual returns (string memory) {
-    return StaticDataGlobalTable.getSymbol(_systemId(), _staticDataNamespace().staticDataGlobalTableId());
+    return StaticDataGlobalTable.getSymbol(_systemId(), STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId());
   }
 
   /**
@@ -76,17 +76,19 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     _requireOwned(tokenId);
 
     string memory baseURI = _baseURI();
-    string memory _tokenURI = StaticDataTable.getCid(_staticDataNamespace().staticDataTableId(), tokenId);
+    string memory _tokenURI = StaticDataTable.getCid(STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataTableId(), tokenId);
     _tokenURI = bytes(_tokenURI).length > 0 ? _tokenURI : string(abi.encodePacked(tokenId));
     return bytes(baseURI).length > 0 ? string.concat(baseURI, _tokenURI) : _tokenURI;
   }
 
   /**
    * @dev bridge gap solution to make it possible to change the default Token CID
-   * TODO: this is crap. this needs to go by May. no access-control, nothing. bad.
    */
-  function setCid(uint256 tokenId, string memory cid) public {
-    _staticDataLib().setCid(tokenId, cid);
+  function setCid(uint256 tokenId, string memory cid) public onlyAdmin {
+    world().call(
+      STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataSystemId(),
+      abi.encodeCall(IStaticData.setCid, (tokenId, cid))
+    );
   }
 
   /**
@@ -95,14 +97,17 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    */
   function _baseURI() internal virtual returns (string memory) {
     return
-      StaticDataGlobalTable.getBaseURI(_staticDataNamespace().staticDataGlobalTableId(), _namespace().erc721SystemId());
+      StaticDataGlobalTable.getBaseURI(
+        STATIC_DATA_DEPLOYMENT_NAMESPACE.staticDataGlobalTableId(),
+        _namespace().erc721SystemId()
+      );
   }
 
   /**
    * @dev See {IERC721-approve}.
    */
   function approve(address to, uint256 tokenId) public virtual {
-    _approve(to, tokenId, _msgSender());
+    _approve(to, tokenId, _msgSender(), true);
   }
 
   /**
@@ -131,7 +136,11 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   /**
    * @dev See {IERC721-transferFrom}.
    */
-  function transferFrom(address from, address to, uint256 tokenId) public virtual hookable(tokenId, _systemId()) {
+  function transferFrom(
+    address from,
+    address to,
+    uint256 tokenId
+  ) public virtual noAccess hookable(tokenId, _systemId()) {
     if (to == address(0)) {
       revert ERC721InvalidReceiver(address(0));
     }
@@ -172,7 +181,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
   function mint(
     address to,
     uint256 tokenId
-  ) public virtual hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public virtual onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _mint(to, tokenId);
   }
@@ -188,7 +197,10 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Emits a {Transfer} event.
    */
-  function safeMint(address to, uint256 tokenId) public hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  function safeMint(
+    address to,
+    uint256 tokenId
+  ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, "");
   }
@@ -201,7 +213,7 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     address to,
     uint256 tokenId,
     bytes memory data
-  ) public virtual hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
+  ) public virtual onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
     //_requireOwner(); TODO: This is messing stuff up with access control and how systems should be able to mint, e.g. Smart character
     _safeMint(to, tokenId, data);
   }
@@ -216,8 +228,8 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
    *
    * Emits a {Transfer} event.
    */
-  function burn(uint256 tokenId) public {
-    _requireOwner();
+  function burn(uint256 tokenId) public onlyAdmin {
+    // _requireOwner();
     _burn(tokenId);
   }
 
@@ -450,19 +462,20 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     _checkOnERC721Received(from, to, tokenId, data);
   }
 
-  /**
-   * @dev Approve `to` to operate on `tokenId`
-   *
-   * The `auth` argument is optional. If the value passed is non 0, then this function will check that `auth` is
-   * either the owner of the token, or approved to operate on all tokens held by this owner.
-   *
-   * Emits an {Approval} event.
-   *
-   * Overrides to this logic should be done to the variant with an additional `bool emitEvent` argument.
-   */
-  function _approve(address to, uint256 tokenId, address auth) internal {
-    _approve(to, tokenId, auth, true);
-  }
+  // DON"T NEED THIS, JUST CALL THE emitEvent version everywhere and save the code
+  // /**
+  //  * @dev Approve `to` to operate on `tokenId`
+  //  *
+  //  * The `auth` argument is optional. If the value passed is non 0, then this function will check that `auth` is
+  //  * either the owner of the token, or approved to operate on all tokens held by this owner.
+  //  *
+  //  * Emits an {Approval} event.
+  //  *
+  //  * Overrides to this logic should be done to the variant with an additional `bool emitEvent` argument.
+  //  */
+  // function _approve(address to, uint256 tokenId, address auth) internal {
+  //   _approve(to, tokenId, auth, true);
+  // }
 
   /**
    * @dev Variant of `_approve` with an optional flag to enable or disable the {Approval} event. The event is not
@@ -547,19 +560,10 @@ contract ERC721System is IERC721Mintable, IERC721Metadata, EveSystem, PuppetMast
     }
   }
 
-  function _requireOwner() internal {
-    AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
-  }
-
-  // TODO: this is kinda dirty.
-  function _staticDataLib() internal returns (StaticDataLib.World memory) {
-    return StaticDataLib.World({ iface: IBaseWorld(_world()), namespace: STATIC_DATA_DEPLOYMENT_NAMESPACE });
-  }
-
-  // TODO: this is kinda dirty also.
-  function _staticDataNamespace() internal pure returns (bytes14) {
-    return STATIC_DATA_DEPLOYMENT_NAMESPACE;
-  }
+  // DON"T NEED THIS, we now permission these with our own access modifiers
+  // function _requireOwner() internal {
+  //   AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
+  // }
 
   function _systemId() internal returns (ResourceId) {
     return _namespace().erc721SystemId();

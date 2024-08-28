@@ -13,6 +13,7 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { State } from "../../../codegen/common.sol";
 
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
@@ -21,7 +22,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
 
-contract Inventory is EveSystem {
+contract Inventory is AccessModified, EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
@@ -45,7 +46,7 @@ contract Inventory is EveSystem {
   function setInventoryCapacity(
     uint256 smartObjectId,
     uint256 storageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     if (storageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("Inventory: storage capacity cannot be 0");
     }
@@ -62,34 +63,20 @@ contract Inventory is EveSystem {
   function depositToInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-    if (currentState != State.ONLINE) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
-    }
-
-    uint256 usedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
-    uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
-    uint256 existingItemsLength = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId).length;
-
-    for (uint256 i = 0; i < items.length; i++) {
-      //Revert if the items to deposit is not created on-chain
-      EntityRecordTableData memory entityRecord = EntityRecordTable.get(
-        ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-        items[i].inventoryItemId
+  ) public onlyAdminOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
+    {
+      State currentState = DeployableState.getCurrentState(
+        SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+        smartObjectId
       );
-      if (entityRecord.recordExists == false) {
-        revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
+      if (currentState != State.ONLINE) {
+        revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
       }
-      //If there are inventory items exists for the smartObjectId, then the itemIndex is the length of the inventoryItems + i
-      uint256 itemIndex = existingItemsLength + i;
-      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, itemIndex);
     }
 
-    InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, usedCapacity);
+    uint256 totalUsedCapacity = _processAndReturnUsedCapacity(smartObjectId, items);
+
+    InventoryTable.setUsedCapacity(_namespace().inventoryTableId(), smartObjectId, totalUsedCapacity);
   }
 
   /**
@@ -102,7 +89,7 @@ contract Inventory is EveSystem {
   function withdrawFromInventory(
     uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
+  ) public onlyAdminOrApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId
@@ -121,6 +108,31 @@ contract Inventory is EveSystem {
 
   function _systemId() internal view returns (ResourceId) {
     return _namespace().inventorySystemId();
+  }
+
+  function _processAndReturnUsedCapacity(
+    uint256 smartObjectId,
+    InventoryItem[] memory items
+  ) internal returns (uint256) {
+    uint256 totalUsedCapacity = InventoryTable.getUsedCapacity(_namespace().inventoryTableId(), smartObjectId);
+    uint256 maxCapacity = InventoryTable.getCapacity(_namespace().inventoryTableId(), smartObjectId);
+
+    uint256 existingItemsLength = InventoryTable.getItems(_namespace().inventoryTableId(), smartObjectId).length;
+
+    for (uint256 i = 0; i < items.length; i++) {
+      //Revert if the items to deposit is not created on-chain
+      EntityRecordTableData memory entityRecord = EntityRecordTable.get(
+        ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
+        items[i].inventoryItemId
+      );
+      if (entityRecord.recordExists == false) {
+        revert IInventoryErrors.Inventory_InvalidItem("Inventory: item is not created on-chain", items[i].typeId);
+      }
+      //If there are inventory items exists for the smartObjectId, then the itemIndex is the length of the inventoryItems + i
+      uint256 itemIndex = existingItemsLength + i;
+      totalUsedCapacity = _processItemDeposit(smartObjectId, items[i], totalUsedCapacity, maxCapacity, itemIndex);
+    }
+    return totalUsedCapacity;
   }
 
   function _processItemDeposit(
