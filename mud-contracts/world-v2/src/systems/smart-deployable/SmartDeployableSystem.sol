@@ -92,7 +92,6 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
       world().call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, smartObjectData.tokenURI)));
     }
 
-    // this works
     DeployableState.set(
       entityId,
       block.timestamp,
@@ -217,6 +216,44 @@ contract SmartDeployableSystem is EveSystem, SmartDeployableErrors {
     GlobalDeployableState.setIsPaused(true);
     GlobalDeployableState.setUpdatedBlockNumber(block.number);
     GlobalDeployableState.setLastGlobalOnline(block.timestamp);
+  }
+
+  /**
+   * @dev sets the full deployable state values
+   * @param entityId entityId
+   * @param createdAt the created at timestamp
+   * @param previousState the previous state
+   * @param currentState the current state
+   * @param isValid the is valid flag
+   * @param anchoredAt the anchored at timestamp
+   * @param updatedBlockNumber the updated block number
+   * @param updatedBlockTime the updated block time
+   */
+  function setDeployableState(
+    uint256 entityId,
+    uint256 createdAt,
+    State previousState,
+    State currentState,
+    bool isValid,
+    uint256 anchoredAt,
+    uint256 updatedBlockNumber,
+    uint256 updatedBlockTime
+  ) public onlyActive {
+    DeployableState.set(
+      entityId,
+      createdAt,
+      previousState,
+      currentState,
+      isValid,
+      anchoredAt,
+      updatedBlockNumber,
+      updatedBlockTime
+    );
+  }
+
+  // set current deployable state
+  function setCurrentState(uint256 entityId, State currentState) public onlyActive {
+    DeployableState.setCurrentState(entityId, currentState);
   }
 
   /*******************************

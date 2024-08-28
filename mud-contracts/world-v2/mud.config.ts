@@ -208,7 +208,7 @@ export default defineWorld({
      */
     DeployableState: {
       schema: {
-        entityId: "uint256",
+        smartObjectId: "uint256",
         createdAt: "uint256",
         previousState: "State",
         currentState: "State",
@@ -217,7 +217,7 @@ export default defineWorld({
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },
-      key: ["entityId"],
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the deployable details of a in-game entity
