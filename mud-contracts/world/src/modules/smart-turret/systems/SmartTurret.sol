@@ -11,19 +11,22 @@ import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-frame
 import { EntityTable } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE, OBJECT } from "@eveworld/common-constants/src/constants.sol";
 
-import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
-import { State } from "../../../codegen/common.sol";
-import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
-import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
-import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { SmartTurretConfigTable } from "../../../codegen/tables/SmartTurretConfigTable.sol";
+import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
+import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
+import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
+import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
+import { State } from "../../../codegen/common.sol";
+
 import { EntityRecordData, WorldPosition } from "../../smart-storage-unit/types.sol";
-import { SmartObjectData } from "../../smart-deployable/types.sol";
+import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
+
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
-import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
+import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+
 import { Utils } from "../Utils.sol";
 import { Target } from "../types.sol";
 

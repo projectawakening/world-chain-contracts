@@ -10,9 +10,8 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { SMART_TURRET_MODULE_NAME as MODULE_NAME, SMART_TURRET_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 
-import { SmartTurret } from "./systems/SmartTurret.sol";
-
 import { SmartTurretConfigTable } from "../../codegen/tables/SmartTurretConfigTable.sol";
+import { SmartTurret } from "./systems/SmartTurret.sol";
 
 contract SmartTurretModule is Module {
   error SmartTurretModule_InvalidNamespace(bytes14 namespace);

@@ -2,7 +2,6 @@
 pragma solidity >=0.8.21;
 
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol";
