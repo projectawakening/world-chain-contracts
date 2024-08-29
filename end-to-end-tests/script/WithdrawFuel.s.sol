@@ -5,11 +5,11 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eveworld/world/src/codegen/world/IWorld.sol";
+import { InventoryItem } from "@eveworld/world/src/modules/inventory/types.sol";
 import { SmartDeployableLib } from "@eveworld/world/src/modules/smart-deployable/SmartDeployableLib.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
-contract BringOffline is Script {
-  // assumes CreateAndAnchor.s.sol and BringOnline.s.sol have been run
+contract WithdrawFuel is Script {
   using SmartDeployableLib for SmartDeployableLib.World;
 
   function run(address worldAddress) public {
@@ -24,8 +24,9 @@ contract BringOffline is Script {
       namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    smartDeployable.bringOffline(smartObjectId);
+    uint256 smartObjectId = uint256(63172679203090930493472462170959929237896419587292096226487443413731496352045);
+
+    smartDeployable.withdrawFuel(smartObjectId, 1);
 
     vm.stopBroadcast();
   }

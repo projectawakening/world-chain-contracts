@@ -3,10 +3,14 @@ import { mudConfig } from "@latticexyz/world/register";
 import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
 export default mudConfig({
-  //having a short namespace as the MUD Namespace must be <= 14 characters
+  // having a short namespace as the MUD Namespace must be <= 14 characters
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
-  excludeSystems: ["ERC721System"],
+  excludeSystems: ["ERC721System", "AccessModified"],
   systems: {
+    Access: {
+      name: constants.systemName.ACCESS,
+      openAccess: true,
+    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
@@ -51,6 +55,27 @@ export default mudConfig({
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
+    /**
+     * Simple Access Control - for enforcing the most basic access rules
+     */
+    AccessRole: {
+      keySchema: {
+        roleId: "bytes32",
+      },
+      valueSchema: {
+        accounts: "address[]",
+      },
+      tableIdArgument: true,
+    },
+    AccessEnforcement: {
+      keySchema: {
+        target: "bytes32",
+      },
+      valueSchema: {
+        isEnforced: "bool",
+      },
+      tableIdArgument: true,
+    },
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation
      */
