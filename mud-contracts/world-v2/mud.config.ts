@@ -97,7 +97,7 @@ export default defineWorld({
           },
           key: [],
         },
-    
+
         /*************************
          * ERC721 PUPPET MODULE *
          ************************/
@@ -176,7 +176,7 @@ export default defineWorld({
         /*******************
          * LOCATION MODULE *
          *******************/
-    
+
         /**
          * Used to store the location of a in-game entity in the solar system
          */
@@ -192,5 +192,5 @@ export default defineWorld({
         },
       },
     },
-  }
+  },
 });

@@ -6,14 +6,15 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/systems/entity-record/types.sol";
-import { SmartCharacterSystem } from "@eveworld/world-v2/src/systems/smart-character/SmartCharacterSystem.sol";
-import { Utils as SmartCharacterUtils } from "@eveworld/world-v2/src/systems/smart-character/Utils.sol";
+import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/namespaces/eveworld/systems/entity-record/types.sol";
+import { SmartCharacterSystem } from "@eveworld/world-v2/src/namespaces/eveworld/systems/smart-character/SmartCharacterSystem.sol";
+import { Utils as SmartCharacterUtils } from "@eveworld/world-v2/src/namespaces/eveworld/systems/smart-character/Utils.sol";
 
 contract CreateSmartCharacter is Script {
   using SmartCharacterUtils for bytes14;
 
   function run(address worldAddress) public {
+    console.log(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");

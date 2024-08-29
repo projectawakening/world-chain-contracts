@@ -15,7 +15,7 @@ import { SystemTags } from "../codegen/tables/SystemTags.sol";
 
 import { IErrors } from "../../../interfaces/IErrors.sol";
 
-import { SmartObjectFramework} from "../../../inherit/SmartObjectFramework.sol";
+import { SmartObjectFramework } from "../../../inherit/SmartObjectFramework.sol";
 
 /**
  * @title TagSystem
