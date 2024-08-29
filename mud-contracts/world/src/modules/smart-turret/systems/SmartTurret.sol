@@ -26,6 +26,7 @@ import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.so
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { AccessModified } from "../../access/systems/AccessModified.sol";
 
 import { Utils } from "../Utils.sol";
 import { Target } from "../types.sol";
@@ -34,7 +35,7 @@ import { Target } from "../types.sol";
  * @title SmartTurret
  * @notice Smart Turret module
  */
-contract SmartTurret is EveSystem {
+contract SmartTurret is EveSystem, AccessModified {
   using WorldResourceIdInstance for ResourceId;
   using SmartObjectLib for SmartObjectLib.World;
   using EntityRecordLib for EntityRecordLib.World;
@@ -78,7 +79,7 @@ contract SmartTurret is EveSystem {
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity
-  ) public {
+  ) public onlyAdmin {
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
       smartTurretId,
@@ -113,7 +114,7 @@ contract SmartTurret is EveSystem {
   function configureSmartTurret(
     uint256 smartTurretId,
     ResourceId systemId
-  ) public hookable(smartTurretId, _systemId()) {
+  ) public onlyAdminOrObjectOwner(smartTurretId) hookable(smartTurretId, _systemId()) {
     SmartTurretConfigTable.set(_namespace().smartTurretConfigTableId(), smartTurretId, systemId);
   }
 
