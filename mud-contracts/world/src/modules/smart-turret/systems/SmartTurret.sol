@@ -146,15 +146,17 @@ contract SmartTurret is EveSystem, AccessModified {
     ResourceId systemId = SmartTurretConfigTable.get(_namespace().smartTurretConfigTableId(), smartTurretId);
 
     if (!ResourceIds.getExists(systemId)) {
-      revert SmartTurret_NotConfigured(smartTurretId);
+      //If smart turret is not configured, then execute the default logic
+      // TODO: If the character corp and the owner of the turret are same, then the turret will not attack
+      returnTargetQueue = priorityQueue; //temporary logic
+    } else {
+      bytes memory returnData = world().call(
+        systemId,
+        abi.encodeCall(this.inProximity, (smartTurretId, characterId, priorityQueue, remainingAmmo, hpRatio))
+      );
+
+      returnTargetQueue = abi.decode(returnData, (Target[]));
     }
-
-    bytes memory returnData = world().call(
-      systemId,
-      abi.encodeCall(this.inProximity, (smartTurretId, characterId, priorityQueue, remainingAmmo, hpRatio))
-    );
-
-    returnTargetQueue = abi.decode(returnData, (Target[]));
 
     return returnTargetQueue;
   }
@@ -190,18 +192,19 @@ contract SmartTurret is EveSystem, AccessModified {
     ResourceId systemId = SmartTurretConfigTable.get(_namespace().smartTurretConfigTableId(), smartTurretId);
 
     if (!ResourceIds.getExists(systemId)) {
-      revert SmartTurret_NotConfigured(smartTurretId);
+      //If smart turret is not configured, then execute the default logic
+      returnTargetQueue = priorityQueue; //temporary logic
+    } else {
+      bytes memory returnData = world().call(
+        systemId,
+        abi.encodeCall(
+          this.aggression,
+          (smartTurretId, aggressorCharacterId, aggressorHp, victimItemId, victimHp, priorityQueue, chargesLeft)
+        )
+      );
+
+      returnTargetQueue = abi.decode(returnData, (Target[]));
     }
-
-    bytes memory returnData = world().call(
-      systemId,
-      abi.encodeCall(
-        this.aggression,
-        (smartTurretId, aggressorCharacterId, aggressorHp, victimItemId, victimHp, priorityQueue, chargesLeft)
-      )
-    );
-
-    returnTargetQueue = abi.decode(returnData, (Target[]));
 
     return returnTargetQueue;
   }
