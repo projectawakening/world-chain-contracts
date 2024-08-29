@@ -10,13 +10,11 @@ import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/Function
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
-import { StaticData } from "../../src/codegen/index.sol";
 import { IStaticDataSystem } from "../../src/codegen/world/IStaticDataSystem.sol";
-import { StaticDataSystem } from "../../src/systems/static-data/StaticDataSystem.sol";
-import { StaticData } from "../../src/codegen/tables/StaticData.sol";
-import { StaticDataMetadata } from "../../src/codegen/tables/StaticDataMetadata.sol";
+import { StaticData, StaticDataMetadata } from "../../src/namespaces/eveworld/codegen/index.sol";
+import { StaticDataSystem } from "../../src/namespaces/eveworld/systems/static-data/StaticDataSystem.sol";
 
-import { Utils as StaticDataUtils } from "../../src/systems/static-data/Utils.sol";
+import { Utils as StaticDataUtils } from "../../src/namespaces/eveworld/systems/static-data/Utils.sol";
 
 contract StaticDataTest is MudTest {
   IBaseWorld world;

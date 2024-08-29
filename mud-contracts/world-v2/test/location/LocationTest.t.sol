@@ -10,11 +10,9 @@ import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/Function
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
-import { Location } from "../../src/codegen/index.sol";
 import { ILocationSystem } from "../../src/codegen/world/ILocationSystem.sol";
-import { LocationSystem } from "../../src/systems/location/LocationSystem.sol";
-import { Location } from "../../src/codegen/tables/Location.sol";
-import { LocationData } from "../../src/codegen/tables/Location.sol";
+import { LocationSystem } from "../../src/namespaces/eveworld/systems/location/LocationSystem.sol";
+import { Location, LocationData } from "../../src/namespaces/eveworld/codegen/tables/Location.sol";
 
 contract StaticDataTest is MudTest {
   IBaseWorld world;
