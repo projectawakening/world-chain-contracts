@@ -222,7 +222,6 @@ export default mudConfig({
       tableIdArgument: true,
     },
 
-
     /***************************
      * SMART DEPLOYABLE MODULE *
      ***************************/
