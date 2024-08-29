@@ -14,3 +14,4 @@ bytes16 constant GLOBAL_STATE_TABLE_NAME = "GlobalDeployable";
 bytes16 constant DEPLOYABLE_STATE_TABLE_NAME = "DeployableState";
 bytes16 constant DEPLOYABLE_TOKEN_TABLE_NAME = "DeployableTokenT";
 bytes16 constant FUEL_BALANCE_TABLE_NAME = "FuelBalanceTable";
+bytes16 constant SMART_ASSEMBLY_TABLE_NAME = "SmartAssemblyTab";

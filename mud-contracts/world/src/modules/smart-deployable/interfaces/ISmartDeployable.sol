@@ -6,7 +6,7 @@ import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable
 import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 
-import { SmartObjectData } from "../types.sol";
+import { SmartObjectData , SmartAssemblyType} from "../types.sol";
 
 interface ISmartDeployable {
   function registerDeployable(
@@ -16,6 +16,8 @@ interface ISmartDeployable {
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
   ) external;
+
+  function setSmartAssemblyType(uint256 entityId, SmartAssemblyType smartAssemblyType) external;
 
   function destroyDeployable(uint256 entityId) external;
 

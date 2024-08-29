@@ -28,7 +28,7 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { Utils as SmartObjectFrameworkUtils } from "@eveworld/smart-object-framework/src/utils.sol";
 import { Utils } from "../Utils.sol";
 
-import { SmartObjectData } from "../../smart-deployable/types.sol";
+import { SmartObjectData, SmartAssemblyType } from "../../smart-deployable/types.sol";
 import { InventoryItem } from "../../inventory/types.sol";
 import { ISmartStorageUnitErrors } from "../ISmartStorageUnitErrors.sol";
 
@@ -95,6 +95,8 @@ contract SmartStorageUnit is AccessModified, EveSystem {
       fuelConsumptionPerMinute,
       fuelMaxCapacity
     );
+    _smartDeployableLib().setSmartAssemblyType(smartObjectId, SmartAssemblyType.SMART_STORAGE_UNIT);
+
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
       x: worldPosition.position.x,

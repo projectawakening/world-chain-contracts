@@ -17,9 +17,10 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../../codeg
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
+import { SmartAssemblyTable } from "../../../codegen/tables/SmartAssemblyTable.sol";
 
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
-import { State, SmartObjectData } from "../types.sol";
+import { State, SmartObjectData, SmartAssemblyType } from "../types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "../constants.sol";
 import { Utils } from "../Utils.sol";
 
@@ -109,6 +110,18 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
         lastUpdatedAt: block.timestamp
       })
     );
+  }
+
+  /**
+   * @dev sets the smart assembly type for a smart deployable
+   * @param entityId of the smart assembly
+   * @param smartAssemblyType of the type of smart assembly
+   */
+  function setSmartAssemblyType(
+    uint256 entityId,
+    SmartAssemblyType smartAssemblyType
+  ) public onlyAdmin hookable(entityId, _systemId()) {
+    SmartAssemblyTable.set(_namespace().smartAssemblyTableId(), entityId, smartAssemblyType);
   }
 
   /**

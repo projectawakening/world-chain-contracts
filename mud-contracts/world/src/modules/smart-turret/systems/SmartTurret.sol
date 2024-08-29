@@ -16,7 +16,7 @@ import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableS
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
-import { State } from "../../../codegen/common.sol";
+import { State, SmartAssemblyType } from "../../../codegen/common.sol";
 
 import { EntityRecordData, WorldPosition } from "../../smart-storage-unit/types.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
@@ -94,6 +94,8 @@ contract SmartTurret is EveSystem {
       fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity
     );
+    _smartDeployableLib().setSmartAssemblyType(smartTurretId, SmartAssemblyType.SMART_TURRET);
+
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
       x: worldPosition.position.x,

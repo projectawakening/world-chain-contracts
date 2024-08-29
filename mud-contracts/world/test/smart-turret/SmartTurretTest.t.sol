@@ -40,7 +40,7 @@ import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartD
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
 import { SmartTurretLib } from "../../src/modules/smart-turret/SmartTurretLib.sol";
-import { State } from "../../src/modules/smart-deployable/types.sol";
+import { State, SmartAssemblyType } from "../../src/modules/smart-deployable/types.sol";
 import { Target, HPratio } from "../../src/modules/smart-turret/types.sol";
 import { SmartTurret as SmartTurretSystem } from "../../src/modules/smart-turret/systems/SmartTurret.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
@@ -50,11 +50,13 @@ import { Utils as SmartCharacterUtils } from "../../src/modules/smart-character/
 import { SmartCharacterModule } from "../../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
 import { EntityRecordData as EntityRecordCharacter } from "../../src/modules/smart-character/types.sol";
+import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { SmartTurretConfigTable } from "../../src/codegen/tables/SmartTurretConfigTable.sol";
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
+import { SmartAssemblyTable } from "../../src/codegen/tables/SmartAssemblyTable.sol";
 
 import { createCoreModule } from "../CreateCoreModule.sol";
 
@@ -99,6 +101,7 @@ contract SmartTurretTestSystem is System {
  */
 contract SmartTurretTest is Test {
   using Utils for bytes14;
+  using SmartDeployableUtils for bytes14;
   using SmartCharacterUtils for bytes14;
   using SmartCharacterLib for SmartCharacterLib.World;
   using SmartTurretLib for SmartTurretLib.World;
@@ -230,6 +233,11 @@ contract SmartTurretTest is Test {
 
     smartDeployable.depositFuel(smartObjectId, 1);
     smartDeployable.bringOnline(smartObjectId);
+
+    assertEq(
+      uint256(SmartAssemblyTable.get(DEPLOYMENT_NAMESPACE.smartAssemblyTableId(), smartObjectId)),
+      uint256(SmartAssemblyType.SMART_TURRET)
+    );
   }
 
   function testConfigureSmartTurret() public {
