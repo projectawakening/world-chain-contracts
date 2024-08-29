@@ -229,7 +229,7 @@ contract SmartStorageUnitTest is Test {
 
     assertEq(erc721DeployableToken.ownerOf(smartObjectId), address(1));
 
-    smartStorageUnit.setDeploybaleMetadata(smartObjectId, "testName", "testDappURL", "testdesc");
+    smartStorageUnit.setDeployableMetadata(smartObjectId, "testName", "testDappURL", "testdesc");
 
     EntityRecordOffchainTableData memory entityRecordOffchainTableData = EntityRecordOffchainTable.get(
       ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),

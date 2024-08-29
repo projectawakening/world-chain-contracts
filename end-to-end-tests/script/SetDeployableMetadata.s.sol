@@ -25,7 +25,7 @@ contract SetDeployableMetadata is Script {
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
 
-    smartStorageUnit.setDeploybaleMetadata(smartObjectId, "name", "dappURL", "description");
+    smartStorageUnit.setDeployableMetadata(smartObjectId, "name", "dappURL", "description");
 
     vm.stopBroadcast();
   }
