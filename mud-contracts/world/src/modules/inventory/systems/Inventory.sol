@@ -16,7 +16,7 @@ import { State } from "../../../codegen/common.sol";
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
-import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
+import { EntityRecordUtils } from "../../entity-record/EntityRecordUtils.sol";
 
 import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
