@@ -64,7 +64,7 @@ library SmartTurretLib {
     uint256 smartTurretId,
     uint256 characterId,
     Target[] memory targetQueue,
-    uint256 remainingAmmo,
+    uint256 chargesLeft,
     uint256 hpRatio
   ) internal returns (Target[] memory returnTargetQueue) {
     bytes memory data = world.iface.call(
@@ -78,9 +78,9 @@ library SmartTurretLib {
     World memory world,
     uint256 smartTurretId,
     uint256 aggressorCharacterId,
-    uint256 aggressorHp,
+    uint256 aggressorHpRatio,
     uint256 victimItemId,
-    uint256 victimHp,
+    uint256 victimHpRatio,
     Target[] memory priorityQueue,
     uint256 chargesLeft
   ) internal returns (Target[] memory returnTargetQueue) {
