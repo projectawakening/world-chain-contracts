@@ -116,6 +116,7 @@ contract SmartCharacterTest is Test {
   function testCreateSmartCharacter(
     uint256 entityId,
     address characterAddress,
+    uint256 corpId,
     uint256 itemId,
     uint256 typeId,
     uint256 volume,
@@ -132,10 +133,11 @@ contract SmartCharacterTest is Test {
     EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
+      corpId: corpId,
       createdAt: block.timestamp
     });
 
-    smartCharacter.createCharacter(entityId, characterAddress, entityRecordData, offchainData, tokenCid);
+    smartCharacter.createCharacter(entityId, characterAddress, corpId, entityRecordData, offchainData, tokenCid);
     CharactersTableData memory loggedCharactersData = CharactersTable.get(
       SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(),
       entityId

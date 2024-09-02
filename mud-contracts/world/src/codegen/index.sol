@@ -13,6 +13,7 @@ import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "./tabl
 import { CharactersTable, CharactersTableData } from "./tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "./tables/CharactersConstantsTable.sol";
 import { LocationTable, LocationTableData } from "./tables/LocationTable.sol";
+import { SmartAssemblyTable } from "./tables/SmartAssemblyTable.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "./tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "./tables/DeployableState.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "./tables/DeployableFuelBalance.sol";
@@ -23,6 +24,7 @@ import { EphemeralInvCapacityTable } from "./tables/EphemeralInvCapacityTable.so
 import { EphemeralInvTable, EphemeralInvTableData } from "./tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "./tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable, ItemTransferOffchainTableData } from "./tables/ItemTransferOffchainTable.sol";
+import { SmartTurretConfigTable } from "./tables/SmartTurretConfigTable.sol";
 import { Balances } from "./tables/Balances.sol";
 import { TokenURI } from "./tables/TokenURI.sol";
 import { Owners } from "./tables/Owners.sol";

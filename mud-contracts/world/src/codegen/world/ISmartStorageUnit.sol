@@ -36,7 +36,7 @@ interface ISmartStorageUnit {
 
   function eveworld__setSSUClassId(uint256 classId) external;
 
-  function eveworld__setDeploybaleMetadata(
+  function eveworld__setDeployableMetadata(
     uint256 smartObjectId,
     string memory name,
     string memory dappURL,

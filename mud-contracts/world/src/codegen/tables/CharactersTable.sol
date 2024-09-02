@@ -20,11 +20,12 @@ import { PackedCounter, PackedCounterLib } from "@latticexyz/store/src/PackedCou
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 FieldLayout constant _fieldLayout = FieldLayout.wrap(
-  0x0034020014200000000000000000000000000000000000000000000000000000
+  0x0054030014202000000000000000000000000000000000000000000000000000
 );
 
 struct CharactersTableData {
   address characterAddress;
+  uint256 corpId;
   uint256 createdAt;
 }
 
@@ -53,9 +54,10 @@ library CharactersTable {
    * @return _valueSchema The value schema for the table.
    */
   function getValueSchema() internal pure returns (Schema) {
-    SchemaType[] memory _valueSchema = new SchemaType[](2);
+    SchemaType[] memory _valueSchema = new SchemaType[](3);
     _valueSchema[0] = SchemaType.ADDRESS;
     _valueSchema[1] = SchemaType.UINT256;
+    _valueSchema[2] = SchemaType.UINT256;
 
     return SchemaLib.encode(_valueSchema);
   }
@@ -74,9 +76,10 @@ library CharactersTable {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
+    fieldNames = new string[](3);
     fieldNames[0] = "characterAddress";
-    fieldNames[1] = "createdAt";
+    fieldNames[1] = "corpId";
+    fieldNames[2] = "createdAt";
   }
 
   /**
@@ -142,13 +145,55 @@ library CharactersTable {
   }
 
   /**
+   * @notice Get corpId.
+   */
+  function getCorpId(ResourceId _tableId, uint256 characterId) internal view returns (uint256 corpId) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get corpId.
+   */
+  function _getCorpId(ResourceId _tableId, uint256 characterId) internal view returns (uint256 corpId) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set corpId.
+   */
+  function setCorpId(ResourceId _tableId, uint256 characterId, uint256 corpId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((corpId)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set corpId.
+   */
+  function _setCorpId(ResourceId _tableId, uint256 characterId, uint256 corpId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((corpId)), _fieldLayout);
+  }
+
+  /**
    * @notice Get createdAt.
    */
   function getCreatedAt(ResourceId _tableId, uint256 characterId) internal view returns (uint256 createdAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -159,7 +204,7 @@ library CharactersTable {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -170,7 +215,7 @@ library CharactersTable {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((createdAt)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((createdAt)), _fieldLayout);
   }
 
   /**
@@ -180,7 +225,7 @@ library CharactersTable {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((createdAt)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((createdAt)), _fieldLayout);
   }
 
   /**
@@ -216,8 +261,14 @@ library CharactersTable {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(ResourceId _tableId, uint256 characterId, address characterAddress, uint256 createdAt) internal {
-    bytes memory _staticData = encodeStatic(characterAddress, createdAt);
+  function set(
+    ResourceId _tableId,
+    uint256 characterId,
+    address characterAddress,
+    uint256 corpId,
+    uint256 createdAt
+  ) internal {
+    bytes memory _staticData = encodeStatic(characterAddress, corpId, createdAt);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
@@ -231,8 +282,14 @@ library CharactersTable {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(ResourceId _tableId, uint256 characterId, address characterAddress, uint256 createdAt) internal {
-    bytes memory _staticData = encodeStatic(characterAddress, createdAt);
+  function _set(
+    ResourceId _tableId,
+    uint256 characterId,
+    address characterAddress,
+    uint256 corpId,
+    uint256 createdAt
+  ) internal {
+    bytes memory _staticData = encodeStatic(characterAddress, corpId, createdAt);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
@@ -247,7 +304,7 @@ library CharactersTable {
    * @notice Set the full data using the data struct.
    */
   function set(ResourceId _tableId, uint256 characterId, CharactersTableData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.createdAt);
+    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.corpId, _table.createdAt);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
@@ -262,7 +319,7 @@ library CharactersTable {
    * @notice Set the full data using the data struct.
    */
   function _set(ResourceId _tableId, uint256 characterId, CharactersTableData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.createdAt);
+    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.corpId, _table.createdAt);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
@@ -276,10 +333,14 @@ library CharactersTable {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (address characterAddress, uint256 createdAt) {
+  function decodeStatic(
+    bytes memory _blob
+  ) internal pure returns (address characterAddress, uint256 corpId, uint256 createdAt) {
     characterAddress = (address(Bytes.slice20(_blob, 0)));
 
-    createdAt = (uint256(Bytes.slice32(_blob, 20)));
+    corpId = (uint256(Bytes.slice32(_blob, 20)));
+
+    createdAt = (uint256(Bytes.slice32(_blob, 52)));
   }
 
   /**
@@ -293,7 +354,7 @@ library CharactersTable {
     PackedCounter,
     bytes memory
   ) internal pure returns (CharactersTableData memory _table) {
-    (_table.characterAddress, _table.createdAt) = decodeStatic(_staticData);
+    (_table.characterAddress, _table.corpId, _table.createdAt) = decodeStatic(_staticData);
   }
 
   /**
@@ -320,8 +381,12 @@ library CharactersTable {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(address characterAddress, uint256 createdAt) internal pure returns (bytes memory) {
-    return abi.encodePacked(characterAddress, createdAt);
+  function encodeStatic(
+    address characterAddress,
+    uint256 corpId,
+    uint256 createdAt
+  ) internal pure returns (bytes memory) {
+    return abi.encodePacked(characterAddress, corpId, createdAt);
   }
 
   /**
@@ -332,9 +397,10 @@ library CharactersTable {
    */
   function encode(
     address characterAddress,
+    uint256 corpId,
     uint256 createdAt
   ) internal pure returns (bytes memory, PackedCounter, bytes memory) {
-    bytes memory _staticData = encodeStatic(characterAddress, createdAt);
+    bytes memory _staticData = encodeStatic(characterAddress, corpId, createdAt);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;

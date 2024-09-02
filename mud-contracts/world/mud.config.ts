@@ -47,9 +47,14 @@ export default mudConfig({
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
     },
+    SmartTurret: {
+      name: constants.systemName.SMART_TURRET,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
+    SmartAssemblyType: ["SMART_STORAGE_UNIT", "SMART_TURRET", "SMART_GATE"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -170,6 +175,7 @@ export default mudConfig({
       },
       valueSchema: {
         characterAddress: "address",
+        corpId: "uint256",
         createdAt: "uint256",
       },
       tableIdArgument: true,
@@ -199,6 +205,19 @@ export default mudConfig({
         x: "uint256",
         y: "uint256",
         z: "uint256",
+      },
+      tableIdArgument: true,
+    },
+
+    /***************************
+     * SMART ASSEMBLY MODULE *
+     ***************************/
+    SmartAssemblyTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        smartAssemblyType: "SmartAssemblyType",
       },
       tableIdArgument: true,
     },
@@ -351,6 +370,19 @@ export default mudConfig({
       },
       tableIdArgument: true,
       // offchainOnly: true,
+    },
+
+    /*************************
+     * SMART Turret MODULE *
+     *************************/
+    SmartTurretConfigTable: {
+      keySchema: {
+        smartTurretId: "uint256",
+      },
+      valueSchema: {
+        systemId: "ResourceId",
+      },
+      tableIdArgument: true,
     },
 
     /************************

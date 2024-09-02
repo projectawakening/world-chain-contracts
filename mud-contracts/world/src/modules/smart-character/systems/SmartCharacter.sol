@@ -44,6 +44,7 @@ contract SmartCharacter is AccessModified, EveSystem {
   function createCharacter(
     uint256 characterId,
     address characterAddress,
+    uint256 corpId,
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
@@ -64,7 +65,7 @@ contract SmartCharacter is AccessModified, EveSystem {
     _smartObjectLib().tagEntity(characterId, classId);
 
     uint256 createdAt = block.timestamp;
-    CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, createdAt);
+    CharactersTable.set(_namespace().charactersTableId(), characterId, characterAddress, corpId, createdAt);
     //Save the entity record in EntityRecord Module
     // TODO: Do we have to create the entityId <-> characterId linkup here in Smart Object Framework ?
     _entityRecordLib().createEntityRecord(characterId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume);
