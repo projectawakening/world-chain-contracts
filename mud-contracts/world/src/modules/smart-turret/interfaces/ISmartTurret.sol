@@ -5,7 +5,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { EntityRecordData, WorldPosition } from "../../smart-storage-unit/types.sol";
 import { SmartObjectData } from "../../smart-deployable/types.sol";
-import { Target } from "../types.sol";
+import { Target, HPRatio } from "../types.sol";
 
 /**
  * @title ISmartTurret
@@ -27,18 +27,18 @@ interface ISmartTurret {
   function inProximity(
     uint256 smartTurretId,
     uint256 characterId,
-    Target[] memory priorityQueue,
-    uint256 remainingAmmo,
-    uint256 hpRatio
+    Target[] memory validTargetQueue,
+    uint256 chargesLeft,
+    HPRatio memory hpRatio
   ) external returns (Target[] memory returnTargetQueue);
 
   function aggression(
     uint256 smartTurretId,
     uint256 aggressorCharacterId,
-    uint256 aggressorHp,
+    uint256 aggressorHpRatio,
     uint256 victimItemId,
-    uint256 victimHp,
-    Target[] memory priorityQueue,
+    uint256 victimHpRatio,
+    Target[] memory validTargetQueue,
     uint256 chargesLeft
   ) external returns (Target[] memory returnTargetQueue);
 }

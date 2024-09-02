@@ -8,7 +8,7 @@ import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol
 import { SmartObjectData } from "../smart-deployable/types.sol";
 
 import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
-import { Target } from "./types.sol";
+import { Target, HPRatio } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
 /**
@@ -63,13 +63,13 @@ library SmartTurretLib {
     World memory world,
     uint256 smartTurretId,
     uint256 characterId,
-    Target[] memory targetQueue,
+    Target[] memory validTargetQueue,
     uint256 chargesLeft,
-    uint256 hpRatio
+    HPRatio memory hpRatio
   ) internal returns (Target[] memory returnTargetQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, characterId, targetQueue, remainingAmmo, hpRatio))
+      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, characterId, validTargetQueue, chargesLeft, hpRatio))
     );
     return abi.decode(data, (Target[]));
   }
@@ -81,14 +81,22 @@ library SmartTurretLib {
     uint256 aggressorHpRatio,
     uint256 victimItemId,
     uint256 victimHpRatio,
-    Target[] memory priorityQueue,
+    Target[] memory validTargetQueue,
     uint256 chargesLeft
   ) internal returns (Target[] memory returnTargetQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
         ISmartTurret.aggression,
-        (smartTurretId, aggressorCharacterId, aggressorHp, victimItemId, victimHp, priorityQueue, chargesLeft)
+        (
+          smartTurretId,
+          aggressorCharacterId,
+          aggressorHpRatio,
+          victimItemId,
+          victimHpRatio,
+          validTargetQueue,
+          chargesLeft
+        )
       )
     );
     return abi.decode(data, (Target[]));

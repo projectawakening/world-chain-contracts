@@ -5,10 +5,10 @@ struct Target {
   string char;
   string shipType;
   uint256 weight;
-  HPratio hpRatio;
+  HPRatio hpRatio;
 }
 
-struct HPratio {
+struct HPRatio {
   uint256 armor;
   uint256 hp;
   uint256 shield;
