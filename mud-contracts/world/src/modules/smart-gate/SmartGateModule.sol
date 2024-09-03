@@ -51,7 +51,7 @@ contract SmartGateModule is Module {
     // Require dependencies
     _requireDependencies();
 
-    // Register the smart turret's tables and systems
+    // Register the smart gate's tables and systems
     IBaseWorld world = IBaseWorld(_world());
     (bool success, bytes memory returnedData) = registrationLibrary.delegatecall(
       abi.encodeCall(SmartGateModuleRegistrationLibrary.register, (world, namespace))
