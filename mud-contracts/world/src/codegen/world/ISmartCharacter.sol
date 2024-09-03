@@ -22,5 +22,7 @@ interface ISmartCharacter {
     string memory tokenCid
   ) external;
 
+  function eveworld__updateCorpId(uint256 characterId, uint256 corpId) external;
+
   function eveworld__setCharClassId(uint256 classId) external;
 }

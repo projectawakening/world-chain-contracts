@@ -86,6 +86,13 @@ contract SmartCharacter is AccessModified, EveSystem {
     );
   }
 
+  function updateCorpId(uint256 characterId, uint256 corpId) public onlyAdmin hookable(characterId, _systemId()) {
+    if (CharactersTable.getCorpId(_namespace().charactersTableId(), characterId) == 0) {
+      revert ISmartCharacterErrors.SmartCharacterDoesNotExist(characterId);
+    }
+    CharactersTable.setCorpId(_namespace().charactersTableId(), characterId, corpId);
+  }
+
   function setCharClassId(
     uint256 classId
   ) public onlyAdmin hookable(uint256(ResourceId.unwrap(_systemId())), _systemId()) {
