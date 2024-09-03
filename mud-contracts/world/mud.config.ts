@@ -394,6 +394,7 @@ export default mudConfig({
       },
       valueSchema: {
         systemId: "ResourceId",
+        maxDistance: "uint256", // This variable can be moved to a new table if needed
       },
       tableIdArgument: true,
     },

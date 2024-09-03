@@ -32,7 +32,8 @@ library SmartGateLib {
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
+    uint256 fuelMaxCapacity,
+    uint256 maxDistance
   ) internal {
     world.iface.call(
       world.namespace.smartGateSystemId(),
@@ -45,7 +46,8 @@ library SmartGateLib {
           worldPosition,
           fuelUnitVolume,
           fuelConsumptionIntervalInSeconds,
-          fuelMaxCapacity
+          fuelMaxCapacity,
+          maxDistance
         )
       )
     );

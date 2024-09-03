@@ -203,7 +203,8 @@ contract SmartGateTest is Test {
       worldPosition,
       1e18, // fuelUnitVolume,
       1, // fuelConsumptionIntervalInSeconds,
-      1000000 * 1e18 // fuelMaxCapacity,
+      1000000 * 1e18, // fuelMaxCapacity,
+      100000000 * 1e18 // maxDistance
     );
 
     smartDeployable.depositFuel(smartObjectId, 1);
@@ -253,7 +254,7 @@ contract SmartGateTest is Test {
   function testConfigureSmartGate() public {
     smartGate.configureSmartGate(sourceGateId, smartGateTesStystemId);
 
-    ResourceId systemId = SmartGateConfigTable.get(DEPLOYMENT_NAMESPACE.smartGateConfigTableId(), sourceGateId);
+    ResourceId systemId = SmartGateConfigTable.getSystemId(DEPLOYMENT_NAMESPACE.smartGateConfigTableId(), sourceGateId);
     assertEq(systemId.getNamespace(), DEPLOYMENT_NAMESPACE);
     assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(smartGateTesStystemId));
   }

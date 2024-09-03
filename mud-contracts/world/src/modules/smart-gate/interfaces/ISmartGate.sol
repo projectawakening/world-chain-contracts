@@ -18,7 +18,8 @@ interface ISmartGate {
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
+    uint256 fuelMaxCapacity,
+    uint256 maxDistance
   ) external;
 
   function configureSmartGate(uint256 smartGateId, ResourceId systemId) external;

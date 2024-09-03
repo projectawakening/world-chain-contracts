@@ -80,7 +80,8 @@ contract SmartGate is EveSystem, AccessModified {
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
+    uint256 fuelMaxCapacity,
+    uint256 maxDistance
   ) public onlyAdmin {
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
@@ -106,6 +107,8 @@ contract SmartGate is EveSystem, AccessModified {
       z: worldPosition.position.z
     });
     _smartDeployableLib().anchor(smartGateId, locationData);
+
+    SmartGateConfigTable.setMaxDistance(_namespace().smartGateConfigTableId(), smartGateId, maxDistance);
   }
 
   /**
@@ -120,7 +123,6 @@ contract SmartGate is EveSystem, AccessModified {
 
     //TODO: Check if the state is online for both the gates ??
     //TODO: Link the gates only when the distance between 2 gates are less than the max distance
-
     SmartGateLinkTable.set(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId, true);
   }
 
@@ -146,7 +148,7 @@ contract SmartGate is EveSystem, AccessModified {
     uint256 smartGateId,
     ResourceId systemId
   ) public onlyAdminOrObjectOwner(smartGateId) hookable(smartGateId, _systemId()) {
-    SmartGateConfigTable.set(_namespace().smartGateConfigTableId(), smartGateId, systemId);
+    SmartGateConfigTable.setSystemId(_namespace().smartGateConfigTableId(), smartGateId, systemId);
   }
 
   /**
@@ -176,7 +178,7 @@ contract SmartGate is EveSystem, AccessModified {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }
 
-    ResourceId systemId = SmartGateConfigTable.get(_namespace().smartGateConfigTableId(), sourceGateId);
+    ResourceId systemId = SmartGateConfigTable.getSystemId(_namespace().smartGateConfigTableId(), sourceGateId);
 
     if (ResourceIds.getExists(systemId)) {
       bytes memory returnData = world().call(
