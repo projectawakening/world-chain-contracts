@@ -1,15 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.20;
 
-struct Target {
-  string char;
-  string shipType;
+struct TargetPriority {
+  SmartTurretTarget target;
   uint256 weight;
-  HPRatio hpRatio;
 }
 
-struct HPRatio {
-  uint256 armor;
-  uint256 hp;
-  uint256 shield;
+struct SmartTurretTarget {
+  uint256 shipId;
+  uint256 shipTypeId;
+  uint256 characterId;
+  uint256 hpRatio;
+  uint256 shieldRatio;
+  uint256 armorRatio;
+}
+
+struct Turret {
+  uint256 weaponTypeId;
+  uint256 ammoTypeId;
+  uint256 chargesLeft;
 }
