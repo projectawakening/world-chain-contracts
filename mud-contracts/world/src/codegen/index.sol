@@ -33,3 +33,4 @@ import { Owners } from "./tables/Owners.sol";
 import { ERC721Registry } from "./tables/ERC721Registry.sol";
 import { TokenApproval } from "./tables/TokenApproval.sol";
 import { OperatorApproval } from "./tables/OperatorApproval.sol";
+import { KillMailTable, KillMailTableData } from "./tables/KillMailTable.sol";

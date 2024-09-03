@@ -55,6 +55,7 @@ export default mudConfig({
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
     SmartAssemblyType: ["SMART_STORAGE_UNIT", "SMART_TURRET", "SMART_GATE"],
+    KillMailLossType: ["SHIP", "POD"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -471,6 +472,24 @@ export default mudConfig({
       },
       valueSchema: {
         approved: "bool",
+      },
+      tableIdArgument: true,
+    },
+
+    /************************
+     * KillMail module *
+     ************************/
+
+    KillMailTable: {
+      keySchema: {
+        killMailId: "uint256",
+      },
+      valueSchema: {
+        killer: "address",
+        victim: "address",
+        lossType: "KillMailLossType",
+        solarSystemId: "uint256",
+        killTimestamp: "uint256",
       },
       tableIdArgument: true,
     },
