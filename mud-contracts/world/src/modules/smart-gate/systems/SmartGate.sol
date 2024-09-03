@@ -45,7 +45,7 @@ contract SmartGate is EveSystem, AccessModified {
   using Utils for bytes14;
 
   error SmartGate_UndefinedClassId();
-  error SmartGate_NotConfigured(uint256 SmartGateId);
+  error SmartGate_NotConfigured(uint256 smartGateId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
 
@@ -118,6 +118,7 @@ contract SmartGate is EveSystem, AccessModified {
       revert SmartGate_GateAlreadyLinked(sourceGateId, destinationGateId);
     }
 
+    //TODO: Check if the state is online for both the gates ??
     //TODO: Link the gates only when the distance between 2 gates are less than the max distance
 
     SmartGateLinkTable.set(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId, true);
@@ -155,13 +156,10 @@ contract SmartGate is EveSystem, AccessModified {
    * @param destinationGateId is the id of the destination gate
    */
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
-    State sourceGateState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      sourceGateId
-    );
+    State sourceGateState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), sourceGateId);
 
     State destinationGateState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      _namespace().deployableStateTableId(),
       destinationGateId
     );
 

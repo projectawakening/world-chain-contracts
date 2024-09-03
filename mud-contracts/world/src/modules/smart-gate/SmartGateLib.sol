@@ -85,4 +85,13 @@ library SmartGateLib {
 
     return abi.decode(returnedData, (bool));
   }
+
+  function isGateLinked(World memory world, uint256 sourceGateId, uint256 destinationGateId) internal returns (bool) {
+    bytes memory returnedData = world.iface.call(
+      world.namespace.smartGateSystemId(),
+      abi.encodeCall(ISmartGate.isGateLinked, (sourceGateId, destinationGateId))
+    );
+
+    return abi.decode(returnedData, (bool));
+  }
 }
