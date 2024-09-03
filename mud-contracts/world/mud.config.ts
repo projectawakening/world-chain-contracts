@@ -385,6 +385,30 @@ export default mudConfig({
       tableIdArgument: true,
     },
 
+    /*************************
+     * SMART Gate MODULE *
+     *************************/
+    SmartGateConfigTable: {
+      keySchema: {
+        smartGateId: "uint256",
+      },
+      valueSchema: {
+        systemId: "ResourceId",
+      },
+      tableIdArgument: true,
+    },
+
+    SmartGateLinkTable: {
+      keySchema: {
+        sourceGateId: "uint256",
+        destinationGateId: "uint256",
+      },
+      valueSchema: {
+        isLinked: "bool",
+      },
+      tableIdArgument: true,
+    },
+
     /************************
      * ERC721 PUPPET MODULE *
      ************************/
