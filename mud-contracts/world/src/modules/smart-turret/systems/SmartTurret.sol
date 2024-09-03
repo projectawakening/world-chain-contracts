@@ -29,7 +29,7 @@ import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol"
 import { AccessModified } from "../../access/systems/AccessModified.sol";
 
 import { Utils } from "../Utils.sol";
-import { Target, HPRatio } from "../types.sol";
+import { TargetPriority, Turret, SmartTurretTarget } from "../types.sol";
 
 /**
  * @title SmartTurret
@@ -121,18 +121,16 @@ contract SmartTurret is EveSystem, AccessModified {
   /**
    * @notice view function for turret logic based on proximity
    * @param smartTurretId is the is of the smart turret
-   * @param characterId is the character id of the Smart Turret
-   * @param validTargetQueue is the queue of the Targets in proximity
-   * @param chargesLeft is the remaining ammo of the Smart Turret
-   * @param hpRatio is the hp ratio of the Smart Turret
+   * @param priorityQueue is the queue of the SmartTurretTarget in proximity
+   * @param turret is the Smart Turret object
+   * @param turretTarget is the player entering the zone
    */
   function inProximity(
     uint256 smartTurretId,
-    uint256 characterId,
-    Target[] memory validTargetQueue,
-    uint256 chargesLeft,
-    HPRatio memory hpRatio
-  ) public returns (Target[] memory returnTargetQueue) {
+    TargetPriority[] memory priorityQueue,
+    Turret memory turret,
+    SmartTurretTarget memory turretTarget
+  ) public returns (TargetPriority[] memory updatedPriorityQueue) {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartTurretId
@@ -147,37 +145,33 @@ contract SmartTurret is EveSystem, AccessModified {
     if (!ResourceIds.getExists(systemId)) {
       //If smart turret is not configured, then execute the default logic
       // TODO: If the character corp and the owner of the turret are same, then the turret will not attack
-      returnTargetQueue = validTargetQueue; //temporary logic
+      updatedPriorityQueue = priorityQueue; //temporary logic
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(this.inProximity, (smartTurretId, characterId, validTargetQueue, chargesLeft, hpRatio))
+        abi.encodeCall(this.inProximity, (smartTurretId, priorityQueue, turret, turretTarget))
       );
 
-      returnTargetQueue = abi.decode(returnData, (Target[]));
+      updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
     }
 
-    return returnTargetQueue;
+    return updatedPriorityQueue;
   }
 
   /**
    * @param smartTurretId is the is of the smart turret
-   * @param aggressorCharacterId is the character id of the aggressor
-   * @param aggressorHpRatio is the hp of the aggressor
-   * @param victimItemId is the item id of the victim
-   * @param victimHpRatio is the hp of the victim
-   * @param validTargetQueue is the queue of the Targets in proximity
-   * @param chargesLeft is the remaining ammo of the Smart Turret
+   * @param priorityQueue is the queue of the SmartTurretTarget in proximity
+   * @param turret is the Smart Turret object
+   * @param aggressor is the player attacking inside the zone
+   * @param victim is the player being attacked inside the zone
    */
   function aggression(
     uint256 smartTurretId,
-    uint256 aggressorCharacterId,
-    uint256 aggressorHpRatio,
-    uint256 victimItemId,
-    uint256 victimHpRatio,
-    Target[] memory validTargetQueue,
-    uint256 chargesLeft
-  ) public returns (Target[] memory returnTargetQueue) {
+    TargetPriority[] memory priorityQueue,
+    Turret memory turret,
+    SmartTurretTarget memory aggressor,
+    SmartTurretTarget memory victim
+  ) public returns (TargetPriority[] memory updatedPriorityQueue) {
     State currentState = DeployableState.getCurrentState(
       SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartTurretId
@@ -191,28 +185,17 @@ contract SmartTurret is EveSystem, AccessModified {
 
     if (!ResourceIds.getExists(systemId)) {
       //If smart turret is not configured, then execute the default logic
-      returnTargetQueue = validTargetQueue; //temporary logic
+      updatedPriorityQueue = priorityQueue; //temporary logic
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(
-          this.aggression,
-          (
-            smartTurretId,
-            aggressorCharacterId,
-            aggressorHpRatio,
-            victimItemId,
-            victimHpRatio,
-            validTargetQueue,
-            chargesLeft
-          )
-        )
+        abi.encodeCall(this.aggression, (smartTurretId, priorityQueue, turret, aggressor, victim))
       );
 
-      returnTargetQueue = abi.decode(returnData, (Target[]));
+      updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
     }
 
-    return returnTargetQueue;
+    return updatedPriorityQueue;
   }
 
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {

@@ -35,6 +35,7 @@ import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Util
 import { SmartCharacterModule } from "../../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
 import { SmartObjectData, EntityRecordData } from "../../src/modules/smart-character/types.sol";
+import { ISmartCharacterErrors } from "../../src/modules/smart-character/ISmartCharacterErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
@@ -190,5 +191,35 @@ contract SmartCharacterTest is Test {
     // assertEq(data.name, tableData.name);
     //assertEq(data.dappURL, tableData.dappURL);
     //assertEq(data.description, tableData.description);
+  }
+
+  function testUpdateCorpId(uint256 entityId) public {
+    smartCharacter.setCharClassId(smartCharacterClassId);
+
+    smartCharacter.createCharacter(
+      entityId,
+      address(this),
+      111,
+      EntityRecordData({ typeId: 111, itemId: 11, volume: 11 }),
+      EntityRecordOffchainTableData({ name: "characterName", dappURL: "noURL", description: "." }),
+      "cid"
+    );
+    CharactersTableData memory charactersData = CharactersTable.get(
+      SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(),
+      entityId
+    );
+    assertEq(charactersData.corpId, 111);
+
+    smartCharacter.updateCorpId(entityId, 222);
+    charactersData = CharactersTable.get(SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(), entityId);
+    assertEq(charactersData.corpId, 222);
+  }
+
+  function revertUpdateCorpId(uint256 characterId, uint256 corpId) public {
+    vm.assume(characterId != 0);
+    vm.assume(corpId == 0);
+
+    vm.expectRevert(abi.encodeWithSelector(ISmartCharacterErrors.SmartCharacterDoesNotExist.selector, characterId));
+    smartCharacter.updateCorpId(characterId, corpId);
   }
 }

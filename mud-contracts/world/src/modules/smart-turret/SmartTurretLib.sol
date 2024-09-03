@@ -8,7 +8,7 @@ import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol
 import { SmartObjectData } from "../smart-deployable/types.sol";
 
 import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
-import { Target, HPRatio } from "./types.sol";
+import { TargetPriority, Turret, SmartTurretTarget } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
 /**
@@ -62,43 +62,29 @@ library SmartTurretLib {
   function inProximity(
     World memory world,
     uint256 smartTurretId,
-    uint256 characterId,
-    Target[] memory validTargetQueue,
-    uint256 chargesLeft,
-    HPRatio memory hpRatio
-  ) internal returns (Target[] memory returnTargetQueue) {
+    TargetPriority[] memory priorityQueue,
+    Turret memory turret,
+    SmartTurretTarget memory turretTarget
+  ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, characterId, validTargetQueue, chargesLeft, hpRatio))
+      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, priorityQueue, turret, turretTarget))
     );
-    return abi.decode(data, (Target[]));
+    return abi.decode(data, (TargetPriority[]));
   }
 
   function aggression(
     World memory world,
     uint256 smartTurretId,
-    uint256 aggressorCharacterId,
-    uint256 aggressorHpRatio,
-    uint256 victimItemId,
-    uint256 victimHpRatio,
-    Target[] memory validTargetQueue,
-    uint256 chargesLeft
-  ) internal returns (Target[] memory returnTargetQueue) {
+    TargetPriority[] memory priorityQueue,
+    Turret memory turret,
+    SmartTurretTarget memory aggressor,
+    SmartTurretTarget memory victim
+  ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(
-        ISmartTurret.aggression,
-        (
-          smartTurretId,
-          aggressorCharacterId,
-          aggressorHpRatio,
-          victimItemId,
-          victimHpRatio,
-          validTargetQueue,
-          chargesLeft
-        )
-      )
+      abi.encodeCall(ISmartTurret.aggression, (smartTurretId, priorityQueue, turret, aggressor, victim))
     );
-    return abi.decode(data, (Target[]));
+    return abi.decode(data, (TargetPriority[]));
   }
 }

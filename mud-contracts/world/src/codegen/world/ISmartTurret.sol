@@ -6,7 +6,7 @@ pragma solidity >=0.8.24;
 import { EntityRecordData, WorldPosition } from "./../../modules/smart-storage-unit/types.sol";
 import { SmartObjectData } from "./../../modules/smart-deployable/types.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { Target, HPRatio } from "./../../modules/smart-turret/types.sol";
+import { TargetPriority, Turret, SmartTurretTarget } from "./../../modules/smart-turret/types.sol";
 
 /**
  * @title ISmartTurret
@@ -30,19 +30,16 @@ interface ISmartTurret {
 
   function eveworld__inProximity(
     uint256 smartTurretId,
-    uint256 characterId,
-    Target[] memory validTargetQueue,
-    uint256 chargesLeft,
-    HPRatio memory hpRatio
-  ) external returns (Target[] memory returnTargetQueue);
+    TargetPriority[] memory priorityQueue,
+    Turret memory turret,
+    SmartTurretTarget memory turretTarget
+  ) external returns (TargetPriority[] memory updatedPriorityQueue);
 
   function eveworld__aggression(
     uint256 smartTurretId,
-    uint256 aggressorCharacterId,
-    uint256 aggressorHpRatio,
-    uint256 victimItemId,
-    uint256 victimHpRatio,
-    Target[] memory validTargetQueue,
-    uint256 chargesLeft
-  ) external returns (Target[] memory returnTargetQueue);
+    TargetPriority[] memory priorityQueue,
+    Turret memory turret,
+    SmartTurretTarget memory aggressor,
+    SmartTurretTarget memory victim
+  ) external returns (TargetPriority[] memory updatedPriorityQueue);
 }

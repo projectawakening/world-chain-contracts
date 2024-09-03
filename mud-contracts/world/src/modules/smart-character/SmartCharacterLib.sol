@@ -54,4 +54,11 @@ library SmartCharacterLib {
       abi.encodeCall(ISmartCharacter.setCharClassId, (classId))
     );
   }
+
+  function updateCorpId(World memory world, uint256 characterId, uint256 corpId) internal {
+    world.iface.call(
+      world.namespace.smartCharacterSystemId(),
+      abi.encodeCall(ISmartCharacter.updateCorpId, (characterId, corpId))
+    );
+  }
 }
