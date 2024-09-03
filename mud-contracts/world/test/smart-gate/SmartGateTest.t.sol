@@ -28,8 +28,8 @@ import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/Hook
 import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 
-import { Utils } from "../../src/modules/smart-turret/Utils.sol";
-import { SmartTurretModule } from "../../src/modules/smart-turret/SmartTurretModule.sol";
+import { Utils } from "../../src/modules/smart-gate/Utils.sol";
+import { SmartGateModule } from "../../src/modules/smart-gate/SmartGateModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
@@ -39,10 +39,9 @@ import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mint
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
 import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
-import { SmartTurretLib } from "../../src/modules/smart-turret/SmartTurretLib.sol";
+import { SmartGateLib } from "../../src/modules/smart-gate/SmartGateLib.sol";
 import { State, SmartAssemblyType } from "../../src/modules/smart-deployable/types.sol";
-import { TargetPriority, Turret, SmartTurretTarget } from "../../src/modules/smart-turret/types.sol";
-import { SmartTurret as SmartTurretSystem } from "../../src/modules/smart-turret/systems/SmartTurret.sol";
+import { SmartGate as SmartGateSystem } from "../../src/modules/smart-gate/systems/SmartGate.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { EntityRecordData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
 import { SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
@@ -53,75 +52,55 @@ import { EntityRecordData as EntityRecordCharacter } from "../../src/modules/sma
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-import { SmartTurretConfigTable } from "../../src/codegen/tables/SmartTurretConfigTable.sol";
+import { SmartGateConfigTable } from "../../src/codegen/tables/SmartGateConfigTable.sol";
+import { SmartGateLinkTable } from "../../src/codegen/tables/SmartGateLinkTable.sol";
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
 import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { SmartAssemblyTable } from "../../src/codegen/tables/SmartAssemblyTable.sol";
+import { DeployableState } from "../../src/codegen/tables/DeployableState.sol";
 
 import { createCoreModule } from "../CreateCoreModule.sol";
 
-contract SmartTurretTestSystem is System {
-  using SmartCharacterUtils for bytes14;
-
-  function inProximity(
-    uint256 smartTurretId,
-    TargetPriority[] memory priorityQueue,
-    Turret memory turret,
-    SmartTurretTarget memory turretTarget
-  ) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    //TODO: Implement the logic for the system
-    CharactersTableData memory characterData = CharactersTable.get(
-      DEPLOYMENT_NAMESPACE.charactersTableId(),
-      turretTarget.characterId
-    );
-    if (characterData.corpId == 100) {
-      return priorityQueue;
-    }
-
-    return updatedPriorityQueue;
-  }
-
-  function aggression(
-    uint256 smartTurretId,
-    TargetPriority[] memory priorityQueue,
-    Turret memory turret,
-    SmartTurretTarget memory aggressor,
-    SmartTurretTarget memory victim
-  ) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    return priorityQueue;
+contract SmartGateTestSystem is System {
+  function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    return true;
   }
 }
 
 /**
- * @title SmartTurretTest
+ * @title SmartGateTest
  * @dev Not including Fuzz test as it has issues
  */
-contract SmartTurretTest is Test {
+contract SmartGateTest is Test {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using SmartCharacterUtils for bytes14;
   using SmartCharacterLib for SmartCharacterLib.World;
-  using SmartTurretLib for SmartTurretLib.World;
+  using SmartGateLib for SmartGateLib.World;
   using WorldResourceIdInstance for ResourceId;
   using SmartDeployableLib for SmartDeployableLib.World;
   using SmartObjectLib for SmartObjectLib.World;
 
   IBaseWorld world;
   SmartCharacterLib.World smartCharacter;
-  SmartTurretLib.World smartTurret;
+  SmartGateLib.World smartGate;
   SmartDeployableLib.World smartDeployable;
-  IERC721Mintable erc721TurretToken;
+  IERC721Mintable erc721GateToken;
   IERC721Mintable erc721CharacterToken;
   SmartObjectLib.World SOFInterface;
 
-  SmartTurretTestSystem smartTurretTestSystem = new SmartTurretTestSystem();
-  ResourceId smartTurretTestSystemId =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, "SmartTurretTestS"))));
+  SmartGateTestSystem smartGateTestSystem = new SmartGateTestSystem();
+  ResourceId smartGateTesStystemId =
+    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, "SmartGateTestS"))));
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
   bytes14 constant SMART_CHAR_ERC721 = "ERC721Char";
   uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
   uint256[] smartCharClassIds;
+
+  uint256 sourceGateId = 1234;
+  uint256 destinationGateId = 1235;
+  uint256 characterId = 11111;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -150,12 +129,12 @@ contract SmartTurretTest is Test {
     _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
     _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
     _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
-    _installModule(new SmartTurretModule(), DEPLOYMENT_NAMESPACE);
+    _installModule(new SmartGateModule(), DEPLOYMENT_NAMESPACE);
 
-    erc721TurretToken = registerERC721(
+    erc721GateToken = registerERC721(
       world,
       ERC721_DEPLOYABLE,
-      StaticDataGlobalTableData({ name: "SmartTurret", symbol: "ST", baseURI: "" })
+      StaticDataGlobalTableData({ name: "SmartGate", symbol: "ST", baseURI: "" })
     );
     erc721CharacterToken = registerERC721(
       world,
@@ -174,18 +153,18 @@ contract SmartTurretTest is Test {
     smartCharacter.setCharClassId(smartCharacterClassId);
 
     smartCharacter.registerERC721Token(address(erc721CharacterToken));
-    smartDeployable.registerDeployableToken(address(erc721TurretToken));
+    smartDeployable.registerDeployableToken(address(erc721GateToken));
 
-    smartTurret = SmartTurretLib.World(world, DEPLOYMENT_NAMESPACE);
+    smartGate = SmartGateLib.World(world, DEPLOYMENT_NAMESPACE);
 
     // register the smart turret system
-    world.registerSystem(smartTurretTestSystemId, smartTurretTestSystem, true);
+    world.registerSystem(smartGateTesStystemId, smartGateTestSystem, true);
     //register the function selector
-    world.registerFunctionSelector(smartTurretTestSystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
+    world.registerFunctionSelector(smartGateTesStystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
 
     //Create a smart character
     smartCharacter.createCharacter(
-      11111,
+      characterId,
       address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266),
       100,
       EntityRecordCharacter({ typeId: 111, itemId: 1, volume: 10 }),
@@ -203,13 +182,12 @@ contract SmartTurretTest is Test {
   }
 
   function testSetup() public {
-    address smartTurretSystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.smartTurretSystemId());
-    ResourceId smartTurretSystemId = SystemRegistry.get(smartTurretSystem);
-    assertEq(smartTurretSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
+    address smartGateSystem = Systems.getSystem(DEPLOYMENT_NAMESPACE.smartGateSystemId());
+    ResourceId smartGateSystemId = SystemRegistry.get(smartGateSystem);
+    assertEq(smartGateSystemId.getNamespace(), DEPLOYMENT_NAMESPACE);
   }
 
-  function testAnchorSmartTurret() public {
-    uint256 smartObjectId = 1234;
+  function testAnchorSmartGate(uint256 smartObjectId) public {
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
@@ -218,14 +196,15 @@ contract SmartTurretTest is Test {
     uint256 fuelConsumptionIntervalInSeconds = 100;
     uint256 fuelMaxCapacity = 100;
     smartDeployable.globalResume();
-    smartTurret.createAndAnchorSmartTurret(
+    smartGate.createAndAnchorSmartGate(
       smartObjectId,
       entityRecordData,
       smartObjectData,
       worldPosition,
       1e18, // fuelUnitVolume,
       1, // fuelConsumptionIntervalInSeconds,
-      1000000 * 1e18 // fuelMaxCapacity,
+      1000000 * 1e18, // fuelMaxCapacity,
+      100000000 * 1e18 // maxDistance
     );
 
     smartDeployable.depositFuel(smartObjectId, 1);
@@ -233,157 +212,66 @@ contract SmartTurretTest is Test {
 
     assertEq(
       uint256(SmartAssemblyTable.get(DEPLOYMENT_NAMESPACE.smartAssemblyTableId(), smartObjectId)),
-      uint256(SmartAssemblyType.SMART_TURRET)
-    );
-  }
-
-  function testConfigureSmartTurret() public {
-    testAnchorSmartTurret();
-    uint256 smartObjectId = 1234;
-    smartTurret.configureSmartTurret(smartObjectId, smartTurretTestSystemId);
-
-    ResourceId systemId = SmartTurretConfigTable.get(DEPLOYMENT_NAMESPACE.smartTurretConfigTableId(), smartObjectId);
-    assertEq(systemId.getNamespace(), DEPLOYMENT_NAMESPACE);
-    assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(smartTurretTestSystemId));
-  }
-
-  function testInProximity() public {
-    testConfigureSmartTurret();
-    uint256 smartObjectId = 1234;
-    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
-    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-
-    SmartTurretTarget memory turretTarget = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 11111,
-      hpRatio: 100,
-      shieldRatio: 100,
-      armorRatio: 100
-    });
-    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
-    TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      turretTarget
+      uint256(SmartAssemblyType.SMART_GATE)
     );
 
-    assertEq(returnTargetQueue.length, 1);
-    assertEq(returnTargetQueue[0].weight, 100);
-  }
-
-  function testInProximityWrongCorpId() public {
-    testConfigureSmartTurret();
-    uint256 smartObjectId = 1234;
-    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
-    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-    SmartTurretTarget memory turretTarget = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 5555,
-      hpRatio: 100,
-      shieldRatio: 100,
-      armorRatio: 100
-    });
-    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
-    TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      turretTarget
+    State currentState = DeployableState.getCurrentState(
+      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
+      smartObjectId
     );
 
-    assertEq(returnTargetQueue.length, 0);
+    assertEq(uint8(currentState), uint8(State.ONLINE));
   }
 
-  function testAggression() public {
-    testConfigureSmartTurret();
-    uint256 smartObjectId = 1234;
-    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
-    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-    SmartTurretTarget memory turretTarget = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 4444,
-      hpRatio: 50,
-      shieldRatio: 50,
-      armorRatio: 50
-    });
-    SmartTurretTarget memory aggressor = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 5555,
-      hpRatio: 100,
-      shieldRatio: 100,
-      armorRatio: 100
-    });
-    SmartTurretTarget memory victim = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 6666,
-      hpRatio: 80,
-      shieldRatio: 100,
-      armorRatio: 100
-    });
-
-    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
-    TargetPriority[] memory returnTargetQueue = smartTurret.aggression(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      aggressor,
-      victim
-    );
-
-    assertEq(returnTargetQueue.length, 1);
-    assertEq(returnTargetQueue[0].weight, 100);
+  function testLinkSmartGates() public {
+    smartGate.linkSmartGates(sourceGateId, destinationGateId);
+    assert(smartGate.isGateLinked(sourceGateId, destinationGateId));
+    assert(smartGate.isGateLinked(destinationGateId, sourceGateId));
   }
 
-  function revertInProximity() public {
-    uint256 smartObjectId = 1234;
-    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
-    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-    SmartTurretTarget memory turretTarget = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 5555,
-      hpRatio: 100,
-      shieldRatio: 100,
-      armorRatio: 100
-    });
-    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
+  function testUnlinkSmartGates() public {
+    testLinkSmartGates();
+    smartGate.unlinkSmartGates(sourceGateId, destinationGateId);
 
-    vm.expectRevert(abi.encodeWithSelector(SmartTurretSystem.SmartTurret_NotConfigured.selector, smartObjectId));
-
-    smartTurret.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
+    assert(!smartGate.isGateLinked(sourceGateId, destinationGateId));
   }
 
-  function revertInProximityIncorrectState() public {
-    uint256 smartObjectId = 1234;
-    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
-    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-    SmartTurretTarget memory turretTarget = SmartTurretTarget({
-      shipId: 1,
-      shipTypeId: 1,
-      characterId: 5555,
-      hpRatio: 100,
-      shieldRatio: 100,
-      armorRatio: 100
-    });
-    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
+  function testRevertExistingLink() public {
+    testLinkSmartGates();
     vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartDeployableErrors.SmartDeployable_IncorrectState.selector,
-        smartObjectId,
-        State.UNANCHORED
-      )
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_GateAlreadyLinked.selector, sourceGateId, destinationGateId)
     );
+    smartGate.linkSmartGates(sourceGateId, destinationGateId);
+  }
 
-    smartTurret.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
+  function testRevertUnlinkSmartGates() public {
+    vm.expectRevert(
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotLinked.selector, sourceGateId, destinationGateId)
+    );
+    smartGate.unlinkSmartGates(sourceGateId, destinationGateId);
+  }
+
+  function testConfigureSmartGate() public {
+    smartGate.configureSmartGate(sourceGateId, smartGateTesStystemId);
+
+    ResourceId systemId = SmartGateConfigTable.getSystemId(DEPLOYMENT_NAMESPACE.smartGateConfigTableId(), sourceGateId);
+    assertEq(systemId.getNamespace(), DEPLOYMENT_NAMESPACE);
+    assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(smartGateTesStystemId));
+  }
+
+  function testCanJump() public {
+    testConfigureSmartGate();
+    testAnchorSmartGate(sourceGateId);
+    testAnchorSmartGate(destinationGateId);
+    testLinkSmartGates();
+    assert(smartGate.canJump(characterId, sourceGateId, destinationGateId));
+  }
+
+  function testCanJump2way() public {
+    testConfigureSmartGate();
+    testAnchorSmartGate(sourceGateId);
+    testAnchorSmartGate(destinationGateId);
+    testLinkSmartGates();
+    assert(smartGate.canJump(characterId, destinationGateId, sourceGateId));
   }
 }

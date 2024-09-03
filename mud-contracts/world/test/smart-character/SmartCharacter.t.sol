@@ -2,7 +2,7 @@
 pragma solidity >=0.8.21;
 
 import "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+
 import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -125,6 +125,7 @@ contract SmartCharacterTest is Test {
     string memory tokenCid
   ) public {
     vm.assume(entityId != 0);
+    vm.assume(corpId != 0);
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
@@ -193,26 +194,26 @@ contract SmartCharacterTest is Test {
     //assertEq(data.description, tableData.description);
   }
 
-  function testUpdateCorpId(uint256 entityId) public {
-    smartCharacter.setCharClassId(smartCharacterClassId);
+  function testUpdateCorpId(
+    uint256 entityId,
+    address characterAddress,
+    uint256 corpId,
+    uint256 itemId,
+    uint256 typeId,
+    uint256 volume,
+    EntityRecordOffchainTableData memory offchainData,
+    string memory tokenCid,
+    uint256 updatedCorpId
+  ) public {
+    vm.assume(updatedCorpId != 0);
+    testCreateSmartCharacter(entityId, characterAddress, corpId, itemId, typeId, volume, offchainData, tokenCid);
 
-    smartCharacter.createCharacter(
-      entityId,
-      address(this),
-      111,
-      EntityRecordData({ typeId: 111, itemId: 11, volume: 11 }),
-      EntityRecordOffchainTableData({ name: "characterName", dappURL: "noURL", description: "." }),
-      "cid"
-    );
+    smartCharacter.updateCorpId(entityId, updatedCorpId);
     CharactersTableData memory charactersData = CharactersTable.get(
       SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(),
       entityId
     );
-    assertEq(charactersData.corpId, 111);
-
-    smartCharacter.updateCorpId(entityId, 222);
-    charactersData = CharactersTable.get(SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(), entityId);
-    assertEq(charactersData.corpId, 222);
+    assertEq(charactersData.corpId, updatedCorpId);
   }
 
   function revertUpdateCorpId(uint256 characterId, uint256 corpId) public {

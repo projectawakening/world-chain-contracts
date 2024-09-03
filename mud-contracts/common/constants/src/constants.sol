@@ -15,6 +15,7 @@ bytes14 constant INVENTORY_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_TURRET_DEPLOYMENT_NAMESPACE = "eveworld";
+bytes14 constant SMART_GATE_DEPLOYMENT_NAMESPACE = "eveworld";
 
 bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
 bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
@@ -30,6 +31,7 @@ bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
 bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
 bytes16 constant SMART_TURRET_SYSTEM_NAME = "SmartTurret";
+bytes16 constant SMART_GATE_SYSTEM_NAME = "SmartGate";
 bytes16 constant ACCESS_CONTROL_SYSTEM_NAME = "AccessControlSys";
 bytes16 constant ACCESS_SYSTEM_NAME = "AccessSystem";
 

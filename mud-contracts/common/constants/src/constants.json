@@ -9,7 +9,8 @@
     "SMART_CHARACTER_DEPLOYMENT": "eveworld",
     "EVE_ERC721_PUPPET_DEPLOYMENT": "eveworld",
     "SMART_DEPLOYABLE_DEPLOYMENT": "eveworld",
-    "SMART_TURRET_DEPLOYMENT": "eveworld"
+    "SMART_TURRET_DEPLOYMENT": "eveworld",
+    "SMART_GATE_DEPLOYMENT": "eveworld"
   },
   "systemName": {
     "ENTITY_CORE": "EntityCore",
@@ -25,6 +26,7 @@
     "EPHEMERAL_INVENTORY": "EphemeralInv",
     "INVENTORY_INTERACT": "InventoryInterac",
     "SMART_TURRET": "SmartTurret",
+    "SMART_GATE": "SmartGate",
     "ACCESS": "AccessSystem"
   }
 }
