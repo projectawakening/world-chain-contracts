@@ -73,7 +73,7 @@ contract SmartGateModuleRegistrationLibrary {
   using Utils for bytes14;
 
   /**
-   * Register systems and tables for a new smart turret in a given namespace
+   * Register systems and tables for a new smart gate in a given namespace
    */
   function register(IBaseWorld world, bytes14 namespace) public {
     // Register the namespace
