@@ -225,6 +225,7 @@ contract SmartGateTest is Test {
   function testLinkSmartGates() public {
     smartGate.linkSmartGates(sourceGateId, destinationGateId);
     assert(smartGate.isGateLinked(sourceGateId, destinationGateId));
+    assert(smartGate.isGateLinked(destinationGateId, sourceGateId));
   }
 
   function testUnlinkSmartGates() public {
@@ -263,5 +264,13 @@ contract SmartGateTest is Test {
     testAnchorSmartGate(destinationGateId);
     testLinkSmartGates();
     assert(smartGate.canJump(characterId, sourceGateId, destinationGateId));
+  }
+
+  function testCanJump2way() public {
+    testConfigureSmartGate();
+    testAnchorSmartGate(sourceGateId);
+    testAnchorSmartGate(destinationGateId);
+    testLinkSmartGates();
+    assert(smartGate.canJump(characterId, destinationGateId, sourceGateId));
   }
 }

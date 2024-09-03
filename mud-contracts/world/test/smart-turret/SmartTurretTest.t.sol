@@ -115,7 +115,7 @@ contract SmartTurretTest is Test {
   SmartObjectLib.World SOFInterface;
 
   SmartTurretTestSystem smartTurretTestSystem = new SmartTurretTestSystem();
-  ResourceId smartTurretTesStystemId =
+  ResourceId smartTurretTestSystemId =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, "SmartTurretTestS"))));
 
   bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
@@ -179,9 +179,9 @@ contract SmartTurretTest is Test {
     smartTurret = SmartTurretLib.World(world, DEPLOYMENT_NAMESPACE);
 
     // register the smart turret system
-    world.registerSystem(smartTurretTesStystemId, smartTurretTestSystem, true);
+    world.registerSystem(smartTurretTestSystemId, smartTurretTestSystem, true);
     //register the function selector
-    world.registerFunctionSelector(smartTurretTesStystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
+    world.registerFunctionSelector(smartTurretTestSystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
 
     //Create a smart character
     smartCharacter.createCharacter(
@@ -240,11 +240,11 @@ contract SmartTurretTest is Test {
   function testConfigureSmartTurret() public {
     testAnchorSmartTurret();
     uint256 smartObjectId = 1234;
-    smartTurret.configureSmartTurret(smartObjectId, smartTurretTesStystemId);
+    smartTurret.configureSmartTurret(smartObjectId, smartTurretTestSystemId);
 
     ResourceId systemId = SmartTurretConfigTable.get(DEPLOYMENT_NAMESPACE.smartTurretConfigTableId(), smartObjectId);
     assertEq(systemId.getNamespace(), DEPLOYMENT_NAMESPACE);
-    assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(smartTurretTesStystemId));
+    assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(smartTurretTestSystemId));
   }
 
   function testInProximity() public {

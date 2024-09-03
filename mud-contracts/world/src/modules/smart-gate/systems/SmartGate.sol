@@ -178,18 +178,20 @@ contract SmartGate is EveSystem, AccessModified {
 
     ResourceId systemId = SmartGateConfigTable.get(_namespace().smartGateConfigTableId(), sourceGateId);
 
-    bytes memory returnData = world().call(
-      systemId,
-      abi.encodeCall(this.canJump, (characterId, sourceGateId, destinationGateId))
-    );
-
-    return abi.decode(returnData, (bool));
+    if (ResourceIds.getExists(systemId)) {
+      bytes memory returnData = world().call(
+        systemId,
+        abi.encodeCall(this.canJump, (characterId, sourceGateId, destinationGateId))
+      );
+      return abi.decode(returnData, (bool));
+    }
+    return true;
   }
 
   function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
     return (
-      (SmartGateLinkTable.getIsLinked(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId) ||
-        SmartGateLinkTable.getIsLinked(_namespace().smartGateLinkTableId(), destinationGateId, sourceGateId))
+      (SmartGateLinkTable.getIsLinked(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId)) ||
+        (SmartGateLinkTable.getIsLinked(_namespace().smartGateLinkTableId(), destinationGateId, sourceGateId))
         ? true
         : false
     );
