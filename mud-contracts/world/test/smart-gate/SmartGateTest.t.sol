@@ -63,7 +63,7 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 
 contract SmartGateTestSystem is System {
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
-    return true;
+    return false;
   }
 }
 
@@ -160,7 +160,7 @@ contract SmartGateTest is Test {
     // register the smart turret system
     world.registerSystem(smartGateTesStystemId, smartGateTestSystem, true);
     //register the function selector
-    world.registerFunctionSelector(smartGateTesStystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
+    world.registerFunctionSelector(smartGateTesStystemId, "canJump(uint256, uint256, uint256)");
 
     //Create a smart character
     smartCharacter.createCharacter(
@@ -260,15 +260,21 @@ contract SmartGateTest is Test {
   }
 
   function testCanJump() public {
-    testConfigureSmartGate();
     testAnchorSmartGate(sourceGateId);
     testAnchorSmartGate(destinationGateId);
     testLinkSmartGates();
     assert(smartGate.canJump(characterId, sourceGateId, destinationGateId));
   }
 
-  function testCanJump2way() public {
+  function testCanJumpFalse() public {
     testConfigureSmartGate();
+    testAnchorSmartGate(sourceGateId);
+    testAnchorSmartGate(destinationGateId);
+    testLinkSmartGates();
+    assert(!smartGate.canJump(characterId, sourceGateId, destinationGateId));
+  }
+
+  function testCanJump2way() public {
     testAnchorSmartGate(sourceGateId);
     testAnchorSmartGate(destinationGateId);
     testLinkSmartGates();
