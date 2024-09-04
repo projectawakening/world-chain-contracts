@@ -10,9 +10,11 @@ import { IEntityRecord } from "./IEntityRecord.sol";
 import { IEphemeralInventory } from "./IEphemeralInventory.sol";
 import { IInventory } from "./IInventory.sol";
 import { IInventoryInteract } from "./IInventoryInteract.sol";
+import { IKillMail } from "./IKillMail.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartCharacter } from "./ISmartCharacter.sol";
 import { ISmartDeployable } from "./ISmartDeployable.sol";
+import { ISmartGate } from "./ISmartGate.sol";
 import { ISmartStorageUnit } from "./ISmartStorageUnit.sol";
 import { ISmartTurret } from "./ISmartTurret.sol";
 import { IStaticData } from "./IStaticData.sol";
@@ -30,9 +32,11 @@ interface IWorld is
   IEphemeralInventory,
   IInventory,
   IInventoryInteract,
+  IKillMail,
   ILocationSystem,
   ISmartCharacter,
   ISmartDeployable,
+  ISmartGate,
   ISmartStorageUnit,
   ISmartTurret,
   IStaticData

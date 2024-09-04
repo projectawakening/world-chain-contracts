@@ -162,6 +162,7 @@ contract PostDeploy is Script {
       "erc721deploybl",
       StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
     );
+    console.log("Deploying ERC721 token with address: ", address(erc721SmartDeployableToken));
 
     IERC721Mintable erc721CharacterToken = registerERC721(
       world,
@@ -169,11 +170,11 @@ contract PostDeploy is Script {
       StaticDataGlobalTableData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
     );
     console.log("Deploying ERC721 token with address: ", address(erc721CharacterToken));
+
     SmartCharacterLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .registerERC721Token(address(erc721CharacterToken));
 
-    console.log("Deploying ERC721 token with address: ", address(erc721SmartDeployableToken));
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .registerDeployableToken(address(erc721SmartDeployableToken));
