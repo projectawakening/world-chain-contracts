@@ -302,6 +302,7 @@ contract smartDeployableTest is Test {
     LocationTableData memory location,
     uint256 fuelUnitAmount
   ) public {
+    vm.assume(entityId != 0);
     vm.assume(fuelUnitAmount < type(uint64).max / 2);
     vm.assume(fuelUnitVolume < type(uint64).max / 2);
     vm.assume(fuelUnitAmount * fuelUnitVolume * 2 < fuelMaxCapacity);
@@ -334,6 +335,7 @@ contract smartDeployableTest is Test {
     uint256 fuelUnitAmount,
     uint256 timeElapsed
   ) public {
+    vm.assume(entityId != 0);
     vm.assume(fuelUnitAmount < type(uint64).max);
     vm.assume(fuelUnitVolume < type(uint64).max);
     vm.assume(fuelConsumptionPerMinute < (type(uint256).max / 1e18) && fuelConsumptionPerMinute > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision
@@ -417,6 +419,7 @@ contract smartDeployableTest is Test {
     uint256 globalOfflineDuration,
     uint256 timeElapsedAfterOffline
   ) public {
+    vm.assume(entityId != 0);
     vm.assume(fuelUnitAmount < type(uint32).max);
     vm.assume(fuelUnitVolume < type(uint128).max);
     vm.assume(fuelConsumptionPerMinute < (type(uint256).max / 1e18) && fuelConsumptionPerMinute > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision

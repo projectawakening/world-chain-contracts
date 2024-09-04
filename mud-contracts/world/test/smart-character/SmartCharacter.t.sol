@@ -2,7 +2,7 @@
 pragma solidity >=0.8.21;
 
 import "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+
 import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -35,6 +35,7 @@ import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Util
 import { SmartCharacterModule } from "../../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
 import { SmartObjectData, EntityRecordData } from "../../src/modules/smart-character/types.sol";
+import { ISmartCharacterErrors } from "../../src/modules/smart-character/ISmartCharacterErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
 import { CharactersTable, CharactersTableData } from "../../src/codegen/tables/CharactersTable.sol";
@@ -116,6 +117,7 @@ contract SmartCharacterTest is Test {
   function testCreateSmartCharacter(
     uint256 entityId,
     address characterAddress,
+    uint256 corpId,
     uint256 itemId,
     uint256 typeId,
     uint256 volume,
@@ -123,6 +125,7 @@ contract SmartCharacterTest is Test {
     string memory tokenCid
   ) public {
     vm.assume(entityId != 0);
+    vm.assume(corpId != 0);
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
@@ -132,10 +135,11 @@ contract SmartCharacterTest is Test {
     EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
+      corpId: corpId,
       createdAt: block.timestamp
     });
 
-    smartCharacter.createCharacter(entityId, characterAddress, entityRecordData, offchainData, tokenCid);
+    smartCharacter.createCharacter(entityId, characterAddress, corpId, entityRecordData, offchainData, tokenCid);
     CharactersTableData memory loggedCharactersData = CharactersTable.get(
       SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(),
       entityId
@@ -188,5 +192,35 @@ contract SmartCharacterTest is Test {
     // assertEq(data.name, tableData.name);
     //assertEq(data.dappURL, tableData.dappURL);
     //assertEq(data.description, tableData.description);
+  }
+
+  function testUpdateCorpId(
+    uint256 entityId,
+    address characterAddress,
+    uint256 corpId,
+    uint256 itemId,
+    uint256 typeId,
+    uint256 volume,
+    EntityRecordOffchainTableData memory offchainData,
+    string memory tokenCid,
+    uint256 updatedCorpId
+  ) public {
+    vm.assume(updatedCorpId != 0);
+    testCreateSmartCharacter(entityId, characterAddress, corpId, itemId, typeId, volume, offchainData, tokenCid);
+
+    smartCharacter.updateCorpId(entityId, updatedCorpId);
+    CharactersTableData memory charactersData = CharactersTable.get(
+      SMART_CHARACTER_DEPLOYMENT_NAMESPACE.charactersTableId(),
+      entityId
+    );
+    assertEq(charactersData.corpId, updatedCorpId);
+  }
+
+  function revertUpdateCorpId(uint256 characterId, uint256 corpId) public {
+    vm.assume(characterId != 0);
+    vm.assume(corpId == 0);
+
+    vm.expectRevert(abi.encodeWithSelector(ISmartCharacterErrors.SmartCharacterDoesNotExist.selector, characterId));
+    smartCharacter.updateCorpId(characterId, corpId);
   }
 }

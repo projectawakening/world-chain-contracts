@@ -2,13 +2,15 @@
   "namespace": {
     "FRONTIER_WORLD_DEPLOYMENT": "eveworld",
     "SMART_OBJECT_DEPLOYMENT": "eveworld",
-    "ACCESS_CONTROL_DEPLOYMENT": "eveworld",
+    "ACCESS_DEPLOYMENT": "eveworld",
     "ENTITY_RECORD_DEPLOYMENT": "eveworld",
     "STATIC_DATA_DEPLOYMENT": "eveworld",
     "LOCATION_DEPLOYMENT_NAMESPACE": "eveworld",
     "SMART_CHARACTER_DEPLOYMENT": "eveworld",
     "EVE_ERC721_PUPPET_DEPLOYMENT": "eveworld",
-    "SMART_DEPLOYABLE_DEPLOYMENT": "eveworld"
+    "SMART_DEPLOYABLE_DEPLOYMENT": "eveworld",
+    "SMART_TURRET_DEPLOYMENT": "eveworld",
+    "SMART_GATE_DEPLOYMENT": "eveworld"
   },
   "systemName": {
     "ENTITY_CORE": "EntityCore",
@@ -22,6 +24,9 @@
     "SMART_STORAGE_UNIT": "SmartStorageUnit",
     "INVENTORY": "Inventory",
     "EPHEMERAL_INVENTORY": "EphemeralInv",
-    "INVENTORY_INTERACT": "InventoryInterac"
+    "INVENTORY_INTERACT": "InventoryInterac",
+    "SMART_TURRET": "SmartTurret",
+    "SMART_GATE": "SmartGate",
+    "ACCESS": "AccessSystem"
   }
 }

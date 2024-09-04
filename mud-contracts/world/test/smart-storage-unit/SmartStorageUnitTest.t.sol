@@ -229,7 +229,7 @@ contract SmartStorageUnitTest is Test {
 
     assertEq(erc721DeployableToken.ownerOf(smartObjectId), address(1));
 
-    smartStorageUnit.setDeploybaleMetadata(smartObjectId, "testName", "testDappURL", "testdesc");
+    smartStorageUnit.setDeployableMetadata(smartObjectId, "testName", "testDappURL", "testdesc");
 
     EntityRecordOffchainTableData memory entityRecordOffchainTableData = EntityRecordOffchainTable.get(
       ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
@@ -258,6 +258,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndDepositItemsToInventory(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     testCreateAndAnchorSmartStorageUnit(smartObjectId);
 
     InventoryItem[] memory items = new InventoryItem[](1);
@@ -292,6 +293,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testCreateAndDepositItemsToEphemeralInventory(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     testCreateAndAnchorSmartStorageUnit(smartObjectId);
     InventoryItem[] memory items = new InventoryItem[](1);
     address ephemeralInventoryOwner = address(1);
@@ -333,6 +335,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testUnanchorAndreAnchor(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
@@ -437,6 +440,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testUnanchorDepositRevert(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
@@ -494,6 +498,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testUnanchorWithdrawRevert(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
@@ -547,6 +552,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testDestroyAndRevertDepositItems(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,
@@ -591,6 +597,7 @@ contract SmartStorageUnitTest is Test {
   }
 
   function testDestroyAndRevertWithdrawItems(uint256 smartObjectId) public {
+    vm.assume(smartObjectId != 0);
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem({
       inventoryItemId: 123,

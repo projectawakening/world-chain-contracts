@@ -5,6 +5,7 @@ pragma solidity >=0.8.24;
 
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
+import { IAccess } from "./IAccess.sol";
 import { IEntityRecord } from "./IEntityRecord.sol";
 import { IEphemeralInventory } from "./IEphemeralInventory.sol";
 import { IInventory } from "./IInventory.sol";
@@ -13,6 +14,7 @@ import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartCharacter } from "./ISmartCharacter.sol";
 import { ISmartDeployable } from "./ISmartDeployable.sol";
 import { ISmartStorageUnit } from "./ISmartStorageUnit.sol";
+import { ISmartTurret } from "./ISmartTurret.sol";
 import { IStaticData } from "./IStaticData.sol";
 
 /**
@@ -23,6 +25,7 @@ import { IStaticData } from "./IStaticData.sol";
  */
 interface IWorld is
   IBaseWorld,
+  IAccess,
   IEntityRecord,
   IEphemeralInventory,
   IInventory,
@@ -31,6 +34,7 @@ interface IWorld is
   ISmartCharacter,
   ISmartDeployable,
   ISmartStorageUnit,
+  ISmartTurret,
   IStaticData
 {
 
