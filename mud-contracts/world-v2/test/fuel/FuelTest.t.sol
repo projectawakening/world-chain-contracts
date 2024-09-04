@@ -200,170 +200,154 @@ contract FuelTest is MudTest {
   }
 
   // test fuel consumption
-  // function testFuelConsumption(
-  //   uint256 entityId,
-  //   SmartObjectData memory smartObjectData,
-  //   uint256 fuelUnitVolume,
-  //   uint256 fuelConsumptionIntervalInSeconds,
-  //   uint256 fuelMaxCapacity,
-  //   LocationData memory location,
-  //   uint256 fuelAmount,
-  //   uint256 timeElapsed
-  // ) public {
-  //   vm.assume(fuelAmount < type(uint64).max);
-  //   vm.assume(fuelUnitVolume < type(uint64).max);
-  //   vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision
-  //   vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
+  function testFuelConsumption(
+    uint256 entityId,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    LocationData memory location,
+    uint256 fuelAmount,
+    uint256 timeElapsed
+  ) public {
+    vm.assume(fuelAmount < type(uint64).max);
+    vm.assume(fuelUnitVolume < type(uint64).max);
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision
+    vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
 
-  //   uint256 fuelConsumption = ((timeElapsed * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds) +
-  //     (1 * (10 ** DECIMALS)); // bringing online consumes exactly one wei's worth of gas for tick purposes
+    uint256 fuelConsumption = ((timeElapsed * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds) +
+      (1 * (10 ** DECIMALS)); // bringing online consumes exactly one wei's worth of gas for tick purposes
 
-  //   vm.assume(fuelAmount * (10 ** DECIMALS) > fuelConsumption);
+    vm.assume(fuelAmount * (10 ** DECIMALS) > fuelConsumption);
 
-  //   console.log("time elapsed", timeElapsed);
-  //   console.log("fuel consumption interval", fuelConsumptionIntervalInSeconds);
-  //   console.log("fuel consumption", fuelConsumption);
-  //   console.log("fuel amount", fuelAmount);
+    testDepositFuel(
+      entityId,
+      smartObjectData,
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      fuelMaxCapacity,
+      location,
+      fuelAmount
+    );
 
-  //   testDepositFuel(
-  //     entityId,
-  //     smartObjectData,
-  //     fuelUnitVolume,
-  //     fuelConsumptionIntervalInSeconds,
-  //     fuelMaxCapacity,
-  //     location,
-  //     fuelAmount
-  //   );
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
 
-  //   ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
+    vm.warp(block.timestamp + timeElapsed);
 
-  //   vm.warp(block.timestamp + timeElapsed);
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (entityId)));
 
-  //   ResourceId fuelSystemId = FuelUtils.fuelSystemId();
-  //   world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (entityId)));
+    FuelData memory fuelData = Fuel.get(entityId);
 
-  //   FuelData memory fuelData = Fuel.get(entityId);
+    assertEq(fuelData.fuelAmount, fuelAmount * (10 ** DECIMALS) - fuelConsumption);
+    assertEq(fuelData.lastUpdatedAt, block.timestamp);
+  }
 
-  //   console.log("fuelData amount", fuelData.fuelAmount);
+  function testFuelConsumptionRunsOut(
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelAmount,
+    uint256 timeElapsed
+  ) public {
+    fuelAmount %= 1000000;
+    vm.assume(fuelUnitVolume < type(uint64).max);
+    vm.assume(fuelConsumptionIntervalInSeconds > 3600 && fuelConsumptionIntervalInSeconds < (24 * 3600)); // relatively high consumption
+    vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
 
-  //   // discrepancy in fuel amount equal to time elapsed
-  //   assertEq(fuelData.fuelAmount, fuelAmount * (10 ** DECIMALS) - fuelConsumption);
-  //   assertEq(fuelData.lastUpdatedAt, block.timestamp);
-  // }
+    uint256 fuelConsumption = ((timeElapsed * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds) +
+      (1 * (10 ** DECIMALS)); // bringing online consumes exactly one wei's worth of gas for tick purposes
+    vm.assume(fuelAmount * (10 ** DECIMALS) < fuelConsumption);
 
-  // test fuel runs out
-  // function testFuelConsumptionRunsOut(
-  //   SmartObjectData memory smartObjectData,
-  //   uint256 fuelUnitVolume,
-  //   uint256 fuelConsumptionIntervalInSeconds,
-  //   uint256 fuelAmount,
-  //   uint256 timeElapsed
-  // ) public {
-  //   fuelAmount %= 1000000;
-  //   vm.assume(fuelUnitVolume < type(uint64).max);
-  //   vm.assume(fuelConsumptionIntervalInSeconds > 3600 && fuelConsumptionIntervalInSeconds < (24 * 3600)); // relatively high consumption
-  //   vm.assume(timeElapsed < 100 * 365 days); // Example constraint: timeElapsed is less than a 100 years in seconds
+    uint256 entityId = 1;
+    LocationData memory location = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
 
-  //   uint256 fuelConsumption = ((timeElapsed * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds) +
-  //     (1 * (10 ** DECIMALS)); // bringing online consumes exactly one wei's worth of gas for tick purposes
-  //   vm.assume(fuelAmount * (10 ** DECIMALS) < fuelConsumption);
+    testDepositFuel(
+      entityId,
+      smartObjectData,
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      UINT256_MAX,
+      location,
+      fuelAmount
+    );
 
-  //   uint256 entityId = 1;
-  //   LocationData memory location = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
 
-  //   testDepositFuel(
-  //     entityId,
-  //     smartObjectData,
-  //     fuelUnitVolume,
-  //     fuelConsumptionIntervalInSeconds,
-  //     UINT256_MAX,
-  //     location,
-  //     fuelAmount
-  //   );
+    vm.warp(block.timestamp + timeElapsed);
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (entityId)));
 
-  //   ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
+    FuelData memory fuelData = Fuel.get(entityId);
 
-  //   vm.warp(block.timestamp + timeElapsed);
-  //   ResourceId fuelSystemId = FuelUtils.fuelSystemId();
-  //   world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (entityId)));
+    assertEq(fuelData.fuelAmount, 0);
+    assertEq(fuelData.lastUpdatedAt, block.timestamp);
+    assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(entityId)));
+  }
 
-  //   FuelData memory fuelData = Fuel.get(entityId);
+  function testFuelRefundDuringGlobalOffline(
+    uint256 entityId,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    LocationData memory location,
+    uint256 fuelAmount,
+    uint256 timeElapsedBeforeOffline,
+    uint256 globalOfflineDuration,
+    uint256 timeElapsedAfterOffline
+  ) public {
+    vm.assume(fuelAmount < type(uint32).max);
+    vm.assume(fuelUnitVolume < type(uint128).max);
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision
+    vm.assume(timeElapsedBeforeOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
+    vm.assume(timeElapsedAfterOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
+    vm.assume(globalOfflineDuration < 7 days); // Example constraint: timeElapsed is less than 7 days in seconds
 
-  //   assertEq(fuelData.fuelAmount, 0);
-  //   assertEq(fuelData.lastUpdatedAt, block.timestamp);
-  //   assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(entityId)));
-  // }
+    uint256 fuelConsumption = ((timeElapsedBeforeOffline * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds) +
+      (1 * (10 ** DECIMALS));
+    fuelConsumption += ((timeElapsedAfterOffline * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds);
 
-  // test fuel refund during global offline
-  // function testFuelRefundDuringGlobalOffline(
-  //   uint256 entityId,
-  //   SmartObjectData memory smartObjectData,
-  //   uint256 fuelUnitVolume,
-  //   uint256 fuelConsumptionIntervalInSeconds,
-  //   LocationData memory location,
-  //   uint256 fuelAmount,
-  //   uint256 timeElapsedBeforeOffline,
-  //   uint256 globalOfflineDuration,
-  //   uint256 timeElapsedAfterOffline
-  // ) public {
-  //   vm.assume(fuelAmount < type(uint32).max);
-  //   vm.assume(fuelUnitVolume < type(uint128).max);
-  //   vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision
-  //   vm.assume(timeElapsedBeforeOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
-  //   vm.assume(timeElapsedAfterOffline < 1 * 365 days); // Example constraint: timeElapsed is less than a 1 years in seconds
-  //   vm.assume(globalOfflineDuration < 7 days); // Example constraint: timeElapsed is less than 7 days in seconds
+    vm.assume(fuelAmount * (10 ** DECIMALS) > fuelConsumption); // this time we want to run out of fuel
+    vm.assume(smartObjectData.owner != address(0));
 
-  //   uint256 fuelConsumption = ((timeElapsedBeforeOffline * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds) +
-  //     (1 * (10 ** DECIMALS));
-  //   fuelConsumption += ((timeElapsedAfterOffline * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds);
+    ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
 
-  //   console.log("time elapsed after offline", timeElapsedAfterOffline);
-  //   console.log("time elapsed before offline", timeElapsedBeforeOffline);
-  //   console.log("fuel consumption interval", fuelConsumptionIntervalInSeconds);
-  //   console.log("fuel consumption", fuelConsumption);
-  //   console.log("fuel amount", fuelAmount);
+    world.call(
+      deployableSystemId,
+      abi.encodeCall(
+        SmartDeployableSystem.registerDeployable,
+        (entityId, smartObjectData, fuelUnitVolume, fuelConsumptionIntervalInSeconds, UINT256_MAX)
+      )
+    );
 
-  //   vm.assume(fuelAmount * (10 ** DECIMALS) > fuelConsumption); // this time we want to run out of fuel
-  //   vm.assume(smartObjectData.owner != address(0));
+    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelMaxCapacity, (entityId, UINT256_MAX)));
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (entityId, fuelAmount)));
 
-  //   ResourceId deployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
+    // anchor smart deployable
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.anchor, (entityId, location)));
+    // bring online
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
+    vm.warp(block.timestamp + timeElapsedBeforeOffline);
+    // global pause
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.globalPause, ()));
+    vm.warp(block.timestamp + globalOfflineDuration);
+    // global resume
+    world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
+    vm.warp(block.timestamp + timeElapsedAfterOffline);
+    // update fuel
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (entityId)));
 
-  //   world.call(
-  //     deployableSystemId,
-  //     abi.encodeCall(
-  //       SmartDeployableSystem.registerDeployable,
-  //       (entityId, smartObjectData, fuelUnitVolume, fuelConsumptionIntervalInSeconds, UINT256_MAX)
-  //     )
-  //   );
+    // get fuel data
+    FuelData memory fuelData = Fuel.get(entityId);
 
-  //   ResourceId fuelSystemId = FuelUtils.fuelSystemId();
-  //   world.call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelMaxCapacity, (entityId, UINT256_MAX)));
-  //   world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (entityId, fuelAmount)));
-
-  //   // anchor smart deployable
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.anchor, (entityId, location)));
-  //   // bring online
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.bringOnline, (entityId)));
-  //   vm.warp(block.timestamp + timeElapsedBeforeOffline);
-  //   // global pause
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.globalPause, ()));
-  //   vm.warp(block.timestamp + globalOfflineDuration);
-  //   // global resume
-  //   world.call(deployableSystemId, abi.encodeCall(SmartDeployableSystem.globalResume, ()));
-  //   vm.warp(block.timestamp + timeElapsedAfterOffline);
-  //   // update fuel
-  //   world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (entityId)));
-
-  //   // get fuel data
-  //   FuelData memory fuelData = Fuel.get(entityId);
-
-  //   assertEq((fuelData.fuelAmount) / 1e18, (fuelAmount * (10 ** DECIMALS) - fuelConsumption) / 1e18);
-  //   assertEq(fuelData.lastUpdatedAt, block.timestamp);
-  //   assertEq(uint8(State.ONLINE), uint8(DeployableState.getCurrentState(entityId)));
-  // }
+    assertEq((fuelData.fuelAmount) / 1e18, (fuelAmount * (10 ** DECIMALS) - fuelConsumption) / 1e18);
+    assertEq(fuelData.lastUpdatedAt, block.timestamp);
+    assertEq(uint8(State.ONLINE), uint8(DeployableState.getCurrentState(entityId)));
+  }
 
   // ******** HELPER FUNCTIONS TO TEST FUEL SYSTEM ******** //
 

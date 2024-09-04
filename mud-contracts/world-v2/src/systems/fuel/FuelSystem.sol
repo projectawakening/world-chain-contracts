@@ -92,7 +92,8 @@ contract FuelSystem is System, FuelErrors {
     }
 
     Fuel.setFuelAmount(entityId, _currentFuelAmount(entityId) + fuelAmount * ONE_UNIT_IN_WEI);
-    Fuel.setLastUpdatedAt(entityId, block.timestamp);
+    console.log("depositFuel: block timestamp: ", block.timestamp);
+    // Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
   /**
@@ -134,7 +135,7 @@ contract FuelSystem is System, FuelErrors {
     State previousState = DeployableState.getCurrentState(entityId);
 
     if (currentFuel == 0 && (previousState == State.ONLINE)) {
-      // _bringOffline() with manual function calls to avoid circular references (TODO: refactor decoupling to avoid redundancy)
+      // implement _bringOffline() with manual function calls to avoid circular references
       DeployableState.setPreviousState(entityId, previousState);
       DeployableState.setCurrentState(entityId, State.ANCHORED);
       DeployableState.setUpdatedBlockNumber(entityId, block.number);
@@ -144,6 +145,8 @@ contract FuelSystem is System, FuelErrors {
     } else {
       Fuel.setFuelAmount(entityId, currentFuel);
     }
+    console.log("updateFuel: block timestamp: ", block.timestamp);
+    Fuel.setLastUpdatedAt(entityId, block.timestamp);
   }
 
   /**
