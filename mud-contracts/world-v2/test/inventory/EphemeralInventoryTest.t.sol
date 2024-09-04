@@ -253,17 +253,18 @@ contract EphemeralInventoryTest is MudTest {
     );
   }
 
-  // "InventoryEphemeralSystem: ephemeralInventoryOwner and item owner should be the same"
   function testDepositToExistingEphemeralInventory(
     uint256 smartObjectId,
     uint256 storageCapacity,
     address owner
   ) public {
-    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
     vm.assume(owner != address(0));
+
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
 
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(8235, owner, 8235, 0, 1, 3);
+
     ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
     world.call(
       ephemeralInventorySystemId,
@@ -285,7 +286,7 @@ contract EphemeralInventoryTest is MudTest {
     items[0] = InventoryItem(8235, differentOwner, 8235, 0, 1, 3);
     world.call(
       ephemeralInventorySystemId,
-      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, owner, items))
+      abi.encodeCall(EphemeralInventorySystem.depositToEphemeralInventory, (smartObjectId, differentOwner, items))
     );
 
     itemsLength = EphemeralInv.getItems(smartObjectId, differentOwner).length;
@@ -299,7 +300,6 @@ contract EphemeralInventoryTest is MudTest {
     vm.assume(owner != address(0));
     testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
     items[0] = InventoryItem(4235, owner, 4235, 0, 100, 1);
     items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);

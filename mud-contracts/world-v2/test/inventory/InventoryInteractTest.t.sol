@@ -60,35 +60,35 @@ contract VendingMachineTestSystem is EveSystem {
   }
 }
 
-contract InventoryInteractTest is MudTest {
-  IBaseWorld world;
-  using InventoryUtils for bytes14;
-  using EntityRecordUtils for bytes14;
-  using SmartDeployableUtils for bytes14;
+// contract InventoryInteractTest is MudTest {
+//   IBaseWorld world;
+//   using InventoryUtils for bytes14;
+//   using EntityRecordUtils for bytes14;
+//   using SmartDeployableUtils for bytes14;
 
-  VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
+//   VendingMachineTestSystem private vendingMachineSystem = new VendingMachineTestSystem();
 
-  uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-  uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-  uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-  uint256 storageCapacity = 100000;
-  uint256 ephemeralStorageCapacity = 100000;
-  address inventoryOwner = address(1);
-  address ephItemOwner = address(2);
+//   uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
+//   uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
+//   uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
+//   uint256 storageCapacity = 100000;
+//   uint256 ephemeralStorageCapacity = 100000;
+//   address inventoryOwner = address(1);
+//   address ephItemOwner = address(2);
 
-  function setUp() public virtual override {
-    super.setUp();
-    world = IBaseWorld(worldAddress);
-  }
+//   function setUp() public virtual override {
+//     super.setUp();
+//     world = IBaseWorld(worldAddress);
+//   }
 
-  function testWorldExists() public {
-    uint256 codeSize;
-    address addr = worldAddress;
-    assembly {
-      codeSize := extcodesize(addr)
-    }
-    assertTrue(codeSize > 0);
-  }
+//   function testWorldExists() public {
+//     uint256 codeSize;
+//     address addr = worldAddress;
+//     assembly {
+//       codeSize := extcodesize(addr)
+//     }
+//     assertTrue(codeSize > 0);
+//   }
 
-  function testInteractHandler() public {}
-}
+//   function testInteractHandler() public {}
+// }

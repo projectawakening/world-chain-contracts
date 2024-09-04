@@ -90,9 +90,6 @@ contract PostDeploy is Script {
 
     IERC20Mintable erc20 = IERC20Mintable(erc20Address);
     erc20.mint(to, amount * 1 ether);
-
-    console.log("minting to: ", address(to));
-    console.log("amount: ", amount * 1 ether);
   }
 
   function _createCharacterToken(IBaseWorld world) internal {

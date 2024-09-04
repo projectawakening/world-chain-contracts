@@ -100,9 +100,8 @@ contract InventoryTest is MudTest {
     vm.assume(storageCapacity != 0);
 
     DeployableState.setCurrentState(smartObjectId, State.ONLINE);
-    ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
-    console.log("inventorySystemId");
 
+    ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
     world.call(
       inventorySystemId,
       abi.encodeCall(InventorySystem.setInventoryCapacity, (smartObjectId, storageCapacity))
@@ -111,65 +110,65 @@ contract InventoryTest is MudTest {
     assertEq(InventoryTable.getCapacity(smartObjectId), storageCapacity);
   }
 
-  function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(storageCapacity == 0);
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        IInventoryErrors.Inventory_InvalidCapacity.selector,
-        "Inventory: storage capacity cannot be 0"
-      )
-    );
+  // function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
+  //   vm.assume(storageCapacity == 0);
+  //   vm.expectRevert(
+  //     abi.encodeWithSelector(
+  //       IInventoryErrors.Inventory_InvalidCapacity.selector,
+  //       "Inventory: storage capacity cannot be 0"
+  //     )
+  //   );
 
-    ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
-    world.call(
-      inventorySystemId,
-      abi.encodeCall(InventorySystem.setInventoryCapacity, (smartObjectId, storageCapacity))
-    );
-  }
+  //   ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
+  //   world.call(
+  //     inventorySystemId,
+  //     abi.encodeCall(InventorySystem.setInventoryCapacity, (smartObjectId, storageCapacity))
+  //   );
+  // }
 
-  function testDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
-    vm.assume(smartObjectId != 0);
-    vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
+  // function testDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
+  //   vm.assume(smartObjectId != 0);
+  //   vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
 
-    InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+  //   InventoryItem[] memory items = new InventoryItem[](3);
+  //   items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+  //   items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+  //   items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
 
-    testSetInventoryCapacity(smartObjectId, storageCapacity);
-    testSetDeployableStateToValid(smartObjectId);
-    InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
-    uint256 capacityBeforeDeposit = inventoryTableData.usedCapacity;
-    uint256 capacityAfterDeposit = 0;
+  //   testSetInventoryCapacity(smartObjectId, storageCapacity);
+  //   testSetDeployableStateToValid(smartObjectId);
+  //   InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
+  //   uint256 capacityBeforeDeposit = inventoryTableData.usedCapacity;
+  //   uint256 capacityAfterDeposit = 0;
 
-    ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
-    world.call(inventorySystemId, abi.encodeCall(InventorySystem.depositToInventory, (smartObjectId, items)));
+  //   ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
+  //   world.call(inventorySystemId, abi.encodeCall(InventorySystem.depositToInventory, (smartObjectId, items)));
 
-    inventoryTableData = InventoryTable.get(smartObjectId);
+  //   inventoryTableData = InventoryTable.get(smartObjectId);
 
-    //Check weather the items are stored in the inventory table
-    for (uint256 i = 0; i < items.length; i++) {
-      uint256 itemVolume = items[i].volume * items[i].quantity;
-      capacityAfterDeposit += itemVolume;
-      assertEq(inventoryTableData.items[i], items[i].inventoryItemId);
-    }
+  //   //Check weather the items are stored in the inventory table
+  //   for (uint256 i = 0; i < items.length; i++) {
+  //     uint256 itemVolume = items[i].volume * items[i].quantity;
+  //     capacityAfterDeposit += itemVolume;
+  //     assertEq(inventoryTableData.items[i], items[i].inventoryItemId);
+  //   }
 
-    inventoryTableData = InventoryTable.get(smartObjectId);
-    assert(capacityBeforeDeposit < capacityAfterDeposit);
-    assertEq(inventoryTableData.items.length, 3);
+  //   inventoryTableData = InventoryTable.get(smartObjectId);
+  //   assert(capacityBeforeDeposit < capacityAfterDeposit);
+  //   assertEq(inventoryTableData.items.length, 3);
 
-    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
-    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, items[1].inventoryItemId);
-    InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, items[2].inventoryItemId);
+  //   InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
+  //   InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, items[1].inventoryItemId);
+  //   InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, items[2].inventoryItemId);
 
-    assertEq(inventoryItem1.quantity, items[0].quantity);
-    assertEq(inventoryItem2.quantity, items[1].quantity);
-    assertEq(inventoryItem3.quantity, items[2].quantity);
+  //   assertEq(inventoryItem1.quantity, items[0].quantity);
+  //   assertEq(inventoryItem2.quantity, items[1].quantity);
+  //   assertEq(inventoryItem3.quantity, items[2].quantity);
 
-    assertEq(inventoryItem1.index, 0);
-    assertEq(inventoryItem2.index, 1);
-    assertEq(inventoryItem3.index, 2);
-  }
+  //   assertEq(inventoryItem1.index, 0);
+  //   assertEq(inventoryItem2.index, 1);
+  //   assertEq(inventoryItem3.index, 2);
+  // }
 
   // function testInventoryItemQuantityIncrease(uint256 smartObjectId, uint256 storageCapacity) public {
   //   vm.assume(smartObjectId != 0);

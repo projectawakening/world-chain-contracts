@@ -58,8 +58,6 @@ contract SmartCharacterSystem is EveSystem {
       abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, entityRecordMetadata)
     );
 
-    ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
-
     //Mint a new character token
     IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
   }

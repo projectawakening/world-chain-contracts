@@ -12,13 +12,11 @@ import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { SmartDeployableErrors } from "../smart-deployable/SmartDeployableErrors.sol";
 import { State } from "../smart-deployable/types.sol";
+import { IInventoryErrors } from "./IInventoryErrors.sol";
+import { InventoryItem } from "./types.sol";
 
 import { InventoryUtils } from "./InventoryUtils.sol";
 import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
-
-import { IInventoryErrors } from "./IInventoryErrors.sol";
-
-import { InventoryItem } from "./types.sol";
 
 contract InventorySystem is EveSystem {
   using InventoryUtils for bytes14;
