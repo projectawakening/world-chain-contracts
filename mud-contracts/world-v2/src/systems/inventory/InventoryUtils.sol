@@ -13,14 +13,17 @@ import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
  */
 library InventoryUtils {
   function inventorySystemId() internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "InventorySystem" });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "InventorySystem" });
   }
 
   function ephemeralInventorySystemId() internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "EphemeralInvento" });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "EphemeralInvento" });
   }
 
   function inventoryInteractSystemId() internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "InventoryInterac" });
+    return
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "InventoryInterac" });
   }
 }
