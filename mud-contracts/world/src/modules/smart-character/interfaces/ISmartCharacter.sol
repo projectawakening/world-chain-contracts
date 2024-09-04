@@ -10,6 +10,7 @@ interface ISmartCharacter {
   function createCharacter(
     uint256 characterId,
     address characterAddress,
+    uint256 corpId,
     EntityRecordData memory entityRecord,
     EntityRecordOffchainTableData memory entityRecordOffchain,
     string memory tokenCid
@@ -18,4 +19,6 @@ interface ISmartCharacter {
   function registerERC721Token(address tokenAddress) external;
 
   function setCharClassId(uint256 classId) external;
+
+  function updateCorpId(uint256 characterId, uint256 corpId) external;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/world",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "MIT",
   "scripts": {
     "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
@@ -14,7 +14,10 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && forge test -vvv"
+    "test": "tsc --noEmit && forge test -vvv",
+    "access-config:inventory:local": "source ./.env && PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && CHAIN_ID=$CHAIN_ID && WORLD_ADDRESS=$WORLD_ADDRESS && BASE_URI=$BASE_URI && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && forge script script/InventoryAccess.s.sol:InventoryAccess --private-key $PRIVATE_KEY --chain-id $CHAIN_ID --broadcast --rpc-url $RPC_URL  --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "access-config:inventory:devent": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && CHAIN_ID=$CHAIN_ID && WORLD_ADDRESS=$WORLD_ADDRESS && BASE_URI=$BASE_URI && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && forge script script/InventoryAccess.s.sol:InventoryAccess --private-key $PRIVATE_KEY --chain-id $CHAIN_ID --broadcast --rpc-url $RPC_URL  --sig \"run(address)\" $WORLD_ADDRESS -vvv",
+    "access-config:inventory:testnet": "source ./.env.testnet && PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && CHAIN_ID=$CHAIN_ID && WORLD_ADDRESS=$WORLD_ADDRESS && BASE_URI=$BASE_URI && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && forge script script/InventoryAccess.s.sol:InventoryAccess --private-key $PRIVATE_KEY --chain-id $CHAIN_ID --broadcast --rpc-url $RPC_URL  --sig \"run(address)\" $WORLD_ADDRESS -vvv"
   },
   "dependencies": {
     "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",

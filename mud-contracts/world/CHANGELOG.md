@@ -1,5 +1,14 @@
 # @eveworld/world
 
+## 0.0.11
+
+### Patch Changes
+
+- smart turret feature implementation
+- update smart character creation (Breaking Change in interface)
+  - added corpId to `createCharacter` function
+  - added function to update corpId
+
 ## 0.0.10
 
 ### Patch Changes

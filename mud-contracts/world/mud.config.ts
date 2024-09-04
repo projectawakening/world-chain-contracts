@@ -3,10 +3,14 @@ import { mudConfig } from "@latticexyz/world/register";
 import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
 export default mudConfig({
-  //having a short namespace as the MUD Namespace must be <= 14 characters
+  // having a short namespace as the MUD Namespace must be <= 14 characters
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
-  excludeSystems: ["ERC721System"],
+  excludeSystems: ["ERC721System", "AccessModified"],
   systems: {
+    Access: {
+      name: constants.systemName.ACCESS,
+      openAccess: true,
+    },
     SmartCharacter: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
@@ -43,14 +47,41 @@ export default mudConfig({
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
     },
+    SmartTurret: {
+      name: constants.systemName.SMART_TURRET,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
+    SmartAssemblyType: ["SMART_STORAGE_UNIT", "SMART_TURRET", "SMART_GATE"],
+    KillMailLossType: ["SHIP", "POD"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
   },
   tables: {
+    /**
+     * Simple Access Control - for enforcing the most basic access rules
+     */
+    AccessRole: {
+      keySchema: {
+        roleId: "bytes32",
+      },
+      valueSchema: {
+        accounts: "address[]",
+      },
+      tableIdArgument: true,
+    },
+    AccessEnforcement: {
+      keySchema: {
+        target: "bytes32",
+      },
+      valueSchema: {
+        isEnforced: "bool",
+      },
+      tableIdArgument: true,
+    },
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation
      */
@@ -145,6 +176,7 @@ export default mudConfig({
       },
       valueSchema: {
         characterAddress: "address",
+        corpId: "uint256",
         createdAt: "uint256",
       },
       tableIdArgument: true,
@@ -174,6 +206,19 @@ export default mudConfig({
         x: "uint256",
         y: "uint256",
         z: "uint256",
+      },
+      tableIdArgument: true,
+    },
+
+    /***************************
+     * SMART ASSEMBLY MODULE *
+     ***************************/
+    SmartAssemblyTable: {
+      keySchema: {
+        smartObjectId: "uint256",
+      },
+      valueSchema: {
+        smartAssemblyType: "SmartAssemblyType",
       },
       tableIdArgument: true,
     },
@@ -328,6 +373,44 @@ export default mudConfig({
       // offchainOnly: true,
     },
 
+    /*************************
+     * SMART Turret MODULE *
+     *************************/
+    SmartTurretConfigTable: {
+      keySchema: {
+        smartTurretId: "uint256",
+      },
+      valueSchema: {
+        systemId: "ResourceId",
+      },
+      tableIdArgument: true,
+    },
+
+    /*************************
+     * SMART Gate MODULE *
+     *************************/
+    SmartGateConfigTable: {
+      keySchema: {
+        smartGateId: "uint256",
+      },
+      valueSchema: {
+        systemId: "ResourceId",
+        maxDistance: "uint256", // This variable can be moved to a new table if needed
+      },
+      tableIdArgument: true,
+    },
+
+    SmartGateLinkTable: {
+      keySchema: {
+        sourceGateId: "uint256",
+        destinationGateId: "uint256",
+      },
+      valueSchema: {
+        isLinked: "bool",
+      },
+      tableIdArgument: true,
+    },
+
     /************************
      * ERC721 PUPPET MODULE *
      ************************/
@@ -389,6 +472,24 @@ export default mudConfig({
       },
       valueSchema: {
         approved: "bool",
+      },
+      tableIdArgument: true,
+    },
+
+    /************************
+     * KillMail module *
+     ************************/
+
+    KillMailTable: {
+      keySchema: {
+        killMailId: "uint256",
+      },
+      valueSchema: {
+        killer: "address",
+        victim: "address",
+        lossType: "KillMailLossType",
+        solarSystemId: "uint256",
+        killTimestamp: "uint256",
       },
       tableIdArgument: true,
     },

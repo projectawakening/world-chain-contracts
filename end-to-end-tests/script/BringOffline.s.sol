@@ -9,6 +9,7 @@ import { SmartDeployableLib } from "@eveworld/world/src/modules/smart-deployable
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract BringOffline is Script {
+  // assumes CreateAndAnchor.s.sol and BringOnline.s.sol have been run
   using SmartDeployableLib for SmartDeployableLib.World;
 
   function run(address worldAddress) public {
@@ -23,7 +24,7 @@ contract BringOffline is Script {
       namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
     });
 
-    uint256 smartObjectId = uint256(63172679203090930493472462170959929237896419587292096226487443413731496352045);
+    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
     smartDeployable.bringOffline(smartObjectId);
 
     vm.stopBroadcast();
