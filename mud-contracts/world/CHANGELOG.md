@@ -1,4 +1,7 @@
 # @eveworld/world
+## 0.0.12
+- Including Gate and Kill Mail in mud.config to generate abis 
+- Adding scripts for end-to-end tests 
 
 ## 0.0.11
 

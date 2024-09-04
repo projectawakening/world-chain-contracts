@@ -51,6 +51,14 @@ export default mudConfig({
       name: constants.systemName.SMART_TURRET,
       openAccess: true,
     },
+    SmartGate: {
+      name: constants.systemName.SMART_GATE,
+      openAccess: true,
+    },
+    KillMail: {
+      name: constants.systemName.KILL_MAIL,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
