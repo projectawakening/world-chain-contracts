@@ -164,20 +164,6 @@ contract PostDeploy is Script {
     );
     console.log("Deploying ERC721 token with address: ", address(erc721SmartDeployableToken));
 
-    IERC721Mintable erc721SmartTurretToken = registerERC721(
-      world,
-      "erc721turret",
-      StaticDataGlobalTableData({ name: "SmartTurret", symbol: "ST", baseURI: baseURI })
-    );
-    console.log("Deploying ERC721 token with address: ", address(erc721SmartTurretToken));
-
-    IERC721Mintable erc721SmartGateToken = registerERC721(
-      world,
-      "erc721gate",
-      StaticDataGlobalTableData({ name: "SmartGate", symbol: "SG", baseURI: baseURI })
-    );
-    console.log("Deploying ERC721 token with address: ", address(erc721SmartGateToken));
-
     IERC721Mintable erc721CharacterToken = registerERC721(
       world,
       "erc721charactr",
@@ -192,14 +178,6 @@ contract PostDeploy is Script {
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
       .registerDeployableToken(address(erc721SmartDeployableToken));
-
-    SmartDeployableLib
-      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
-      .registerDeployableToken(address(erc721SmartTurretToken));
-
-    SmartDeployableLib
-      .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
-      .registerDeployableToken(address(erc721SmartGateToken));
 
     SmartDeployableLib
       .World({ iface: IBaseWorld(world), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE })
