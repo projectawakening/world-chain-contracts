@@ -55,7 +55,7 @@ contract ConfigureSmartGate is Script {
       (bytes32(abi.encodePacked(RESOURCE_SYSTEM, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, "SmartGateTestSys")))
     );
 
-    register the smart gate system
+    //register the smart gate system
     world.registerSystem(smartGateTestSystemId, smartGateTestSystem, true);
     //register the function selector
     world.registerFunctionSelector(smartGateTestSystemId, "canJump(uint256, uint256, uint256)");
