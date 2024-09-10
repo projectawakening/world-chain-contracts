@@ -57,7 +57,7 @@ This gives you immediate acccess to the ABIs for the world which you can run abi
 
 The development stack consists of:
 
-- An anvil node for etherum local development
+- An anvil node for ethereum local development
 - Scripts deploying a mud world and all or selected modules for developments
 
 We are running the anvil node explicitly ourselves for three reasons:
