@@ -369,7 +369,7 @@ contract SmartTurretTest is Test {
 
     vm.expectRevert(abi.encodeWithSelector(SmartTurretSystem.SmartTurret_NotConfigured.selector, smartObjectId));
 
-    smartTurret.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
+    smartTurret.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   }
 
   function revertInProximityIncorrectState() public {
@@ -393,6 +393,6 @@ contract SmartTurretTest is Test {
       )
     );
 
-    smartTurret.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
+    smartTurret.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   }
 }

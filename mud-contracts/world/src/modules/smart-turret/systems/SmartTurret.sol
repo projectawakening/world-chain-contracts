@@ -151,7 +151,7 @@ contract SmartTurret is EveSystem, AccessModified {
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(this.inProximity, (smartTurretId, priorityQueue, turret, turretTarget))
+        abi.encodeCall(this.inProximity, (smartTurretId, characterId, priorityQueue, turret, turretTarget))
       );
 
       updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
@@ -193,7 +193,7 @@ contract SmartTurret is EveSystem, AccessModified {
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(this.aggression, (smartTurretId, priorityQueue, turret, aggressor, victim))
+        abi.encodeCall(this.aggression, (smartTurretId, characterId, priorityQueue, turret, aggressor, victim))
       );
 
       updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));

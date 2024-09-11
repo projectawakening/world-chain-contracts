@@ -30,6 +30,7 @@ interface ISmartTurret {
 
   function eveworld__inProximity(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -37,6 +38,7 @@ interface ISmartTurret {
 
   function eveworld__aggression(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,

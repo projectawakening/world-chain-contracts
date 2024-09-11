@@ -194,6 +194,7 @@ contract SmartCharacterTest is Test {
   }
 
   function testUpdateCorpId(uint256 entityId) public {
+    vm.assume(entityId != 0);
     smartCharacter.setCharClassId(smartCharacterClassId);
 
     smartCharacter.createCharacter(
