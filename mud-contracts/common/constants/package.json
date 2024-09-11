@@ -5,7 +5,7 @@
   "dependencies": {
     "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/store": "2.2.3",
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f"
   }
