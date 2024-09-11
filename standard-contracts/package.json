@@ -26,7 +26,7 @@
     "prettier-plugin-solidity": "^1.3.1",
     "solc": "^0.8.24",
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/world": "2.2.3",
     "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
     "@eveworld/world": "0.0.12",
     "@eveworld/common-constants": "0.0.7"
