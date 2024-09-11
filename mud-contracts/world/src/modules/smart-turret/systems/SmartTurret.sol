@@ -121,12 +121,14 @@ contract SmartTurret is EveSystem, AccessModified {
   /**
    * @notice view function for turret logic based on proximity
    * @param smartTurretId is the is of the smart turret
+   * @param characterId is the character id of the owner of the smart turret
    * @param priorityQueue is the queue of the SmartTurretTarget in proximity
    * @param turret is the Smart Turret object
    * @param turretTarget is the player entering the zone
    */
   function inProximity(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -160,6 +162,7 @@ contract SmartTurret is EveSystem, AccessModified {
 
   /**
    * @param smartTurretId is the is of the smart turret
+   * @param characterId is the character id of the owner of the smart turret
    * @param priorityQueue is the queue of the SmartTurretTarget in proximity
    * @param turret is the Smart Turret object
    * @param aggressor is the player attacking inside the zone
@@ -167,6 +170,7 @@ contract SmartTurret is EveSystem, AccessModified {
    */
   function aggression(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,

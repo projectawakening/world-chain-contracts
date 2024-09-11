@@ -62,13 +62,14 @@ library SmartTurretLib {
   function inProximity(
     World memory world,
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
   ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, priorityQueue, turret, turretTarget))
+      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, characterId, priorityQueue, turret, turretTarget))
     );
     return abi.decode(data, (TargetPriority[]));
   }
@@ -76,6 +77,7 @@ library SmartTurretLib {
   function aggression(
     World memory world,
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,
@@ -83,7 +85,7 @@ library SmartTurretLib {
   ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.aggression, (smartTurretId, priorityQueue, turret, aggressor, victim))
+      abi.encodeCall(ISmartTurret.aggression, (smartTurretId, characterId, priorityQueue, turret, aggressor, victim))
     );
     return abi.decode(data, (TargetPriority[]));
   }
