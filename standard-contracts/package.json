@@ -27,7 +27,7 @@
     "solc": "^0.8.24",
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/store": "2.2.3",
     "@eveworld/world": "0.0.12",
     "@eveworld/common-constants": "0.0.7"
   },
