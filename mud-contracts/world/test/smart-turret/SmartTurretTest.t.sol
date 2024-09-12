@@ -380,6 +380,50 @@ contract SmartTurretTest is Test {
     assertEq(returnTargetQueue[0].weight, 100);
   }
 
+  function testAggressionDefaultLogic() public {
+    testAnchorSmartTurret();
+    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+    SmartTurretTarget memory turretTarget = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 4444,
+      hpRatio: 50,
+      shieldRatio: 50,
+      armorRatio: 50
+    });
+    SmartTurretTarget memory aggressor = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 5555,
+      hpRatio: 100,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+    SmartTurretTarget memory victim = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 6666,
+      hpRatio: 80,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+
+    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
+
+    TargetPriority[] memory returnTargetQueue = smartTurret.aggression(
+      smartObjectId,
+      characterId,
+      priorityQueue,
+      turret,
+      aggressor,
+      victim
+    );
+
+    assertEq(returnTargetQueue.length, 2);
+    assertEq(returnTargetQueue[1].weight, 1);
+  }
+
   function revertInProximity() public {
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });

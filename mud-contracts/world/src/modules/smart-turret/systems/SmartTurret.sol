@@ -204,7 +204,13 @@ contract SmartTurret is EveSystem, AccessModified {
 
     if (!ResourceIds.getExists(systemId)) {
       //If smart turret is not configured, then execute the default logic
-      updatedPriorityQueue = priorityQueue; //temporary logic
+      updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
+      for (uint256 i = 0; i < priorityQueue.length; i++) {
+        updatedPriorityQueue[i] = priorityQueue[i];
+      }
+
+      //By default add the aggressor to the end of the priority queue
+      updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: aggressor, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
     } else {
       bytes memory returnData = world().call(
         systemId,
