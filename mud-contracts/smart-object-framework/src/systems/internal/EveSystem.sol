@@ -8,7 +8,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { IWorld } from "../../codegen/world/IWorld.sol";
+import { IWorldWithEntryContext } from "../../interfaces/IWorldWithEntryContext.sol";
 import { EntityTable } from "../../codegen/tables/EntityTable.sol";
 import { ModuleTable } from "../../codegen/tables/ModuleTable.sol";
 import { EntityMap } from "../../codegen/tables/EntityMap.sol";
@@ -73,13 +73,13 @@ contract EveSystem is System {
    * @param entityId is the id of an object or class
    */
   function _requireEntityRegistered(uint256 entityId) internal view {
-    if (!EntityTable.getDoesExists(_coreNamespace().entityTableTableId(), entityId))
+    if (!EntityTable.getDoesExists(entityId))
       revert ICustomErrorSystem.EntityNotRegistered(entityId, "EveSystem: Entity is not registered");
   }
 
   function _requireModuleRegistered(uint256 moduleId) internal view {
     //check if the module is registered
-    if (ModuleSystemLookup.getSystemIds(_coreNamespace().moduleSystemLookupTableId(), moduleId).length == 0)
+    if (ModuleSystemLookup.getSystemIds(moduleId).length == 0)
       revert ICustomErrorSystem.ModuleNotRegistered(moduleId, "EveSystem: Module not registered");
   }
 
@@ -93,9 +93,9 @@ contract EveSystem is System {
     uint256[] memory moduleIds = _getModuleIds(entityId);
 
     //Check if the entity is tagged to a entityType and get the moduleIds for the entity
-    bool isEntityTagged = EntityMap.get(_coreNamespace().entityMapTableId(), entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory taggedEntityIds = EntityMap.get(_coreNamespace().entityMapTableId(), entityId);
+      uint256[] memory taggedEntityIds = EntityMap.get(entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
         uint256[] memory taggedModuleIds = _getModuleIds(taggedEntityIds[i]);
         moduleIds = appendUint256Arrays(moduleIds, taggedModuleIds);
@@ -112,7 +112,7 @@ contract EveSystem is System {
   }
 
   function _getModuleIds(uint256 entityId) internal view returns (uint256[] memory) {
-    return EntityAssociation.getModuleIds(_coreNamespace().entityAssociationTableId(), entityId);
+    return EntityAssociation.getModuleIds(entityId);
   }
 
   function _validateModules(uint256[] memory moduleIds, ResourceId systemId, bytes4 functionSelector) internal view {
@@ -121,7 +121,7 @@ contract EveSystem is System {
 
     //TODO Below logic can be optimized by using supportsInterface as well
     for (uint256 i = 0; i < moduleIds.length; i++) {
-      bool systemExists = ModuleTable.getDoesExists(_coreNamespace().moduleTableTableId(), moduleIds[i], systemId);
+      bool systemExists = ModuleTable.getDoesExists(moduleIds[i], systemId);
       if (systemExists) {
         isModuleFound = true;
         bytes32 registeredSystemId = ResourceId.unwrap(FunctionSelectors.getSystemId(functionSelector));
@@ -139,15 +139,14 @@ contract EveSystem is System {
   }
 
   function _getHookIds(uint256 entityId) internal view returns (uint256[] memory hookIds) {
-    hookIds = EntityAssociation.getHookIds(_coreNamespace().entityAssociationTableId(), entityId);
+    hookIds = EntityAssociation.getHookIds(entityId);
 
     //Check if the entity is tagged to a entity and get the moduleIds for the taggedEntity
-    bool isEntityTagged = EntityMap.get(_coreNamespace().entityMapTableId(), entityId).length > 0;
+    bool isEntityTagged = EntityMap.get(entityId).length > 0;
     if (isEntityTagged) {
-      uint256[] memory entityTagIds = EntityMap.get(_coreNamespace().entityMapTableId(), entityId);
+      uint256[] memory entityTagIds = EntityMap.get(entityId);
       for (uint256 i = 0; i < entityTagIds.length; i++) {
         uint256[] memory taggedHookIds = EntityAssociation.getHookIds(
-          _coreNamespace().entityAssociationTableId(),
           entityTagIds[i]
         );
         hookIds = appendUint256Arrays(hookIds, taggedHookIds);
@@ -162,7 +161,7 @@ contract EveSystem is System {
     bytes memory hookArgs
   ) internal {
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
-    bool hasHook = HookTargetBefore.getHasHook(_coreNamespace().hookTargetBeforeTableId(), hookId, targetId);
+    bool hasHook = HookTargetBefore.getHasHook(hookId, targetId);
     if (hasHook) {
       _executeHook(hookId, hookArgs);
     }
@@ -175,14 +174,14 @@ contract EveSystem is System {
     bytes memory hookArgs
   ) internal {
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
-    bool hasHook = HookTargetAfter.getHasHook(_coreNamespace().hookTargetAfterTableId(), hookId, targetId);
+    bool hasHook = HookTargetAfter.getHasHook(hookId, targetId);
     if (hasHook) {
       _executeHook(hookId, hookArgs);
     }
   }
 
   function _executeHook(uint256 hookId, bytes memory hookArgs) internal {
-    HookTableData memory hookData = HookTable.get(_coreNamespace().hookTableTableId(), hookId);
+    HookTableData memory hookData = HookTable.get(hookId);
     bytes memory funcSelectorAndArgs = abi.encodePacked(hookData.functionSelector, hookArgs);
     ResourceId systemId = hookData.systemId;
     //TODO replace with callFrom ? and get the delegator address from the hookrgs ?
@@ -193,8 +192,8 @@ contract EveSystem is System {
    * @notice Returns the world address
    * @return worldAddress_ The world address
    */
-  function world() internal view returns (IWorld) {
-    return IWorld(_world());
+  function world() internal view returns (IWorldWithEntryContext) {
+    return IWorldWithEntryContext(_world());
   }
 
   //ARRAY UTILS
@@ -240,12 +239,6 @@ contract EveSystem is System {
     }
 
     return newArray;
-  }
-
-  // this is a bit messy... but in line with other Utils subroutines to ward off bad namespacing configs
-  // TODO: refactor this
-  function _coreNamespace() internal pure returns (bytes14) {
-    return CORE_NAMESPACE;
   }
 
   function _namespace() internal view returns (bytes14 namespace) {

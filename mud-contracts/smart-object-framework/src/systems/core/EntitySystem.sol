@@ -13,11 +13,11 @@ import { INVALID_ID } from "../../constants.sol";
 import { Utils } from "../../utils.sol";
 
 /**
- * @title EntityCore
- * @dev EntityCore is a system that manages entities such as Classes and objects.
+ * @title EntitySystem
+ * @dev EntitySystem is a system that manages entities such as Classes and objects.
  *
  */
-contract EntityCore is EveSystem {
+contract EntitySystem is EveSystem {
   using Utils for bytes14;
 
   // Modifiers
@@ -27,8 +27,8 @@ contract EntityCore is EveSystem {
   }
 
   modifier requireEntityTypeExists(uint8 entityType) {
-    if (EntityType.getDoesExists(_namespace().entityTypeTableId(), entityType) == false)
-      revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntityCore: EntityType not registered");
+    if (EntityType.getDoesExists(entityType) == false)
+      revert ICustomErrorSystem.EntityTypeNotRegistered(entityType, "EntitySystem: EntityType not registered");
     _;
   }
 
@@ -58,7 +58,7 @@ contract EntityCore is EveSystem {
       revert ICustomErrorSystem.InvalidArrayLength(
         entityId.length,
         entityType.length,
-        "EntityCore: Array length mismatch"
+        "EntitySystem: Array length mismatch"
       );
     for (uint256 i = 0; i < entityId.length; i++) {
       _registerEntity(entityId[i], entityType[i]);
@@ -111,24 +111,24 @@ contract EntityCore is EveSystem {
   }
 
   function _registerEntityType(uint8 entityTypeId, bytes32 entityType) internal {
-    if (EntityType.getDoesExists(_namespace().entityTypeTableId(), entityTypeId) == true)
-      revert ICustomErrorSystem.EntityTypeAlreadyRegistered(entityTypeId, "EntityCore: EntityType already registered");
+    if (EntityType.getDoesExists(entityTypeId) == true)
+      revert ICustomErrorSystem.EntityTypeAlreadyRegistered(entityTypeId, "EntitySystem: EntityType already registered");
 
-    EntityType.set(_namespace().entityTypeTableId(), entityTypeId, true, entityType);
+    EntityType.set(entityTypeId, true, entityType);
   }
 
   function _registerEntity(
     uint256 entityId,
     uint8 entityType
   ) internal requireValidEntityId(entityId) requireEntityTypeExists(entityType) {
-    if (EntityTable.getDoesExists(_namespace().entityTableTableId(), entityId) == true)
-      revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntityCore: Entity already registered");
+    if (EntityTable.getDoesExists(entityId) == true)
+      revert ICustomErrorSystem.EntityAlreadyRegistered(entityId, "EntitySystem: Entity already registered");
 
-    EntityTable.set(_namespace().entityTableTableId(), entityId, true, entityType);
+    EntityTable.set(entityId, true, entityType);
   }
 
   function _registerEntityTypeAssociation(uint8 entityType, uint8 tagEntityType) internal {
-    EntityTypeAssociation.set(_namespace().entityTypeAssociationTableId(), entityType, tagEntityType, true);
+    EntityTypeAssociation.set(entityType, tagEntityType, true);
   }
 
   function _tagEntity(uint256 entityId, uint256 entityTagId) internal {
@@ -136,41 +136,41 @@ contract EntityCore is EveSystem {
     _requireEntityRegistered(entityTagId);
     _requireAssociationAllowed(entityId, entityTagId);
 
-    uint256[] memory taggedEntities = EntityMap.get(_namespace().entityMapTableId(), entityId);
+    uint256[] memory taggedEntities = EntityMap.get(entityId);
     (, bool exists) = findIndex(taggedEntities, entityTagId);
     if (exists)
-      revert ICustomErrorSystem.EntityAlreadyTagged(entityId, entityTagId, "EntityCore: Entity already tagged");
+      revert ICustomErrorSystem.EntityAlreadyTagged(entityId, entityTagId, "EntitySystem: Entity already tagged");
 
-    EntityMap.pushTaggedEntityIds(_namespace().entityMapTableId(), entityId, entityTagId);
+    EntityMap.pushTaggedEntityIds(entityId, entityTagId);
   }
 
   function _removeEntityTag(uint256 entityId, uint256 entityTagId) internal {
     //TODO Have to figure out a clean way to remove an element from an array
-    uint256[] memory taggedEntities = EntityMap.get(_namespace().entityMapTableId(), entityId);
+    uint256[] memory taggedEntities = EntityMap.get(entityId);
     (uint256 index, bool exists) = findIndex(taggedEntities, entityTagId);
     if (exists) {
       // Swap the element with the last one and pop the last element
       uint256 lastIndex = taggedEntities.length - 1;
       if (index != lastIndex) {
-        EntityMap.update(_namespace().entityMapTableId(), entityId, index, taggedEntities[lastIndex]);
+        EntityMap.update(entityId, index, taggedEntities[lastIndex]);
       }
-      EntityMap.pop(_namespace().entityMapTableId(), entityId);
+      EntityMap.pop(entityId);
     }
   }
 
   function _requireAssociationAllowed(uint256 entityId, uint256 entityTagId) internal view {
-    uint8 entityType = EntityTable.getEntityType(_namespace().entityTableTableId(), entityId);
-    uint8 tagEntityType = EntityTable.getEntityType(_namespace().entityTableTableId(), entityTagId);
+    uint8 entityType = EntityTable.getEntityType(entityId);
+    uint8 tagEntityType = EntityTable.getEntityType(entityTagId);
 
-    if (EntityTypeAssociation.get(_namespace().entityTypeAssociationTableId(), entityType, tagEntityType) == false)
+    if (EntityTypeAssociation.get(entityType, tagEntityType) == false)
       revert ICustomErrorSystem.EntityTypeAssociationNotAllowed(
         entityType,
         tagEntityType,
-        "EntityCore: EntityType association not allowed"
+        "EntitySystem: EntityType association not allowed"
       );
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().entityCoreSystemId();
+    return _namespace().entitySystemId();
   }
 }

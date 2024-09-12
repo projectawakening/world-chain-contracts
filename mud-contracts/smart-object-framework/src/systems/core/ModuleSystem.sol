@@ -12,7 +12,7 @@ import { EveSystem } from "../internal/EveSystem.sol";
 
 import { Utils } from "../../utils.sol";
 
-contract ModuleCore is EveSystem {
+contract ModuleSystem is EveSystem {
   using Utils for bytes14;
 
   /**
@@ -86,21 +86,21 @@ contract ModuleCore is EveSystem {
 
   function _requireResourceRegistered(uint256 moduleId, ResourceId systemId) internal view {
     if (ResourceIds.getExists(systemId) == false)
-      revert ICustomErrorSystem.ResourceNotRegistered(systemId, "ModuleCore: System is not registered");
+      revert ICustomErrorSystem.ResourceNotRegistered(systemId, "ModuleSystem: System is not registered");
 
     //TODO - check if the moduleId is registered
   }
 
   function _registerEVEModule(uint256 moduleId, ResourceId systemId, bytes16 moduleName) internal {
-    if (ModuleTable.getDoesExists(_namespace().moduleTableTableId(), moduleId, systemId))
+    if (ModuleTable.getDoesExists(moduleId, systemId))
       revert ICustomErrorSystem.SystemAlreadyAssociatedWithModule(
         moduleId,
         systemId,
-        "ModuleCore: System already associated with the module"
+        "ModuleSystem: System already associated with the module"
       );
 
-    ModuleTable.set(_namespace().moduleTableTableId(), moduleId, systemId, moduleName, true);
-    ModuleSystemLookup.pushSystemIds(_namespace().moduleSystemLookupTableId(), moduleId, ResourceId.unwrap(systemId));
+    ModuleTable.set(moduleId, systemId, moduleName, true);
+    ModuleSystemLookup.pushSystemIds(moduleId, ResourceId.unwrap(systemId));
   }
 
   function _associateModule(uint256 entityId, uint256 moduleId) internal {
@@ -110,8 +110,8 @@ contract ModuleCore is EveSystem {
     //Check if the entity is tagged to a taggedEntityType,
     //if yes then the check module is already part of the taggedEntityType to ensure unique moduleId association
     //If no then associate the entity with the module
-    if (EntityMap.get(_namespace().entityMapTableId(), entityId).length > 0) {
-      uint256[] memory taggedEntityIds = EntityMap.get(_namespace().entityMapTableId(), entityId);
+    if (EntityMap.get(entityId).length > 0) {
+      uint256[] memory taggedEntityIds = EntityMap.get(entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
         _requireModuleNotAssociated(taggedEntityIds[i], moduleId);
       }
@@ -119,22 +119,22 @@ contract ModuleCore is EveSystem {
       _requireModuleNotAssociated(entityId, moduleId);
     }
 
-    EntityAssociation.pushModuleIds(_namespace().entityAssociationTableId(), entityId, moduleId);
+    EntityAssociation.pushModuleIds(entityId, moduleId);
   }
 
   function _requireModuleNotAssociated(uint256 entityId, uint256 moduleId) internal view {
-    uint256[] memory moduleIds = EntityAssociation.getModuleIds(_namespace().entityAssociationTableId(), entityId);
+    uint256[] memory moduleIds = EntityAssociation.getModuleIds(entityId);
     (, bool exists) = findIndex(moduleIds, moduleId);
     if (exists)
       revert ICustomErrorSystem.EntityAlreadyAssociated(
         entityId,
         moduleId,
-        "ModuleCore: Module already associated with the entity"
+        "ModuleSystem: Module already associated with the entity"
       );
   }
 
   function _removeEntityModuleAssociation(uint256 entityId, uint256 moduleId) internal {
-    uint256[] memory moduleIds = EntityAssociation.getModuleIds(_namespace().entityAssociationTableId(), entityId);
+    uint256[] memory moduleIds = EntityAssociation.getModuleIds(entityId);
     (uint256 index, bool exists) = findIndex(moduleIds, moduleId);
 
     if (exists) {
@@ -142,44 +142,42 @@ contract ModuleCore is EveSystem {
       uint256 lastIndex = moduleIds.length - 1;
       if (index != lastIndex) {
         EntityAssociation.updateModuleIds(
-          _namespace().entityAssociationTableId(),
           entityId,
           index,
           moduleIds[lastIndex]
         );
       }
-      EntityAssociation.popModuleIds(_namespace().entityAssociationTableId(), entityId);
+      EntityAssociation.popModuleIds(entityId);
     }
   }
 
   function _removeSystemModuleAssociation(ResourceId systemId, uint256 moduleId) internal {
     bytes32 unwrappedSystemId = ResourceId.unwrap(systemId);
     require(
-      ModuleTable.getDoesExists(_namespace().moduleTableTableId(), moduleId, systemId),
-      "ModuleCore: Module not registered"
+      ModuleTable.getDoesExists(moduleId, systemId),
+      "ModuleSystem: Module not registered"
     );
-    ModuleTable.deleteRecord(_namespace().moduleTableTableId(), moduleId, systemId);
+    ModuleTable.deleteRecord(moduleId, systemId);
 
     //update lookup table
     //TODO remove this after discussion
-    bytes32[] memory systemIds = ModuleSystemLookup.getSystemIds(_namespace().moduleSystemLookupTableId(), moduleId);
+    bytes32[] memory systemIds = ModuleSystemLookup.getSystemIds(moduleId);
     (uint256 index, bool exists) = findIndex(systemIds, unwrappedSystemId);
     if (exists) {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = systemIds.length - 1;
       if (index != lastIndex) {
         ModuleSystemLookup.updateSystemIds(
-          _namespace().moduleSystemLookupTableId(),
           moduleId,
           index,
           unwrappedSystemId
         );
       }
-      ModuleSystemLookup.popSystemIds(_namespace().moduleSystemLookupTableId(), moduleId);
+      ModuleSystemLookup.popSystemIds(moduleId);
     }
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().moduleCoreSystemId();
+    return _namespace().moduleSystemId();
   }
 }

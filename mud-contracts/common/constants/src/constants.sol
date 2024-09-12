@@ -17,9 +17,9 @@ bytes14 constant SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_TURRET_DEPLOYMENT_NAMESPACE = "eveworld";
 bytes14 constant SMART_GATE_DEPLOYMENT_NAMESPACE = "eveworld";
 
-bytes16 constant ENTITY_CORE_SYSTEM_NAME = "EntityCore";
-bytes16 constant MODULE_CORE_SYSTEM_NAME = "ModuleCore";
-bytes16 constant HOOK_CORE_SYSTEM_NAME = "HookCore";
+bytes16 constant ENTITY_SYSTEM_NAME = "EntitySystem";
+bytes16 constant MODULE_SYSTEM_NAME = "ModuleSystem";
+bytes16 constant HOOK_SYSTEM_NAME = "HookSystem";
 bytes16 constant STATIC_DATA_SYSTEM_NAME = "StaticData";
 bytes16 constant ENTITY_RECORD_SYSTEM_NAME = "EntityRecord";
 bytes16 constant LOCATION_SYSTEM_NAME = "Location";

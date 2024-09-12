@@ -17,9 +17,9 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
+import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
+import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { STATIC_DATA_DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE, LOCATION_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
@@ -103,7 +103,7 @@ contract SmartStorageUnitTest is Test {
     // installing SOF & other modules (SmartCharacterModule dependancies)
     world.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntitySystem(), new HookSystem(), new ModuleSystem())
     );
 
     SOFInterface = SmartObjectLib.World(world, SMART_OBJECT_DEPLOYMENT_NAMESPACE);

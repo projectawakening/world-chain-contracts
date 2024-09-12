@@ -13,7 +13,7 @@ import { HookType } from "../../types.sol";
 
 import { Utils } from "../../utils.sol";
 
-contract HookCore is EveSystem {
+contract HookSystem is EveSystem {
   using Utils for bytes14;
 
   /**
@@ -89,43 +89,43 @@ contract HookCore is EveSystem {
 
   function _registerHook(ResourceId systemId, bytes4 functionId) internal {
     uint256 hookId = uint256(keccak256(abi.encodePacked(systemId, functionId)));
-    if (HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
-      revert ICustomErrorSystem.HookAlreadyRegistered(hookId, "HookCore: Hook already registered");
+    if (HookTable.getIsHook(hookId))
+      revert ICustomErrorSystem.HookAlreadyRegistered(hookId, "HookSystem: Hook already registered");
 
-    HookTable.set(_namespace().hookTableTableId(), hookId, true, systemId, functionId);
+    HookTable.set(hookId, true, systemId, functionId);
   }
 
   function _addHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) internal {
-    if (!HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
-      revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
+    if (!HookTable.getIsHook(hookId))
+      revert ICustomErrorSystem.HookNotRegistered(hookId, "HookSystem: Hook not registered");
 
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
     if (hookType == HookType.BEFORE) {
-      HookTargetBefore.set(_namespace().hookTargetBeforeTableId(), hookId, targetId, true, systemId, functionSelector);
+      HookTargetBefore.set(hookId, targetId, true, systemId, functionSelector);
     } else if (hookType == HookType.AFTER) {
-      HookTargetAfter.set(_namespace().hookTargetAfterTableId(), hookId, targetId, true, systemId, functionSelector);
+      HookTargetAfter.set(hookId, targetId, true, systemId, functionSelector);
     }
   }
 
   function _removeHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) internal {
-    if (!HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
-      revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
+    if (!HookTable.getIsHook(hookId))
+      revert ICustomErrorSystem.HookNotRegistered(hookId, "HookSystem: Hook not registered");
 
     uint256 targetId = uint256(keccak256(abi.encodePacked(systemId, functionSelector)));
     if (hookType == HookType.BEFORE) {
-      HookTargetBefore.deleteRecord(_namespace().hookTargetBeforeTableId(), hookId, targetId);
+      HookTargetBefore.deleteRecord(hookId, targetId);
     } else if (hookType == HookType.AFTER) {
-      HookTargetAfter.deleteRecord(_namespace().hookTargetAfterTableId(), hookId, targetId);
+      HookTargetAfter.deleteRecord(hookId, targetId);
     }
   }
 
   function _associateHook(uint256 entityId, uint256 hookId) internal {
     _requireEntityRegistered(entityId);
-    if (!HookTable.getIsHook(_namespace().hookTableTableId(), hookId))
-      revert ICustomErrorSystem.HookNotRegistered(hookId, "HookCore: Hook not registered");
+    if (!HookTable.getIsHook(hookId))
+      revert ICustomErrorSystem.HookNotRegistered(hookId, "HookSystem: Hook not registered");
 
-    if (EntityMap.get(_namespace().entityMapTableId(), entityId).length > 0) {
-      uint256[] memory taggedEntityIds = EntityMap.get(_namespace().entityMapTableId(), entityId);
+    if (EntityMap.get(entityId).length > 0) {
+      uint256[] memory taggedEntityIds = EntityMap.get(entityId);
       for (uint256 i = 0; i < taggedEntityIds.length; i++) {
         _requireHookeNotAssociated(taggedEntityIds[i], hookId);
       }
@@ -133,34 +133,34 @@ contract HookCore is EveSystem {
       _requireHookeNotAssociated(entityId, hookId);
     }
 
-    EntityAssociation.pushHookIds(_namespace().entityAssociationTableId(), entityId, hookId);
+    EntityAssociation.pushHookIds(entityId, hookId);
   }
 
   function _requireHookeNotAssociated(uint256 entityId, uint256 hookId) internal view {
-    uint256[] memory hookIds = EntityAssociation.getHookIds(_namespace().entityAssociationTableId(), entityId);
+    uint256[] memory hookIds = EntityAssociation.getHookIds(entityId);
     (, bool exists) = findIndex(hookIds, hookId);
     if (exists)
       revert ICustomErrorSystem.EntityAlreadyAssociated(
         entityId,
         hookId,
-        "HookCore: Hook already associated with the entity"
+        "HookSystem: Hook already associated with the entity"
       );
   }
 
   function _removeEntityHookAssociation(uint256 entityId, uint256 hookId) internal {
-    uint256[] memory hookIds = EntityAssociation.getHookIds(_namespace().entityAssociationTableId(), entityId);
+    uint256[] memory hookIds = EntityAssociation.getHookIds(entityId);
     (uint256 index, bool exists) = findIndex(hookIds, hookId);
     if (exists) {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = hookIds.length - 1;
       if (index != lastIndex) {
-        EntityAssociation.updateHookIds(_namespace().entityAssociationTableId(), entityId, index, hookIds[lastIndex]);
+        EntityAssociation.updateHookIds(entityId, index, hookIds[lastIndex]);
       }
-      EntityAssociation.popModuleIds(_namespace().entityAssociationTableId(), entityId);
+      EntityAssociation.popModuleIds(entityId);
     }
   }
 
   function _systemId() internal view returns (ResourceId) {
-    return _namespace().hookCoreSystemId();
+    return _namespace().hookSystemId();
   }
 }

@@ -19,9 +19,9 @@ import { IERC721Mintable } from "../src/modules/eve-erc721-puppet/IERC721Mintabl
 
 import "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
+import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
+import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
 
 import { EntityRecordModule } from "../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../src/modules/static-data/StaticDataModule.sol";
@@ -70,9 +70,9 @@ contract PostDeploy is Script {
       deployer,
       new SmartObjectFrameworkModule(),
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
-      address(new EntityCore()),
-      address(new HookCore()),
-      address(new ModuleCore())
+      address(new EntitySystem()),
+      address(new HookSystem()),
+      address(new ModuleSystem())
     );
     _installPuppet(world, deployer);
     _installModule(world, deployer, new StaticDataModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);

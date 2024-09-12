@@ -21,9 +21,9 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 import { RESOURCE_TABLE, RESOURCE_SYSTEM, RESOURCE_NAMESPACE } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
+import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
+import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import "@eveworld/common-constants/src/constants.sol";
 
@@ -156,7 +156,7 @@ contract InteractTest is Test {
     // installing SOF & other modules (SmartCharacterModule dependancies)
     world.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntitySystem(), new HookSystem(), new ModuleSystem())
     );
 
     // install module dependancies

@@ -5,11 +5,11 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { HookType } from "../types.sol";
 
 /**
- * @title IHookCore
+ * @title IHookSystem
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  * Needs to match corresponding System exhaustively
  */
-interface IHookCore {
+interface IHookSystem {
   function registerHook(ResourceId systemId, bytes4 functionId) external;
 
   function addHook(uint256 hookId, HookType hookType, ResourceId systemId, bytes4 functionSelector) external;

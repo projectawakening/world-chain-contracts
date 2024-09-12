@@ -2,11 +2,11 @@
 pragma solidity >=0.8.21;
 
 /**
- * @title IEntityCore
+ * @title IEntitySystem
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  * Needs to match corresponding System exhaustively
  */
-interface IEntityCore {
+interface IEntitySystem {
   function registerEntityType(uint8 entityTypeId, bytes32 entityType) external;
 
   function registerEntity(uint256 entityId, uint8 entityType) external;

@@ -4,11 +4,11 @@ pragma solidity >=0.8.21;
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 /**
- * @title IModuleCore
+ * @title IModuleSystem
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  * Needs to match corresponding System exhaustively
  */
-interface IModuleCore {
+interface IModuleSystem {
   function registerEVEModule(uint256 moduleId, bytes16 moduleName, ResourceId systemId) external;
 
   function registerEVEModules(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external;

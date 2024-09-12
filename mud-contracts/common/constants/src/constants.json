@@ -14,9 +14,9 @@
     "KILL_MAIL_DEPLOYMENT": "eveworld"
   },
   "systemName": {
-    "ENTITY_CORE": "EntityCore",
-    "MODULE_CORE": "ModuleCore",
-    "HOOK_CORE": "HookCore",
+    "ENTITY_SYSTEM": "EntitySystem",
+    "MODULE_SYSTEM": "ModuleSystem",
+    "HOOK_SYSTEM": "HookSystem",
     "STATIC_DATA": "StaticData",
     "ENTITY_RECORD": "EntityRecord",
     "LOCATION": "Location",

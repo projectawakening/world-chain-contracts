@@ -14,9 +14,9 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
+import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
+import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
 import { Utils } from "../../src/modules/kill-mail/Utils.sol";
 import { KillMailLib } from "../../src/modules/kill-mail/KillMailLib.sol";
 import { KillMailModule } from "../../src/modules/kill-mail/KillMailModule.sol";
@@ -41,7 +41,7 @@ contract KillMailTest is Test {
 
     world.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntitySystem(), new HookSystem(), new ModuleSystem())
     );
 
     _installModule(new KillMailModule(), DEPLOYMENT_NAMESPACE);

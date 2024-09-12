@@ -16,9 +16,9 @@ import { IModule } from "@latticexyz/world/src/IModule.sol";
 
 import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
+import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
+import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
+import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
 
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
@@ -44,7 +44,7 @@ contract EntityRecordTest is Test {
     // installing SOF module (dependancy)
     world.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
+      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntitySystem(), new HookSystem(), new ModuleSystem())
     );
 
     _installModule(new EntityRecordModule(), DEPLOYMENT_NAMESPACE);

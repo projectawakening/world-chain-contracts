@@ -6,10 +6,11 @@ pragma solidity >=0.8.24;
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 /**
- * @title IModuleCore
+ * @title IModuleSystem
+ * @author MUD (https://mud.dev) by Lattice (https://lattice.xyz)
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
-interface IModuleCore {
+interface IModuleSystem {
   function eveworld__registerEVEModule(uint256 moduleId, bytes16 moduleName, ResourceId systemId) external;
 
   function eveworld__registerEVEModules(uint256 moduleId, bytes16 moduleName, ResourceId[] memory systemIds) external;

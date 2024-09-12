@@ -25,9 +25,9 @@ import { createCoreModule } from "../CreateCoreModule.sol";
 
 // SOF imports
 import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
+import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
+import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
+import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
 import { HookType } from "@eveworld/smart-object-framework/src/types.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { Utils as SOFUtils } from "@eveworld/smart-object-framework/src/utils.sol";
@@ -179,7 +179,7 @@ contract AccessTest is Test {
     // SMART OBJECT FRAMEWORK DEPLOY AND REGISTER
     world.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(EVE_WORLD_NAMESPACE, address(new EntityCore()), address(new HookCore()), address(new ModuleCore()))
+      abi.encode(EVE_WORLD_NAMESPACE, address(new EntitySystem()), address(new HookSystem()), address(new ModuleSystem()))
     );
 
     // SMART DEPLOYABLE DEPLOY AND REGISTER
