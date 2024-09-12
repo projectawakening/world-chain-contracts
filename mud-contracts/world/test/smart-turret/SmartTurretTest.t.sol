@@ -187,12 +187,12 @@ contract SmartTurretTest is Test {
     world.registerSystem(smartTurretTestSystemId, smartTurretTestSystem, true);
     //register the function selector
     world.registerFunctionSelector(
-      smartTurretTesStystemId,
+      smartTurretTestSystemId,
       "inProximity(uint256, uint256, uint256,Target[],uint256,uint256)"
     );
 
     world.registerFunctionSelector(
-      smartTurretTesStystemId,
+      smartTurretTestSystemId,
       "aggression(uint256,uint256,TargetPriority[],Turret,SmartTurretTarget,SmartTurretTarget)"
     );
 
@@ -251,7 +251,7 @@ contract SmartTurretTest is Test {
 
   function testConfigureSmartTurret() public {
     testAnchorSmartTurret();
-    smartTurret.configureSmartTurret(smartObjectId, smartTurretTesStystemId);
+    smartTurret.configureSmartTurret(smartObjectId, smartTurretTestSystemId);
 
     ResourceId systemId = SmartTurretConfigTable.get(DEPLOYMENT_NAMESPACE.smartTurretConfigTableId(), smartObjectId);
     assertEq(systemId.getNamespace(), DEPLOYMENT_NAMESPACE);
