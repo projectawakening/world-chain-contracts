@@ -7,7 +7,7 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 
 interface ISmartStorageUnit {
   function createAndAnchorSmartStorageUnit(
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -18,10 +18,10 @@ interface ISmartStorageUnit {
     uint256 ephemeralStorageCapacity
   ) external;
 
-  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function createAndDepositItemsToInventory(uint256 smartStorageUnitId, InventoryItem[] memory items) external;
 
   function createAndDepositItemsToEphemeralInventory(
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) external;
