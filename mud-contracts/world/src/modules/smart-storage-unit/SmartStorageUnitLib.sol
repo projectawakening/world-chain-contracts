@@ -29,7 +29,7 @@ library SmartStorageUnitLib {
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
@@ -44,7 +44,7 @@ library SmartStorageUnitLib {
           smartObjectData,
           worldPosition,
           fuelUnitVolume,
-          fuelConsumptionPerMinute,
+          fuelConsumptionIntervalInSeconds,
           fuelMaxCapacity,
           storageCapacity,
           ephemeralStorageCapacity

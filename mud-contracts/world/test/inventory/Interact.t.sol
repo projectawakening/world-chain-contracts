@@ -232,7 +232,7 @@ contract InteractTest is Test {
       smartObjectData,
       worldPosition,
       1e18, // fuelUnitVolume,
-      1, // fuelConsumptionPerMinute,
+      1, // fuelConsumptionIntervalInSeconds,
       1000000 * 1e18, // fuelMaxCapacity,
       storageCapacity,
       ephemeralStorageCapacity

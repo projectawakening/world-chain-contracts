@@ -12,7 +12,7 @@ interface ISmartStorageUnit {
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity

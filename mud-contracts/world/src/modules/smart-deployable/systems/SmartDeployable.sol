@@ -61,7 +61,7 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     uint256 entityId,
     SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolumeInWei,
-    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacityInWei
   ) public onlyAdmin hookable(entityId, _systemId()) onlyActive {
     State previousState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), entityId);
@@ -70,7 +70,7 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
     }
 
     //Revert if the fuelUnitConsumption interval is min 1
-    if (fuelConsumptionPerMinuteInWei < 1) {
+    if (fuelConsumptionIntervalInSeconds < 1) {
       revert SmartDeployable_InvalidFuelConsumptionInterval(entityId);
     }
 
@@ -104,7 +104,7 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
       entityId,
       DeployableFuelBalanceData({
         fuelUnitVolume: fuelUnitVolumeInWei,
-        fuelConsumptionPerMinute: fuelConsumptionPerMinuteInWei,
+        fuelConsumptionPerMinute: fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity: fuelMaxCapacityInWei,
         fuelAmount: 0,
         lastUpdatedAt: block.timestamp
@@ -235,16 +235,16 @@ contract SmartDeployable is AccessModified, EveSystem, SmartDeployableErrors {
    * WARNING: this will retroactively change the consumption rate of all smart deployables since they were last brought online.
    * do not tweak this too much. Right now this will have to do, or, ideally, we would need to update all fuel balances before changing this
    * TODO: needs to be only callable by admin
-   * @param fuelConsumptionPerMinuteInWei global rate shared by all Smart Deployables (in Wei)
+   * @param fuelConsumptionIntervalInSeconds global rate shared by all Smart Deployables (in Wei)
    */
   function setFuelConsumptionPerMinute(
     uint256 entityId,
-    uint256 fuelConsumptionPerMinuteInWei
+    uint256 fuelConsumptionIntervalInSeconds
   ) public onlyAdmin hookable(entityId, _systemId()) {
     DeployableFuelBalance.setFuelConsumptionPerMinute(
       _namespace().deployableFuelBalanceTableId(),
       entityId,
-      fuelConsumptionPerMinuteInWei
+      fuelConsumptionIntervalInSeconds
     );
   }
 
