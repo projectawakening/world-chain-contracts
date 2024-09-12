@@ -17,6 +17,7 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 import { State, SmartAssemblyType } from "../../../codegen/common.sol";
+import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
 
 import { EntityRecordData, WorldPosition } from "../../smart-storage-unit/types.sol";
 import { EntityRecordLib } from "../../entity-record/EntityRecordLib.sol";
@@ -26,6 +27,7 @@ import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.so
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { Utils as SmartCharacterUtils } from "../../smart-character/Utils.sol";
 import { AccessModified } from "../../access/systems/AccessModified.sol";
 
 import { Utils } from "../Utils.sol";
@@ -42,6 +44,7 @@ contract SmartTurret is EveSystem, AccessModified {
   using SmartDeployableLib for SmartDeployableLib.World;
   using SmartObjectFrameworkUtils for bytes14;
   using SmartDeployableUtils for bytes14;
+  using SmartCharacterUtils for bytes14;
   using Utils for bytes14;
 
   error SmartTurret_UndefinedClassId();
@@ -144,10 +147,22 @@ contract SmartTurret is EveSystem, AccessModified {
     // Delegate the call to the implementation inProximity view function
     ResourceId systemId = SmartTurretConfigTable.get(_namespace().smartTurretConfigTableId(), smartTurretId);
 
+    //If smart turret is not configured, then execute the default logic
     if (!ResourceIds.getExists(systemId)) {
-      //If smart turret is not configured, then execute the default logic
-      // TODO: If the character corp and the owner of the turret are same, then the turret will not attack
-      updatedPriorityQueue = priorityQueue; //temporary logic
+      //If the corp and the smart turret owner of the target turret are same, then the turret will not attack
+      uint256 smartTurretOwnerCorp = CharactersTable.getCorpId(_namespace().charactersTableId(), characterId);
+      uint256 turretTargetCorp = CharactersTable.getCorpId(_namespace().charactersTableId(), turretTarget.characterId);
+      if (smartTurretOwnerCorp != turretTargetCorp) {
+        updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
+        for (uint256 i = 0; i < priorityQueue.length; i++) {
+          updatedPriorityQueue[i] = priorityQueue[i];
+        }
+
+        updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: turretTarget, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
+      } else {
+        //If the corp and the smart turret owner of the target turret are same, then do not add the target turret to the priority queue
+        updatedPriorityQueue = priorityQueue;
+      }
     } else {
       bytes memory returnData = world().call(
         systemId,

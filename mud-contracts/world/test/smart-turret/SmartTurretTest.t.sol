@@ -285,6 +285,32 @@ contract SmartTurretTest is Test {
     assertEq(returnTargetQueue[0].weight, 100);
   }
 
+  function testInProximityDefaultLogic() public {
+    testAnchorSmartTurret();
+    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+
+    SmartTurretTarget memory turretTarget = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 11112,
+      hpRatio: 100,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
+
+    TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
+      smartObjectId,
+      characterId,
+      priorityQueue,
+      turret,
+      turretTarget
+    );
+
+    assertEq(returnTargetQueue.length, 2);
+  }
+
   function testInProximityWrongCorpId() public {
     testConfigureSmartTurret();
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
