@@ -51,10 +51,19 @@ export default mudConfig({
       name: constants.systemName.SMART_TURRET,
       openAccess: true,
     },
+    SmartGate: {
+      name: constants.systemName.SMART_GATE,
+      openAccess: true,
+    },
+    KillMail: {
+      name: constants.systemName.KILL_MAIL,
+      openAccess: true,
+    },
   },
   enums: {
     State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
     SmartAssemblyType: ["SMART_STORAGE_UNIT", "SMART_TURRET", "SMART_GATE"],
+    KillMailLossType: ["SHIP", "POD"],
   },
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
@@ -385,6 +394,31 @@ export default mudConfig({
       tableIdArgument: true,
     },
 
+    /*************************
+     * SMART Gate MODULE *
+     *************************/
+    SmartGateConfigTable: {
+      keySchema: {
+        smartGateId: "uint256",
+      },
+      valueSchema: {
+        systemId: "ResourceId",
+        maxDistance: "uint256", // This variable can be moved to a new table if needed
+      },
+      tableIdArgument: true,
+    },
+
+    SmartGateLinkTable: {
+      keySchema: {
+        sourceGateId: "uint256",
+        destinationGateId: "uint256",
+      },
+      valueSchema: {
+        isLinked: "bool",
+      },
+      tableIdArgument: true,
+    },
+
     /************************
      * ERC721 PUPPET MODULE *
      ************************/
@@ -446,6 +480,24 @@ export default mudConfig({
       },
       valueSchema: {
         approved: "bool",
+      },
+      tableIdArgument: true,
+    },
+
+    /************************
+     * KillMail module *
+     ************************/
+
+    KillMailTable: {
+      keySchema: {
+        killMailId: "uint256",
+      },
+      valueSchema: {
+        killer: "address",
+        victim: "address",
+        lossType: "KillMailLossType",
+        solarSystemId: "uint256",
+        killTimestamp: "uint256",
       },
       tableIdArgument: true,
     },

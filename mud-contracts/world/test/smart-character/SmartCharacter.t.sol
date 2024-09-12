@@ -2,7 +2,7 @@
 pragma solidity >=0.8.21;
 
 import "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+
 import { World } from "@latticexyz/world/src/World.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -125,6 +125,7 @@ contract SmartCharacterTest is Test {
     string memory tokenCid
   ) public {
     vm.assume(entityId != 0);
+    vm.assume(corpId != 0);
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 

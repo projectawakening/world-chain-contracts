@@ -15,3 +15,8 @@ enum SmartAssemblyType {
   SMART_TURRET,
   SMART_GATE
 }
+
+enum KillMailLossType {
+  SHIP,
+  POD
+}

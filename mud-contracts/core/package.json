@@ -27,7 +27,7 @@
     "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
     "@eveworld/common-constants": "0.0.7",
     "@eveworld/smart-object-framework": "0.0.7",
-    "@eveworld/world": "0.0.10"
+    "@eveworld/world": "0.0.12"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
