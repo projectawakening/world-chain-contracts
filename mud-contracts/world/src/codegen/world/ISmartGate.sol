@@ -16,7 +16,7 @@ interface ISmartGate {
   error SmartGate_NotConfigured(uint256 smartGateId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
-  error SmartGate_GateNotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
 
   function eveworld__createAndAnchorSmartGate(
     uint256 smartGateId,
