@@ -125,7 +125,6 @@ contract SmartGate is EveSystem, AccessModified {
     }
 
     //TODO: Check if the state is online for both the gates ??
-    //TODO: Link the gates only when the distance between 2 gates are less than the max distance
     if (isWithinRange(sourceGateId, destinationGateId) == false) {
       revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
     }
