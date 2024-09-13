@@ -190,7 +190,10 @@ contract SmartGateTest is Test {
   function testAnchorSmartGate(uint256 smartObjectId) public {
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
-    WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+    WorldPosition memory worldPosition = WorldPosition({
+      solarSystemId: 1,
+      position: Coord({ x: 10000, y: 10000, z: 10000 })
+    });
 
     uint256 fuelUnitVolume = 100;
     uint256 fuelConsumptionIntervalInSeconds = 100;
@@ -244,6 +247,59 @@ contract SmartGateTest is Test {
     smartGate.linkSmartGates(sourceGateId, destinationGateId);
   }
 
+  function testLinkRevertDistanceAboveMax() public {
+    uint256 smartObjectIdA = 234;
+    uint256 smartObjectIdB = 345;
+    EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
+    WorldPosition memory worldPositionA = WorldPosition({
+      solarSystemId: 1,
+      position: Coord({ x: 10000, y: 10000, z: 10000 })
+    });
+
+    WorldPosition memory worldPositionB = WorldPosition({
+      solarSystemId: 1,
+      position: Coord({ x: 1000000000, y: 1000000000, z: 1000000000 })
+    });
+
+    uint256 fuelUnitVolume = 100;
+    uint256 fuelConsumptionIntervalInSeconds = 100;
+    uint256 fuelMaxCapacity = 100;
+    smartDeployable.globalResume();
+    smartGate.createAndAnchorSmartGate(
+      smartObjectIdA,
+      entityRecordData,
+      smartObjectData,
+      worldPositionA,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionIntervalInSeconds,
+      1000000 * 1e18, // fuelMaxCapacity,
+      1 // maxDistance
+    );
+
+    smartDeployable.depositFuel(smartObjectIdA, 1);
+    smartDeployable.bringOnline(smartObjectIdA);
+
+    smartGate.createAndAnchorSmartGate(
+      smartObjectIdB,
+      entityRecordData,
+      smartObjectData,
+      worldPositionB,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionIntervalInSeconds,
+      1000000 * 1e18, // fuelMaxCapacity,
+      1 // maxDistance
+    );
+
+    smartDeployable.depositFuel(smartObjectIdB, 1);
+    smartDeployable.bringOnline(smartObjectIdB);
+
+    vm.expectRevert(
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_NotWithtinRange.selector, smartObjectIdA, smartObjectIdB)
+    );
+    smartGate.linkSmartGates(smartObjectIdA, smartObjectIdB);
+  }
+
   function testRevertUnlinkSmartGates() public {
     vm.expectRevert(
       abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotLinked.selector, sourceGateId, destinationGateId)
@@ -268,6 +324,7 @@ contract SmartGateTest is Test {
 
   function testCanJumpFalse() public {
     testConfigureSmartGate();
+
     testAnchorSmartGate(sourceGateId);
     testAnchorSmartGate(destinationGateId);
     testLinkSmartGates();

@@ -50,7 +50,7 @@ contract SmartGate is EveSystem, AccessModified {
   error SmartGate_NotConfigured(uint256 smartGateId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
-  error SmartGate_GateNotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
 
   /**
    * modifier to enforce state changes can happen only when the game server is running
@@ -127,7 +127,7 @@ contract SmartGate is EveSystem, AccessModified {
     //TODO: Check if the state is online for both the gates ??
     //TODO: Link the gates only when the distance between 2 gates are less than the max distance
     if (isWithinRange(sourceGateId, destinationGateId) == false) {
-      revert SmartGate_GateNotWithtinRange(sourceGateId, destinationGateId);
+      revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
     }
 
     SmartGateLinkTable.set(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId, true);
@@ -209,7 +209,7 @@ contract SmartGate is EveSystem, AccessModified {
   function isWithinRange(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
     //Get the location of the source gate and destination gate
     LocationTableData memory sourceGateLocation = LocationTable.get(_namespace().locationTableId(), sourceGateId);
-    LocationTableData memory destGateLocation = LocationTable.get(_namespace().locationTableId(), sourceGateId);
+    LocationTableData memory destGateLocation = LocationTable.get(_namespace().locationTableId(), destinationGateId);
     uint256 maxDistance = SmartGateConfigTable.getMaxDistance(_namespace().smartGateConfigTableId(), sourceGateId);
 
     // Implement the logic to calculate the distance between two gates
@@ -226,7 +226,6 @@ contract SmartGate is EveSystem, AccessModified {
 
     // Sum of squares (distance squared in meters)
     uint256 distanceSquaredMeters = (dx * dx) + (dy * dy) + (dz * dz);
-
     return distanceSquaredMeters <= maxDistance;
   }
 
