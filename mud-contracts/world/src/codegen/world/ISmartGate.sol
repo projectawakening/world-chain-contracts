@@ -16,6 +16,7 @@ interface ISmartGate {
   error SmartGate_NotConfigured(uint256 smartGateId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GateNotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
 
   function eveworld__createAndAnchorSmartGate(
     uint256 smartGateId,
@@ -42,5 +43,5 @@ interface ISmartGate {
 
   function eveworld__isGateLinked(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
 
-  function eveworld__calculatDistance(uint256 sourceGateId, uint256 destinationGateId) external view returns (uint256);
+  function eveworld__isWithinRange(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
 }
