@@ -1,4 +1,12 @@
 # @eveworld/world
+## 0.0.13
+- Refactored SmartGateLinkTable structure to query by sourceGate as single key
+- Implementation of default logic for smart turrets and smart gates
+- normalized naming conventions (Breaking change in terms of abi)
+  - renamed `fuelConsumptionPerMinute` to `fuelConsumptionIntervalInSeconds`
+  - renamed `smartObjectId` to `smartStorageUnitId` for the function `createAndAnchorSmartStorageUnit`
+- included turretOwnerCharacterId as a additional parameter for `inProximity` and `aggression`
+
 ## 0.0.12
 - Including Gate and Kill Mail in mud.config to generate abis 
 - Adding scripts for end-to-end tests 
