@@ -17,7 +17,7 @@ interface ISmartDeployable {
     uint256 entityId,
     SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolumeInWei,
-    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacityInWei
   ) external;
 
@@ -37,7 +37,7 @@ interface ISmartDeployable {
 
   function eveworld__globalResume() external;
 
-  function eveworld__setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinuteInWei) external;
+  function eveworld__setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionIntervalInSeconds) external;
 
   function eveworld__setFuelMaxCapacity(uint256 entityId, uint256 capacityInWei) external;
 

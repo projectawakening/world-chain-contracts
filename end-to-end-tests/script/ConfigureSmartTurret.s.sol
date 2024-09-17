@@ -81,11 +81,12 @@ contract ConfigureSmartTurret is Script {
     //Execute inProximity view function and see what is returns
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+    uint256 characterId = 11111;
 
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
       shipId: 1,
       shipTypeId: 1,
-      characterId: 11111,
+      characterId: characterId,
       hpRatio: 100,
       shieldRatio: 100,
       armorRatio: 100
@@ -94,6 +95,7 @@ contract ConfigureSmartTurret is Script {
 
     TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
       smartObjectId,
+      characterId,
       priorityQueue,
       turret,
       turretTarget

@@ -65,6 +65,7 @@ contract SmartTurretTestSystem is System {
 
   function inProximity(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -83,6 +84,7 @@ contract SmartTurretTestSystem is System {
 
   function aggression(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,
@@ -122,6 +124,9 @@ contract SmartTurretTest is Test {
   bytes14 constant SMART_CHAR_ERC721 = "ERC721Char";
   uint256 smartCharacterClassId = uint256(keccak256("SmartCharacterClass"));
   uint256[] smartCharClassIds;
+
+  uint256 smartObjectId = 1234;
+  uint256 characterId = 11111;
 
   function setUp() public {
     world = IBaseWorld(address(new World()));
@@ -181,7 +186,15 @@ contract SmartTurretTest is Test {
     // register the smart turret system
     world.registerSystem(smartTurretTestSystemId, smartTurretTestSystem, true);
     //register the function selector
-    world.registerFunctionSelector(smartTurretTestSystemId, "inProximity(uint256, uint256,Target[],uint256,uint256)");
+    world.registerFunctionSelector(
+      smartTurretTestSystemId,
+      "inProximity(uint256, uint256, uint256,Target[],uint256,uint256)"
+    );
+
+    world.registerFunctionSelector(
+      smartTurretTestSystemId,
+      "aggression(uint256,uint256,TargetPriority[],Turret,SmartTurretTarget,SmartTurretTarget)"
+    );
 
     //Create a smart character
     smartCharacter.createCharacter(
@@ -209,7 +222,6 @@ contract SmartTurretTest is Test {
   }
 
   function testAnchorSmartTurret() public {
-    uint256 smartObjectId = 1234;
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
@@ -239,7 +251,6 @@ contract SmartTurretTest is Test {
 
   function testConfigureSmartTurret() public {
     testAnchorSmartTurret();
-    uint256 smartObjectId = 1234;
     smartTurret.configureSmartTurret(smartObjectId, smartTurretTestSystemId);
 
     ResourceId systemId = SmartTurretConfigTable.get(DEPLOYMENT_NAMESPACE.smartTurretConfigTableId(), smartObjectId);
@@ -249,7 +260,6 @@ contract SmartTurretTest is Test {
 
   function testInProximity() public {
     testConfigureSmartTurret();
-    uint256 smartObjectId = 1234;
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
 
@@ -265,6 +275,7 @@ contract SmartTurretTest is Test {
 
     TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
       smartObjectId,
+      characterId,
       priorityQueue,
       turret,
       turretTarget
@@ -274,9 +285,34 @@ contract SmartTurretTest is Test {
     assertEq(returnTargetQueue[0].weight, 100);
   }
 
+  function testInProximityDefaultLogic() public {
+    testAnchorSmartTurret();
+    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+
+    SmartTurretTarget memory turretTarget = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 11112,
+      hpRatio: 100,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
+
+    TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
+      smartObjectId,
+      characterId,
+      priorityQueue,
+      turret,
+      turretTarget
+    );
+
+    assertEq(returnTargetQueue.length, 2);
+  }
+
   function testInProximityWrongCorpId() public {
     testConfigureSmartTurret();
-    uint256 smartObjectId = 1234;
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
@@ -291,6 +327,7 @@ contract SmartTurretTest is Test {
 
     TargetPriority[] memory returnTargetQueue = smartTurret.inProximity(
       smartObjectId,
+      characterId,
       priorityQueue,
       turret,
       turretTarget
@@ -301,7 +338,6 @@ contract SmartTurretTest is Test {
 
   function testAggression() public {
     testConfigureSmartTurret();
-    uint256 smartObjectId = 1234;
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
@@ -333,6 +369,7 @@ contract SmartTurretTest is Test {
 
     TargetPriority[] memory returnTargetQueue = smartTurret.aggression(
       smartObjectId,
+      characterId,
       priorityQueue,
       turret,
       aggressor,
@@ -343,8 +380,51 @@ contract SmartTurretTest is Test {
     assertEq(returnTargetQueue[0].weight, 100);
   }
 
+  function testAggressionDefaultLogic() public {
+    testAnchorSmartTurret();
+    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+    SmartTurretTarget memory turretTarget = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 4444,
+      hpRatio: 50,
+      shieldRatio: 50,
+      armorRatio: 50
+    });
+    SmartTurretTarget memory aggressor = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 5555,
+      hpRatio: 100,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+    SmartTurretTarget memory victim = SmartTurretTarget({
+      shipId: 1,
+      shipTypeId: 1,
+      characterId: 6666,
+      hpRatio: 80,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+
+    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
+
+    TargetPriority[] memory returnTargetQueue = smartTurret.aggression(
+      smartObjectId,
+      characterId,
+      priorityQueue,
+      turret,
+      aggressor,
+      victim
+    );
+
+    assertEq(returnTargetQueue.length, 2);
+    assertEq(returnTargetQueue[1].weight, 1);
+  }
+
   function revertInProximity() public {
-    uint256 smartObjectId = 1234;
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
@@ -359,11 +439,10 @@ contract SmartTurretTest is Test {
 
     vm.expectRevert(abi.encodeWithSelector(SmartTurretSystem.SmartTurret_NotConfigured.selector, smartObjectId));
 
-    smartTurret.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
+    smartTurret.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   }
 
   function revertInProximityIncorrectState() public {
-    uint256 smartObjectId = 1234;
     TargetPriority[] memory priorityQueue = new TargetPriority[](1);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
@@ -384,6 +463,6 @@ contract SmartTurretTest is Test {
       )
     );
 
-    smartTurret.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
+    smartTurret.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   }
 }

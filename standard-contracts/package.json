@@ -28,8 +28,8 @@
     "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
     "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
-    "@eveworld/world": "0.0.12",
-    "@eveworld/common-constants": "0.0.7"
+    "@eveworld/world": "link:../mud-contracts/world",
+    "@eveworld/common-constants": "link:../mud-contracts/common/constants"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",

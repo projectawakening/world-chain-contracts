@@ -13,7 +13,7 @@ interface ISmartDeployable {
     uint256 entityId,
     SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity
   ) external;
 
@@ -33,7 +33,7 @@ interface ISmartDeployable {
 
   function globalResume() external;
 
-  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionPerMinute) external;
+  function setFuelConsumptionPerMinute(uint256 entityId, uint256 fuelConsumptionIntervalInSeconds) external;
 
   function setFuelMaxCapacity(uint256 entityId, uint256 amount) external;
 
