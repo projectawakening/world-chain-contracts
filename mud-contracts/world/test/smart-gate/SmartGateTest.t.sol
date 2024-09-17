@@ -232,6 +232,17 @@ contract SmartGateTest is Test {
     assert(smartGate.isGateLinked(destinationGateId, sourceGateId));
   }
 
+  function tesReverttLinkSmartGates() public {
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartGateSystem.SmartGate_SameSourceAndDestination.selector,
+        sourceGateId,
+        destinationGateId
+      )
+    );
+    smartGate.linkSmartGates(sourceGateId, sourceGateId);
+  }
+
   function testUnlinkSmartGates() public {
     testLinkSmartGates();
     smartGate.unlinkSmartGates(sourceGateId, destinationGateId);

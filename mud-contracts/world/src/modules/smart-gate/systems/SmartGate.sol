@@ -16,7 +16,7 @@ import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableS
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
 import { LocationTableData, LocationTable } from "../../../codegen/tables/LocationTable.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
-import { SmartGateLinkTable } from "../../../codegen/tables/SmartGateLinkTable.sol";
+import { SmartGateLinkTable, SmartGateLinkTableData } from "../../../codegen/tables/SmartGateLinkTable.sol";
 import { State, SmartAssemblyType } from "../../../codegen/common.sol";
 
 import { EntityRecordData, WorldPosition } from "../../smart-storage-unit/types.sol";
@@ -51,6 +51,7 @@ contract SmartGate is EveSystem, AccessModified {
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
 
   /**
    * modifier to enforce state changes can happen only when the game server is running
@@ -124,12 +125,18 @@ contract SmartGate is EveSystem, AccessModified {
       revert SmartGate_GateAlreadyLinked(sourceGateId, destinationGateId);
     }
 
+    if (sourceGateId == destinationGateId) {
+      revert SmartGate_SameSourceAndDestination(sourceGateId, destinationGateId);
+    }
+
     //TODO: Check if the state is online for both the gates ??
     if (isWithinRange(sourceGateId, destinationGateId) == false) {
       revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
     }
 
+    //Create a 2 way link between the gates
     SmartGateLinkTable.set(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId, true);
+    SmartGateLinkTable.set(_namespace().smartGateLinkTableId(), destinationGateId, sourceGateId, true);
   }
 
   /**
@@ -197,12 +204,13 @@ contract SmartGate is EveSystem, AccessModified {
   }
 
   function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
-    return (
-      (SmartGateLinkTable.getIsLinked(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId)) ||
-        (SmartGateLinkTable.getIsLinked(_namespace().smartGateLinkTableId(), destinationGateId, sourceGateId))
-        ? true
-        : false
+    SmartGateLinkTableData memory smartGateLinkTableData = SmartGateLinkTable.get(
+      _namespace().smartGateLinkTableId(),
+      sourceGateId
     );
+    bool isLinked = smartGateLinkTableData.isLinked && smartGateLinkTableData.destinationGateId == destinationGateId;
+
+    return isLinked;
   }
 
   function isWithinRange(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {

@@ -411,9 +411,9 @@ export default mudConfig({
     SmartGateLinkTable: {
       keySchema: {
         sourceGateId: "uint256",
-        destinationGateId: "uint256",
       },
       valueSchema: {
+        destinationGateId: "uint256",
         isLinked: "bool",
       },
       tableIdArgument: true,
