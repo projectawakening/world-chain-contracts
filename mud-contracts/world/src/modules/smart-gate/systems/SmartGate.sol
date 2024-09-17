@@ -14,7 +14,7 @@ import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPA
 import { SmartGateConfigTable } from "../../../codegen/tables/SmartGateConfigTable.sol";
 import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
-import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
+import { LocationTableData, LocationTable } from "../../../codegen/tables/LocationTable.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 import { SmartGateLinkTable } from "../../../codegen/tables/SmartGateLinkTable.sol";
 import { State, SmartAssemblyType } from "../../../codegen/common.sol";
@@ -27,6 +27,7 @@ import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.so
 import { SmartDeployableLib } from "../../smart-deployable/SmartDeployableLib.sol";
 import { SmartObjectData } from "../../smart-deployable/types.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
+import { Utils as LocationUtils } from "../../location/Utils.sol";
 import { AccessModified } from "../../access/systems/AccessModified.sol";
 
 import { Utils } from "../Utils.sol";
@@ -42,12 +43,14 @@ contract SmartGate is EveSystem, AccessModified {
   using SmartDeployableLib for SmartDeployableLib.World;
   using SmartObjectFrameworkUtils for bytes14;
   using SmartDeployableUtils for bytes14;
+  using LocationUtils for bytes14;
   using Utils for bytes14;
 
   error SmartGate_UndefinedClassId();
   error SmartGate_NotConfigured(uint256 smartGateId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
 
   /**
    * modifier to enforce state changes can happen only when the game server is running
@@ -122,7 +125,10 @@ contract SmartGate is EveSystem, AccessModified {
     }
 
     //TODO: Check if the state is online for both the gates ??
-    //TODO: Link the gates only when the distance between 2 gates are less than the max distance
+    if (isWithinRange(sourceGateId, destinationGateId) == false) {
+      revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
+    }
+
     SmartGateLinkTable.set(_namespace().smartGateLinkTableId(), sourceGateId, destinationGateId, true);
   }
 
@@ -199,10 +205,27 @@ contract SmartGate is EveSystem, AccessModified {
     );
   }
 
-  function calculatDistance(uint256 sourceGateId, uint256 destinationGateId) public view returns (uint256) {
+  function isWithinRange(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    //Get the location of the source gate and destination gate
+    LocationTableData memory sourceGateLocation = LocationTable.get(_namespace().locationTableId(), sourceGateId);
+    LocationTableData memory destGateLocation = LocationTable.get(_namespace().locationTableId(), destinationGateId);
+    uint256 maxDistance = SmartGateConfigTable.getMaxDistance(_namespace().smartGateConfigTableId(), sourceGateId);
+
     // Implement the logic to calculate the distance between two gates
-    uint256 distance = 0;
-    return distance;
+    // Calculate squared differences
+    uint256 dx = sourceGateLocation.x > destGateLocation.x
+      ? sourceGateLocation.x - destGateLocation.x
+      : destGateLocation.x - sourceGateLocation.x;
+    uint256 dy = sourceGateLocation.y > destGateLocation.y
+      ? sourceGateLocation.y - destGateLocation.y
+      : destGateLocation.y - sourceGateLocation.y;
+    uint256 dz = sourceGateLocation.z > destGateLocation.z
+      ? sourceGateLocation.z - destGateLocation.z
+      : destGateLocation.z - sourceGateLocation.z;
+
+    // Sum of squares (distance squared in meters)
+    uint256 distanceSquaredMeters = (dx * dx) + (dy * dy) + (dz * dz);
+    return distanceSquaredMeters <= maxDistance;
   }
 
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {
