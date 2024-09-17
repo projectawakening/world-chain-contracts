@@ -233,8 +233,12 @@ contract SmartGateTest is Test {
   }
 
   function tesReverttLinkSmartGates() public {
-     vm.expectRevert(
-      abi.encodeWithSelector(SmartGateSystem.SmartGate_SameSourceAndDestination.selector, sourceGateId, destinationGateId)
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartGateSystem.SmartGate_SameSourceAndDestination.selector,
+        sourceGateId,
+        destinationGateId
+      )
     );
     smartGate.linkSmartGates(sourceGateId, sourceGateId);
   }
