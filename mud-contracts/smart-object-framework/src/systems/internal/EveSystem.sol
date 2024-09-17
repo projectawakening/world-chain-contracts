@@ -42,11 +42,7 @@ contract EveSystem is System {
    * @param entityId is the id of an object or class
    * @param functionSelector is the function selector of the function to be executed
    */
-  modifier onlyAssociatedModule(
-    uint256 entityId,
-    ResourceId systemId,
-    bytes4 functionSelector
-  ) {
+  modifier onlyAssociatedModule(uint256 entityId, ResourceId systemId, bytes4 functionSelector) {
     _requireEntityRegistered(entityId);
     _requireSystemAssociatedWithModule(entityId, systemId, functionSelector);
     _;
