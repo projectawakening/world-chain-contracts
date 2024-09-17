@@ -124,14 +124,14 @@ contract SmartTurret is EveSystem, AccessModified {
   /**
    * @notice view function for turret logic based on proximity
    * @param smartTurretId is the is of the smart turret
-   * @param characterId is the character id of the owner of the smart turret
+   * @param turretOwnerCharacterId is the character id of the owner of the smart turret
    * @param priorityQueue is the queue of the SmartTurretTarget in proximity
    * @param turret is the Smart Turret object
    * @param turretTarget is the player entering the zone
    */
   function inProximity(
     uint256 smartTurretId,
-    uint256 characterId,
+    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -150,7 +150,10 @@ contract SmartTurret is EveSystem, AccessModified {
     //If smart turret is not configured, then execute the default logic
     if (!ResourceIds.getExists(systemId)) {
       //If the corp and the smart turret owner of the target turret are same, then the turret will not attack
-      uint256 smartTurretOwnerCorp = CharactersTable.getCorpId(_namespace().charactersTableId(), characterId);
+      uint256 smartTurretOwnerCorp = CharactersTable.getCorpId(
+        _namespace().charactersTableId(),
+        turretOwnerCharacterId
+      );
       uint256 turretTargetCorp = CharactersTable.getCorpId(_namespace().charactersTableId(), turretTarget.characterId);
       if (smartTurretOwnerCorp != turretTargetCorp) {
         updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
@@ -166,7 +169,7 @@ contract SmartTurret is EveSystem, AccessModified {
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(this.inProximity, (smartTurretId, characterId, priorityQueue, turret, turretTarget))
+        abi.encodeCall(this.inProximity, (smartTurretId, turretOwnerCharacterId, priorityQueue, turret, turretTarget))
       );
 
       updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
@@ -177,7 +180,7 @@ contract SmartTurret is EveSystem, AccessModified {
 
   /**
    * @param smartTurretId is the is of the smart turret
-   * @param characterId is the character id of the owner of the smart turret
+   * @param turretOwnerCharacterId is the character id of the owner of the smart turret
    * @param priorityQueue is the queue of the SmartTurretTarget in proximity
    * @param turret is the Smart Turret object
    * @param aggressor is the player attacking inside the zone
@@ -185,7 +188,7 @@ contract SmartTurret is EveSystem, AccessModified {
    */
   function aggression(
     uint256 smartTurretId,
-    uint256 characterId,
+    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,
@@ -203,18 +206,25 @@ contract SmartTurret is EveSystem, AccessModified {
     ResourceId systemId = SmartTurretConfigTable.get(_namespace().smartTurretConfigTableId(), smartTurretId);
 
     if (!ResourceIds.getExists(systemId)) {
-      //If smart turret is not configured, then execute the default logic
-      updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
-      for (uint256 i = 0; i < priorityQueue.length; i++) {
-        updatedPriorityQueue[i] = priorityQueue[i];
-      }
+      //If the corp and the smart turret owner of the target turret are same, then the turret will not attack
+      uint256 turretOwnerCorp = CharactersTable.getCorpId(_namespace().charactersTableId(), turretOwnerCharacterId);
+      uint256 aggressorCorp = CharactersTable.getCorpId(_namespace().charactersTableId(), aggressor.characterId);
 
-      //By default add the aggressor to the end of the priority queue
-      updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: aggressor, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
+      if (turretOwnerCorp != aggressorCorp) {
+        updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
+        for (uint256 i = 0; i < priorityQueue.length; i++) {
+          updatedPriorityQueue[i] = priorityQueue[i];
+        }
+
+        updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: aggressor, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
+      }
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(this.aggression, (smartTurretId, characterId, priorityQueue, turret, aggressor, victim))
+        abi.encodeCall(
+          this.aggression,
+          (smartTurretId, turretOwnerCharacterId, priorityQueue, turret, aggressor, victim)
+        )
       );
 
       updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
