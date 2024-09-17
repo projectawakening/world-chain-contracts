@@ -29,15 +29,15 @@ import { LocationModule } from "../src/modules/location/LocationModule.sol";
 import { SmartCharacterModule } from "../src/modules/smart-character/SmartCharacterModule.sol";
 import { SmartDeployableModule } from "../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployableLib } from "../src/modules/smart-deployable/SmartDeployableLib.sol";
-import { SmartDeployable } from "../src/modules/smart-deployable/systems/SmartDeployable.sol";
+import { SmartDeployableSystem } from "../src/modules/smart-deployable/systems/SmartDeployableSystem.sol";
 import { SmartStorageUnitModule } from "../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { SmartCharacterLib } from "../src/modules/smart-character/SmartCharacterLib.sol";
 import { SmartStorageUnitLib } from "../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
 
 import { InventoryModule } from "../src/modules/inventory/InventoryModule.sol";
-import { Inventory } from "../src/modules/inventory/systems/Inventory.sol";
-import { EphemeralInventory } from "../src/modules/inventory/systems/EphemeralInventory.sol";
-import { InventoryInteract } from "../src/modules/inventory/systems/InventoryInteract.sol";
+import { InventorySystem } from "../src/modules/inventory/systems/InventorySystem.sol";
+import { EphemeralInventorySystem } from "../src/modules/inventory/systems/EphemeralInventorySystem.sol";
+import { InventoryInteractSystem } from "../src/modules/inventory/systems/InventoryInteractSystem.sol";
 
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { EntityTable, EntityTableData } from "@eveworld/smart-object-framework/src/codegen/tables/EntityTable.sol";
@@ -84,16 +84,16 @@ contract PostDeploy is Script {
       deployer,
       new SmartDeployableModule(),
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
-      address(new SmartDeployable())
+      address(new SmartDeployableSystem())
     );
     _installModule(
       world,
       deployer,
       new InventoryModule(),
       FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
-      address(new Inventory()),
-      address(new EphemeralInventory()),
-      address(new InventoryInteract())
+      address(new InventorySystem()),
+      address(new EphemeralInventorySystem()),
+      address(new InventoryInteractSystem())
     );
     _installModule(world, deployer, new SmartStorageUnitModule(), FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     // register new ERC721 puppets for SmartCharacter and SmartDeployable modules

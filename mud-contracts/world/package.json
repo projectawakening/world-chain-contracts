@@ -14,18 +14,18 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && forge test -vvv",
+    "test": "tsc --noEmit && mud test --forgeOptions=-vv",
     "access-config:inventory:local": "source ./.env && PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && CHAIN_ID=$CHAIN_ID && WORLD_ADDRESS=$WORLD_ADDRESS && BASE_URI=$BASE_URI && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && forge script script/InventoryAccess.s.sol:InventoryAccess --private-key $PRIVATE_KEY --chain-id $CHAIN_ID --broadcast --rpc-url $RPC_URL  --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "access-config:inventory:devent": "source ./.env.devnet && PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && CHAIN_ID=$CHAIN_ID && WORLD_ADDRESS=$WORLD_ADDRESS && BASE_URI=$BASE_URI && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && forge script script/InventoryAccess.s.sol:InventoryAccess --private-key $PRIVATE_KEY --chain-id $CHAIN_ID --broadcast --rpc-url $RPC_URL  --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "access-config:inventory:testnet": "source ./.env.testnet && PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && CHAIN_ID=$CHAIN_ID && WORLD_ADDRESS=$WORLD_ADDRESS && BASE_URI=$BASE_URI && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && forge script script/InventoryAccess.s.sol:InventoryAccess --private-key $PRIVATE_KEY --chain-id $CHAIN_ID --broadcast --rpc-url $RPC_URL  --sig \"run(address)\" $WORLD_ADDRESS -vvv"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/world-modules": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/gas-report": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/cli": "2.2.3",
+    "@latticexyz/schema-type": "2.2.3",
+    "@latticexyz/store": "2.2.3",
+    "@latticexyz/world": "2.2.3",
+    "@latticexyz/world-modules": "2.2.3",
+    "@latticexyz/gas-report": "2.2.3",
     "@eveworld/smart-object-framework": "0.0.7",
     "@eveworld/common-constants": "0.0.12"
   },
@@ -38,8 +38,8 @@
     "prettier": "^2.6.2",
     "prettier-plugin-solidity": "1.1.3",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "2.0.0-transaction-context-98ef570f",
-    "solhint-plugin-mud": "2.0.0-transaction-context-98ef570f",
+    "solhint-config-mud": "2.2.3",
+    "solhint-plugin-mud": "2.2.3",
     "typescript": "^5.4.5"
   }
 }

@@ -10,7 +10,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { SMART_STORAGE_MODULE_NAME as MODULE_NAME, SMART_STORAGE_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 
-import { SmartStorageUnit } from "./systems/SmartStorageUnit.sol";
+import { SmartStorageUnitSystem } from "./systems/SmartStorageUnitSystem.sol";
 
 contract SmartStorageUnitModule is Module {
   error SmartStorageUnitModule_InvalidNamespace(bytes14 namespace);
@@ -66,6 +66,6 @@ contract SmartStorageUnitModuleRegistrationLibrary {
 
     //Register the systems
     if (!ResourceIds.getExists(namespace.smartStorageUnitSystemId()))
-      world.registerSystem(namespace.smartStorageUnitSystemId(), new SmartStorageUnit(), true);
+      world.registerSystem(namespace.smartStorageUnitSystemId(), new SmartStorageUnitSystem(), true);
   }
 }

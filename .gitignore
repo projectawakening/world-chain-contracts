@@ -10,6 +10,7 @@
 **/dist 
 # Worlds.json
 **/worlds.json
+.mud
 
 .nx/cache
 .DS_Store

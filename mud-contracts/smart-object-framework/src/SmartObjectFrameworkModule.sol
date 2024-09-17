@@ -109,20 +109,15 @@ contract SmartObjectFrameworkModuleRegistrationLibrary {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if (!ResourceIds.getExists(EntityAssociation._tableId))
-      EntityAssociation.register();
+    if (!ResourceIds.getExists(EntityAssociation._tableId)) EntityAssociation.register();
     if (!ResourceIds.getExists(EntityMap._tableId)) EntityMap.register();
     if (!ResourceIds.getExists(EntityTable._tableId)) EntityTable.register();
     if (!ResourceIds.getExists(EntityType._tableId)) EntityType.register();
-    if (!ResourceIds.getExists(EntityTypeAssociation._tableId))
-      EntityTypeAssociation.register();
+    if (!ResourceIds.getExists(EntityTypeAssociation._tableId)) EntityTypeAssociation.register();
     if (!ResourceIds.getExists(HookTable._tableId)) HookTable.register();
-    if (!ResourceIds.getExists(HookTargetAfter._tableId))
-      HookTargetAfter.register();
-    if (!ResourceIds.getExists(HookTargetBefore._tableId))
-      HookTargetBefore.register();
-    if (!ResourceIds.getExists(ModuleSystemLookup._tableId))
-      ModuleSystemLookup.register();
+    if (!ResourceIds.getExists(HookTargetAfter._tableId)) HookTargetAfter.register();
+    if (!ResourceIds.getExists(HookTargetBefore._tableId)) HookTargetBefore.register();
+    if (!ResourceIds.getExists(ModuleSystemLookup._tableId)) ModuleSystemLookup.register();
     if (!ResourceIds.getExists(ModuleTable._tableId)) ModuleTable.register();
 
     // Register a new Systems suite

@@ -15,16 +15,7 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: name });
   }
 
-  function accessRoleTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ACCESS_ROLE_TABLE_NAME });
-  }
-
-  function accessEnforcementTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ACCESS_ENFORCEMENT_TABLE_NAME });
-  }
-
-  function accessControlSystemId(bytes14 namespace) internal pure returns (ResourceId) {
+  function accessSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: ACCESS_SYSTEM_NAME });
   }
 }

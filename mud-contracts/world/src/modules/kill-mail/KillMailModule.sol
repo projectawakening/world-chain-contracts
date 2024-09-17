@@ -9,7 +9,7 @@ import { KillMailTable } from "../../codegen/tables/KillMailTable.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { KILL_MAIL_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
-import { KillMail } from "./systems/KillMail.sol";
+import { KillMailSystem } from "./systems/KillMailSystem.sol";
 import { Utils } from "./Utils.sol";
 
 contract KillMailModule is Module {
@@ -58,12 +58,12 @@ contract KillMailModuleRegistrationLibrary {
       world.registerNamespace(encodedNamespace);
     }
 
-    if (!ResourceIds.getExists(namespace.killMailTableId())) {
-      KillMailTable.register(namespace.killMailTableId());
+    if (!ResourceIds.getExists(KillMailTable._tableId)) {
+      KillMailTable.register();
     }
 
     if (!ResourceIds.getExists(namespace.killMailSystemId())) {
-      world.registerSystem(namespace.killMailSystemId(), new KillMail(), true);
+      world.registerSystem(namespace.killMailSystemId(), new KillMailSystem(), true);
     }
   }
 }

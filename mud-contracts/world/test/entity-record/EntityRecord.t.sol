@@ -1,63 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import "forge-std/Test.sol";
+import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
 import { World } from "@latticexyz/world/src/World.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { IWorldWithEntryContext } from "../../src/IWorldWithEntryContext.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
-import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
-import { IModule } from "@latticexyz/world/src/IModule.sol";
+import { ResourceId, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
-import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
-import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
-import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
+import { ENTITY_RECORD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/entity-record/Utils.sol";
-import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
-import { createCoreModule } from "../CreateCoreModule.sol";
 import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
-contract EntityRecordTest is Test {
+contract EntityRecordTest is MudTest {
   using Utils for bytes14;
   using EntityRecordLib for EntityRecordLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld world;
+  IWorldWithEntryContext world;
   EntityRecordLib.World entityRecord;
 
-  function setUp() public {
-    world = IBaseWorld(address(new World()));
-    world.initialize(createCoreModule());
-    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
-    StoreSwitch.setStoreAddress(address(world));
-
-    // installing SOF module (dependancy)
-    world.installModule(
-      new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntitySystem(), new HookSystem(), new ModuleSystem())
-    );
-
-    _installModule(new EntityRecordModule(), DEPLOYMENT_NAMESPACE);
+  function setUp() public override {
+    // START: DEPLOY AND REGISTER FOR EVE WORLD
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithEntryContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
 
     entityRecord = EntityRecordLib.World(world, DEPLOYMENT_NAMESPACE);
-  }
-
-  // helper function to guard against multiple module registrations on the same namespace
-  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
-  function _installModule(IModule module, bytes14 namespace) internal {
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
-    world.installModule(module, abi.encode(namespace));
   }
 
   function testSetup() public {
@@ -76,10 +50,7 @@ contract EntityRecordTest is Test {
     });
 
     entityRecord.createEntityRecord(entityId, itemId, typeId, volume);
-    EntityRecordTableData memory tableData = EntityRecordTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-      entityId
-    );
+    EntityRecordTableData memory tableData = EntityRecordTable.get(entityId);
 
     assertEq(data.itemId, tableData.itemId);
     assertEq(data.typeId, tableData.typeId);
@@ -103,10 +74,7 @@ contract EntityRecordTest is Test {
     });
 
     entityRecord.createEntityRecordOffchain(entityId, name, dappURL, description);
-    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
-      entityId
-    );
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(entityId);
 
     assertEq(data.name, tableData.name);
     assertEq(data.dappURL, tableData.dappURL);
@@ -132,10 +100,7 @@ contract EntityRecordTest is Test {
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
     entityRecord.setEntityMetadata(entityId, name, dappURL, description);
-    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
-      entityId
-    );
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(entityId);
 
     assertEq(data.name, tableData.name);
     assertEq(data.dappURL, tableData.dappURL);
@@ -149,10 +114,7 @@ contract EntityRecordTest is Test {
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
     entityRecord.setName(entityId, name);
-    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
-      entityId
-    );
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(entityId);
 
     assertEq(name, tableData.name);
   }
@@ -164,10 +126,7 @@ contract EntityRecordTest is Test {
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
     entityRecord.setDappURL(entityId, dappURL);
-    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
-      entityId
-    );
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(entityId);
 
     assertEq(dappURL, tableData.dappURL);
   }
@@ -179,10 +138,7 @@ contract EntityRecordTest is Test {
     testCreateEntityRecordOffchain(entityId, "name", "dappURL.com", "descriptive description");
 
     entityRecord.setDescription(entityId, description);
-    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(
-      DEPLOYMENT_NAMESPACE.entityRecordOffchainTableId(),
-      entityId
-    );
+    EntityRecordOffchainTableData memory tableData = EntityRecordOffchainTable.get(entityId);
 
     assertEq(description, tableData.description);
   }

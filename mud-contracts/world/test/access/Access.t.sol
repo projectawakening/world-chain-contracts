@@ -1,89 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
-// MUD World and world helpers imports
 import { World } from "@latticexyz/world/src/World.sol";
-import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { IWorldWithEntryContext } from "../../src/IWorldWithEntryContext.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
-import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
-import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
-import { IModule } from "@latticexyz/world/src/IModule.sol";
-import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { ResourceAccess } from "@latticexyz/world/src/codegen/tables/ResourceAccess.sol";
-import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
-import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
-
-import { createCoreModule } from "../CreateCoreModule.sol";
+import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 // SOF imports
-import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/EntitySystem.sol";
-import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
-import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
-import { HookType } from "@eveworld/smart-object-framework/src/types.sol";
 import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
 import { Utils as SOFUtils } from "@eveworld/smart-object-framework/src/utils.sol";
-import { HookTable, HookTargetBefore, EntityAssociation } from "@eveworld/smart-object-framework/src/codegen/index.sol";
-
-import { Utils } from "../../src/modules/entity-record/Utils.sol";
-import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
-import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
-import { createCoreModule } from "../CreateCoreModule.sol";
-import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
-import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 
 // SD & dependency imports
-import { GlobalDeployableState, DeployableState, DeployableTokenTable, DeployableFuelBalance } from "../../src/codegen/index.sol";
-import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
-import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IERC721 } from "../../src/modules/eve-erc721-puppet/IERC721.sol";
-import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
-import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
-import { LocationModule } from "../../src/modules/location/LocationModule.sol";
-import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
-import { ISmartDeployable } from "../../src/modules/smart-deployable/interfaces/ISmartDeployable.sol";
+import { ISmartDeployableSystem } from "../../src/modules/smart-deployable/interfaces/ISmartDeployableSystem.sol";
 import { EntityRecordLib } from "../../src/modules/entity-record/EntityRecordLib.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 
 //SSU & dependency imports
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
-import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
-import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
-import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
-import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
-import { IInventoryInteract } from "../../src/modules/inventory/interfaces/IInventoryInteract.sol";
-import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
-import { IInventory } from "../../src/modules/inventory/interfaces/IInventory.sol";
-import { IEphemeralInventory } from "../../src/modules/inventory/interfaces/IEphemeralInventory.sol";
+import { IInventorySystem } from "../../src/modules/inventory/interfaces/IInventorySystem.sol";
+import { IEphemeralInventorySystem } from "../../src/modules/inventory/interfaces/IEphemeralInventorySystem.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
-import { SmartStorageUnitModule } from "../../src/modules/smart-storage-unit/SmartStorageUnitModule.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
-import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
-import { DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
+
+import { ERC721Registry } from "../../src/codegen/tables/ERC721Registry.sol";
 
 // Access Control
-import { IAccessErrors } from "../../src/modules/access/interfaces/IAccessErrors.sol";
-import { IAccess } from "../../src/modules/access/interfaces/IAccess.sol";
-import { Access } from "../../src/modules/access/systems/Access.sol";
+import { IAccessSystemErrors } from "../../src/modules/access/interfaces/IAccessSystemErrors.sol";
+import { IAccessSystem } from "../../src/modules/access/interfaces/IAccessSystem.sol";
 
-import { AccessRole, AccessEnforcement } from "../../src/codegen/index.sol";
+import { AccessRole, AccessRolePerSys, AccessEnforcement } from "../../src/codegen/index.sol";
 import { MockForwarder } from "./MockForwarder.sol";
 
-import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_ENFORCEMENT_TABLE_NAME, ACCESS_SYSTEM_NAME } from "../../src/modules/access/constants.sol";
+import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE as FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_ROLE_PER_SYSTEM_TABLE_NAME, ACCESS_ENFORCEMENT_TABLE_NAME, ACCESS_SYSTEM_NAME } from "../../src/modules/access/constants.sol";
+import { ENTITY_SYSTEM_NAME, MODULE_SYSTEM_NAME, HOOK_SYSTEM_NAME } from "@eveworld/smart-object-framework/src/constants.sol";
+import { EntityMap, EntityTable, EntityType, EntityTypeAssociation, HookTargetBefore, HookTargetAfter, ModuleSystemLookup } from "@eveworld/smart-object-framework/src/codegen/index.sol";
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { ERC721_REGISTRY_TABLE_ID } from "../../src/modules/eve-erc721-puppet/constants.sol";
 
-contract AccessTest is Test {
+contract AccessTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
   using SmartObjectLib for SmartObjectLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
@@ -107,14 +70,11 @@ contract AccessTest is Test {
   address bob = vm.addr(bobPK);
   address charlie = vm.addr(charliePK);
 
-  IBaseWorld world;
+  IWorldWithEntryContext world;
 
   // SOF variables
   SmartObjectLib.World SOFInterface;
-  uint8 constant OBJECT = 1;
-  string constant OBJECT_STRING = "OBJECT";
   uint8 constant CLASS = 2;
-  string constant CLASS_STRING = "CLASS";
   uint256 sdClassId = uint256(keccak256("SD_CLASS"));
   uint256 ssuClassId = uint256(keccak256("SSU_CLASS"));
   uint256 scClassId = uint256(keccak256("SMART_CHARACTER_CLASS"));
@@ -122,15 +82,15 @@ contract AccessTest is Test {
   // Deployable variables
   EntityRecordLib.World EntityRecordInterface;
   SmartDeployableLib.World SDInterface;
-  bytes14 constant ERC721_DEPLOYABLE_NAMESPACE = "SDERC721Token";
-  IERC721Mintable erc721DeployableToken;
+  bytes14 constant ERC721_DEPLOYABLE_NAMESPACE = bytes14("erc721deploybl");
+  address erc721SmartDeployableToken;
 
   // SSU variables
   SmartStorageUnitLib.World SSUInterface;
   ResourceId SMART_STORAGE_UNIT_SYSTEM_ID =
     WorldResourceIdLib.encode({
       typeId: RESOURCE_SYSTEM,
-      namespace: EVE_WORLD_NAMESPACE,
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
       name: bytes16("SmartStorageUnit")
     });
 
@@ -138,9 +98,7 @@ contract AccessTest is Test {
 
   // inventory variables
   InventoryLib.World InventoryInterface;
-  Inventory inventory;
-  InventoryInteract interact;
-  EphemeralInventory ephemeral;
+  address interact;
 
   uint256 inventoryItemId = 12345;
   uint256 itemId = 0;
@@ -148,89 +106,67 @@ contract AccessTest is Test {
   uint256 volume = 10;
 
   // Access Control Variables
-  Access access;
   MockForwarder mockForwarder;
   ResourceId ACCESS_SYSTEM_ID =
-    WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_SYSTEM_NAME });
+    WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+      name: ACCESS_SYSTEM_NAME
+    });
 
   ResourceId MOCK_FORWARDER_SYSTEM_ID =
     WorldResourceIdLib.encode({
       typeId: RESOURCE_SYSTEM,
-      namespace: EVE_WORLD_NAMESPACE,
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
       name: bytes16("MockForwarder")
     });
 
   ResourceId ACCESS_ROLE_TABLE_ID =
-    WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ROLE_TABLE_NAME });
+    WorldResourceIdLib.encode({
+      typeId: RESOURCE_TABLE,
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+      name: ACCESS_ROLE_TABLE_NAME
+    });
+
+  ResourceId ACCESS_ROLE_PER_SYSTEM_TABLE_ID =
+    WorldResourceIdLib.encode({
+      typeId: RESOURCE_TABLE,
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
+      name: ACCESS_ROLE_PER_SYSTEM_TABLE_NAME
+    });
 
   ResourceId ACCESS_ENFORCEMENT_TABLE_ID =
     WorldResourceIdLib.encode({
       typeId: RESOURCE_TABLE,
-      namespace: EVE_WORLD_NAMESPACE,
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
       name: ACCESS_ENFORCEMENT_TABLE_NAME
     });
 
-  function setUp() public {
+  function setUp() public override {
+    vm.startPrank(deployer);
+
     // START: DEPLOY AND REGISTER FOR EVE WORLD
-    world = IBaseWorld(address(new World()));
-    world.initialize(createCoreModule());
-    StoreSwitch.setStoreAddress(address(world));
-
-    // SMART OBJECT FRAMEWORK DEPLOY AND REGISTER
-    world.installModule(
-      new SmartObjectFrameworkModule(),
-      abi.encode(EVE_WORLD_NAMESPACE, address(new EntitySystem()), address(new HookSystem()), address(new ModuleSystem()))
-    );
-
-    // SMART DEPLOYABLE DEPLOY AND REGISTER
-    _sdDependenciesDeploy(world);
-
-    GlobalDeployableState.register(EVE_WORLD_NAMESPACE.globalStateTableId());
-    DeployableState.register(EVE_WORLD_NAMESPACE.deployableStateTableId());
-    DeployableTokenTable.register(EVE_WORLD_NAMESPACE.deployableTokenTableId());
-    DeployableFuelBalance.register(EVE_WORLD_NAMESPACE.deployableFuelBalanceTableId());
-    SmartDeployable deployable = new SmartDeployable();
-    world.registerSystem(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), System(deployable), true);
-
-    // SMART STORAGE UNIT DEPLOY AND REGISTER
-    _ssuDependenciesDeploy(world);
-
-    SmartStorageUnitModule SSUMod = new SmartStorageUnitModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE), address(SSUMod));
-    world.installModule(SSUMod, abi.encode(EVE_WORLD_NAMESPACE));
-
-    // DEPLOY AND REGISTER FOR ACCESS CONTROL
-    AccessRole.register(ACCESS_ROLE_TABLE_ID);
-    AccessEnforcement.register(ACCESS_ENFORCEMENT_TABLE_ID);
-    // deploy Access System
-    access = new Access();
-    // register Access System
-    world.registerSystem(ACCESS_SYSTEM_ID, System(access), true);
-
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithEntryContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
+    // DEPLOY AND REGISTER FOR MOCK FORWARDER
     // deploy MockForwarder System
     mockForwarder = new MockForwarder();
     // register MockForwarder System
     world.registerSystem(MOCK_FORWARDER_SYSTEM_ID, System(mockForwarder), true);
-
     // END: DEPLOY AND REGISTER FOR EVE WORLD
 
     // START: WORLD CONFIGURATION
-    SOFInterface = SmartObjectLib.World(world, EVE_WORLD_NAMESPACE);
-    SDInterface = SmartDeployableLib.World(world, EVE_WORLD_NAMESPACE);
-    SSUInterface = SmartStorageUnitLib.World(world, EVE_WORLD_NAMESPACE);
-    EntityRecordInterface = EntityRecordLib.World(world, EVE_WORLD_NAMESPACE);
-    InventoryInterface = InventoryLib.World(world, EVE_WORLD_NAMESPACE);
+    SOFInterface = SmartObjectLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    SDInterface = SmartDeployableLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    SSUInterface = SmartStorageUnitLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    EntityRecordInterface = EntityRecordLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    InventoryInterface = InventoryLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
 
     // SOF setup
-    // create class and object types
-    SOFInterface.registerEntityType(CLASS, bytes32(bytes(CLASS_STRING)));
-    SOFInterface.registerEntityType(OBJECT, bytes32(bytes(OBJECT_STRING)));
-    // allow object to class tagging
-    SOFInterface.registerEntityTypeAssociation(OBJECT, CLASS);
-
     // register the SD CLASS ID as a CLASS entity
     SOFInterface.registerEntity(sdClassId, CLASS);
+
     // register the SSU CLASS ID as a CLASS entity
     SOFInterface.registerEntity(ssuClassId, CLASS);
 
@@ -238,12 +174,14 @@ contract AccessTest is Test {
     SOFInterface.registerEntity(scClassId, CLASS);
 
     // SD setup
-    // register an ERC721 for SDs
-    SDInterface.registerDeployableToken(address(erc721DeployableToken));
     // active SDs
     SDInterface.globalResume();
 
     // SSU setup
+    erc721SmartDeployableToken = ERC721Registry.get(
+      ERC721_REGISTRY_TABLE_ID,
+      WorldResourceIdLib.encodeNamespace(ERC721_DEPLOYABLE_NAMESPACE)
+    );
     // set ssu classId in the config
     SSUInterface.setSSUClassId(ssuClassId);
 
@@ -262,15 +200,30 @@ contract AccessTest is Test {
 
     // put SSU in a state to accept Items
     SDInterface.depositFuel(ssuId, 200000);
+
     SDInterface.bringOnline(ssuId);
 
     EntityRecordInterface.createEntityRecord(inventoryItemId, itemId, typeId, volume);
+
+    interact = Systems.getSystem(FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId());
     // END: WORLD CONFIGURATION
 
+    // GRANT ACCESS
     world.grantAccess(ACCESS_ROLE_TABLE_ID, deployer);
     world.grantAccess(ACCESS_ROLE_TABLE_ID, alice);
     // not bob so we have an account to test against
     world.grantAccess(ACCESS_ROLE_TABLE_ID, charlie);
+
+    world.grantAccess(ACCESS_ROLE_PER_SYSTEM_TABLE_ID, deployer);
+    world.grantAccess(ACCESS_ROLE_PER_SYSTEM_TABLE_ID, alice);
+    // not bob so we have an account to test against
+    world.grantAccess(ACCESS_ROLE_PER_SYSTEM_TABLE_ID, charlie);
+
+    world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, deployer);
+    world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, alice);
+    // not bob so we have an account to test against
+    world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, charlie);
+    vm.stopPrank();
   }
 
   function testSetup() public {
@@ -280,41 +233,74 @@ contract AccessTest is Test {
   function testSetAccessListByRole() public {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = alice;
-    address[] memory approvedAccessList = new address[](1);
-    approvedAccessList[0] = address(interact);
+
     // failure, not granted
-    vm.expectRevert(IAccessErrors.Access_AccessConfigAccessDenied.selector);
+    vm.expectRevert(IAccessSystemErrors.AccessSystem_AccessConfigDenied.selector);
     vm.prank(bob);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
+
     // success, granted
     vm.startPrank(deployer);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (APPROVED, approvedAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     vm.stopPrank();
 
     // verify table updates
-    address[] memory storedAdminAccessList = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
+    address[] memory storedAdminAccessList = AccessRole.get(ADMIN);
     assertEq(storedAdminAccessList[0], alice);
-    address[] memory storedApprovedAccessList = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
-    assertEq(storedApprovedAccessList[0], address(interact));
+  }
+
+  function testSetAccessListPerSystemByRole() public {
+    address[] memory approvedAccessList = new address[](1);
+    approvedAccessList[0] = interact;
+    // failure, not granted
+    vm.expectRevert(IAccessSystemErrors.AccessSystem_AccessConfigDenied.selector);
+    vm.prank(bob);
+    world.call(
+      ACCESS_SYSTEM_ID,
+      abi.encodeCall(
+        IAccessSystem.setAccessListPerSystemByRole,
+        (FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(), APPROVED, approvedAccessList)
+      )
+    );
+
+    // success, granted
+    vm.startPrank(deployer);
+    world.call(
+      ACCESS_SYSTEM_ID,
+      abi.encodeCall(
+        IAccessSystem.setAccessListPerSystemByRole,
+        (FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(), APPROVED, approvedAccessList)
+      )
+    );
+    vm.stopPrank();
+
+    // verify table updates
+    address[] memory storedApprovedAccessList = AccessRolePerSys.get(
+      FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(),
+      APPROVED
+    );
+    assertEq(storedApprovedAccessList[0], interact);
   }
 
   function testSetAccessEnforcement() public {
     bytes32 target = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.setInventoryCapacity.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(),
+        IInventorySystem.setInventoryCapacity.selector
+      )
     );
     // failure, not granted
-    vm.expectRevert(IAccessErrors.Access_AccessConfigAccessDenied.selector);
+    vm.expectRevert(IAccessSystemErrors.AccessSystem_AccessConfigDenied.selector);
     vm.prank(bob);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
 
     // success, granted
     vm.startPrank(deployer);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
     vm.stopPrank();
 
     // verify table updates
-    bool isEnforced = AccessEnforcement.get(ACCESS_ENFORCEMENT_TABLE_ID, target);
+    bool isEnforced = AccessEnforcement.get(target);
     assertEq(isEnforced, true);
   }
 
@@ -325,14 +311,19 @@ contract AccessTest is Test {
     // success, not enforced
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     bytes32 target = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.setInventoryCapacity.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(),
+        IInventorySystem.setInventoryCapacity.selector
+      )
     );
     // expected rejection, enforced
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, alice, bytes32(ADMIN)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, alice, bytes32(ADMIN))
+    );
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     // success, not enforced
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, false)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, false)));
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     vm.stopPrank();
   }
@@ -341,20 +332,25 @@ contract AccessTest is Test {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     bytes32 target = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.setInventoryCapacity.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(),
+        IInventorySystem.setInventoryCapacity.selector
+      )
     );
     // success, ADMIN pass
     vm.startPrank(deployer, deployer);
     // set admin
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     // enforce permission
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
     // successful call from ADMIN tx.origin
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     vm.stopPrank();
 
     // reject, not ADMIN
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, alice, bytes32(ADMIN)));
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, alice, bytes32(ADMIN))
+    );
     vm.startPrank(deployer, alice); // alice is not ADMIN
     InventoryInterface.setInventoryCapacity(ssuId, 100000000);
     vm.stopPrank();
@@ -364,16 +360,22 @@ contract AccessTest is Test {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     bytes32 target1 = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOffline.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.smartDeployableSystemId(),
+        ISmartDeployableSystem.bringOffline.selector
+      )
     );
     bytes32 target2 = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOnline.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.smartDeployableSystemId(),
+        ISmartDeployableSystem.bringOnline.selector
+      )
     );
     vm.startPrank(alice, deployer);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     // enforce permission
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target1, true)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target2, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target2, true)));
 
     // success, OWNER and ADMIN pass
     SDInterface.bringOffline(ssuId);
@@ -389,15 +391,20 @@ contract AccessTest is Test {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     bytes32 target1 = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOnline.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.smartDeployableSystemId(),
+        ISmartDeployableSystem.bringOnline.selector
+      )
     );
     vm.startPrank(charlie, charlie);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     // enforce permission
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target1, true)));
 
     // reject, not ADMIN nor OWNER
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, charlie, bytes32(ADMIN)));
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, charlie, bytes32(ADMIN))
+    );
     SDInterface.bringOnline(ssuId);
     vm.stopPrank();
   }
@@ -407,12 +414,15 @@ contract AccessTest is Test {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     bytes32 target1 = keccak256(
-      abi.encodePacked(EVE_WORLD_NAMESPACE.smartDeployableSystemId(), ISmartDeployable.bringOffline.selector)
+      abi.encodePacked(
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.smartDeployableSystemId(),
+        ISmartDeployableSystem.bringOffline.selector
+      )
     );
     vm.startPrank(charlie, deployer);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     // enforce permission
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target1, true)));
 
     // success, ADMIN only pass
     SDInterface.bringOffline(ssuId);
@@ -429,12 +439,14 @@ contract AccessTest is Test {
     adminAccessList[0] = deployer;
     bytes32 target = keccak256(abi.encodePacked(ERC721_SYSTEM_ID, IERC721.transferFrom.selector));
     vm.startPrank(charlie, deployer);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
 
     // reject, is ADMIN
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, address(0), bytes32(0)));
-    IERC721(erc721DeployableToken).transferFrom(deployer, alice, ssuId);
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(0), bytes32(0))
+    );
+    IERC721(erc721SmartDeployableToken).transferFrom(deployer, alice, ssuId);
     vm.stopPrank();
   }
 
@@ -448,12 +460,14 @@ contract AccessTest is Test {
     adminAccessList[0] = deployer;
     bytes32 target = keccak256(abi.encodePacked(ERC721_SYSTEM_ID, IERC721.transferFrom.selector));
     vm.startPrank(deployer, charlie);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
 
     // reject, is OWNER
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, address(0), bytes32(0)));
-    IERC721(erc721DeployableToken).transferFrom(deployer, alice, ssuId);
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(0), bytes32(0))
+    );
+    IERC721(erc721SmartDeployableToken).transferFrom(deployer, alice, ssuId);
     vm.stopPrank();
   }
 
@@ -467,11 +481,16 @@ contract AccessTest is Test {
     approvedAccessList[0] = address(mockForwarder);
     bytes32 target = keccak256(abi.encodePacked(ERC721_SYSTEM_ID, IERC721.transferFrom.selector));
     vm.startPrank(charlie, charlie);
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (APPROVED, approvedAccessList)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target, true)));
+    world.call(
+      ACCESS_SYSTEM_ID,
+      abi.encodeCall(IAccessSystem.setAccessListPerSystemByRole, (ERC721_SYSTEM_ID, APPROVED, approvedAccessList))
+    );
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target, true)));
 
     // reject, is APPROVED
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, address(0), bytes32(0)));
+    vm.expectRevert(
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(0), bytes32(0))
+    );
     world.call(MOCK_FORWARDER_SYSTEM_ID, abi.encodeCall(MockForwarder.callERC721, (deployer, alice, ssuId)));
     vm.stopPrank();
   }
@@ -499,17 +518,17 @@ contract AccessTest is Test {
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     address[] memory approvedAccessList = new address[](1);
-    approvedAccessList[0] = address(interact);
+    approvedAccessList[0] = interact;
     bytes32 target1 = keccak256(
       abi.encodePacked(
-        EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(),
-        IEphemeralInventory.depositToEphemeralInventory.selector
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId(),
+        IEphemeralInventorySystem.depositToEphemeralInventory.selector
       )
     );
     bytes32 target2 = keccak256(
       abi.encodePacked(
-        EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(),
-        IEphemeralInventory.withdrawFromEphemeralInventory.selector
+        FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId(),
+        IEphemeralInventorySystem.withdrawFromEphemeralInventory.selector
       )
     );
 
@@ -519,11 +538,11 @@ contract AccessTest is Test {
     InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
     InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
     // set ADMIN account
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     // enforce permissions (deposit)
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target1, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target1, true)));
     // enforce permissions (withdrawal)
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (target2, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (target2, true)));
 
     // success, is ADMIN, is EPH INV OWNER, is not APPROVED (direct call)
     // deposit
@@ -536,72 +555,39 @@ contract AccessTest is Test {
     vm.startPrank(alice, alice);
     // reject, is not ADMIN, is EPH INV OWNER, and is not APPROVED (direct call)
     // deposit
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, alice, ADMIN)); // expect ADMIN fail revert because this is a direct call
+    vm.expectRevert(abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, alice, ADMIN)); // expect ADMIN fail revert because this is a direct call
     InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
     // withdraw
-    vm.expectRevert(abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, alice, ADMIN));
+    vm.expectRevert(abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, alice, ADMIN));
     InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
 
     // set APPROVED account (only InventoryInteract)
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (APPROVED, approvedAccessList)));
+    world.call(
+      ACCESS_SYSTEM_ID,
+      abi.encodeCall(
+        IAccessSystem.setAccessListPerSystemByRole,
+        (FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(), APPROVED, approvedAccessList)
+      )
+    );
+    world.call(
+      ACCESS_SYSTEM_ID,
+      abi.encodeCall(
+        IAccessSystem.setAccessListPerSystemByRole,
+        (FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.ephemeralInventorySystemId(), APPROVED, approvedAccessList)
+      )
+    );
     // make forwarded call
-    // success, is not ADMIN, is EPH INV OWNER, is APPROVED (forwarded call)
-    // this implies EphemeralInventory.withdrawalFromEphemeralInventory and Inventory.depostiToInventory pass under APPROVED conditions
+    // success, is not ADMIN, is EPH INV OWNER, is APPROVED (forwarded call from InventoryInteract)
+    // this implies both EphemeralInventory.withdrawalFromEphemeralInventory and Inventory.depostiToInventory pass under APPROVED conditions
     InventoryInterface.ephemeralToInventoryTransfer(ssuId, outItems);
 
-    vm.expectRevert( // revert with the APPROVED fail error because this was a cross system call
-      abi.encodeWithSelector(IAccessErrors.Access_NoPermission.selector, address(mockForwarder), APPROVED)
+    vm.expectRevert( // revert with the APPROVED fail error because this was a cross system call form the Mock Forawrder (who has not been added to the APPROVED list for our systems)
+      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(mockForwarder), APPROVED)
     );
     world.call(
       MOCK_FORWARDER_SYSTEM_ID,
       abi.encodeCall(MockForwarder.openEphemeralToInventoryTransfer, (ssuId, alice, outItems))
     );
     vm.stopPrank();
-  }
-
-  function _sdDependenciesDeploy(IBaseWorld world_) internal {
-    // SD StaticData Module deployment
-    StaticDataModule StaticDataMod = new StaticDataModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE), address(StaticDataMod));
-    world_.installModule(StaticDataMod, abi.encode(EVE_WORLD_NAMESPACE));
-
-    // SD EntityRecord Module deployment
-    EntityRecordModule EntityRecordMod = new EntityRecordModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE), address(EntityRecordMod));
-    world_.installModule(EntityRecordMod, abi.encode(EVE_WORLD_NAMESPACE));
-
-    // SD Location module deployment
-    LocationModule LocMod = new LocationModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE), address(LocMod));
-    world_.installModule(LocMod, abi.encode(EVE_WORLD_NAMESPACE));
-
-    // SD ERC721 deployment
-    PuppetModule Erc721Mod = new PuppetModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(ERC721_DEPLOYABLE_NAMESPACE)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(ERC721_DEPLOYABLE_NAMESPACE), address(Erc721Mod));
-    world_.installModule(Erc721Mod, abi.encode(ERC721_DEPLOYABLE_NAMESPACE));
-
-    erc721DeployableToken = registerERC721(
-      world_,
-      ERC721_DEPLOYABLE_NAMESPACE,
-      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
-    );
-  }
-
-  function _ssuDependenciesDeploy(IBaseWorld world_) internal {
-    // SSU Inventory deployment
-    inventory = new Inventory();
-    ephemeral = new EphemeralInventory();
-    interact = new InventoryInteract();
-    InventoryModule InvMod = new InventoryModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(EVE_WORLD_NAMESPACE), address(InvMod));
-    world_.installModule(
-      InvMod,
-      abi.encode(EVE_WORLD_NAMESPACE, address(inventory), address(ephemeral), address(interact))
-    );
   }
 }

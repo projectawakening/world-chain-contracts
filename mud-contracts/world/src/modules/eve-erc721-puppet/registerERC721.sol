@@ -28,7 +28,6 @@ function registerERC721(
   if (address(erc721Module) == address(0)) {
     erc721Module = new ERC721Module();
   }
-
   // Install the ERC721 module with the provided args
   world.installModule(erc721Module, abi.encode(namespace, metadata));
 

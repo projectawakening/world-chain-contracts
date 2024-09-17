@@ -146,9 +146,7 @@ contract EveSystem is System {
     if (isEntityTagged) {
       uint256[] memory entityTagIds = EntityMap.get(entityId);
       for (uint256 i = 0; i < entityTagIds.length; i++) {
-        uint256[] memory taggedHookIds = EntityAssociation.getHookIds(
-          entityTagIds[i]
-        );
+        uint256[] memory taggedHookIds = EntityAssociation.getHookIds(entityTagIds[i]);
         hookIds = appendUint256Arrays(hookIds, taggedHookIds);
       }
     }

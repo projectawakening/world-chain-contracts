@@ -141,11 +141,7 @@ contract ModuleSystem is EveSystem {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = moduleIds.length - 1;
       if (index != lastIndex) {
-        EntityAssociation.updateModuleIds(
-          entityId,
-          index,
-          moduleIds[lastIndex]
-        );
+        EntityAssociation.updateModuleIds(entityId, index, moduleIds[lastIndex]);
       }
       EntityAssociation.popModuleIds(entityId);
     }
@@ -153,10 +149,7 @@ contract ModuleSystem is EveSystem {
 
   function _removeSystemModuleAssociation(ResourceId systemId, uint256 moduleId) internal {
     bytes32 unwrappedSystemId = ResourceId.unwrap(systemId);
-    require(
-      ModuleTable.getDoesExists(moduleId, systemId),
-      "ModuleSystem: Module not registered"
-    );
+    require(ModuleTable.getDoesExists(moduleId, systemId), "ModuleSystem: Module not registered");
     ModuleTable.deleteRecord(moduleId, systemId);
 
     //update lookup table
@@ -167,11 +160,7 @@ contract ModuleSystem is EveSystem {
       //Swap the last element to the index and pop the last element
       uint256 lastIndex = systemIds.length - 1;
       if (index != lastIndex) {
-        ModuleSystemLookup.updateSystemIds(
-          moduleId,
-          index,
-          unwrappedSystemId
-        );
+        ModuleSystemLookup.updateSystemIds(moduleId, index, unwrappedSystemId);
       }
       ModuleSystemLookup.popSystemIds(moduleId);
     }

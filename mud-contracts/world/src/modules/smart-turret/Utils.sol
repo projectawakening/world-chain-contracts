@@ -15,11 +15,6 @@ library Utils {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: name });
   }
 
-  function smartTurretConfigTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: SMART_TURRET_CONFIG_TABLE_NAME });
-  }
-
   function smartTurretSystemId(bytes14 namespace) internal pure returns (ResourceId) {
     return WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: namespace, name: SMART_TURRET_SYSTEM_NAME });
   }

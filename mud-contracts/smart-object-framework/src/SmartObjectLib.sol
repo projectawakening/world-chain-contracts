@@ -81,10 +81,7 @@ library SmartObjectLib {
 
   // HookSystem methods
   function registerHook(World memory world, ResourceId systemId, bytes4 functionId) internal {
-    world.iface.call(
-      world.namespace.hookSystemId(),
-      abi.encodeCall(IHookSystem.registerHook, (systemId, functionId))
-    );
+    world.iface.call(world.namespace.hookSystemId(), abi.encodeCall(IHookSystem.registerHook, (systemId, functionId)));
   }
 
   function addHook(

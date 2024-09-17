@@ -4,7 +4,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { Utils } from "./Utils.sol";
-import { ISmartStorageUnit } from "./interfaces/ISmartStorageUnit.sol";
+import { ISmartStorageUnitSystem } from "./interfaces/ISmartStorageUnitSystem.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition } from "./types.sol";
 import { InventoryItem } from "../inventory/types.sol";
 
@@ -37,7 +37,7 @@ library SmartStorageUnitLib {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
-        ISmartStorageUnit.createAndAnchorSmartStorageUnit,
+        ISmartStorageUnitSystem.createAndAnchorSmartStorageUnit,
         (
           smartObjectId,
           entityRecordData,
@@ -60,7 +60,7 @@ library SmartStorageUnitLib {
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.createAndDepositItemsToInventory, (smartObjectId, items))
+      abi.encodeCall(ISmartStorageUnitSystem.createAndDepositItemsToInventory, (smartObjectId, items))
     );
   }
 
@@ -73,7 +73,7 @@ library SmartStorageUnitLib {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
-        ISmartStorageUnit.createAndDepositItemsToEphemeralInventory,
+        ISmartStorageUnitSystem.createAndDepositItemsToEphemeralInventory,
         (smartObjectId, inventoryOwner, items)
       )
     );
@@ -88,14 +88,14 @@ library SmartStorageUnitLib {
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.setDeployableMetadata, (smartObjectId, name, dappURL, description))
+      abi.encodeCall(ISmartStorageUnitSystem.setDeployableMetadata, (smartObjectId, name, dappURL, description))
     );
   }
 
   function setSSUClassId(World memory world, uint256 classId) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.setSSUClassId, (classId))
+      abi.encodeCall(ISmartStorageUnitSystem.setSSUClassId, (classId))
     );
   }
 }

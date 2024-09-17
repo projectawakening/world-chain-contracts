@@ -82,7 +82,7 @@ contract LocationModuleRegistrationLibrary {
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     // Register the tables
-    if (!ResourceIds.getExists(namespace.locationTableId())) LocationTable.register(namespace.locationTableId());
+    if (!ResourceIds.getExists(LocationTable._tableId)) LocationTable.register();
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.locationSystemId()))

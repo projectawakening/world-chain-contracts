@@ -1,5 +1,5 @@
 import { defineWorld } from "@latticexyz/world";
-import constants = require("@eveworld/common-constants/src/constants.json");
+import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
 export default defineWorld({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
@@ -125,7 +125,7 @@ export default defineWorld({
      */
     HookTable: {
       schema: {
-        hookId: "uint256" ,
+        hookId: "uint256",
         isHook: "bool",
         systemId: "ResourceId",
         functionSelector: "bytes4",
@@ -137,7 +137,7 @@ export default defineWorld({
      */
     HookTargetBefore: {
       schema: {
-        hookId: "uint256" ,
+        hookId: "uint256",
         targetId: "uint256",
         hasHook: "bool",
         systemSelector: "ResourceId",
@@ -150,7 +150,7 @@ export default defineWorld({
      */
     HookTargetAfter: {
       schema: {
-        hookId: "uint256" ,
+        hookId: "uint256",
         targetId: "uint256",
         hasHook: "bool",
         systemSelector: "ResourceId",

@@ -5,33 +5,25 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
+import { IWorldWithEntryContext } from "../../../IWorldWithEntryContext.sol";
 import { ResourceAccess } from "@latticexyz/world/src/codegen/tables/ResourceAccess.sol";
 
 import { IERC721 } from "../../eve-erc721-puppet/IERC721.sol";
 import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
 import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
 
-import { AccessRole, AccessEnforcement } from "../../../codegen/index.sol";
+import { AccessRole, AccessRolePerSys, AccessEnforcement } from "../../../codegen/index.sol";
 
-import { IAccessErrors } from "../interfaces/IAccessErrors.sol";
-import { ADMIN, APPROVED, EVE_WORLD_NAMESPACE, ACCESS_ROLE_TABLE_NAME, ACCESS_ENFORCEMENT_TABLE_NAME } from "../constants.sol";
+import { IAccessSystemErrors } from "../interfaces/IAccessSystemErrors.sol";
+import { ADMIN, APPROVED } from "../constants.sol";
 
 contract AccessModified is System {
   using SmartDeployableUtils for bytes14;
-  ResourceId ACCESS_ENFORCEMENT_TABLE_ID =
-    WorldResourceIdLib.encode({
-      typeId: RESOURCE_TABLE,
-      namespace: EVE_WORLD_NAMESPACE,
-      name: ACCESS_ENFORCEMENT_TABLE_NAME
-    });
-  ResourceId ACCESS_ROLE_TABLE_ID =
-    WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ROLE_TABLE_NAME });
 
   modifier onlyAdmin() {
     // check enforcement
     if (_isEnforced()) {
-      address[] memory accessListAdmin = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
+      address[] memory accessListAdmin = AccessRole.get(ADMIN);
       bool access;
       for (uint256 i = 0; i < accessListAdmin.length; i++) {
         if (tx.origin == accessListAdmin[i]) {
@@ -40,7 +32,7 @@ contract AccessModified is System {
         }
       }
       if (!access) {
-        revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
+        revert IAccessSystemErrors.AccessSystem_NoPermission(tx.origin, ADMIN);
       }
     }
     _;
@@ -49,17 +41,21 @@ contract AccessModified is System {
   modifier onlyObjectOwner(uint256 smartObjectId) {
     // check enforcement
     if (_isEnforced()) {
-      if (IWorldKernel(_world()).initialMsgSender() != _getOwner(smartObjectId)) {
-        revert IAccessErrors.Access_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+      if (IWorldWithEntryContext(_world()).initialMsgSender() != _getOwner(smartObjectId)) {
+        revert IAccessSystemErrors.AccessSystem_NoPermission(
+          IWorldWithEntryContext(_world()).initialMsgSender(),
+          bytes32("OWNER")
+        );
       }
     }
     _;
   }
 
-  modifier onlyApproved() {
+  modifier onlySystemApproved() {
+    ResourceId systemId = SystemRegistry.get(address(this));
     // check enforcement
     if (_isEnforced()) {
-      address[] memory accessListApproved = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
+      address[] memory accessListApproved = AccessRolePerSys.get(systemId, APPROVED);
       bool access;
       for (uint256 i = 0; i < accessListApproved.length; i++) {
         if (_msgSender() == accessListApproved[i]) {
@@ -68,7 +64,7 @@ contract AccessModified is System {
         }
       }
       if (!access) {
-        revert IAccessErrors.Access_NoPermission(_msgSender(), APPROVED);
+        revert IAccessSystemErrors.AccessSystem_NoPermission(_msgSender(), APPROVED);
       }
     }
     _;
@@ -77,7 +73,7 @@ contract AccessModified is System {
   modifier onlyAdminOrObjectOwner(uint256 smartObjectId) {
     // check enforcement
     if (_isEnforced()) {
-      address[] memory accessListAdmin = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
+      address[] memory accessListAdmin = AccessRole.get(ADMIN);
       bool adminAccess;
       for (uint256 i = 0; i < accessListAdmin.length; i++) {
         if (tx.origin == accessListAdmin[i]) {
@@ -85,11 +81,14 @@ contract AccessModified is System {
           break;
         }
       }
-      if (!(adminAccess || IWorldKernel(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
+      if (!(adminAccess || IWorldWithEntryContext(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
         if (!adminAccess) {
-          revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
+          revert IAccessSystemErrors.AccessSystem_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessErrors.Access_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+          revert IAccessSystemErrors.AccessSystem_NoPermission(
+            IWorldWithEntryContext(_world()).initialMsgSender(),
+            bytes32("OWNER")
+          );
         }
       }
     }
@@ -99,7 +98,7 @@ contract AccessModified is System {
   modifier onlyAdminOrEphInvOwner(uint256 smartObjectId, address ephInvOwner) {
     // check enforcement
     if (_isEnforced()) {
-      address[] memory accessListAdmin = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
+      address[] memory accessListAdmin = AccessRole.get(ADMIN);
       bool adminAccess;
       for (uint256 i = 0; i < accessListAdmin.length; i++) {
         if (tx.origin == accessListAdmin[i]) {
@@ -107,11 +106,14 @@ contract AccessModified is System {
           break;
         }
       }
-      if (!adminAccess || IWorldKernel(_world()).initialMsgSender() != ephInvOwner) {
+      if (!adminAccess || IWorldWithEntryContext(_world()).initialMsgSender() != ephInvOwner) {
         if (!adminAccess) {
-          revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
+          revert IAccessSystemErrors.AccessSystem_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessErrors.Access_NoPermission(IWorldKernel(_world()).initialMsgSender(), bytes32("OWNER"));
+          revert IAccessSystemErrors.AccessSystem_NoPermission(
+            IWorldWithEntryContext(_world()).initialMsgSender(),
+            bytes32("OWNER")
+          );
         }
       }
     }
@@ -121,15 +123,17 @@ contract AccessModified is System {
   modifier noAccess() {
     // check enforcement
     if (_isEnforced()) {
-      revert IAccessErrors.Access_NoPermission(address(0), bytes32(0));
+      revert IAccessSystemErrors.AccessSystem_NoPermission(address(0), bytes32(0));
     }
     _;
   }
 
-  modifier onlyAdminOrApproved(uint256 smartObjectId) {
+  modifier onlyAdminOrSystemApproved(uint256 smartObjectId) {
+    ResourceId systemId = SystemRegistry.get(address(this));
+
     // check enforcement
     if (_isEnforced()) {
-      address[] memory accessListAdmin = AccessRole.get(ACCESS_ROLE_TABLE_ID, ADMIN);
+      address[] memory accessListAdmin = AccessRole.get(ADMIN);
       bool adminAccess;
 
       for (uint256 i = 0; i < accessListAdmin.length; i++) {
@@ -138,7 +142,7 @@ contract AccessModified is System {
           break;
         }
       }
-      address[] memory accessListApproved = AccessRole.get(ACCESS_ROLE_TABLE_ID, APPROVED);
+      address[] memory accessListApproved = AccessRolePerSys.get(systemId, APPROVED);
       bool approvedAccess;
       for (uint256 i = 0; i < accessListApproved.length; i++) {
         if (_msgSender() == accessListApproved[i]) {
@@ -149,9 +153,9 @@ contract AccessModified is System {
 
       if (!(adminAccess || approvedAccess)) {
         if (!adminAccess && ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0)) {
-          revert IAccessErrors.Access_NoPermission(tx.origin, ADMIN);
+          revert IAccessSystemErrors.AccessSystem_NoPermission(tx.origin, ADMIN);
         } else {
-          revert IAccessErrors.Access_NoPermission(_msgSender(), APPROVED);
+          revert IAccessSystemErrors.AccessSystem_NoPermission(_msgSender(), APPROVED);
         }
       }
     }
@@ -159,14 +163,12 @@ contract AccessModified is System {
   }
 
   function _getOwner(uint256 smartObjectId) internal returns (address owner) {
-    owner = IERC721(DeployableTokenTable.getErc721Address(EVE_WORLD_NAMESPACE.deployableTokenTableId())).ownerOf(
-      smartObjectId
-    );
+    owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
   }
 
   function _isEnforced() internal view returns (bool) {
     ResourceId systemId = SystemRegistry.get(address(this));
     bytes32 target = keccak256(abi.encodePacked(systemId, msg.sig));
-    return AccessEnforcement.get(ACCESS_ENFORCEMENT_TABLE_ID, target);
+    return AccessEnforcement.get(target);
   }
 }

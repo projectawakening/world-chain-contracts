@@ -7,7 +7,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol";
 import { SmartObjectData } from "../smart-deployable/types.sol";
 
-import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
+import { ISmartTurretSystem } from "./interfaces/ISmartTurretSystem.sol";
 import { TargetPriority, Turret, SmartTurretTarget } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
@@ -38,7 +38,7 @@ library SmartTurretLib {
     world.iface.call(
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
-        ISmartTurret.createAndAnchorSmartTurret,
+        ISmartTurretSystem.createAndAnchorSmartTurret,
         (
           smartTurretId,
           entityRecordData,
@@ -55,7 +55,7 @@ library SmartTurretLib {
   function configureSmartTurret(World memory world, uint256 smartTurretId, ResourceId systemId) internal {
     world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.configureSmartTurret, (smartTurretId, systemId))
+      abi.encodeCall(ISmartTurretSystem.configureSmartTurret, (smartTurretId, systemId))
     );
   }
 
@@ -68,7 +68,7 @@ library SmartTurretLib {
   ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.inProximity, (smartTurretId, priorityQueue, turret, turretTarget))
+      abi.encodeCall(ISmartTurretSystem.inProximity, (smartTurretId, priorityQueue, turret, turretTarget))
     );
     return abi.decode(data, (TargetPriority[]));
   }
@@ -83,7 +83,7 @@ library SmartTurretLib {
   ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.aggression, (smartTurretId, priorityQueue, turret, aggressor, victim))
+      abi.encodeCall(ISmartTurretSystem.aggression, (smartTurretId, priorityQueue, turret, aggressor, victim))
     );
     return abi.decode(data, (TargetPriority[]));
   }

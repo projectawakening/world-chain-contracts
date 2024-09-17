@@ -27,7 +27,7 @@ contract MockForwarder is EveSystem {
 
   bytes14 constant EVE_WORLD_NAMESPACE = "eveworld";
 
-  bytes14 constant ERC721_DEPLOYABLE_NAMESPACE = "SDERC721Token";
+  bytes14 constant ERC721_DEPLOYABLE_NAMESPACE = "erc721deploybl";
 
   ResourceId ERC721_SYSTEM_ID =
     WorldResourceIdLib.encode({
@@ -46,22 +46,14 @@ contract MockForwarder is EveSystem {
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public {
-    address owner = IERC721(DeployableTokenTable.getErc721Address(EVE_WORLD_NAMESPACE.deployableTokenTableId()))
-      .ownerOf(smartObjectId);
+    address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
 
     // check if ephemeralInventoryOwner has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
       InventoryItem memory item = items[i];
 
       if (
-        EphemeralInvItemTable
-          .get(
-            EVE_WORLD_NAMESPACE.ephemeralInventoryItemTableId(),
-            smartObjectId,
-            item.inventoryItemId,
-            ephemeralInventoryOwner
-          )
-          .quantity < item.quantity
+        EphemeralInvItemTable.get(smartObjectId, item.inventoryItemId, ephemeralInventoryOwner).quantity < item.quantity
       ) {
         revert IInventoryErrors.Inventory_InvalidItemQuantity(
           "InventoryInteract: Not enough items to transfer",

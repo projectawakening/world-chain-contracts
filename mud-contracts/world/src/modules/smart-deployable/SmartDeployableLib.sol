@@ -6,7 +6,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { State, SmartObjectData, SmartAssemblyType } from "./types.sol";
 import { Utils } from "./Utils.sol";
-import { ISmartDeployable } from "./interfaces/ISmartDeployable.sol";
+import { ISmartDeployableSystem } from "./interfaces/ISmartDeployableSystem.sol";
 
 import { LocationTableData } from "../../codegen/tables/LocationTable.sol";
 
@@ -35,7 +35,7 @@ library SmartDeployableLib {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
       abi.encodeCall(
-        ISmartDeployable.registerDeployable,
+        ISmartDeployableSystem.registerDeployable,
         (entityId, smartObjectData, fuelUnitVolumeInWei, fuelConsumptionPerMinuteInWei, fuelMaxCapacityInWei)
       )
     );
@@ -44,55 +44,61 @@ library SmartDeployableLib {
   function setSmartAssemblyType(World memory world, uint256 entityId, SmartAssemblyType smartAssemblyType) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.setSmartAssemblyType, (entityId, smartAssemblyType))
+      abi.encodeCall(ISmartDeployableSystem.setSmartAssemblyType, (entityId, smartAssemblyType))
     );
   }
 
   function registerDeployableToken(World memory world, address tokenAddress) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.registerDeployableToken, (tokenAddress))
+      abi.encodeCall(ISmartDeployableSystem.registerDeployableToken, (tokenAddress))
     );
   }
 
   function destroyDeployable(World memory world, uint256 entityId) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.destroyDeployable, (entityId))
+      abi.encodeCall(ISmartDeployableSystem.destroyDeployable, (entityId))
     );
   }
 
   function bringOnline(World memory world, uint256 entityId) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.bringOnline, (entityId))
+      abi.encodeCall(ISmartDeployableSystem.bringOnline, (entityId))
     );
   }
 
   function bringOffline(World memory world, uint256 entityId) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.bringOffline, (entityId))
+      abi.encodeCall(ISmartDeployableSystem.bringOffline, (entityId))
     );
   }
 
   function anchor(World memory world, uint256 entityId, LocationTableData memory location) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.anchor, (entityId, location))
+      abi.encodeCall(ISmartDeployableSystem.anchor, (entityId, location))
     );
   }
 
   function unanchor(World memory world, uint256 entityId) internal {
-    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.unanchor, (entityId)));
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployableSystem.unanchor, (entityId))
+    );
   }
 
   function globalPause(World memory world) internal {
-    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalPause, ()));
+    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployableSystem.globalPause, ()));
   }
 
   function globalResume(World memory world) internal {
-    world.iface.call(world.namespace.smartDeployableSystemId(), abi.encodeCall(ISmartDeployable.globalResume, ()));
+    world.iface.call(
+      world.namespace.smartDeployableSystemId(),
+      abi.encodeCall(ISmartDeployableSystem.globalResume, ())
+    );
   }
 
   function setFuelConsumptionPerMinute(
@@ -102,42 +108,42 @@ library SmartDeployableLib {
   ) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.setFuelConsumptionPerMinute, (entityId, fuelConsumptionPerMinuteInWei))
+      abi.encodeCall(ISmartDeployableSystem.setFuelConsumptionPerMinute, (entityId, fuelConsumptionPerMinuteInWei))
     );
   }
 
   function setFuelMaxCapacity(World memory world, uint256 entityId, uint256 capacityInWei) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.setFuelMaxCapacity, (entityId, capacityInWei))
+      abi.encodeCall(ISmartDeployableSystem.setFuelMaxCapacity, (entityId, capacityInWei))
     );
   }
 
   function depositFuel(World memory world, uint256 entityId, uint256 unitAmount) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.depositFuel, (entityId, unitAmount))
+      abi.encodeCall(ISmartDeployableSystem.depositFuel, (entityId, unitAmount))
     );
   }
 
   function withdrawFuel(World memory world, uint256 entityId, uint256 unitAmount) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.withdrawFuel, (entityId, unitAmount))
+      abi.encodeCall(ISmartDeployableSystem.withdrawFuel, (entityId, unitAmount))
     );
   }
 
   function updateFuel(World memory world, uint256 entityId) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.updateFuel, (entityId))
+      abi.encodeCall(ISmartDeployableSystem.updateFuel, (entityId))
     );
   }
 
   function currentFuelAmount(World memory world, uint256 entityId) internal returns (uint256 amount) {
     bytes memory returnData = world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.currentFuelAmount, (entityId))
+      abi.encodeCall(ISmartDeployableSystem.currentFuelAmount, (entityId))
     );
     return abi.decode(returnData, (uint256));
   }
@@ -145,7 +151,7 @@ library SmartDeployableLib {
   function currentFuelAmountInWei(World memory world, uint256 entityId) internal returns (uint256 amount) {
     bytes memory returnData = world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployable.currentFuelAmountInWei, (entityId))
+      abi.encodeCall(ISmartDeployableSystem.currentFuelAmountInWei, (entityId))
     );
     return abi.decode(returnData, (uint256));
   }

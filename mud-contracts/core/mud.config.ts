@@ -1,18 +1,38 @@
-import { mudConfig } from "@latticexyz/world/register";
+import { defineWorld } from "@latticexyz/world";
+import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
-export default mudConfig({
+export default defineWorld({
+  namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
+  deploy: {
+    customWorld: {
+      sourcePath: "src/WorldWithEntryContext.sol",
+      name: "WorldWithEntryContext",
+    },
+  },
+  systems: {
+    DelegationControlSystem: {
+      name: "DelegationContro",
+      openAccess: true,
+    },
+    ForwarderSystem: {
+      name: "ForwarderSystem",
+      openAccess: true,
+    },
+  },
   tables: {
     GlobalStaticData: {
-      keySchema: {
+      schema: {
         trustedForwarder: "address",
+        value: "bool"
       },
-      valueSchema: "bool",
+      key: ["trustedForwarder"]
     },
     Role: {
-      keySchema: {
+      schema: {
         role: "bytes32",
+        value: "address"
       },
-      valueSchema: "address",
+      key: ["role"]
     },
   },
 });

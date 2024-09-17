@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import "forge-std/Test.sol";
+import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
 import { World } from "@latticexyz/world/src/World.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { IWorldWithEntryContext } from "../../src/IWorldWithEntryContext.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
@@ -29,27 +29,25 @@ import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInv
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
-import { EphemeralInventory } from "../../src/modules/inventory/systems/EphemeralInventory.sol";
-import { InventoryInteract } from "../../src/modules/inventory/systems/InventoryInteract.sol";
+import { EphemeralInventorySystem } from "../../src/modules/inventory/systems/EphemeralInventorySystem.sol";
+import { InventoryInteractSystem } from "../../src/modules/inventory/systems/InventoryInteractSystem.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
-import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
-import { Inventory } from "../../src/modules/inventory/systems/Inventory.sol";
+import { InventorySystem } from "../../src/modules/inventory/systems/InventorySystem.sol";
 import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
 import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
 import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 import { LocationModule } from "../../src/modules/location/LocationModule.sol";
 import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
-import { SmartDeployable } from "../../src/modules/smart-deployable/systems/SmartDeployable.sol";
+import { SmartDeployableSystem } from "../../src/modules/smart-deployable/systems/SmartDeployableSystem.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
-import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { createCoreModule } from "../CreateCoreModule.sol";
 
-contract EphemeralInventoryTest is Test {
+contract EphemeralInventoryTest is MudTest {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
   using EntityRecordUtils for bytes14;
@@ -57,82 +55,36 @@ contract EphemeralInventoryTest is Test {
   using SmartDeployableLib for SmartDeployableLib.World;
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld world;
-  IERC721Mintable erc721DeployableToken;
+  IWorldWithEntryContext world;
   InventoryLib.World ephemeralInventory;
   SmartDeployableLib.World smartDeployable;
   InventoryModule inventoryModule;
 
-  bytes14 constant ERC721_DEPLOYABLE = "DeployableTokn";
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
 
-  function setUp() public {
-    world = IBaseWorld(address(new World()));
-    world.initialize(createCoreModule());
-    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
-    StoreSwitch.setStoreAddress(address(world));
+  function setUp() public override {
+    vm.startPrank(deployer);
+    // START: DEPLOY AND REGISTER FOR EVE WORLD
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithEntryContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
 
-    // installing SOF & other modules (SmartCharacterModule dependancies)
-    world.installModule(
-      new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntitySystem(), new HookSystem(), new ModuleSystem())
-    );
-    // install module dependancies
-    _installModule(new PuppetModule(), 0);
-    _installModule(new StaticDataModule(), STATIC_DATA_DEPLOYMENT_NAMESPACE);
-    _installModule(new EntityRecordModule(), ENTITY_RECORD_DEPLOYMENT_NAMESPACE);
-    _installModule(new LocationModule(), LOCATION_DEPLOYMENT_NAMESPACE);
-
-    erc721DeployableToken = registerERC721(
-      world,
-      ERC721_DEPLOYABLE,
-      StaticDataGlobalTableData({ name: "SmartDeployable", symbol: "SD", baseURI: "" })
-    );
-    // install SmartDeployableModule
-    SmartDeployableModule deployableModule = new SmartDeployableModule();
-    if (
-      NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE)) ==
-      address(this)
-    )
-      world.transferOwnership(
-        WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE),
-        address(deployableModule)
-      );
-    world.installModule(deployableModule, abi.encode(SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, new SmartDeployable()));
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
-    smartDeployable.registerDeployableToken(address(erc721DeployableToken));
     smartDeployable.globalResume();
-
-    // Inventory Module installation
-    inventoryModule = new InventoryModule();
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE)) == address(this))
-      world.transferOwnership(
-        WorldResourceIdLib.encodeNamespace(INVENTORY_DEPLOYMENT_NAMESPACE),
-        address(inventoryModule)
-      );
-
-    world.installModule(
-      inventoryModule,
-      abi.encode(INVENTORY_DEPLOYMENT_NAMESPACE, new Inventory(), new EphemeralInventory(), new InventoryInteract())
-    );
 
     ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
 
     //Mock Item creation
     // Note: this only works because the test contract currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4235, 4235, 12, 100, true);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4236, 4236, 12, 200, true);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 4237, 4237, 12, 150, true);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8235, 8235, 12, 100, true);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8236, 8236, 12, 200, true);
-    EntityRecordTable.set(ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(), 8237, 8237, 12, 150, true);
-  }
-
-  // helper function to guard against multiple module registrations on the same namespace
-  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
-  function _installModule(IModule module, bytes14 namespace) internal {
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
-    world.installModule(module, abi.encode(namespace));
+    EntityRecordTable.set(4235, 4235, 12, 100, true);
+    EntityRecordTable.set(4236, 4236, 12, 200, true);
+    EntityRecordTable.set(4237, 4237, 12, 150, true);
+    EntityRecordTable.set(8235, 8235, 12, 100, true);
+    EntityRecordTable.set(8236, 8236, 12, 200, true);
+    EntityRecordTable.set(8237, 8237, 12, 150, true);
+    vm.stopPrank();
   }
 
   function testSetup() public {
@@ -143,9 +95,8 @@ contract EphemeralInventoryTest is Test {
 
   function testSetDeployableStateToValid(uint256 smartObjectId) public {
     vm.assume(smartObjectId != 0);
-
+    vm.startPrank(deployer);
     DeployableState.set(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
       smartObjectId,
       DeployableStateData({
         createdAt: block.timestamp,
@@ -157,25 +108,17 @@ contract EphemeralInventoryTest is Test {
         updatedBlockTime: block.timestamp
       })
     );
+    vm.stopPrank();
   }
 
   function testSetEphemeralInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-
-    DeployableState.setCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId,
-      State.ONLINE
-    );
+    vm.startPrank(deployer);
+    DeployableState.setCurrentState(smartObjectId, State.ONLINE);
+    vm.stopPrank();
     ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
-    assertEq(
-      EphemeralInvCapacityTable.getCapacity(
-        INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvCapacityTableId(),
-        smartObjectId
-      ),
-      storageCapacity
-    );
+    assertEq(EphemeralInvCapacityTable.getCapacity(smartObjectId), storageCapacity);
   }
 
   function testRevertSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
@@ -184,7 +127,7 @@ contract EphemeralInventoryTest is Test {
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidCapacity.selector,
-        "InventoryEphemeralSystem: storage capacity cannot be 0"
+        "EphemeralInventorySystem: storage capacity cannot be 0"
       )
     );
     ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
@@ -204,21 +147,13 @@ contract EphemeralInventoryTest is Test {
 
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
-    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
     uint256 capacityBeforeDeposit = inventoryTableData.usedCapacity;
     uint256 capacityAfterDeposit = 0;
 
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
 
-    inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
 
     //Check weather the items are stored in the inventory table
     for (uint256 i = 0; i < items.length; i++) {
@@ -227,31 +162,24 @@ contract EphemeralInventoryTest is Test {
       assertEq(inventoryTableData.items[i], items[i].inventoryItemId);
     }
 
-    inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
     assert(capacityBeforeDeposit < capacityAfterDeposit);
 
     assertEq(inventoryTableData.items.length, 3);
 
     EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
       owner
     );
 
     EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[1].inventoryItemId,
       owner
     );
 
     EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[2].inventoryItemId,
       owner
@@ -261,7 +189,6 @@ contract EphemeralInventoryTest is Test {
     assertEq(inventoryItem2.quantity, items[1].quantity);
     assertEq(inventoryItem3.quantity, items[2].quantity);
 
-    // console.log(inventoryItem1.index);
     assertEq(inventoryItem1.index, 0);
     assertEq(inventoryItem2.index, 1);
     assertEq(inventoryItem3.index, 2);
@@ -289,19 +216,16 @@ contract EphemeralInventoryTest is Test {
     //check the increase in quantity
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
     EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
       items[0].owner
     );
     EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[1].inventoryItemId,
       items[1].owner
     );
     EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[2].inventoryItemId,
       items[2].owner
@@ -310,9 +234,7 @@ contract EphemeralInventoryTest is Test {
     assertEq(inventoryItem2.quantity, items[1].quantity * 2);
     assertEq(inventoryItem3.quantity, items[2].quantity * 2);
 
-    uint256 itemsLength = EphemeralInvTable
-      .getItems(INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(), smartObjectId, owner)
-      .length;
+    uint256 itemsLength = EphemeralInvTable.getItems(smartObjectId, owner).length;
     assertEq(itemsLength, 3);
 
     assertEq(inventoryItem1.index, 0);
@@ -331,7 +253,7 @@ contract EphemeralInventoryTest is Test {
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InsufficientCapacity.selector,
-        "InventoryEphemeralSystem: insufficient capacity",
+        "EphemeralInventorySystem: insufficient capacity",
         storageCapacity,
         items[0].volume * items[0].quantity
       )
@@ -353,14 +275,11 @@ contract EphemeralInventoryTest is Test {
     items[0] = InventoryItem(8235, owner, 8235, 0, 1, 3);
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
 
-    uint256 itemsLength = EphemeralInvTable
-      .getItems(INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(), smartObjectId, owner)
-      .length;
+    uint256 itemsLength = EphemeralInvTable.getItems(smartObjectId, owner).length;
     // ALTHOUGH THIS LITLERALLY RETURNS THE VALUE 4 EVERY SINGLE TIME, this assertion fails for me, so I'm commenting out for now
     assertEq(itemsLength, 4);
 
     EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
       items[0].owner
@@ -372,17 +291,10 @@ contract EphemeralInventoryTest is Test {
     items[0] = InventoryItem(8235, differentOwner, 8235, 0, 1, 3);
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, differentOwner, items);
 
-    itemsLength = EphemeralInvTable
-      .getItems(INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(), smartObjectId, differentOwner)
-      .length;
+    itemsLength = EphemeralInvTable.getItems(smartObjectId, differentOwner).length;
     assertEq(itemsLength, 1);
 
-    inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
-      smartObjectId,
-      items[0].inventoryItemId,
-      items[0].owner
-    );
+    inventoryItem1 = EphemeralInvItemTable.get(smartObjectId, items[0].inventoryItemId, items[0].owner);
     assertEq(inventoryItem1.index, 0);
   }
 
@@ -398,11 +310,7 @@ contract EphemeralInventoryTest is Test {
     items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
     items[2] = InventoryItem(4237, owner, 4237, 0, 150, 1);
 
-    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
 
     uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
     uint256 capacityAfterWithdrawal = 0;
@@ -414,11 +322,7 @@ contract EphemeralInventoryTest is Test {
       capacityAfterWithdrawal += itemVolume;
     }
 
-    inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
     assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - capacityAfterWithdrawal);
 
     uint256[] memory existingItems = inventoryTableData.items;
@@ -428,19 +332,16 @@ contract EphemeralInventoryTest is Test {
 
     //Check weather the items quantity is reduced
     EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
       items[0].owner
     );
     EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[1].inventoryItemId,
       items[1].owner
     );
     EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[2].inventoryItemId,
       items[2].owner
@@ -466,11 +367,7 @@ contract EphemeralInventoryTest is Test {
     items[1] = InventoryItem(4236, owner, 4236, 0, 200, 2);
     items[2] = InventoryItem(4237, owner, 4237, 0, 150, 2);
 
-    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
 
     uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
     uint256 capacityAfterWithdrawal = 0;
@@ -482,11 +379,7 @@ contract EphemeralInventoryTest is Test {
       capacityAfterWithdrawal += itemVolume;
     }
 
-    inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
     assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - capacityAfterWithdrawal);
 
     uint256[] memory existingItems = inventoryTableData.items;
@@ -494,19 +387,16 @@ contract EphemeralInventoryTest is Test {
 
     //Check weather the items quantity is reduced
     EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[0].inventoryItemId,
       items[0].owner
     );
     EphemeralInvItemTableData memory inventoryItem2 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[1].inventoryItemId,
       items[1].owner
     );
     EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       items[2].inventoryItemId,
       items[2].owner
@@ -522,11 +412,7 @@ contract EphemeralInventoryTest is Test {
     vm.assume(owner != address(0));
     testWithdrawFromEphemeralInventory(smartObjectId, storageCapacity, owner);
 
-    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
     uint256[] memory existingItems = inventoryTableData.items;
     assertEq(existingItems.length, 2);
 
@@ -539,18 +425,8 @@ contract EphemeralInventoryTest is Test {
     uint256 itemId1 = uint256(4235);
     uint256 itemId3 = uint256(4237);
 
-    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
-      smartObjectId,
-      itemId1,
-      owner
-    );
-    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
-      smartObjectId,
-      itemId3,
-      owner
-    );
+    EphemeralInvItemTableData memory inventoryItem1 = EphemeralInvItemTable.get(smartObjectId, itemId1, owner);
+    EphemeralInvItemTableData memory inventoryItem3 = EphemeralInvItemTable.get(smartObjectId, itemId3, owner);
 
     assertEq(inventoryItem1.quantity, 2);
     assertEq(inventoryItem3.quantity, 0);
@@ -558,11 +434,7 @@ contract EphemeralInventoryTest is Test {
     assertEq(inventoryItem1.index, 0);
     assertEq(inventoryItem3.index, 0);
 
-    existingItems = EphemeralInvTable.getItems(
-      INVENTORY_DEPLOYMENT_NAMESPACE.ephemeralInvTableId(),
-      smartObjectId,
-      owner
-    );
+    existingItems = EphemeralInvTable.getItems(smartObjectId, owner);
     assertEq(existingItems.length, 1);
   }
 
@@ -582,7 +454,7 @@ contract EphemeralInventoryTest is Test {
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InvalidQuantity.selector,
-        "InventoryEphemeralSystem: invalid quantity",
+        "EphemeralInventorySystem: invalid quantity",
         3,
         items[0].quantity
       )

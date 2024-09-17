@@ -16,7 +16,7 @@ import { DeployableState } from "../../codegen/tables/DeployableState.sol";
 import { DeployableFuelBalance } from "../../codegen/tables/DeployableFuelBalance.sol";
 import { DeployableTokenTable } from "../../codegen/tables/DeployableTokenTable.sol";
 
-import { SmartDeployable } from "./systems/SmartDeployable.sol";
+import { SmartDeployableSystem } from "./systems/SmartDeployableSystem.sol";
 
 contract SmartDeployableModule is Module {
   error SmartDeployableModule_InvalidNamespace(bytes14 namespace);
@@ -84,14 +84,10 @@ contract SmartDeployableModuleRegistrationLibrary {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if (!ResourceIds.getExists(namespace.globalStateTableId()))
-      GlobalDeployableState.register(namespace.globalStateTableId());
-    if (!ResourceIds.getExists(namespace.deployableStateTableId()))
-      DeployableState.register(namespace.deployableStateTableId());
-    if (!ResourceIds.getExists(namespace.deployableTokenTableId()))
-      DeployableTokenTable.register(namespace.deployableTokenTableId());
-    if (!ResourceIds.getExists(namespace.deployableFuelBalanceTableId()))
-      DeployableFuelBalance.register(namespace.deployableFuelBalanceTableId());
+    if (!ResourceIds.getExists(GlobalDeployableState._tableId)) GlobalDeployableState.register();
+    if (!ResourceIds.getExists(DeployableState._tableId)) DeployableState.register();
+    if (!ResourceIds.getExists(DeployableTokenTable._tableId)) DeployableTokenTable.register();
+    if (!ResourceIds.getExists(DeployableFuelBalance._tableId)) DeployableFuelBalance.register();
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartDeployableSystemId()))

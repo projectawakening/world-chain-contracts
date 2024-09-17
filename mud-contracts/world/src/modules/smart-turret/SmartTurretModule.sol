@@ -11,7 +11,7 @@ import { SMART_TURRET_MODULE_NAME as MODULE_NAME, SMART_TURRET_MODULE_NAMESPACE 
 import { Utils } from "./Utils.sol";
 
 import { SmartTurretConfigTable } from "../../codegen/tables/SmartTurretConfigTable.sol";
-import { SmartTurret } from "./systems/SmartTurret.sol";
+import { SmartTurretSystem } from "./systems/SmartTurretSystem.sol";
 
 contract SmartTurretModule is Module {
   error SmartTurretModule_InvalidNamespace(bytes14 namespace);
@@ -79,11 +79,10 @@ contract SmartTurretModuleRegistrationLibrary {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if (!ResourceIds.getExists(namespace.smartTurretConfigTableId()))
-      SmartTurretConfigTable.register(namespace.smartTurretConfigTableId());
+    if (!ResourceIds.getExists(SmartTurretConfigTable._tableId)) SmartTurretConfigTable.register();
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartTurretSystemId()))
-      world.registerSystem(namespace.smartTurretSystemId(), new SmartTurret(), true);
+      world.registerSystem(namespace.smartTurretSystemId(), new SmartTurretSystem(), true);
   }
 }

@@ -112,7 +112,10 @@ contract EntitySystem is EveSystem {
 
   function _registerEntityType(uint8 entityTypeId, bytes32 entityType) internal {
     if (EntityType.getDoesExists(entityTypeId) == true)
-      revert ICustomErrorSystem.EntityTypeAlreadyRegistered(entityTypeId, "EntitySystem: EntityType already registered");
+      revert ICustomErrorSystem.EntityTypeAlreadyRegistered(
+        entityTypeId,
+        "EntitySystem: EntityType already registered"
+      );
 
     EntityType.set(entityTypeId, true, entityType);
   }
