@@ -11,7 +11,7 @@
 - update smart character creation (Breaking Change in interface)
   - added corpId to `createCharacter` function
   - added function to update corpId
-
+  
 ## 0.0.10
 
 ### Patch Changes

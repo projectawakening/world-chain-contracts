@@ -254,7 +254,7 @@ contract AccessTest is Test {
       SmartObjectData({ owner: alice, tokenURI: "test" }),
       WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) }),
       1e18, // fuelUnitVolume,
-      1, // fuelConsumptionPerMinute,
+      1, // fuelConsumptionIntervalInSeconds,
       1000000 * 1e18, //fuelMaxCapacity,
       100000000, // storageCapacity,
       100000000000 // ephemeralStorageCapacity

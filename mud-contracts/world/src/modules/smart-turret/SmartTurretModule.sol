@@ -26,14 +26,7 @@ contract SmartTurretModule is Module {
     return super.supportsInterface(interfaceId);
   }
 
-  function _requireDependencies() internal view {
-    // Require other modules to be installed
-    // (not the case here)
-    //
-    // if (!isInstalled(bytes16("MODULE_NAME"), new bytes(0))) {
-    //   revert Module_MissingDependency(string(bytes.concat("MODULE_NAME")));
-    // }
-  }
+  function _requireDependencies() internal view {}
 
   function install(bytes memory encodedArgs) public {
     // Require the module to not be installed with these args yet

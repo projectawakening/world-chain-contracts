@@ -26,6 +26,7 @@ interface ISmartTurret {
 
   function inProximity(
     uint256 smartTurretId,
+    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -33,6 +34,7 @@ interface ISmartTurret {
 
   function aggression(
     uint256 smartTurretId,
+    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,
