@@ -11,6 +11,7 @@ contract SmartTurretCustomMock is System {
 
   function inProximity(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -26,6 +27,7 @@ contract SmartTurretCustomMock is System {
 
   function aggression(
     uint256 smartTurretId,
+    uint256 characterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,

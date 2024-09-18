@@ -29,14 +29,14 @@ library SmartDeployableLib {
     uint256 entityId,
     SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolumeInWei,
-    uint256 fuelConsumptionPerMinuteInWei,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacityInWei
   ) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
       abi.encodeCall(
         ISmartDeployableSystem.registerDeployable,
-        (entityId, smartObjectData, fuelUnitVolumeInWei, fuelConsumptionPerMinuteInWei, fuelMaxCapacityInWei)
+        (entityId, smartObjectData, fuelUnitVolumeInWei, fuelConsumptionIntervalInSeconds, fuelMaxCapacityInWei)
       )
     );
   }
@@ -104,11 +104,11 @@ library SmartDeployableLib {
   function setFuelConsumptionPerMinute(
     World memory world,
     uint256 entityId,
-    uint256 fuelConsumptionPerMinuteInWei
+    uint256 fuelConsumptionIntervalInSeconds
   ) internal {
     world.iface.call(
       world.namespace.smartDeployableSystemId(),
-      abi.encodeCall(ISmartDeployableSystem.setFuelConsumptionPerMinute, (entityId, fuelConsumptionPerMinuteInWei))
+      abi.encodeCall(ISmartDeployableSystem.setFuelConsumptionPerMinute, (entityId, fuelConsumptionIntervalInSeconds))
     );
   }
 

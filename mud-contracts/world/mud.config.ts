@@ -376,7 +376,7 @@ export default defineWorld({
         destinationGateId: "uint256",
         isLinked: "bool",
       },
-      key: ["sourceGateId", "destinationGateId"],
+      key: ["sourceGateId"],
     },
 
     /************************

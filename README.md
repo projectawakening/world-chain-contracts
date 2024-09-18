@@ -1,8 +1,8 @@
 # World Chain Contracts
 
-![Project Awakening cover logo](./ProjectAwakeningCover.png)
+![EVE Frontier cover logo](./EVEFrontierCover.png)
 
-This repository contains the smart contract code supporting Project Awakening and targeted for deployment to the world chain. It contains of two separate code paths. The standard contracts are plain solidity contracts intended as support structure. The mud contracts are the functionality or *business logic* itself.
+This repository contains the smart contract code supporting EVE Frontier and targeted for deployment to the world chain. It contains of two separate code paths. The standard contracts are plain solidity contracts intended as support structure. The mud contracts are the functionality or *business logic* itself.
 
 # Quickstart
 
@@ -32,7 +32,7 @@ In the example above the method being invoked belongs to a system in the root na
 
 # Running with docker
 
-You can also run a deployer image for the Awakening world against a local node to replicate the world in a local environment.
+You can also run a deployer image for the EVE Frontier world against a local node to replicate the world in a local environment.
 
 Pull the latest released docker image: Current version [0.0.7](https://github.com/projectawakening/world-chain-contracts/pkgs/container/world-chain-deployer-image/220295954?tag=0.0.7)
 ```bash
@@ -57,7 +57,7 @@ This gives you immediate acccess to the ABIs for the world which you can run abi
 
 The development stack consists of:
 
-- An anvil node for etherum local development
+- An anvil node for ethereum local development
 - Scripts deploying a mud world and all or selected modules for developments
 
 We are running the anvil node explicitly ourselves for three reasons:

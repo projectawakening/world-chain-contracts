@@ -24,12 +24,12 @@ library SmartStorageUnitLib {
 
   function createAndAnchorSmartStorageUnit(
     World memory world,
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
@@ -39,12 +39,12 @@ library SmartStorageUnitLib {
       abi.encodeCall(
         ISmartStorageUnitSystem.createAndAnchorSmartStorageUnit,
         (
-          smartObjectId,
+          smartStorageUnitId,
           entityRecordData,
           smartObjectData,
           worldPosition,
           fuelUnitVolume,
-          fuelConsumptionPerMinute,
+          fuelConsumptionIntervalInSeconds,
           fuelMaxCapacity,
           storageCapacity,
           ephemeralStorageCapacity
@@ -55,18 +55,18 @@ library SmartStorageUnitLib {
 
   function createAndDepositItemsToInventory(
     World memory world,
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     InventoryItem[] memory items
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnitSystem.createAndDepositItemsToInventory, (smartObjectId, items))
+      abi.encodeCall(ISmartStorageUnitSystem.createAndDepositItemsToInventory, (smartStorageUnitId, items))
     );
   }
 
   function createAndDepositItemsToEphemeralInventory(
     World memory world,
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     address inventoryOwner,
     InventoryItem[] memory items
   ) internal {
@@ -74,7 +74,7 @@ library SmartStorageUnitLib {
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
         ISmartStorageUnitSystem.createAndDepositItemsToEphemeralInventory,
-        (smartObjectId, inventoryOwner, items)
+        (smartStorageUnitId, inventoryOwner, items)
       )
     );
   }

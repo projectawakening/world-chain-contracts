@@ -27,7 +27,7 @@ import { EphemeralInvItemTable, EphemeralInvItemTableData } from "./tables/Ephem
 import { ItemTransferOffchainTable, ItemTransferOffchainTableData } from "./tables/ItemTransferOffchainTable.sol";
 import { SmartTurretConfigTable } from "./tables/SmartTurretConfigTable.sol";
 import { SmartGateConfigTable, SmartGateConfigTableData } from "./tables/SmartGateConfigTable.sol";
-import { SmartGateLinkTable } from "./tables/SmartGateLinkTable.sol";
+import { SmartGateLinkTable, SmartGateLinkTableData } from "./tables/SmartGateLinkTable.sol";
 import { Balances } from "./tables/Balances.sol";
 import { TokenURI } from "./tables/TokenURI.sol";
 import { Owners } from "./tables/Owners.sol";

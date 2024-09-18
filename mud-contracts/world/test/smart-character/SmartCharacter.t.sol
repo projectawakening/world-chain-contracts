@@ -132,23 +132,24 @@ contract SmartCharacterTest is MudTest {
     //assertEq(data.description, tableData.description);
   }
 
-  function testUpdateCorpId(
-    uint256 entityId,
-    address characterAddress,
-    uint256 corpId,
-    uint256 itemId,
-    uint256 typeId,
-    uint256 volume,
-    EntityRecordOffchainTableData memory offchainData,
-    string memory tokenCid,
-    uint256 updatedCorpId
-  ) public {
-    vm.assume(updatedCorpId != 0);
-    testCreateSmartCharacter(entityId, characterAddress, corpId, itemId, typeId, volume, offchainData, tokenCid);
+  function testUpdateCorpId(uint256 entityId) public {
+    vm.assume(entityId != 0);
+    smartCharacter.setCharClassId(smartCharacterClassId);
 
-    smartCharacter.updateCorpId(entityId, updatedCorpId);
+    smartCharacter.createCharacter(
+      entityId,
+      address(this),
+      111,
+      EntityRecordData({ typeId: 111, itemId: 11, volume: 11 }),
+      EntityRecordOffchainTableData({ name: "characterName", dappURL: "noURL", description: "." }),
+      "cid"
+    );
     CharactersTableData memory charactersData = CharactersTable.get(entityId);
-    assertEq(charactersData.corpId, updatedCorpId);
+    assertEq(charactersData.corpId, 111);
+
+    smartCharacter.updateCorpId(entityId, 222);
+    charactersData = CharactersTable.get(entityId);
+    assertEq(charactersData.corpId, 222);
   }
 
   function revertUpdateCorpId(uint256 characterId, uint256 corpId) public {

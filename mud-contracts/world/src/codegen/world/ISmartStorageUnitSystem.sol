@@ -16,21 +16,24 @@ interface ISmartStorageUnitSystem {
   error SmartStorageUnitERC721AlreadyInitialized();
 
   function eveworld__createAndAnchorSmartStorageUnit(
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) external;
 
-  function eveworld__createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
+  function eveworld__createAndDepositItemsToInventory(
+    uint256 smartStorageUnitId,
+    InventoryItem[] memory items
+  ) external;
 
   function eveworld__createAndDepositItemsToEphemeralInventory(
-    uint256 smartObjectId,
+    uint256 smartStorageUnitId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) external;
