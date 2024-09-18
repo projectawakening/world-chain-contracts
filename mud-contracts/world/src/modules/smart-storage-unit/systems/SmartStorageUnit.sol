@@ -48,7 +48,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
   /**
    * @notice Create and anchor a smart storage unit
    * @dev Create and anchor a smart storage unit by smart object id
-   * @param smartStorageUnitId The smart object id
+   * @param smartObjectId The smartObjectId of the smart storage unit id
    * @param entityRecordData The entity record data of the smart object
    * @param smartObjectData is the token metadata of the smart object
    * @param worldPosition The position of the smart object in the game
@@ -56,7 +56,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
    * @param ephemeralStorageCapacity The personal storage capacity of the smart storage unit
    */
   function createAndAnchorSmartStorageUnit(
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -65,7 +65,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public onlyAdmin hookable(smartStorageUnitId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     {
       uint256 classId = ClassConfig.getClassId(_namespace().classConfigTableId(), _systemId());
 
@@ -73,29 +73,29 @@ contract SmartStorageUnit is AccessModified, EveSystem {
         revert ISmartStorageUnitErrors.SmartStorageUnit_UndefinedClassId();
       }
 
-      if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartStorageUnitId) == false) {
-        // register smartStorageUnitId as an object
-        _smartObjectLib().registerEntity(smartStorageUnitId, OBJECT);
+      if (EntityTable.getDoesExists(_namespace().entityTableTableId(), smartObjectId) == false) {
+        // register smartObjectId as an object
+        _smartObjectLib().registerEntity(smartObjectId, OBJECT);
         // tag this object's entity Id to a set of defined classIds
-        _smartObjectLib().tagEntity(smartStorageUnitId, classId);
+        _smartObjectLib().tagEntity(smartObjectId, classId);
       }
     }
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
-      smartStorageUnitId,
+      smartObjectId,
       entityRecordData.itemId,
       entityRecordData.typeId,
       entityRecordData.volume
     );
 
     _smartDeployableLib().registerDeployable(
-      smartStorageUnitId,
+      smartObjectId,
       smartObjectData,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity
     );
-    _smartDeployableLib().setSmartAssemblyType(smartStorageUnitId, SmartAssemblyType.SMART_STORAGE_UNIT);
+    _smartDeployableLib().setSmartAssemblyType(smartObjectId, SmartAssemblyType.SMART_STORAGE_UNIT);
 
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
@@ -103,10 +103,10 @@ contract SmartStorageUnit is AccessModified, EveSystem {
       y: worldPosition.position.y,
       z: worldPosition.position.z
     });
-    _smartDeployableLib().anchor(smartStorageUnitId, locationData);
+    _smartDeployableLib().anchor(smartObjectId, locationData);
 
-    _inventoryLib().setInventoryCapacity(smartStorageUnitId, storageCapacity);
-    _inventoryLib().setEphemeralInventoryCapacity(smartStorageUnitId, ephemeralStorageCapacity);
+    _inventoryLib().setInventoryCapacity(smartObjectId, storageCapacity);
+    _inventoryLib().setEphemeralInventoryCapacity(smartObjectId, ephemeralStorageCapacity);
   }
 
   /**

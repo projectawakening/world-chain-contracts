@@ -12,7 +12,7 @@ import { SmartObjectData } from "../../smart-deployable/types.sol";
  */
 interface ISmartGate {
   function createAndAnchorSmartGate(
-    uint256 smartGateId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -22,7 +22,7 @@ interface ISmartGate {
     uint256 maxDistance
   ) external;
 
-  function configureSmartGate(uint256 smartGateId, ResourceId systemId) external;
+  function configureSmartGate(uint256 smartObjectId, ResourceId systemId) external;
 
   function linkSmartGates(uint256 sourceGateId, uint256 destinationGateId) external;
 

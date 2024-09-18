@@ -15,7 +15,7 @@ interface ISmartStorageUnit {
   error SmartStorageUnitERC721AlreadyInitialized();
 
   function eveworld__createAndAnchorSmartStorageUnit(
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,

@@ -24,7 +24,7 @@ library SmartStorageUnitLib {
 
   function createAndAnchorSmartStorageUnit(
     World memory world,
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -39,7 +39,7 @@ library SmartStorageUnitLib {
       abi.encodeCall(
         ISmartStorageUnit.createAndAnchorSmartStorageUnit,
         (
-          smartStorageUnitId,
+          smartObjectId,
           entityRecordData,
           smartObjectData,
           worldPosition,
