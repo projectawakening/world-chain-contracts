@@ -114,13 +114,13 @@ contract SmartStorageUnit is AccessModified, EveSystem {
    * @dev Create an item by smart object id and deposit it to the inventory
    * //TODO only server account can create items on-chain
    * //TODO Represent item as a ERC1155 asset with ownership on-chain
-   * @param smartStorageUnitId The smart object id
+   * @param smartObjectId The smart object id
    * @param items The item to store in a inventory
    */
   function createAndDepositItemsToInventory(
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     InventoryItem[] memory items
-  ) public onlyAdmin hookable(smartStorageUnitId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     for (uint256 i = 0; i < items.length; i++) {
       //Check if the item exists on-chain if not Create entityRecord
       _entityRecordLib().createEntityRecord(
@@ -131,7 +131,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
       );
     }
     //Deposit item to the inventory
-    _inventoryLib().depositToInventory(smartStorageUnitId, items);
+    _inventoryLib().depositToInventory(smartObjectId, items);
   }
 
   /**
@@ -139,15 +139,15 @@ contract SmartStorageUnit is AccessModified, EveSystem {
    * @dev Create an item by smart object id and deposit it to the ephemeral inventory
    * //TODO only server account can create items on-chain
    * //TODO Represent item as a ERC1155 asset with ownership on-chain
-   * @param smartStorageUnitId The smart object id
+   * @param smartObjectId The smart object id
    * @param ephemeralInventoryOwner The owner of the inventory
    * @param items The item to store in a inventory
    */
   function createAndDepositItemsToEphemeralInventory(
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public onlyAdmin hookable(smartStorageUnitId, _systemId()) {
+  ) public onlyAdmin hookable(smartObjectId, _systemId()) {
     //Check if the item exists on-chain if not Create entityRecord
     for (uint256 i = 0; i < items.length; i++) {
       _entityRecordLib().createEntityRecord(
@@ -159,7 +159,7 @@ contract SmartStorageUnit is AccessModified, EveSystem {
     }
     //Deposit item to the ephemeral inventory
     // TODO: This _might_ clash with online fuel, since that would require the underlying deployable to be funded in fuel
-    _inventoryLib().depositToEphemeralInventory(smartStorageUnitId, ephemeralInventoryOwner, items);
+    _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
 
   function setSSUClassId(
