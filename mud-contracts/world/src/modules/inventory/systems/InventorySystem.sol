@@ -22,6 +22,9 @@ import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
 import { InventoryItem } from "../types.sol";
 import { Utils } from "../Utils.sol";
 
+import { IERC721 } from "../../eve-erc721-puppet/IERC721.sol";
+import { DeployableTokenTable } from "../../../codegen/tables/DeployableTokenTable.sol";
+
 contract InventorySystem is AccessModified, EveSystem {
   using Utils for bytes14;
   using SmartDeployableUtils for bytes14;
@@ -84,16 +87,19 @@ contract InventorySystem is AccessModified, EveSystem {
     uint256 smartObjectId,
     InventoryItem[] memory items
   ) public onlyAdminOrSystemApproved(smartObjectId) hookable(smartObjectId, _systemId()) onlyActive {
-    State currentState = DeployableState.getCurrentState(smartObjectId);
-    if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+    {
+      State currentState = DeployableState.getCurrentState(smartObjectId);
+      if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+        revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
+      }
     }
-    uint256 usedCapacity = InventoryTable.getUsedCapacity(smartObjectId);
-    uint256 itemsLength = items.length;
 
-    for (uint256 i = 0; i < itemsLength; i++) {
+    uint256 usedCapacity = InventoryTable.getUsedCapacity(smartObjectId);
+
+    for (uint256 i = 0; i < items.length; i++) {
       usedCapacity = _processItemWithdrawal(smartObjectId, items[i], usedCapacity);
     }
+
     InventoryTable.setUsedCapacity(smartObjectId, usedCapacity);
   }
 
@@ -130,6 +136,10 @@ contract InventorySystem is AccessModified, EveSystem {
     uint256 maxCapacity,
     uint256 itemIndex
   ) internal returns (uint256) {
+    // item.owner must be assigned to the Smart Object Inventory Owner
+    if (item.owner != IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId)) {
+      revert IInventoryErrors.Inventory_InvalidItemOwner("InventorySystem: smartObjectId inventory owner and item.owner should be the same", item.inventoryItemId, item.owner, IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId));
+    }
     uint256 reqCapacity = item.volume * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
       revert IInventoryErrors.Inventory_InsufficientCapacity(
@@ -179,6 +189,10 @@ contract InventorySystem is AccessModified, EveSystem {
     InventoryItem memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
+    // item.owner must be assigned to the Smart Object Inventory Owner
+    if (item.owner != IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId)) {
+      revert IInventoryErrors.Inventory_InvalidItemOwner("InventorySystem: smartObjectId inventory owner and item.owner should be the same", item.inventoryItemId, item.owner, IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId));
+    }
     InventoryItemTableData memory itemData = InventoryItemTable.get(smartObjectId, item.inventoryItemId);
     _validateWithdrawal(item, itemData);
 

@@ -76,12 +76,35 @@ export default defineWorld({
     /**
      * Simple Access Control - for enforcing the most basic access rules
      */
+    AccessEnforcement: {
+      schema: {
+        target: "bytes32",
+        isEnforced: "bool",
+      },
+      key: ["target"],
+    },
+    AccessEnforcementPerObject: {
+      schema: {
+        smartObjectId: "uint256",
+        target: "bytes32",
+        isEnforced: "bool",
+      },
+      key: ["smartObjectId", "target"],
+    },
     AccessRole: {
       schema: {
         roleId: "bytes32",
         accounts: "address[]",
       },
       key: ["roleId"],
+    },
+    AccessRolePerObject: {
+      schema: {
+        smartObjectId: "uint256",
+        roleId: "bytes32",
+        accounts: "address[]",
+      },
+      key: ["smartObjectId", "roleId"],
     },
     AccessRolePerSys: {
       schema: {
@@ -91,13 +114,9 @@ export default defineWorld({
       },
       key: ["systemId", "roleId"],
     },
-    AccessEnforcement: {
-      schema: {
-        target: "bytes32",
-        isEnforced: "bool",
-      },
-      key: ["target"],
-    },
+
+
+    
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation
      */
@@ -179,6 +198,13 @@ export default defineWorld({
         createdAt: "uint256",
       },
       key: ["characterId"],
+    },
+    CharactersByAddressTable: {
+      schema: {
+        characterAddress: "address",
+        characterId: "uint256",
+      },
+      key: ["characterAddress"],
     },
     CharactersConstantsTable: {
       schema: {

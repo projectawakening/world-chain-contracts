@@ -12,6 +12,7 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
 import { State } from "../../../codegen/common.sol";
+import { CharactersByAddressTable } from "../../../codegen/tables/CharactersByAddressTable.sol";
 
 import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../IInventoryErrors.sol";
@@ -72,6 +73,10 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
       if (currentState != State.ONLINE) {
         revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
       }
+    }
+    // ephemeralInventoryOwner MUST be an existing character
+    if (CharactersByAddressTable.get(ephemeralInventoryOwner) == 0) {
+      revert IInventoryErrors.Inventory_InvalidEphemeralInventoryDepositor("EpehemeralInventorySystem: ephemeralInventoryOwner has not been created as a Character", ephemeralInventoryOwner);
     }
 
     uint256 totalUsedCapacity = _processAndReturnTotalUsedCapacity(smartObjectId, ephemeralInventoryOwner, items);
@@ -163,10 +168,11 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
       );
     }
     if (ephemeralInventoryOwner != item.owner) {
-      revert IInventoryErrors.Inventory_InvalidOwner(
-        "EphemeralInventorySystem: ephemeralInventoryOwner and item owner should be the same",
-        ephemeralInventoryOwner,
-        item.owner
+      revert IInventoryErrors.Inventory_InvalidItemOwner(
+        "EphemeralInventorySystem:  ephemeralInventoryOwner and item.owner should be the same",
+        item.inventoryItemId,
+        item.owner,
+        ephemeralInventoryOwner
       );
     }
     _updateEphemeralInvAfterDeposit(smartObjectId, ephemeralInventoryOwner, item, index);
@@ -238,6 +244,14 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
     InventoryItem memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
+    if (ephemeralInventoryOwner != item.owner) {
+      revert IInventoryErrors.Inventory_InvalidItemOwner(
+        "EphemeralInventorySystem: ephemeralInventoryOwner and item.owner should be the same",
+        item.inventoryItemId,
+        item.owner,
+        ephemeralInventoryOwner
+      );
+    }
     EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
       smartObjectId,
       item.inventoryItemId,
