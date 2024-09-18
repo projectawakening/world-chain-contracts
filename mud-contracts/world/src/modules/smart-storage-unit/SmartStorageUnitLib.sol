@@ -55,18 +55,18 @@ library SmartStorageUnitLib {
 
   function createAndDepositItemsToInventory(
     World memory world,
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     InventoryItem[] memory items
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.createAndDepositItemsToInventory, (smartStorageUnitId, items))
+      abi.encodeCall(ISmartStorageUnit.createAndDepositItemsToInventory, (smartObjectId, items))
     );
   }
 
   function createAndDepositItemsToEphemeralInventory(
     World memory world,
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     address inventoryOwner,
     InventoryItem[] memory items
   ) internal {
@@ -74,7 +74,7 @@ library SmartStorageUnitLib {
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
         ISmartStorageUnit.createAndDepositItemsToEphemeralInventory,
-        (smartStorageUnitId, inventoryOwner, items)
+        (smartObjectId, inventoryOwner, items)
       )
     );
   }
