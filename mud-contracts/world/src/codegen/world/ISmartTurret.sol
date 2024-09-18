@@ -14,10 +14,10 @@ import { TargetPriority, Turret, SmartTurretTarget } from "./../../modules/smart
  */
 interface ISmartTurret {
   error SmartTurret_UndefinedClassId();
-  error SmartTurret_NotConfigured(uint256 smartTurretId);
+  error SmartTurret_NotConfigured(uint256 smartObjectId);
 
   function eveworld__createAndAnchorSmartTurret(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -26,10 +26,10 @@ interface ISmartTurret {
     uint256 fuelMaxCapacity
   ) external;
 
-  function eveworld__configureSmartTurret(uint256 smartTurretId, ResourceId systemId) external;
+  function eveworld__configureSmartTurret(uint256 smartObjectId, ResourceId systemId) external;
 
   function eveworld__inProximity(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
@@ -37,7 +37,7 @@ interface ISmartTurret {
   ) external returns (TargetPriority[] memory updatedPriorityQueue);
 
   function eveworld__aggression(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,

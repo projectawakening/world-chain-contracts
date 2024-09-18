@@ -1,6 +1,7 @@
 # @eveworld/world
 ## 0.0.14
 - renaming `smartStorageUnitId` to  `smartObjectId` for inventory for consistency 
+- consistant naming for `smartObjectId` across systems and MUD Table
 
 ## 0.0.13
 - Refactored SmartGateLinkTable structure to query by sourceGate as single key

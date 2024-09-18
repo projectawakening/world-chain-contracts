@@ -386,7 +386,7 @@ export default mudConfig({
      *************************/
     SmartTurretConfigTable: {
       keySchema: {
-        smartTurretId: "uint256",
+        smartObjectId: "uint256",
       },
       valueSchema: {
         systemId: "ResourceId",
@@ -399,7 +399,7 @@ export default mudConfig({
      *************************/
     SmartGateConfigTable: {
       keySchema: {
-        smartGateId: "uint256",
+        smartObjectId: "uint256",
       },
       valueSchema: {
         systemId: "ResourceId",

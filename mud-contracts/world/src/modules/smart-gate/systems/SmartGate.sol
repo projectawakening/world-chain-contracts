@@ -47,7 +47,7 @@ contract SmartGate is EveSystem, AccessModified {
   using Utils for bytes14;
 
   error SmartGate_UndefinedClassId();
-  error SmartGate_NotConfigured(uint256 smartGateId);
+  error SmartGate_NotConfigured(uint256 smartObjectId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
@@ -64,11 +64,11 @@ contract SmartGate is EveSystem, AccessModified {
   }
 
   /**
-    * @notice Create and anchor a Smart Turret
-    * @param smartGateId is smart object id of the Smart Turret
-    * @param entityRecordData is the entity record data of the Smart Turret
-    * @param smartObjectData is the metadata of the Smart Turret
-    * @param worldPosition is the x,y,z position of the Smart Turret in space
+    * @notice Create and anchor a Smart Gate
+    * @param smartObjectId is smart object id of the Smart Gate
+    * @param entityRecordData is the entity record data of the Smart Gate
+    * @param smartObjectData is the metadata of the Smart Gate
+    * @param worldPosition is the x,y,z position of the Smart Gate in space
     * @param fuelUnitVolume is the volume of fuel unit
     * @param fuelConsumptionIntervalInSeconds is one unit of fuel consumption interval is consumed in how many seconds
     // For example:
@@ -78,7 +78,7 @@ contract SmartGate is EveSystem, AccessModified {
     * @param fuelMaxCapacity is the maximum capacity of fuel
    */
   function createAndAnchorSmartGate(
-    uint256 smartGateId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -89,20 +89,20 @@ contract SmartGate is EveSystem, AccessModified {
   ) public onlyAdmin {
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
-      smartGateId,
+      smartObjectId,
       entityRecordData.itemId,
       entityRecordData.typeId,
       entityRecordData.volume
     );
 
     _smartDeployableLib().registerDeployable(
-      smartGateId,
+      smartObjectId,
       smartObjectData,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity
     );
-    _smartDeployableLib().setSmartAssemblyType(smartGateId, SmartAssemblyType.SMART_GATE);
+    _smartDeployableLib().setSmartAssemblyType(smartObjectId, SmartAssemblyType.SMART_GATE);
 
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
@@ -110,15 +110,15 @@ contract SmartGate is EveSystem, AccessModified {
       y: worldPosition.position.y,
       z: worldPosition.position.z
     });
-    _smartDeployableLib().anchor(smartGateId, locationData);
+    _smartDeployableLib().anchor(smartObjectId, locationData);
 
-    SmartGateConfigTable.setMaxDistance(_namespace().smartGateConfigTableId(), smartGateId, maxDistance);
+    SmartGateConfigTable.setMaxDistance(_namespace().smartGateConfigTableId(), smartObjectId, maxDistance);
   }
 
   /**
    * @notice Link Smart Gates
-   * @param sourceGateId is the id of the source gate
-   * @param destinationGateId is the id of the destination gate
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
    */
   function linkSmartGates(uint256 sourceGateId, uint256 destinationGateId) public {
     if (isGateLinked(sourceGateId, destinationGateId)) {
@@ -153,22 +153,22 @@ contract SmartGate is EveSystem, AccessModified {
   }
 
   /**
-   * @notice Configure Smart Turret
-   * @param smartGateId is smart object id of the Smart Turret
-   * @param systemId is the system id of the Smart Turret logic
+   * @notice Configure Smart Gate
+   * @param smartObjectId is smartObjectId of the Smart Gate
+   * @param systemId is the system id of the Smart Gate logic
    */
   function configureSmartGate(
-    uint256 smartGateId,
+    uint256 smartObjectId,
     ResourceId systemId
-  ) public onlyAdminOrObjectOwner(smartGateId) hookable(smartGateId, _systemId()) {
-    SmartGateConfigTable.setSystemId(_namespace().smartGateConfigTableId(), smartGateId, systemId);
+  ) public onlyAdminOrObjectOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
+    SmartGateConfigTable.setSystemId(_namespace().smartGateConfigTableId(), smartObjectId, systemId);
   }
 
   /**
    * @notice view function for smart gates which is linked
-   * @param characterId is of the id of the character
-   * @param sourceGateId is the id of the source gate
-   * @param destinationGateId is the id of the destination gate
+   * @param characterId is of the smartObjectId of the character
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
    */
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
     State sourceGateState = DeployableState.getCurrentState(_namespace().deployableStateTableId(), sourceGateId);

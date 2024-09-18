@@ -13,7 +13,7 @@ import { TargetPriority, Turret, SmartTurretTarget } from "../types.sol";
  */
 interface ISmartTurret {
   function createAndAnchorSmartTurret(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -22,10 +22,10 @@ interface ISmartTurret {
     uint256 fuelMaxCapacity
   ) external;
 
-  function configureSmartTurret(uint256 smartTurretId, ResourceId systemId) external;
+  function configureSmartTurret(uint256 smartObjectId, ResourceId systemId) external;
 
   function inProximity(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
@@ -33,7 +33,7 @@ interface ISmartTurret {
   ) external returns (TargetPriority[] memory updatedPriorityQueue);
 
   function aggression(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,

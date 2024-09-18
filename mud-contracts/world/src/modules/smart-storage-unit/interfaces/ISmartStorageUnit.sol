@@ -7,7 +7,7 @@ import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@lattic
 
 interface ISmartStorageUnit {
   function createAndAnchorSmartStorageUnit(
-    uint256 smartStorageUnitId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
