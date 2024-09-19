@@ -65,8 +65,8 @@ contract KillMailTest is Test {
 
   function testRegisterKill(
     uint256 killMailId,
-    address killer,
-    address victim,
+    uint256 killerCharacterId,
+    uint256 victimCharacterId,
     uint256 solarSystemId,
     uint256 killTimestamp
   ) public {
@@ -75,8 +75,8 @@ contract KillMailTest is Test {
     KillMailLossType lossType = KillMailLossType.SHIP;
 
     KillMailTableData memory killMailTableData = KillMailTableData({
-      killer: killer,
-      victim: victim,
+      killerCharacterId: killerCharacterId,
+      victimCharacterId: victimCharacterId,
       lossType: lossType,
       solarSystemId: solarSystemId,
       killTimestamp: killTimestamp
@@ -89,8 +89,8 @@ contract KillMailTest is Test {
       killMailId
     );
 
-    assertEq(killMailTableData.killer, storedKillMailTableData.killer);
-    assertEq(killMailTableData.victim, storedKillMailTableData.victim);
+    assertEq(killMailTableData.killerCharacterId, storedKillMailTableData.killerCharacterId);
+    assertEq(killMailTableData.victimCharacterId, storedKillMailTableData.victimCharacterId);
     assertEq(killMailTableData.killTimestamp, storedKillMailTableData.killTimestamp);
   }
 }

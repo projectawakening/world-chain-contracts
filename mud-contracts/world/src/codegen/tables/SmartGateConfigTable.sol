@@ -69,7 +69,7 @@ library SmartGateConfigTable {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "smartGateId";
+    keyNames[0] = "smartObjectId";
   }
 
   /**
@@ -99,9 +99,9 @@ library SmartGateConfigTable {
   /**
    * @notice Get systemId.
    */
-  function getSystemId(ResourceId _tableId, uint256 smartGateId) internal view returns (ResourceId systemId) {
+  function getSystemId(ResourceId _tableId, uint256 smartObjectId) internal view returns (ResourceId systemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return ResourceId.wrap(bytes32(_blob));
@@ -110,9 +110,9 @@ library SmartGateConfigTable {
   /**
    * @notice Get systemId.
    */
-  function _getSystemId(ResourceId _tableId, uint256 smartGateId) internal view returns (ResourceId systemId) {
+  function _getSystemId(ResourceId _tableId, uint256 smartObjectId) internal view returns (ResourceId systemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return ResourceId.wrap(bytes32(_blob));
@@ -121,9 +121,9 @@ library SmartGateConfigTable {
   /**
    * @notice Set systemId.
    */
-  function setSystemId(ResourceId _tableId, uint256 smartGateId, ResourceId systemId) internal {
+  function setSystemId(ResourceId _tableId, uint256 smartObjectId, ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(ResourceId.unwrap(systemId)), _fieldLayout);
   }
@@ -131,9 +131,9 @@ library SmartGateConfigTable {
   /**
    * @notice Set systemId.
    */
-  function _setSystemId(ResourceId _tableId, uint256 smartGateId, ResourceId systemId) internal {
+  function _setSystemId(ResourceId _tableId, uint256 smartObjectId, ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(ResourceId.unwrap(systemId)), _fieldLayout);
   }
@@ -141,9 +141,9 @@ library SmartGateConfigTable {
   /**
    * @notice Get maxDistance.
    */
-  function getMaxDistance(ResourceId _tableId, uint256 smartGateId) internal view returns (uint256 maxDistance) {
+  function getMaxDistance(ResourceId _tableId, uint256 smartObjectId) internal view returns (uint256 maxDistance) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -152,9 +152,9 @@ library SmartGateConfigTable {
   /**
    * @notice Get maxDistance.
    */
-  function _getMaxDistance(ResourceId _tableId, uint256 smartGateId) internal view returns (uint256 maxDistance) {
+  function _getMaxDistance(ResourceId _tableId, uint256 smartObjectId) internal view returns (uint256 maxDistance) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -163,9 +163,9 @@ library SmartGateConfigTable {
   /**
    * @notice Set maxDistance.
    */
-  function setMaxDistance(ResourceId _tableId, uint256 smartGateId, uint256 maxDistance) internal {
+  function setMaxDistance(ResourceId _tableId, uint256 smartObjectId, uint256 maxDistance) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((maxDistance)), _fieldLayout);
   }
@@ -173,9 +173,9 @@ library SmartGateConfigTable {
   /**
    * @notice Set maxDistance.
    */
-  function _setMaxDistance(ResourceId _tableId, uint256 smartGateId, uint256 maxDistance) internal {
+  function _setMaxDistance(ResourceId _tableId, uint256 smartObjectId, uint256 maxDistance) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((maxDistance)), _fieldLayout);
   }
@@ -185,10 +185,10 @@ library SmartGateConfigTable {
    */
   function get(
     ResourceId _tableId,
-    uint256 smartGateId
+    uint256 smartObjectId
   ) internal view returns (SmartGateConfigTableData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     (bytes memory _staticData, PackedCounter _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -203,10 +203,10 @@ library SmartGateConfigTable {
    */
   function _get(
     ResourceId _tableId,
-    uint256 smartGateId
+    uint256 smartObjectId
   ) internal view returns (SmartGateConfigTableData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     (bytes memory _staticData, PackedCounter _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -219,14 +219,14 @@ library SmartGateConfigTable {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(ResourceId _tableId, uint256 smartGateId, ResourceId systemId, uint256 maxDistance) internal {
+  function set(ResourceId _tableId, uint256 smartObjectId, ResourceId systemId, uint256 maxDistance) internal {
     bytes memory _staticData = encodeStatic(systemId, maxDistance);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -234,14 +234,14 @@ library SmartGateConfigTable {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(ResourceId _tableId, uint256 smartGateId, ResourceId systemId, uint256 maxDistance) internal {
+  function _set(ResourceId _tableId, uint256 smartObjectId, ResourceId systemId, uint256 maxDistance) internal {
     bytes memory _staticData = encodeStatic(systemId, maxDistance);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -249,14 +249,14 @@ library SmartGateConfigTable {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(ResourceId _tableId, uint256 smartGateId, SmartGateConfigTableData memory _table) internal {
+  function set(ResourceId _tableId, uint256 smartObjectId, SmartGateConfigTableData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.systemId, _table.maxDistance);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -264,14 +264,14 @@ library SmartGateConfigTable {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(ResourceId _tableId, uint256 smartGateId, SmartGateConfigTableData memory _table) internal {
+  function _set(ResourceId _tableId, uint256 smartObjectId, SmartGateConfigTableData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.systemId, _table.maxDistance);
 
     PackedCounter _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -302,9 +302,9 @@ library SmartGateConfigTable {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(ResourceId _tableId, uint256 smartGateId) internal {
+  function deleteRecord(ResourceId _tableId, uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -312,9 +312,9 @@ library SmartGateConfigTable {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(ResourceId _tableId, uint256 smartGateId) internal {
+  function _deleteRecord(ResourceId _tableId, uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -348,9 +348,9 @@ library SmartGateConfigTable {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 smartGateId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartGateId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
   }
