@@ -582,8 +582,8 @@ contract AccessTest is MudTest {
     InventoryInterface.ephemeralToInventoryTransfer(ssuId, outItems);
 
     vm.expectRevert( // revert with the APPROVED fail error because this was a cross system call form the Mock Forawrder (who has not been added to the APPROVED list for our systems)
-      abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(mockForwarder), APPROVED)
-    );
+        abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(mockForwarder), APPROVED)
+      );
     world.call(
       MOCK_FORWARDER_SYSTEM_ID,
       abi.encodeCall(MockForwarder.openEphemeralToInventoryTransfer, (ssuId, alice, outItems))
