@@ -136,9 +136,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
     Turret memory turret,
     SmartTurretTarget memory turretTarget
   ) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    State currentState = DeployableState.getCurrentState(
-      smartObjectId
-    );
+    State currentState = DeployableState.getCurrentState(smartObjectId);
     if (currentState != State.ONLINE) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
     }
@@ -190,9 +188,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
     SmartTurretTarget memory aggressor,
     SmartTurretTarget memory victim
   ) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    State currentState = DeployableState.getCurrentState(
-      smartObjectId
-    );
+    State currentState = DeployableState.getCurrentState(smartObjectId);
     if (currentState != State.ONLINE) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
     }
