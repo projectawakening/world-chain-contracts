@@ -233,7 +233,7 @@ contract SmartGate is EveSystem, AccessModified {
 
     // Sum of squares (distance squared in meters)
     uint256 distanceSquaredMeters = (dx * dx) + (dy * dy) + (dz * dz);
-    return distanceSquaredMeters <= maxDistance;
+    return distanceSquaredMeters <= (maxDistance * maxDistance);
   }
 
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {
