@@ -37,7 +37,7 @@ library SmartTurretConfigTable {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "smartTurretId";
+    keyNames[0] = "smartObjectId";
   }
 
   /**
@@ -66,9 +66,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Get systemId.
    */
-  function getSystemId(uint256 smartTurretId) internal view returns (ResourceId systemId) {
+  function getSystemId(uint256 smartObjectId) internal view returns (ResourceId systemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return ResourceId.wrap(bytes32(_blob));
@@ -77,9 +77,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Get systemId.
    */
-  function _getSystemId(uint256 smartTurretId) internal view returns (ResourceId systemId) {
+  function _getSystemId(uint256 smartObjectId) internal view returns (ResourceId systemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return ResourceId.wrap(bytes32(_blob));
@@ -88,9 +88,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Get systemId.
    */
-  function get(uint256 smartTurretId) internal view returns (ResourceId systemId) {
+  function get(uint256 smartObjectId) internal view returns (ResourceId systemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return ResourceId.wrap(bytes32(_blob));
@@ -99,9 +99,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Get systemId.
    */
-  function _get(uint256 smartTurretId) internal view returns (ResourceId systemId) {
+  function _get(uint256 smartObjectId) internal view returns (ResourceId systemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return ResourceId.wrap(bytes32(_blob));
@@ -110,9 +110,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Set systemId.
    */
-  function setSystemId(uint256 smartTurretId, ResourceId systemId) internal {
+  function setSystemId(uint256 smartObjectId, ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(ResourceId.unwrap(systemId)), _fieldLayout);
   }
@@ -120,9 +120,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Set systemId.
    */
-  function _setSystemId(uint256 smartTurretId, ResourceId systemId) internal {
+  function _setSystemId(uint256 smartObjectId, ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(ResourceId.unwrap(systemId)), _fieldLayout);
   }
@@ -130,9 +130,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Set systemId.
    */
-  function set(uint256 smartTurretId, ResourceId systemId) internal {
+  function set(uint256 smartObjectId, ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(ResourceId.unwrap(systemId)), _fieldLayout);
   }
@@ -140,9 +140,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Set systemId.
    */
-  function _set(uint256 smartTurretId, ResourceId systemId) internal {
+  function _set(uint256 smartObjectId, ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked(ResourceId.unwrap(systemId)), _fieldLayout);
   }
@@ -150,9 +150,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 smartTurretId) internal {
+  function deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -160,9 +160,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 smartTurretId) internal {
+  function _deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -193,9 +193,9 @@ library SmartTurretConfigTable {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 smartTurretId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartTurretId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
   }
