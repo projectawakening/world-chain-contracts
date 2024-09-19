@@ -352,10 +352,10 @@ export default defineWorld({
      *************************/
     SmartTurretConfigTable: {
       schema: {
-        smartTurretId: "uint256",
+        smartObjectId: "uint256",
         systemId: "ResourceId",
       },
-      key: ["smartTurretId"],
+      key: ["smartObjectId"],
     },
 
     /*************************
@@ -363,11 +363,11 @@ export default defineWorld({
      *************************/
     SmartGateConfigTable: {
       schema: {
-        smartGateId: "uint256",
+        smartObjectId: "uint256",
         systemId: "ResourceId",
         maxDistance: "uint256",
       },
-      key: ["smartGateId"],
+      key: ["smartObjectId"],
     },
 
     SmartGateLinkTable: {

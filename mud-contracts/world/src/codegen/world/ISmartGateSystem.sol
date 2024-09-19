@@ -14,14 +14,14 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
  */
 interface ISmartGateSystem {
   error SmartGate_UndefinedClassId();
-  error SmartGate_NotConfigured(uint256 smartGateId);
+  error SmartGate_NotConfigured(uint256 smartObjectId);
   error SmartGate_GateAlreadyLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
 
   function eveworld__createAndAnchorSmartGate(
-    uint256 smartGateId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -35,7 +35,7 @@ interface ISmartGateSystem {
 
   function eveworld__unlinkSmartGates(uint256 sourceGateId, uint256 destinationGateId) external;
 
-  function eveworld__configureSmartGate(uint256 smartGateId, ResourceId systemId) external;
+  function eveworld__configureSmartGate(uint256 smartObjectId, ResourceId systemId) external;
 
   function eveworld__canJump(
     uint256 characterId,

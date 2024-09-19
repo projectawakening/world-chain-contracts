@@ -26,7 +26,7 @@ library SmartGateLib {
 
   function createAndAnchorSmartGate(
     World memory world,
-    uint256 smartGateId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -40,7 +40,7 @@ library SmartGateLib {
       abi.encodeCall(
         ISmartGateSystem.createAndAnchorSmartGate,
         (
-          smartGateId,
+          smartObjectId,
           entityRecordData,
           smartObjectData,
           worldPosition,
@@ -53,10 +53,10 @@ library SmartGateLib {
     );
   }
 
-  function configureSmartGate(World memory world, uint256 smartGateId, ResourceId systemId) internal {
+  function configureSmartGate(World memory world, uint256 smartObjectId, ResourceId systemId) internal {
     world.iface.call(
       world.namespace.smartGateSystemId(),
-      abi.encodeCall(ISmartGateSystem.configureSmartGate, (smartGateId, systemId))
+      abi.encodeCall(ISmartGateSystem.configureSmartGate, (smartObjectId, systemId))
     );
   }
 
