@@ -23,16 +23,16 @@ export default defineWorld({
     GlobalStaticData: {
       schema: {
         trustedForwarder: "address",
-        value: "bool"
+        value: "bool",
       },
-      key: ["trustedForwarder"]
+      key: ["trustedForwarder"],
     },
     Role: {
       schema: {
         role: "bytes32",
-        value: "address"
+        value: "address",
       },
-      key: ["role"]
+      key: ["role"],
     },
   },
 });
