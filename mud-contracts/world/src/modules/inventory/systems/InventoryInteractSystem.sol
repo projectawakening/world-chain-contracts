@@ -24,7 +24,7 @@ import { InventoryLib } from "../InventoryLib.sol";
 import { InventoryItem, TransferItem } from "../types.sol";
 
 import { AccessRolePerObject } from "../../../codegen/tables/AccessRolePerObject.sol";
-import { AccessEnforcementPerObject } from "../../../codegen/tables/AccessEnforcementPerObject.sol";
+import { AccessEnforcePerObject } from "../../../codegen/tables/AccessEnforcePerObject.sol";
 
 contract InventoryInteractSystem is EveSystem {
   using Utils for bytes14;
@@ -247,7 +247,7 @@ contract InventoryInteractSystem is EveSystem {
   ) public onlyOwner(smartObjectId) {
     ResourceId systemId = SystemRegistry.get(address(this));
     bytes32 target = keccak256(abi.encodePacked(systemId, this.ephemeralToInventoryTransfer.selector));
-    AccessEnforcementPerObject.set(smartObjectId, target, isEnforced);
+    AccessEnforcePerObject.set(smartObjectId, target, isEnforced);
   }
 
   function setInvToEphTransferAccess(
@@ -256,7 +256,7 @@ contract InventoryInteractSystem is EveSystem {
   ) public onlyOwner(smartObjectId) {
     ResourceId systemId = SystemRegistry.get(address(this));
     bytes32 target = keccak256(abi.encodePacked(systemId, this.inventoryToEphemeralTransfer.selector));
-    AccessEnforcementPerObject.set(smartObjectId, target, isEnforced);
+    AccessEnforcePerObject.set(smartObjectId, target, isEnforced);
   }
 
   function _systemId() internal view returns (ResourceId) {
@@ -270,6 +270,6 @@ contract InventoryInteractSystem is EveSystem {
     function _isEnforced(uint256 smartObjectId) private view returns (bool) {
     ResourceId systemId = SystemRegistry.get(address(this));
     bytes32 target = keccak256(abi.encodePacked(systemId, msg.sig));
-    return AccessEnforcementPerObject.get(smartObjectId, target);
+    return AccessEnforcePerObject.get(smartObjectId, target);
   }
 }

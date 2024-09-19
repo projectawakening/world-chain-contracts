@@ -83,7 +83,7 @@ export default defineWorld({
       },
       key: ["target"],
     },
-    AccessEnforcementPerObject: {
+    AccessEnforcePerObject: {
       schema: {
         smartObjectId: "uint256",
         target: "bytes32",
