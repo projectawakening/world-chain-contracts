@@ -48,7 +48,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
   using Utils for bytes14;
 
   error SmartTurret_UndefinedClassId();
-  error SmartTurret_NotConfigured(uint256 smartTurretId);
+  error SmartTurret_NotConfigured(uint256 smartObjectId);
 
   /**
    * modifier to enforce state changes can happen only when the game server is running
@@ -62,7 +62,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
 
   /**
     * @notice Create and anchor a Smart Turret
-    * @param smartTurretId is smart object id of the Smart Turret
+    * @param smartObjectId is smart object id of the Smart Turret
     * @param entityRecordData is the entity record data of the Smart Turret
     * @param smartObjectData is the metadata of the Smart Turret
     * @param worldPosition is the x,y,z position of the Smart Turret in space
@@ -75,7 +75,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
     * @param fuelMaxCapacity is the maximum capacity of fuel
    */
   function createAndAnchorSmartTurret(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -85,20 +85,20 @@ contract SmartTurretSystem is EveSystem, AccessModified {
   ) public onlyAdmin {
     //Implement the logic to store the data in different modules: EntityRecord, Deployable, Location and ERC721
     _entityRecordLib().createEntityRecord(
-      smartTurretId,
+      smartObjectId,
       entityRecordData.itemId,
       entityRecordData.typeId,
       entityRecordData.volume
     );
 
     _smartDeployableLib().registerDeployable(
-      smartTurretId,
+      smartObjectId,
       smartObjectData,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity
     );
-    _smartDeployableLib().setSmartAssemblyType(smartTurretId, SmartAssemblyType.SMART_TURRET);
+    _smartDeployableLib().setSmartAssemblyType(smartObjectId, SmartAssemblyType.SMART_TURRET);
 
     LocationTableData memory locationData = LocationTableData({
       solarSystemId: worldPosition.solarSystemId,
@@ -106,43 +106,43 @@ contract SmartTurretSystem is EveSystem, AccessModified {
       y: worldPosition.position.y,
       z: worldPosition.position.z
     });
-    _smartDeployableLib().anchor(smartTurretId, locationData);
+    _smartDeployableLib().anchor(smartObjectId, locationData);
   }
 
   /**
    * @notice Configure Smart Turret
-   * @param smartTurretId is smart object id of the Smart Turret
+   * @param smartObjectId is smart object id of the Smart Turret
    * @param systemId is the system id of the Smart Turret logic
    */
   function configureSmartTurret(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     ResourceId systemId
-  ) public onlyAdminOrObjectOwner(smartTurretId) hookable(smartTurretId, _systemId()) {
-    SmartTurretConfigTable.set(smartTurretId, systemId);
+  ) public onlyAdminOrObjectOwner(smartObjectId) hookable(smartObjectId, _systemId()) {
+    SmartTurretConfigTable.set(smartObjectId, systemId);
   }
 
   /**
    * @notice view function for turret logic based on proximity
-   * @param smartTurretId is the is of the smart turret
+   * @param smartObjectId is the is of the smart turret
    * @param turretOwnerCharacterId is the character id of the owner of the smart turret
    * @param priorityQueue is the queue of the SmartTurretTarget in proximity
    * @param turret is the Smart Turret object
    * @param turretTarget is the player entering the zone
    */
   function inProximity(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
   ) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    State currentState = DeployableState.getCurrentState(smartTurretId);
+    State currentState = DeployableState.getCurrentState(smartObjectId);
     if (currentState != State.ONLINE) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartTurretId, currentState);
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
     }
 
     // Delegate the call to the implementation inProximity view function
-    ResourceId systemId = SmartTurretConfigTable.get(smartTurretId);
+    ResourceId systemId = SmartTurretConfigTable.get(smartObjectId);
 
     //If smart turret is not configured, then execute the default logic
     if (!ResourceIds.getExists(systemId)) {
@@ -163,7 +163,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
     } else {
       bytes memory returnData = world().call(
         systemId,
-        abi.encodeCall(this.inProximity, (smartTurretId, turretOwnerCharacterId, priorityQueue, turret, turretTarget))
+        abi.encodeCall(this.inProximity, (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, turretTarget))
       );
 
       updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
@@ -173,7 +173,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
   }
 
   /**
-   * @param smartTurretId is the is of the smart turret
+   * @param smartObjectId is the is of the smart turret
    * @param turretOwnerCharacterId is the character id of the owner of the smart turret
    * @param priorityQueue is the queue of the SmartTurretTarget in proximity
    * @param turret is the Smart Turret object
@@ -181,20 +181,20 @@ contract SmartTurretSystem is EveSystem, AccessModified {
    * @param victim is the player being attacked inside the zone
    */
   function aggression(
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,
     SmartTurretTarget memory victim
   ) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    State currentState = DeployableState.getCurrentState(smartTurretId);
+    State currentState = DeployableState.getCurrentState(smartObjectId);
     if (currentState != State.ONLINE) {
-      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartTurretId, currentState);
+      revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
     }
 
     // Delegate the call to the implementation aggression view function
-    ResourceId systemId = SmartTurretConfigTable.get(smartTurretId);
+    ResourceId systemId = SmartTurretConfigTable.get(smartObjectId);
 
     if (!ResourceIds.getExists(systemId)) {
       //If the corp of the smart turret owner of the aggressor are same, then the turret will not attack
@@ -214,7 +214,7 @@ contract SmartTurretSystem is EveSystem, AccessModified {
         systemId,
         abi.encodeCall(
           this.aggression,
-          (smartTurretId, turretOwnerCharacterId, priorityQueue, turret, aggressor, victim)
+          (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, aggressor, victim)
         )
       );
 

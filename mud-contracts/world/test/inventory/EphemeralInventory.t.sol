@@ -8,44 +8,23 @@ import { IWorldWithEntryContext } from "../../src/IWorldWithEntryContext.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
-import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
-import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
-import { IModule } from "@latticexyz/world/src/IModule.sol";
+import { ResourceId, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import "@eveworld/common-constants/src/constants.sol";
-import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntitySystem } from "@eveworld/smart-object-framework/src/systems/core/Entitysystem.sol";
-import { HookSystem } from "@eveworld/smart-object-framework/src/systems/core/HookSystem.sol";
-import { ModuleSystem } from "@eveworld/smart-object-framework/src/systems/core/ModuleSystem.sol";
 
-import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
-import { EntityRecordTable, EntityRecordTableData } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
 import { EphemeralInvTable, EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInvCapacityTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Utils.sol";
-import { EphemeralInventorySystem } from "../../src/modules/inventory/systems/EphemeralInventorySystem.sol";
-import { InventoryInteractSystem } from "../../src/modules/inventory/systems/InventoryInteractSystem.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
-import { InventorySystem } from "../../src/modules/inventory/systems/InventorySystem.sol";
-import { InventoryModule } from "../../src/modules/inventory/InventoryModule.sol";
-import { EntityRecordModule } from "../../src/modules/entity-record/EntityRecordModule.sol";
-import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
-import { LocationModule } from "../../src/modules/location/LocationModule.sol";
-import { SmartDeployableModule } from "../../src/modules/smart-deployable/SmartDeployableModule.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
-import { SmartDeployableSystem } from "../../src/modules/smart-deployable/systems/SmartDeployableSystem.sol";
-import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
-import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
-import { createCoreModule } from "../CreateCoreModule.sol";
 
 contract EphemeralInventoryTest is MudTest {
   using Utils for bytes14;
@@ -58,7 +37,6 @@ contract EphemeralInventoryTest is MudTest {
   IWorldWithEntryContext world;
   InventoryLib.World ephemeralInventory;
   SmartDeployableLib.World smartDeployable;
-  InventoryModule inventoryModule;
 
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);

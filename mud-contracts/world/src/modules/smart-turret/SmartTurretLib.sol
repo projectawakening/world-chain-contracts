@@ -27,7 +27,7 @@ library SmartTurretLib {
 
   function createAndAnchorSmartTurret(
     World memory world,
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -40,7 +40,7 @@ library SmartTurretLib {
       abi.encodeCall(
         ISmartTurretSystem.createAndAnchorSmartTurret,
         (
-          smartTurretId,
+          smartObjectId,
           entityRecordData,
           smartObjectData,
           worldPosition,
@@ -52,16 +52,16 @@ library SmartTurretLib {
     );
   }
 
-  function configureSmartTurret(World memory world, uint256 smartTurretId, ResourceId systemId) internal {
+  function configureSmartTurret(World memory world, uint256 smartObjectId, ResourceId systemId) internal {
     world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurretSystem.configureSmartTurret, (smartTurretId, systemId))
+      abi.encodeCall(ISmartTurretSystem.configureSmartTurret, (smartObjectId, systemId))
     );
   }
 
   function inProximity(
     World memory world,
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
@@ -71,7 +71,7 @@ library SmartTurretLib {
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
         ISmartTurretSystem.inProximity,
-        (smartTurretId, turretOwnerCharacterId, priorityQueue, turret, turretTarget)
+        (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, turretTarget)
       )
     );
     return abi.decode(data, (TargetPriority[]));
@@ -79,7 +79,7 @@ library SmartTurretLib {
 
   function aggression(
     World memory world,
-    uint256 smartTurretId,
+    uint256 smartObjectId,
     uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
@@ -90,7 +90,7 @@ library SmartTurretLib {
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
         ISmartTurretSystem.aggression,
-        (smartTurretId, turretOwnerCharacterId, priorityQueue, turret, aggressor, victim)
+        (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, aggressor, victim)
       )
     );
     return abi.decode(data, (TargetPriority[]));
