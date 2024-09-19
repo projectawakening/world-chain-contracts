@@ -40,4 +40,6 @@ interface IWorld is
   ISmartStorageUnitSystem,
   ISmartTurretSystem,
   IStaticDataSystem
-{}
+{
+
+}
