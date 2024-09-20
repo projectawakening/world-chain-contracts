@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { Test, console } from "forge-std/Test.sol";
-import { ERC2771Context } from "openzeppelin-contracts/metatx/ERC2771Context.sol";
+import { ERC2771Context } from "./ERC2771Context.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
 
 contract Counter is ERC2771Context {
