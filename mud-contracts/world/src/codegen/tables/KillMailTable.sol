@@ -28,39 +28,16 @@ struct KillMailTableData {
 }
 
 library KillMailTable {
-  /**
-   * @notice Get the table values' field layout.
-   * @return _fieldLayout The field layout for the table.
-   */
-  function getFieldLayout() internal pure returns (FieldLayout) {
-    return _fieldLayout;
-  }
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "KillMailTable", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004b696c6c4d61696c5461626c65000000);
 
-  /**
-   * @notice Get the table's key schema.
-   * @return _keySchema The key schema for the table.
-   */
-  function getKeySchema() internal pure returns (Schema) {
-    SchemaType[] memory _keySchema = new SchemaType[](1);
-    _keySchema[0] = SchemaType.UINT256;
+  FieldLayout constant _fieldLayout =
+    FieldLayout.wrap(0x0081050020200120200000000000000000000000000000000000000000000000);
 
-    return SchemaLib.encode(_keySchema);
-  }
-
-  /**
-   * @notice Get the table's value schema.
-   * @return _valueSchema The value schema for the table.
-   */
-  function getValueSchema() internal pure returns (Schema) {
-    SchemaType[] memory _valueSchema = new SchemaType[](5);
-    _valueSchema[0] = SchemaType.UINT256;
-    _valueSchema[1] = SchemaType.UINT256;
-    _valueSchema[2] = SchemaType.UINT8;
-    _valueSchema[3] = SchemaType.UINT256;
-    _valueSchema[4] = SchemaType.UINT256;
-
-    return SchemaLib.encode(_valueSchema);
-  }
+  // Hex-encoded key schema of (uint256)
+  Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, uint256, uint8, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x008105001f1f001f1f0000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -101,7 +78,7 @@ library KillMailTable {
   /**
    * @notice Get killerCharacterId.
    */
-  function getKiller(uint256 killMailId) internal view returns (address killer) {
+  function getKillerCharacterId(uint256 killMailId) internal view returns (uint256 killerCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -112,7 +89,7 @@ library KillMailTable {
   /**
    * @notice Get killerCharacterId.
    */
-  function _getKiller(uint256 killMailId) internal view returns (address killer) {
+  function _getKillerCharacterId(uint256 killMailId) internal view returns (uint256 killerCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -123,7 +100,7 @@ library KillMailTable {
   /**
    * @notice Set killerCharacterId.
    */
-  function setKiller(uint256 killMailId, address killer) internal {
+  function setKillerCharacterId(uint256 killMailId, uint256 killerCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -133,7 +110,7 @@ library KillMailTable {
   /**
    * @notice Set killerCharacterId.
    */
-  function _setKiller(uint256 killMailId, address killer) internal {
+  function _setKillerCharacterId(uint256 killMailId, uint256 killerCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -143,7 +120,7 @@ library KillMailTable {
   /**
    * @notice Get victimCharacterId.
    */
-  function getVictim(uint256 killMailId) internal view returns (address victim) {
+  function getVictimCharacterId(uint256 killMailId) internal view returns (uint256 victimCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -154,7 +131,7 @@ library KillMailTable {
   /**
    * @notice Get victimCharacterId.
    */
-  function _getVictim(uint256 killMailId) internal view returns (address victim) {
+  function _getVictimCharacterId(uint256 killMailId) internal view returns (uint256 victimCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -165,8 +142,7 @@ library KillMailTable {
   /**
    * @notice Set victimCharacterId.
    */
-  function setVictimCharacterId(ResourceId _tableId, uint256 killMailId, uint256 victimCharacterId) internal {
-  function setVictim(uint256 killMailId, address victim) internal {
+  function setVictimCharacterId(uint256 killMailId, uint256 victimCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -176,8 +152,7 @@ library KillMailTable {
   /**
    * @notice Set victimCharacterId.
    */
-  function _setVictimCharacterId(ResourceId _tableId, uint256 killMailId, uint256 victimCharacterId) internal {
-  function _setVictim(uint256 killMailId, address victim) internal {
+  function _setVictimCharacterId(uint256 killMailId, uint256 victimCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
@@ -454,15 +429,15 @@ library KillMailTable {
       uint256 killTimestamp
     )
   {
-    killerCharacterId = (uint256(Bytes.slice32(_blob, 0)));
+    killerCharacterId = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    victimCharacterId = (uint256(Bytes.slice32(_blob, 32)));
+    victimCharacterId = (uint256(Bytes.getBytes32(_blob, 32)));
 
-    lossType = KillMailLossType(uint8(Bytes.slice1(_blob, 64)));
+    lossType = KillMailLossType(uint8(Bytes.getBytes1(_blob, 64)));
 
-    solarSystemId = (uint256(Bytes.slice32(_blob, 65)));
+    solarSystemId = (uint256(Bytes.getBytes32(_blob, 65)));
 
-    killTimestamp = (uint256(Bytes.slice32(_blob, 97)));
+    killTimestamp = (uint256(Bytes.getBytes32(_blob, 97)));
   }
 
   /**

@@ -474,15 +474,13 @@ export default defineWorld({
     KillMailTable: {
       schema: {
         killMailId: "uint256",
-      },
-      valueSchema: {
         killerCharacterId: "uint256",
         victimCharacterId: "uint256",
         lossType: "KillMailLossType",
         solarSystemId: "uint256",
         killTimestamp: "uint256",
       },
-      key: ["killMailId"],
+      key: ["killMailId"]
     },
   },
 });
