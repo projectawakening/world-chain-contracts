@@ -1,4 +1,8 @@
 # @eveworld/world
+## 0.0.15
+- changed kill mail implementation: killer and victim values from characterIds to evm addressess
+- bugfix for gate link distance calculation formula
+
 ## 0.0.14
 - renaming `smartStorageUnitId` to  `smartObjectId` for inventory for consistency 
 - consistant naming for `smartObjectId` across systems and MUD Table
