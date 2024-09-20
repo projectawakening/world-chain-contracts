@@ -29,6 +29,7 @@
     "@latticexyz/store": "2.2.3",
     "@latticexyz/world": "2.2.3",
     "@eveworld/world": "link:../mud-contracts/world",
+    "@eveworld/core": "link:../mud-contracts/core",
     "@eveworld/common-constants": "link:../mud-contracts/common/constants"
   },
   "devDependencies": {
