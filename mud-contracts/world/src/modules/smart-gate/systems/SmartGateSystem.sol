@@ -150,6 +150,7 @@ contract SmartGateSystem is EveSystem, AccessModified {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }
     SmartGateLinkTable.set(sourceGateId, destinationGateId, false);
+    SmartGateLinkTable.set(destinationGateId, sourceGateId, false);
   }
 
   /**
