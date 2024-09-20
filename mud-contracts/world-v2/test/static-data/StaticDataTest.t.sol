@@ -16,7 +16,7 @@ import { StaticDataSystem } from "../../src/systems/static-data/StaticDataSystem
 import { StaticData } from "../../src/codegen/tables/StaticData.sol";
 import { StaticDataMetadata } from "../../src/codegen/tables/StaticDataMetadata.sol";
 
-import { Utils as StaticDataUtils } from "../../src/systems/static-data/Utils.sol";
+import { StaticDataUtils } from "../../src/systems/static-data/StaticDataUtils.sol";
 
 contract StaticDataTest is MudTest {
   IBaseWorld world;

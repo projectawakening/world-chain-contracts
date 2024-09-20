@@ -5,6 +5,9 @@ export default defineWorld({
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", type: "bytes32" },
   },
+  enums: {
+    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
+  },
   tables: {
     /**********************
      * ENTITY RECORD MODULE *
@@ -164,6 +167,130 @@ export default defineWorld({
         z: "uint256",
       },
       key: ["smartObjectId"],
+    },
+    /*******************
+     * FUEL MODULE *
+     *******************/
+
+    /**
+     * Used to store the fuel balance of a Smart Deployable
+     */
+    Fuel: {
+      schema: {
+        entityId: "uint256",
+        fuelUnitVolume: "uint256",
+        fuelConsumptionIntervalInSeconds: "uint256",
+        fuelMaxCapacity: "uint256",
+        fuelAmount: "uint256",
+        lastUpdatedAt: "uint256", // unix time in seconds
+      },
+      key: ["entityId"],
+    },
+
+    /***************************
+     * SMART DEPLOYABLE MODULE *
+     ***************************/
+
+    /**
+     * Used to store the Global state of the Smart Deployable
+     */
+    GlobalDeployableState: {
+      schema: {
+        updatedBlockNumber: "uint256",
+        isPaused: "bool",
+        lastGlobalOffline: "uint256",
+        lastGlobalOnline: "uint256",
+      },
+      key: [],
+    },
+    /**
+     * Used to store the current state of a deployable
+     */
+    DeployableState: {
+      schema: {
+        smartObjectId: "uint256",
+        createdAt: "uint256",
+        previousState: "State",
+        currentState: "State",
+        isValid: "bool",
+        anchoredAt: "uint256",
+        updatedBlockNumber: "uint256",
+        updatedBlockTime: "uint256",
+      },
+      key: ["smartObjectId"],
+    },
+    /**
+     * Used to store the deployable details of a in-game entity
+     */
+    DeployableTokenTable: {
+      schema: {
+        erc721Address: "address",
+      },
+      key: [],
+    },
+
+    /*******************
+     * INVENTORY MODULE *
+     *******************/
+    InventoryTable: {
+      schema: {
+        smartObjectId: "uint256",
+        capacity: "uint256",
+        usedCapacity: "uint256",
+        items: "uint256[]",
+      },
+      key: ["smartObjectId"],
+    },
+    InventoryItemTable: {
+      schema: {
+        smartObjectId: "uint256",
+        itemId: "uint256",
+        quantity: "uint256",
+        index: "uint256",
+        stateUpdate: "uint256",
+      },
+      key: ["smartObjectId", "itemId"],
+    },
+    /*****************************
+     * EPHEMERAL INVENTORY MODULE *
+     *****************************/
+    EphemeralInvCapacity: {
+      schema: {
+        smartObjectId: "uint256",
+        capacity: "uint256",
+      },
+      key: ["smartObjectId"],
+    },
+    EphemeralInv: {
+      schema: {
+        smartObjectId: "uint256",
+        ephemeralInvOwner: "address",
+        usedCapacity: "uint256",
+        items: "uint256[]",
+      },
+      key: ["smartObjectId", "ephemeralInvOwner"],
+    },
+    EphemeralInvItem: {
+      schema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+        ephemeralInvItemOwner: "address",
+        quantity: "uint256",
+        index: "uint256",
+        stateUpdate: "uint256",
+      },
+      key: ["smartObjectId", "inventoryItemId", "ephemeralInvItemOwner"],
+    },
+    ItemTransferOffchainTable: {
+      schema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+        previousOwner: "address",
+        currentOwner: "address",
+        quantity: "uint256",
+        updatedAt: "uint256",
+      },
+      key: ["smartObjectId", "inventoryItemId"],
     },
   },
 });

@@ -23,7 +23,7 @@ import { EntityRecord, EntityRecordData as RecordData } from "../../src/codegen/
 import { EntityRecordData, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 import { Characters, CharacterToken } from "../../src/codegen/index.sol";
 
-import { Utils as SmartCharacterUtils } from "../../src/systems/smart-character/Utils.sol";
+import { SmartCharacterUtils } from "../../src/systems/smart-character/SmartCharacterUtils.sol";
 
 contract SmartCharacterTest is MudTest {
   IBaseWorld world;

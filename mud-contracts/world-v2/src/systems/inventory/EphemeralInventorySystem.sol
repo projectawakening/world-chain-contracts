@@ -1,103 +1,71 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.21;
+
+pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, ENTITY_RECORD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { EveSystem } from "../EveSystem.sol";
 
-import { EphemeralInvTable } from "../../../codegen/tables/EphemeralInvTable.sol";
-import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../../codegen/tables/EphemeralInvItemTable.sol";
-import { EphemeralInvCapacityTable } from "../../../codegen/tables/EphemeralInvCapacityTable.sol";
-import { DeployableState, DeployableStateData } from "../../../codegen/tables/DeployableState.sol";
-import { EntityRecordTable, EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
-import { GlobalDeployableState } from "../../../codegen/tables/GlobalDeployableState.sol";
-import { State } from "../../../codegen/common.sol";
+import { EphemeralInvCapacity } from "../../codegen/index.sol";
+import { EphemeralInv, EphemeralInvData } from "../../codegen/index.sol";
+import { EphemeralInvItem, EphemeralInvItemData } from "../../codegen/index.sol";
+import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
+import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
+import { SmartDeployableErrors } from "../smart-deployable/SmartDeployableErrors.sol";
+import { State } from "../smart-deployable/types.sol";
 
-import { SmartDeployableErrors } from "../../smart-deployable/SmartDeployableErrors.sol";
-import { IInventoryErrors } from "../IInventoryErrors.sol";
+import { IInventoryErrors } from "./IInventoryErrors.sol";
+import { InventoryUtils } from "./InventoryUtils.sol";
+import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
 
-import { Utils as SmartDeployableUtils } from "../../smart-deployable/Utils.sol";
-import { Utils as EntityRecordUtils } from "../../entity-record/Utils.sol";
-import { Utils } from "../Utils.sol";
-import { InventoryItem } from "../types.sol";
+import { InventoryItem } from "./types.sol";
 
-contract EphemeralInventory is EveSystem {
-  using Utils for bytes14;
-  using SmartDeployableUtils for bytes14;
+contract EphemeralInventorySystem is EveSystem {
   using EntityRecordUtils for bytes14;
 
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
   modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused(_namespace().globalStateTableId()) == false) {
+    if (GlobalDeployableState.getIsPaused() == false) {
       revert SmartDeployableErrors.SmartDeployable_StateTransitionPaused();
     }
     _;
   }
 
   /**
+   * // TODO Only owner of the smart storage unit can set the capacity
    * @notice Set the ephemeral inventory capacity
    * @dev Set the ephemeral inventory capacity by smart storage unit id
-   * //TODO Only owner of the smart storage unit can set the capacity
    * @param smartObjectId The smart storage unit id
    * @param ephemeralStorageCapacity The storage capacity
    */
-  function setEphemeralInventoryCapacity(
-    uint256 smartObjectId,
-    uint256 ephemeralStorageCapacity
-  ) public hookable(smartObjectId, _systemId()) {
+  function setEphemeralInventoryCapacity(uint256 smartObjectId, uint256 ephemeralStorageCapacity) public {
     if (ephemeralStorageCapacity == 0) {
       revert IInventoryErrors.Inventory_InvalidCapacity("InventoryEphemeralSystem: storage capacity cannot be 0");
     }
-    EphemeralInvCapacityTable.setCapacity(
-      _namespace().ephemeralInvCapacityTableId(),
-      smartObjectId,
-      ephemeralStorageCapacity
-    );
+    EphemeralInvCapacity.setCapacity(smartObjectId, ephemeralStorageCapacity);
   }
 
-  /**
-   * @notice Deposit items to the ephemeral inventory
-   * @dev Deposit items to the ephemeral inventory by smart storage unit id
-   * //TODO msg.sender should be the ephemeralInventoryOwner
-   * @param smartObjectId The smart storage unit id
-   * @param ephemeralInventoryOwner The owner of the inventory
-   * @param items The items to deposit to the inventory
-   */
   function depositToEphemeralInventory(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
+  ) public onlyActive {
+    State currentState = DeployableState.getCurrentState(smartObjectId);
     if (currentState != State.ONLINE) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
     }
 
-    uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner
-    );
-    uint256 maxCapacity = EphemeralInvCapacityTable.getCapacity(
-      _namespace().ephemeralInvCapacityTableId(),
-      smartObjectId
-    );
+    uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
+    uint256 maxCapacity = EphemeralInvCapacity.getCapacity(smartObjectId);
 
-    uint256 existingItemsLength = EphemeralInvTable
-      .getItems(_namespace().ephemeralInvTableId(), smartObjectId, ephemeralInventoryOwner)
-      .length;
+    uint256 existingItemsLength = EphemeralInv.getItems(smartObjectId, ephemeralInventoryOwner).length;
 
     for (uint256 i = 0; i < items.length; i++) {
-      //Revert if the items to deposit is not created on-chain
-      EntityRecordTableData memory entityRecord = EntityRecordTable.get(
-        ENTITY_RECORD_DEPLOYMENT_NAMESPACE.entityRecordTableId(),
-        items[i].inventoryItemId
-      );
+      // Revert if the items to deposit is not created on-chain
+      EntityRecordData memory entityRecord = EntityRecord.get(items[i].inventoryItemId);
+
       if (entityRecord.recordExists == false) {
         revert IInventoryErrors.Inventory_InvalidItem(
           "InventoryEphemeralSystem: item is not created on-chain",
@@ -114,18 +82,13 @@ contract EphemeralInventory is EveSystem {
         itemIndex
       );
     }
-    EphemeralInvTable.setUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner,
-      usedCapacity
-    );
+    EphemeralInv.setUsedCapacity(smartObjectId, ephemeralInventoryOwner, usedCapacity);
   }
 
   /**
+   * // TODO msg.sender should be the item owner
    * @notice Withdraw items from the ephemeral inventory
    * @dev Withdraw items from the ephemeral inventory by smart storage unit id
-   * //TODO msg.sender should be the item owner
    * @param smartObjectId The smart storage unit id
    * @param ephemeralInventoryOwner The owner of the inventory
    * @param items The items to withdraw from the inventory
@@ -134,36 +97,24 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
-  ) public hookable(smartObjectId, _systemId()) onlyActive {
-    State currentState = DeployableState.getCurrentState(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
+  ) public onlyActive {
+    State currentState = DeployableState.getCurrentState(smartObjectId);
     if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
       revert SmartDeployableErrors.SmartDeployable_IncorrectState(smartObjectId, currentState);
     }
 
-    uint256 usedCapacity = EphemeralInvTable.getUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner
-    );
+    uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
     uint256 itemsLength = items.length;
 
     for (uint256 i = 0; i < itemsLength; i++) {
       usedCapacity = _processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
     }
-    EphemeralInvTable.setUsedCapacity(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner,
-      usedCapacity
-    );
+    EphemeralInv.setUsedCapacity(smartObjectId, ephemeralInventoryOwner, usedCapacity);
   }
 
-  function _systemId() internal view returns (ResourceId) {
-    return _namespace().ephemeralInventorySystemId();
-  }
+  /*******************
+   * INTERNAL METHODS *
+   *******************/
 
   function _processItemDeposit(
     uint256 smartObjectId,
@@ -199,19 +150,15 @@ contract EphemeralInventory is EveSystem {
     InventoryItem memory item,
     uint256 itemIndex
   ) internal {
-    EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
-      _namespace().ephemeralInventoryItemTableId(),
+    EphemeralInvItemData memory itemData = EphemeralInvItem.get(
       smartObjectId,
       item.inventoryItemId,
       ephemeralInventoryOwner
     );
 
-    DeployableStateData memory deployableStateData = DeployableState.get(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
+    DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
 
-    //Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
+    // Valid deployable state. Create new item if the item does not exist in the inventory or its has been re-anchored
     if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.anchoredAt) {
       //Item does not exist in the inventory
       _depositNewItem(smartObjectId, ephemeralInventoryOwner, item, itemIndex);
@@ -227,15 +174,9 @@ contract EphemeralInventory is EveSystem {
     InventoryItem memory item,
     uint256 index
   ) internal {
-    uint256 quantity = EphemeralInvItemTable.getQuantity(
-      _namespace().ephemeralInventoryItemTableId(),
-      smartObjectId,
-      item.inventoryItemId,
-      ephemeralInventoryOwner
-    );
+    uint256 quantity = EphemeralInvItem.getQuantity(smartObjectId, item.inventoryItemId, ephemeralInventoryOwner);
 
-    EphemeralInvItemTable.set(
-      _namespace().ephemeralInventoryItemTableId(),
+    EphemeralInvItem.set(
       smartObjectId,
       item.inventoryItemId,
       ephemeralInventoryOwner,
@@ -251,14 +192,8 @@ contract EphemeralInventory is EveSystem {
     InventoryItem memory item,
     uint256 index
   ) internal {
-    EphemeralInvTable.pushItems(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner,
-      item.inventoryItemId
-    );
-    EphemeralInvItemTable.set(
-      _namespace().ephemeralInventoryItemTableId(),
+    EphemeralInv.pushItems(smartObjectId, ephemeralInventoryOwner, item.inventoryItemId);
+    EphemeralInvItem.set(
       smartObjectId,
       item.inventoryItemId,
       ephemeralInventoryOwner,
@@ -274,8 +209,7 @@ contract EphemeralInventory is EveSystem {
     InventoryItem memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
-    EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
-      _namespace().ephemeralInventoryItemTableId(),
+    EphemeralInvItemData memory itemData = EphemeralInvItem.get(
       smartObjectId,
       item.inventoryItemId,
       ephemeralInventoryOwner
@@ -287,7 +221,7 @@ contract EphemeralInventory is EveSystem {
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function _validateWithdrawal(InventoryItem memory item, EphemeralInvItemTableData memory itemData) internal pure {
+  function _validateWithdrawal(InventoryItem memory item, EphemeralInvItemData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert IInventoryErrors.Inventory_InvalidQuantity(
         "InventoryEphemeralSystem: invalid quantity",
@@ -301,13 +235,9 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
-    EphemeralInvItemTableData memory itemData
+    EphemeralInvItemData memory itemData
   ) internal {
-    DeployableStateData memory deployableStateData = DeployableState.get(
-      SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE.deployableStateTableId(),
-      smartObjectId
-    );
-
+    DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
     if (itemData.stateUpdate < deployableStateData.anchoredAt) {
       //Disable withdraw if its has been re-anchored
       revert IInventoryErrors.Inventory_InvalidItemQuantity(
@@ -329,47 +259,25 @@ contract EphemeralInventory is EveSystem {
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
-    EphemeralInvItemTableData memory itemData
+    EphemeralInvItemData memory itemData
   ) internal {
-    uint256[] memory inventoryItems = EphemeralInvTable.getItems(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner
-    );
+    uint256[] memory inventoryItems = EphemeralInv.getItems(smartObjectId, ephemeralInventoryOwner);
     uint256 lastElement = inventoryItems[inventoryItems.length - 1];
-    EphemeralInvTable.updateItems(
-      _namespace().ephemeralInvTableId(),
-      smartObjectId,
-      ephemeralInventoryOwner,
-      itemData.index,
-      lastElement
-    );
-    EphemeralInvTable.popItems(_namespace().ephemeralInvTableId(), smartObjectId, ephemeralInventoryOwner);
+    EphemeralInv.updateItems(smartObjectId, ephemeralInventoryOwner, itemData.index, lastElement);
+    EphemeralInv.popItems(smartObjectId, ephemeralInventoryOwner);
 
-    //when a last element is swapped, change the index of the last element in the EphemeralInvItemTable
-    EphemeralInvItemTable.setIndex(
-      _namespace().ephemeralInventoryItemTableId(),
-      smartObjectId,
-      lastElement,
-      ephemeralInventoryOwner,
-      itemData.index
-    );
-    EphemeralInvItemTable.deleteRecord(
-      _namespace().ephemeralInventoryItemTableId(),
-      smartObjectId,
-      item.inventoryItemId,
-      ephemeralInventoryOwner
-    );
+    //when a last element is swapped, change the index of the last element in the EphemeralInvItem
+    EphemeralInvItem.setIndex(smartObjectId, lastElement, ephemeralInventoryOwner, itemData.index);
+    EphemeralInvItem.deleteRecord(smartObjectId, item.inventoryItemId, ephemeralInventoryOwner);
   }
 
   function _reduceItemQuantity(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem memory item,
-    EphemeralInvItemTableData memory itemData
+    EphemeralInvItemData memory itemData
   ) internal {
-    EphemeralInvItemTable.set(
-      _namespace().ephemeralInventoryItemTableId(),
+    EphemeralInvItem.set(
       smartObjectId,
       item.inventoryItemId,
       ephemeralInventoryOwner,

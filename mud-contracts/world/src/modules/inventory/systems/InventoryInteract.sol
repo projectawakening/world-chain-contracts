@@ -27,9 +27,9 @@ contract InventoryInteract is EveSystem {
   using InventoryLib for InventoryLib.World;
 
   /**
+   * // TODO this function should be restricted to be called by a systemId that is configured only the owner of the SSU
    * @notice Transfer items from inventory to ephemeral
    * @dev transfer items from inventory to ephemeral
-   * //TODO this function should be restricted to be called by a systemId that is configured only the owner of the SSU
    * @param smartObjectId is the smart object id
    * @param outItems is the array of items to transfer
    */

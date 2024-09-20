@@ -13,9 +13,11 @@ import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 import { EveSystem } from "../EveSystem.sol";
 
-import { Utils as EntityRecordUtils } from "../entity-record/Utils.sol";
-import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
+import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
+import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
 import { ISmartCharacterErrors } from "./ISmartCharacterErrors.sol";
+
+import "forge-std/console.sol";
 
 contract SmartCharacterSystem is EveSystem {
   using StaticDataUtils for bytes14;
@@ -48,7 +50,7 @@ contract SmartCharacterSystem is EveSystem {
     uint256 createdAt = block.timestamp;
     Characters.set(characterId, characterAddress, createdAt);
 
-    //Save the entity record in EntityRecord Module
+    // Save the entity record in EntityRecord Module
     ResourceId entityRecordSystemId = EntityRecordUtils.entityRecordSystemId();
     world().call(entityRecordSystemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, entityRecord));
     world().call(

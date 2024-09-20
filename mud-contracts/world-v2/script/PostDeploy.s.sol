@@ -21,14 +21,17 @@ import { SmartCharacterSystem } from "../src/systems/smart-character/SmartCharac
 import { registerERC721 } from "../src/systems/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
 import { StaticDataSystem } from "../src/systems/static-data/StaticDataSystem.sol";
+import { SmartDeployableSystem } from "../src/systems/smart-deployable/SmartDeployableSystem.sol";
 
-import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
-import { Utils as StaticDataUtils } from "../src/systems/static-data/Utils.sol";
+import { SmartCharacterUtils } from "../src/systems/smart-character/SmartCharacterUtils.sol";
+import { SmartDeployableUtils } from "../src/systems/smart-deployable/SmartDeployableUtils.sol";
+import { StaticDataUtils } from "../src/systems/static-data/StaticDataUtils.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 
 contract PostDeploy is Script {
   using SmartCharacterUtils for bytes14;
+  using SmartDeployableUtils for bytes14;
   using StaticDataUtils for bytes14;
 
   function run(address worldAddress) external {
@@ -37,13 +40,13 @@ contract PostDeploy is Script {
 
     // Private Key loaded from environment
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    address deployer = vm.addr(deployerPrivateKey);
+    // address deployer = vm.addr(deployerPrivateKey);
     StoreSwitch.setStoreAddress(address(world));
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    _installPuppet(world, deployer);
+    _installPuppet(world);
 
     // register new ERC20 EVE Token
     _createEVEToken(world);
@@ -56,7 +59,7 @@ contract PostDeploy is Script {
     vm.stopBroadcast();
   }
 
-  function _installPuppet(IBaseWorld world, address deployer) internal {
+  function _installPuppet(IBaseWorld world) internal {
     StoreSwitch.setStoreAddress(address(world));
     // creating all module contracts
     PuppetModule puppetModule = new PuppetModule();
@@ -87,9 +90,6 @@ contract PostDeploy is Script {
 
     IERC20Mintable erc20 = IERC20Mintable(erc20Address);
     erc20.mint(to, amount * 1 ether);
-
-    console.log("minting to: ", address(to));
-    console.log("amount: ", amount * 1 ether);
   }
 
   function _createCharacterToken(IBaseWorld world) internal {
@@ -129,7 +129,12 @@ contract PostDeploy is Script {
     ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
     world.call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
 
-    // regiseter token address for smart deployable
+    // register token address for smart deployable
+    ResourceId smartDeployableSystemId = SmartDeployableUtils.smartDeployableSystemId();
+    world.call(
+      smartDeployableSystemId,
+      abi.encodeCall(SmartDeployableSystem.registerDeployableToken, (address(erc721SmartDeployableToken)))
+    );
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {

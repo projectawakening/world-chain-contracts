@@ -16,8 +16,11 @@ import { LocationSystem } from "../../src/systems/location/LocationSystem.sol";
 import { Location } from "../../src/codegen/tables/Location.sol";
 import { LocationData } from "../../src/codegen/tables/Location.sol";
 
+import { LocationUtils } from "../../src/systems/location/LocationUtils.sol";
+
 contract StaticDataTest is MudTest {
   IBaseWorld world;
+  using LocationUtils for bytes14;
 
   function setUp() public virtual override {
     super.setUp();
@@ -35,9 +38,8 @@ contract StaticDataTest is MudTest {
 
   function testSaveLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = ILocationSystem.eveworld__saveLocation.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.saveLocation, (smartObjectId, solarSystemId, x, y, z)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -48,12 +50,10 @@ contract StaticDataTest is MudTest {
     assertEq(z, location.z);
   }
 
-  // test get location
   function testGetLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = ILocationSystem.eveworld__saveLocation.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.saveLocation, (smartObjectId, solarSystemId, x, y, z)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -66,9 +66,8 @@ contract StaticDataTest is MudTest {
 
   function testSetSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = ILocationSystem.eveworld__setSolarSystemId.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setSolarSystemId, (smartObjectId, solarSystemId)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -78,9 +77,8 @@ contract StaticDataTest is MudTest {
 
   function testSetX(uint256 smartObjectId, uint256 x) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = ILocationSystem.eveworld__setX.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setX, (smartObjectId, x)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -90,9 +88,8 @@ contract StaticDataTest is MudTest {
 
   function testSetY(uint256 smartObjectId, uint256 y) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = ILocationSystem.eveworld__setY.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setY, (smartObjectId, y)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -102,9 +99,8 @@ contract StaticDataTest is MudTest {
 
   function testSetZ(uint256 smartObjectId, uint256 z) public {
     vm.assume(smartObjectId != 0);
-    bytes4 functionSelector = ILocationSystem.eveworld__setZ.selector;
 
-    ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
+    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setZ, (smartObjectId, z)));
 
     LocationData memory location = Location.get(smartObjectId);
