@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/standard-contracts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Standard (non-MUD) smart contracts for the world",
   "main": "index.js",
   "scripts": {
