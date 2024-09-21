@@ -23,7 +23,7 @@ contract LocationSystem is AccessModified, EveSystem {
     uint256 entityId,
     LocationTableData memory location
   ) public onlyAdmin hookable(entityId, _systemId()) {
-    LocationTable.set(_namespace().locationTableId(), entityId, location);
+    LocationTable.set(entityId, location);
   }
 
   /**

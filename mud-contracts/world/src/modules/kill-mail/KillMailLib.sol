@@ -4,7 +4,7 @@ pragma solidity >=0.8.21;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { KillMailTableData } from "../../codegen/tables/KillMailTable.sol";
 import { KillMailLossType } from "../../codegen/common.sol";
-import { IKillMail } from "./interfaces/IKillMail.sol";
+import { IKillMailSystem } from "./interfaces/IKillMailSystem.sol";
 import { Utils } from "./Utils.sol";
 
 library KillMailLib {
@@ -18,7 +18,7 @@ library KillMailLib {
   function reportKill(World memory world, uint256 killMailId, KillMailTableData memory killMailTableData) internal {
     world.iface.call(
       world.namespace.killMailSystemId(),
-      abi.encodeCall(IKillMail.reportKill, (killMailId, killMailTableData))
+      abi.encodeCall(IKillMailSystem.reportKill, (killMailId, killMailTableData))
     );
   }
 }

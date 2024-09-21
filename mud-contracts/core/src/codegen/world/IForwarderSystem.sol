@@ -5,10 +5,11 @@ pragma solidity >=0.8.24;
 
 /**
  * @title IForwarderSystem
+ * @author MUD (https://mud.dev) by Lattice (https://lattice.xyz)
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IForwarderSystem {
-  function setTrustedForwarder(address forwarder) external;
+  function eveworld__setTrustedForwarder(address forwarder) external;
 
-  function isTrustedForwarder(address forwarder) external returns (bool);
+  function eveworld__isTrustedForwarder(address forwarder) external returns (bool);
 }

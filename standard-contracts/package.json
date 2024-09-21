@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/standard-contracts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Standard (non-MUD) smart contracts for the world",
   "main": "index.js",
   "scripts": {
@@ -25,10 +25,11 @@
   "dependencies": {
     "prettier-plugin-solidity": "^1.3.1",
     "solc": "^0.8.24",
-    "@latticexyz/schema-type": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/world": "2.0.0-transaction-context-98ef570f",
-    "@latticexyz/store": "2.0.0-transaction-context-98ef570f",
+    "@latticexyz/schema-type": "2.2.3",
+    "@latticexyz/store": "2.2.3",
+    "@latticexyz/world": "2.2.3",
     "@eveworld/world": "link:../mud-contracts/world",
+    "@eveworld/core": "link:../mud-contracts/core",
     "@eveworld/common-constants": "link:../mud-contracts/common/constants"
   },
   "devDependencies": {

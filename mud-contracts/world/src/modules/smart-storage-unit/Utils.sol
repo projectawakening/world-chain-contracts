@@ -18,13 +18,4 @@ library Utils {
         name: SMART_STORAGE_UNIT_SYSTEM_NAME
       });
   }
-
-  function classConfigTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
-        name: bytes16("ClassConfig")
-      });
-  }
 }

@@ -7,7 +7,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol";
 import { SmartObjectData } from "../smart-deployable/types.sol";
 
-import { ISmartGate } from "./interfaces/ISmartGate.sol";
+import { ISmartGateSystem } from "./interfaces/ISmartGateSystem.sol";
 import { Utils } from "./Utils.sol";
 
 /**
@@ -38,7 +38,7 @@ library SmartGateLib {
     world.iface.call(
       world.namespace.smartGateSystemId(),
       abi.encodeCall(
-        ISmartGate.createAndAnchorSmartGate,
+        ISmartGateSystem.createAndAnchorSmartGate,
         (
           smartObjectId,
           entityRecordData,
@@ -56,21 +56,21 @@ library SmartGateLib {
   function configureSmartGate(World memory world, uint256 smartObjectId, ResourceId systemId) internal {
     world.iface.call(
       world.namespace.smartGateSystemId(),
-      abi.encodeCall(ISmartGate.configureSmartGate, (smartObjectId, systemId))
+      abi.encodeCall(ISmartGateSystem.configureSmartGate, (smartObjectId, systemId))
     );
   }
 
   function linkSmartGates(World memory world, uint256 sourceGateId, uint256 destinationGateId) internal {
     world.iface.call(
       world.namespace.smartGateSystemId(),
-      abi.encodeCall(ISmartGate.linkSmartGates, (sourceGateId, destinationGateId))
+      abi.encodeCall(ISmartGateSystem.linkSmartGates, (sourceGateId, destinationGateId))
     );
   }
 
   function unlinkSmartGates(World memory world, uint256 sourceGateId, uint256 destinationGateId) internal {
     world.iface.call(
       world.namespace.smartGateSystemId(),
-      abi.encodeCall(ISmartGate.unlinkSmartGates, (sourceGateId, destinationGateId))
+      abi.encodeCall(ISmartGateSystem.unlinkSmartGates, (sourceGateId, destinationGateId))
     );
   }
 
@@ -82,7 +82,7 @@ library SmartGateLib {
   ) internal returns (bool) {
     bytes memory returnedData = world.iface.call(
       world.namespace.smartGateSystemId(),
-      abi.encodeCall(ISmartGate.canJump, (characterId, sourceGateId, destinationGateId))
+      abi.encodeCall(ISmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
     );
 
     return abi.decode(returnedData, (bool));
@@ -91,7 +91,7 @@ library SmartGateLib {
   function isGateLinked(World memory world, uint256 sourceGateId, uint256 destinationGateId) internal returns (bool) {
     bytes memory returnedData = world.iface.call(
       world.namespace.smartGateSystemId(),
-      abi.encodeCall(ISmartGate.isGateLinked, (sourceGateId, destinationGateId))
+      abi.encodeCall(ISmartGateSystem.isGateLinked, (sourceGateId, destinationGateId))
     );
 
     return abi.decode(returnedData, (bool));

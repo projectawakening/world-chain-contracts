@@ -3,7 +3,7 @@ pragma solidity >=0.8.21;
 
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { ISmartCharacter } from "./interfaces/ISmartCharacter.sol";
+import { ISmartCharacterSystem } from "./interfaces/ISmartCharacterSystem.sol";
 import { EntityRecordOffchainTableData } from "../../codegen/tables/EntityRecordOffchainTable.sol";
 
 import { SmartObjectData, EntityRecordData } from "./types.sol";
@@ -35,7 +35,7 @@ library SmartCharacterLib {
     world.iface.call(
       world.namespace.smartCharacterSystemId(),
       abi.encodeCall(
-        ISmartCharacter.createCharacter,
+        ISmartCharacterSystem.createCharacter,
         (characterId, characterAddress, corpId, entityRecord, entityRecordOffchain, tokenCid)
       )
     );
@@ -44,21 +44,21 @@ library SmartCharacterLib {
   function registerERC721Token(World memory world, address tokenAddress) internal {
     world.iface.call(
       world.namespace.smartCharacterSystemId(),
-      abi.encodeCall(ISmartCharacter.registerERC721Token, (tokenAddress))
+      abi.encodeCall(ISmartCharacterSystem.registerERC721Token, (tokenAddress))
     );
   }
 
   function setCharClassId(World memory world, uint256 classId) internal {
     world.iface.call(
       world.namespace.smartCharacterSystemId(),
-      abi.encodeCall(ISmartCharacter.setCharClassId, (classId))
+      abi.encodeCall(ISmartCharacterSystem.setCharClassId, (classId))
     );
   }
 
   function updateCorpId(World memory world, uint256 characterId, uint256 corpId) internal {
     world.iface.call(
       world.namespace.smartCharacterSystemId(),
-      abi.encodeCall(ISmartCharacter.updateCorpId, (characterId, corpId))
+      abi.encodeCall(ISmartCharacterSystem.updateCorpId, (characterId, corpId))
     );
   }
 }

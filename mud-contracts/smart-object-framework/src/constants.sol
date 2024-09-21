@@ -14,6 +14,10 @@ ResourceId constant SMART_OBJECT_MODULE_NAMESPACE_ID = ResourceId.wrap(
   bytes32(abi.encodePacked(RESOURCE_NAMESPACE, SMART_OBJECT_MODULE_NAMESPACE))
 );
 
+bytes16 constant ENTITY_SYSTEM_NAME = "EntitySystem";
+bytes16 constant MODULE_SYSTEM_NAME = "ModuleSystem";
+bytes16 constant HOOK_SYSTEM_NAME = "HookSystem";
+
 bytes16 constant ENTITY_TABLE_NAME = "EntityTable";
 bytes16 constant MODULE_TABLE_NAME = "ModuleTable";
 bytes16 constant HOOK_TABLE_NAME = "HookTable";

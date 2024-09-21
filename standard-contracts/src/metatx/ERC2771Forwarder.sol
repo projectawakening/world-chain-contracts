@@ -10,7 +10,7 @@ import { ECDSA } from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Nonces } from "openzeppelin-contracts/utils/Nonces.sol";
 import { Address } from "openzeppelin-contracts/utils/Address.sol";
-import "forge-std/console.sol";
+import { IForwarderSystem } from "@eveworld/core/src/codegen/world/IForwarderSystem.sol";
 
 /**
  * @dev A forwarder compatible with ERC-2771 contracts. See {ERC2771Context}.
@@ -359,7 +359,9 @@ contract ERC2771Forwarder is EIP712, Nonces {
    * to execute this transaction with a low-level `call` instead of a low-level `static-code`. (don't try this at home)
    */
   function _isTrustedByTarget(address target) private returns (bool) {
-    bytes memory encodedParams = abi.encodeCall(ERC2771Context.isTrustedForwarder, (address(this)));
+    //it changes the standard interface but it aligns with MUD principles of not deploying systems into root namespace
+    //it not clean to hardcode the namespace here but it is a necessary evil
+    bytes memory encodedParams = abi.encodeCall(IForwarderSystem.eveworld__isTrustedForwarder, (address(this)));
 
     bool success;
     uint256 returnSize;

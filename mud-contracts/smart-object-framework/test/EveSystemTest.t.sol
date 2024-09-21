@@ -27,9 +27,9 @@ import { SmartObjectFrameworkModule } from "../src/SmartObjectFrameworkModule.so
 import { SmartObjectLib } from "../src/SmartObjectLib.sol";
 import { createCoreModule } from "./createCoreModule.sol";
 
-import { EntityCore } from "../src/systems/core/EntityCore.sol";
-import { HookCore } from "../src/systems/core/HookCore.sol";
-import { ModuleCore } from "../src/systems/core/ModuleCore.sol";
+import { EntitySystem } from "../src/systems/core/EntitySystem.sol";
+import { HookSystem } from "../src/systems/core/HookSystem.sol";
+import { ModuleSystem } from "../src/systems/core/ModuleSystem.sol";
 
 import { SMART_OBJECT_DEPLOYMENT_NAMESPACE as SMART_OBJ_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
@@ -146,12 +146,12 @@ contract EveSystemTest is Test {
     baseWorld.initialize(createCoreModule());
     StoreSwitch.setStoreAddress(address(baseWorld));
     // needs to manually deploy each System contracts
-    EntityCore entityCore = new EntityCore();
-    HookCore hookCore = new HookCore();
-    ModuleCore moduleCore = new ModuleCore();
+    EntitySystem entitySystem = new EntitySystem();
+    HookSystem hookSystem = new HookSystem();
+    ModuleSystem moduleSystem = new ModuleSystem();
     baseWorld.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
+      abi.encode(SMART_OBJ_NAMESPACE, address(entitySystem), address(hookSystem), address(moduleSystem))
     );
     smartObject = SmartObjectLib.World(baseWorld, SMART_OBJ_NAMESPACE);
 
@@ -168,22 +168,22 @@ contract EveSystemTest is Test {
     baseWorld = IBaseWorld(address(new World()));
     baseWorld.initialize(createCoreModule());
     // needs to manually deploy each System contracts
-    EntityCore entityCore = new EntityCore();
-    HookCore hookCore = new HookCore();
-    ModuleCore moduleCore = new ModuleCore();
+    EntitySystem entitySystem = new EntitySystem();
+    HookSystem hookSystem = new HookSystem();
+    ModuleSystem moduleSystem = new ModuleSystem();
     baseWorld.installModule(
       new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
+      abi.encode(SMART_OBJ_NAMESPACE, address(entitySystem), address(hookSystem), address(moduleSystem))
     );
 
     SmartObjectFrameworkModule newModule = new SmartObjectFrameworkModule();
-    entityCore = new EntityCore();
-    hookCore = new HookCore();
-    moduleCore = new ModuleCore();
+    entitySystem = new EntitySystem();
+    hookSystem = new HookSystem();
+    moduleSystem = new ModuleSystem();
     baseWorld.transferOwnership(WorldResourceIdLib.encodeNamespace(SMART_OBJ_NAMESPACE), address(newModule));
     baseWorld.installModule(
       newModule,
-      abi.encode(SMART_OBJ_NAMESPACE, address(entityCore), address(hookCore), address(moduleCore))
+      abi.encode(SMART_OBJ_NAMESPACE, address(entitySystem), address(hookSystem), address(moduleSystem))
     );
   }
 
@@ -207,7 +207,7 @@ contract EveSystemTest is Test {
   function testRegisterEntity() public {
     smartObject.registerEntityType(CLASS, "Class");
     smartObject.registerEntity(1, CLASS);
-    assertTrue(EntityTable.getEntityType(SMART_OBJ_NAMESPACE.entityTableTableId(), 1) == CLASS);
+    assertTrue(EntityTable.getEntityType(1) == CLASS);
   }
 
   function testRevertEntityTypeNotRegistered() public {
@@ -216,7 +216,7 @@ contract EveSystemTest is Test {
     //   abi.encodeWithSelector(
     //     ICustomErrorSystem.EntityTypeNotRegistered.selector,
     //     2,
-    //     "EntityCore: EntityType not registered"
+    //     "EntitySystem: EntityType not registered"
     //   )
     // );
     // smartObject.registerEntity(1, CLASS);
@@ -242,7 +242,7 @@ contract EveSystemTest is Test {
 
     //Tag objects under a class
     smartObject.tagEntity(singletonObject1, classId1);
-    uint256[] memory entityTagIds = EntityMap.get(SMART_OBJ_NAMESPACE.entityMapTableId(), singletonObject1);
+    uint256[] memory entityTagIds = EntityMap.get(singletonObject1);
     assertTrue(entityTagIds[0] == classId1);
   }
 
@@ -264,7 +264,7 @@ contract EveSystemTest is Test {
     //Tag objects under a class
     smartObject.tagEntities(singletonObject1, entityIds);
 
-    uint256[] memory entityTagIds = EntityMap.get(SMART_OBJ_NAMESPACE.entityMapTableId(), singletonObject1);
+    uint256[] memory entityTagIds = EntityMap.get(singletonObject1);
     assertTrue(entityTagIds[0] == classId1);
     assertTrue(entityTagIds[1] == classId2);
   }
@@ -284,7 +284,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.EntityAlreadyTagged.selector,
     //     singletonObject1,
     //     classId1,
-    //     "EntityCore: Entity already tagged"
+    //     "EntitySystem: Entity already tagged"
     //   )
     // );
     // smartObject.tagEntity(singletonObject1, classId1);
@@ -303,7 +303,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.EntityTypeAssociationNotAllowed.selector,
     //     CLASS,
     //     OBJECT,
-    //     "EntityCore: EntityType association not allowed"
+    //     "EntitySystem: EntityType association not allowed"
     //   )
     // );
     // smartObject.tagEntity(classId1, singletonObject1);
@@ -316,7 +316,7 @@ contract EveSystemTest is Test {
 
     //register module
     smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
-    assertTrue(ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID));
+    assertTrue(ModuleTable.getDoesExists(moduleId, SYSTEM_ID));
   }
 
   function testRevertregisterEVEModuleIfSystemAlreadyRegistered() public {
@@ -330,7 +330,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.SystemAlreadyAssociatedWithModule.selector,
     //     moduleId,
     //     SYSTEM_ID,
-    //     "ModuleCore: System already associated with the module"
+    //     "ModuleSystem: System already associated with the module"
     //   )
     // );
     // smartObject.registerEVEModule(moduleId, MODULE_NAME, SYSTEM_ID);
@@ -352,7 +352,7 @@ contract EveSystemTest is Test {
     //associate entity with module
     smartObject.associateModule(singletonObject1, moduleId);
 
-    ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
+    ModuleTable.getDoesExists(moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
       (uint256)
@@ -377,7 +377,7 @@ contract EveSystemTest is Test {
     //associate entity with module
     smartObject.associateModule(nonSingletonEntity, moduleId);
 
-    ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
+    ModuleTable.getDoesExists(moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (nonSingletonEntity))),
       (uint256)
@@ -435,7 +435,7 @@ contract EveSystemTest is Test {
     //associate entity with module
     smartObject.associateModule(classId1, moduleId);
 
-    ModuleTable.getDoesExists(SMART_OBJ_NAMESPACE.moduleTableTableId(), moduleId, SYSTEM_ID);
+    ModuleTable.getDoesExists(moduleId, SYSTEM_ID);
     uint256 value = abi.decode(
       world.call(SYSTEM_ID, abi.encodeCall(SmartDeployableTestSystem.echoSmartDeployable, (singletonObject1))),
       (uint256)
@@ -502,7 +502,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
     //     singletonEntity,
     //     moduleId,
-    //     "ModuleCore: Module already associated with the entity"
+    //     "ModuleSystem: Module already associated with the entity"
     //   )
     // );
     // smartObject.associateModule(singletonEntity, moduleId);
@@ -531,7 +531,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
     //     classId1,
     //     moduleId,
-    //     "ModuleCore: Module already associated with the entity"
+    //     "ModuleSystem: Module already associated with the entity"
     //   )
     // );
     // smartObject.associateModule(singletonObject1, moduleId);
@@ -679,7 +679,7 @@ contract EveSystemTest is Test {
     smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
 
     uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    assertTrue(HookTable.getIsHook(hookId));
 
     //asscoaite hook with a entity
     smartObject.associateHook(singletonEntity, hookId);
@@ -715,7 +715,7 @@ contract EveSystemTest is Test {
     // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
     // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
     // vm.expectRevert(
-    //   abi.encodeWithSelector(ICustomErrorSystem.HookNotRegistered.selector, hookId, "HookCore: Hook not registered")
+    //   abi.encodeWithSelector(ICustomErrorSystem.HookNotRegistered.selector, hookId, "HookSystem: Hook not registered")
     // );
     // smartObject.associateHook(singletonEntity, hookId);
   }
@@ -736,7 +736,7 @@ contract EveSystemTest is Test {
     // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
     // smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
     // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    // assertTrue(HookTable.getIsHook(hookId));
     // //asscoaite hook with a entity
     // smartObject.associateHook(singletonEntity, hookId);
     // //add the hook to be executed before/after a function
@@ -756,7 +756,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
     //     singletonEntity,
     //     hookId,
-    //     "HookCore: Hook already associated with the entity"
+    //     "HookSystem: Hook already associated with the entity"
     //   )
     // );
     // smartObject.associateHook(singletonEntity, hookId);
@@ -782,7 +782,7 @@ contract EveSystemTest is Test {
     // bytes4 functionId = bytes4(keccak256(abi.encodePacked("echoSmartDeployableHook(uint256)")));
     // smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
     // uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    // assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    // assertTrue(HookTable.getIsHook(hookId));
     // //asscoaite hook with a entity
     // smartObject.associateHook(classId1, hookId);
     // //add the hook to be executed before/after a function
@@ -802,7 +802,7 @@ contract EveSystemTest is Test {
     //     ICustomErrorSystem.EntityAlreadyAssociated.selector,
     //     classId1,
     //     hookId,
-    //     "HookCore: Hook already associated with the entity"
+    //     "HookSystem: Hook already associated with the entity"
     //   )
     // );
     // smartObject.associateHook(singletonEntity, hookId);
@@ -829,7 +829,7 @@ contract EveSystemTest is Test {
     smartObject.registerHook(Utils.getSystemId(NAMESPACE, HOOK_SYSTEM_NAME), functionId);
 
     uint256 hookId = uint256(keccak256(abi.encodePacked(ResourceId.unwrap(HOOK_SYSTEM_ID), functionId)));
-    assertTrue(HookTable.getIsHook(SMART_OBJ_NAMESPACE.hookTableTableId(), hookId));
+    assertTrue(HookTable.getIsHook(hookId));
 
     //asscoaite hook with a entity
     smartObject.associateHook(singletonEntity, hookId);

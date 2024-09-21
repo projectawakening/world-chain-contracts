@@ -11,8 +11,8 @@ ResourceId constant INVENTORY_NAMESPACE_ID = ResourceId.wrap(
   bytes32(abi.encodePacked(RESOURCE_NAMESPACE, INVENTORY_MODULE_NAMESPACE))
 );
 
-bytes16 constant INVENTORY_SYSTEM_NAME = "Inventory";
-bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInv";
+bytes16 constant INVENTORY_SYSTEM_NAME = "InventorySystem";
+bytes16 constant EPHEMERAL_INVENTORY_SYSTEM_NAME = "EphemeralInvSyst";
 bytes16 constant INVENTORY_INTERACT_SYSTEM_NAME = "InventoryInterac";
 
 bytes16 constant INVENTORY_TABLE_NAME = "InventoryTable";

@@ -5,7 +5,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { Utils } from "./Utils.sol";
-import { IEntityRecord } from "./interfaces/IEntityRecord.sol";
+import { IEntityRecordSystem } from "./interfaces/IEntityRecordSystem.sol";
 
 /**
  * @title Entity Record Library (makes interacting with the underlying Systems cleaner)
@@ -31,7 +31,7 @@ library EntityRecordLib {
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.createEntityRecord, (entityId, itemId, typeId, volume))
+      abi.encodeCall(IEntityRecordSystem.createEntityRecord, (entityId, itemId, typeId, volume))
     );
   }
 
@@ -44,7 +44,7 @@ library EntityRecordLib {
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.createEntityRecordOffchain, (entityId, name, dappURL, description))
+      abi.encodeCall(IEntityRecordSystem.createEntityRecordOffchain, (entityId, name, dappURL, description))
     );
   }
 
@@ -57,25 +57,28 @@ library EntityRecordLib {
   ) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setEntityMetadata, (entityId, name, dappURL, description))
+      abi.encodeCall(IEntityRecordSystem.setEntityMetadata, (entityId, name, dappURL, description))
     );
   }
 
   function setName(World memory world, uint256 entityId, string memory name) internal {
-    world.iface.call(world.namespace.entityRecordSystemId(), abi.encodeCall(IEntityRecord.setName, (entityId, name)));
+    world.iface.call(
+      world.namespace.entityRecordSystemId(),
+      abi.encodeCall(IEntityRecordSystem.setName, (entityId, name))
+    );
   }
 
   function setDappURL(World memory world, uint256 entityId, string memory dappURL) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setDappURL, (entityId, dappURL))
+      abi.encodeCall(IEntityRecordSystem.setDappURL, (entityId, dappURL))
     );
   }
 
   function setDescription(World memory world, uint256 entityId, string memory description) internal {
     world.iface.call(
       world.namespace.entityRecordSystemId(),
-      abi.encodeCall(IEntityRecord.setDescription, (entityId, description))
+      abi.encodeCall(IEntityRecordSystem.setDescription, (entityId, description))
     );
   }
 }

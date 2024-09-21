@@ -1,29 +1,33 @@
-import { mudConfig } from "@latticexyz/world/register";
-// this import statement doesnt support remappings for some reason
+import { defineWorld } from "@latticexyz/world";
 import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
-export default mudConfig({
-  // having a short namespace as the MUD Namespace must be <= 14 characters
+export default defineWorld({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
+  deploy: {
+    customWorld: {
+      sourcePath: "src/WorldWithEntryContext.sol",
+      name: "WorldWithEntryContext",
+    },
+  },
   excludeSystems: ["ERC721System", "AccessModified"],
   systems: {
-    Access: {
+    AccessSystem: {
       name: constants.systemName.ACCESS,
       openAccess: true,
     },
-    SmartCharacter: {
+    SmartCharacterSystem: {
       name: constants.systemName.SMART_CHARACTER,
       openAccess: true,
     },
-    SmartStorageUnit: {
+    SmartStorageUnitSystem: {
       name: constants.systemName.SMART_STORAGE_UNIT,
       openAccess: true,
     },
-    StaticData: {
+    StaticDataSystem: {
       name: constants.systemName.STATIC_DATA,
       openAccess: true,
     },
-    EntityRecord: {
+    EntityRecordSystem: {
       name: constants.systemName.ENTITY_RECORD,
       openAccess: true,
     },
@@ -31,31 +35,31 @@ export default mudConfig({
       name: constants.systemName.LOCATION,
       openAccess: true,
     },
-    SmartDeployable: {
+    SmartDeployableSystem: {
       name: constants.systemName.SMART_DEPLOYABLE,
       openAccess: true,
     },
-    Inventory: {
+    InventorySystem: {
       name: constants.systemName.INVENTORY,
       openAccess: true,
     },
-    EphemeralInventory: {
+    EphemeralInventorySystem: {
       name: constants.systemName.EPHEMERAL_INVENTORY,
       openAccess: true,
     },
-    InventoryInteract: {
+    InventoryInteractSystem: {
       name: constants.systemName.INVENTORY_INTERACT,
       openAccess: true,
     },
-    SmartTurret: {
+    SmartTurretSystem: {
       name: constants.systemName.SMART_TURRET,
       openAccess: true,
     },
-    SmartGate: {
+    SmartGateSystem: {
       name: constants.systemName.SMART_GATE,
       openAccess: true,
     },
-    KillMail: {
+    KillMailSystem: {
       name: constants.systemName.KILL_MAIL,
       openAccess: true,
     },
@@ -66,41 +70,43 @@ export default mudConfig({
     KillMailLossType: ["SHIP", "POD"],
   },
   userTypes: {
-    ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
+    ResourceId: { type: "bytes32", filePath: "@latticexyz/store/src/ResourceId.sol" },
   },
   tables: {
     /**
      * Simple Access Control - for enforcing the most basic access rules
      */
     AccessRole: {
-      keySchema: {
+      schema: {
         roleId: "bytes32",
-      },
-      valueSchema: {
         accounts: "address[]",
       },
-      tableIdArgument: true,
+      key: ["roleId"],
+    },
+    AccessRolePerSys: {
+      schema: {
+        systemId: "ResourceId",
+        roleId: "bytes32",
+        accounts: "address[]",
+      },
+      key: ["systemId", "roleId"],
     },
     AccessEnforcement: {
-      keySchema: {
+      schema: {
         target: "bytes32",
-      },
-      valueSchema: {
         isEnforced: "bool",
       },
-      tableIdArgument: true,
+      key: ["target"],
     },
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation
      */
     ClassConfig: {
-      keySchema: {
-        systemId: "ResourceId", // the system which is generating objects for class tagging
+      schema: {
+        systemId: "ResourceId",
+        classId: "uint256",
       },
-      valueSchema: {
-        classId: "uint256", // an array of classIds which can be configured for tagging created object for a System
-      },
-      tableIdArgument: true,
+      key: ["systemId"],
     },
 
     /**********************
@@ -111,30 +117,24 @@ export default mudConfig({
      * Used to store the IPFS CID of a smart object
      */
     StaticDataTable: {
-      keySchema: {
+      schema: {
         entityId: "uint256",
-      },
-      valueSchema: {
         cid: "string",
       },
-      tableIdArgument: true,
+      key: ["entityId"],
     },
 
     /**
-     * Used to store the DNS which servers the IPFS gateway
+     * Used to store the DNS which serves the IPFS gateway
      */
     StaticDataGlobalTable: {
-      keySchema: {
+      schema: {
         systemId: "ResourceId",
-      },
-      valueSchema: {
         name: "string",
         symbol: "string",
         baseURI: "string",
       },
-      tableIdArgument: true,
-      // TODO: put this flag back online for release ? This might be a bit heavy; for now tests are relying on on-chain
-      // offchainOnly: true,
+      key: ["systemId"],
     },
 
     /**********************
@@ -143,32 +143,25 @@ export default mudConfig({
 
     /**
      * Used to store the metadata of a in-game entity
-     * Singleton entityId is the hash of (typeId, itemId and databaseId) ?
-     * Non Singleton entityId is the hash of the typeId
      */
     EntityRecordTable: {
-      keySchema: {
+      schema: {
         entityId: "uint256",
-      },
-      valueSchema: {
         itemId: "uint256",
         typeId: "uint256",
         volume: "uint256",
         recordExists: "bool",
       },
-      tableIdArgument: true,
+      key: ["entityId"],
     },
     EntityRecordOffchainTable: {
-      keySchema: {
+      schema: {
         entityId: "uint256",
-      },
-      valueSchema: {
         name: "string",
         dappURL: "string",
         description: "string",
       },
-      tableIdArgument: true,
-      // offchainOnly: true, TODO: do we enable this flag for playtest release ?
+      key: ["entityId"],
     },
 
     /**************************
@@ -179,23 +172,19 @@ export default mudConfig({
      * Maps the in-game character ID to on-chain EOA address
      */
     CharactersTable: {
-      keySchema: {
+      schema: {
         characterId: "uint256",
-      },
-      valueSchema: {
         characterAddress: "address",
         corpId: "uint256",
         createdAt: "uint256",
       },
-      tableIdArgument: true,
+      key: ["characterId"],
     },
-
     CharactersConstantsTable: {
-      keySchema: {},
-      valueSchema: {
+      schema: {
         erc721Address: "address",
       },
-      tableIdArgument: true,
+      key: [],
     },
 
     /*******************
@@ -206,52 +195,45 @@ export default mudConfig({
      * Used to store the location of a in-game entity in the solar system
      */
     LocationTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         solarSystemId: "uint256",
         x: "uint256",
         y: "uint256",
         z: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
 
     /***************************
      * SMART ASSEMBLY MODULE *
      ***************************/
     SmartAssemblyTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         smartAssemblyType: "SmartAssemblyType",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
 
     /***************************
      * SMART DEPLOYABLE MODULE *
      ***************************/
     GlobalDeployableState: {
-      keySchema: {},
-      valueSchema: {
+      schema: {
         updatedBlockNumber: "uint256",
         isPaused: "bool",
         lastGlobalOffline: "uint256",
         lastGlobalOnline: "uint256",
       },
-      tableIdArgument: true,
+      key: [],
     },
     /**
      * Used to store the current state of a deployable
      */
     DeployableState: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         createdAt: "uint256",
         previousState: "State",
         currentState: "State",
@@ -260,33 +242,30 @@ export default mudConfig({
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the fuel balance of a deployable
      */
     DeployableFuelBalance: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         fuelUnitVolume: "uint256",
         fuelConsumptionPerMinute: "uint256",
         fuelMaxCapacity: "uint256",
         fuelAmount: "uint256",
-        lastUpdatedAt: "uint256", //UNIX time
+        lastUpdatedAt: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the deployable details of a in-game entity
      */
     DeployableTokenTable: {
-      keySchema: {},
-      valueSchema: {
+      schema: {
         erc721Address: "address",
       },
-      tableIdArgument: true,
+      key: [],
     },
 
     //INVENTORY MODULE
@@ -294,129 +273,110 @@ export default mudConfig({
      * Used to store the inventory details of a in-game smart storage unit
      */
     InventoryTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         capacity: "uint256",
         usedCapacity: "uint256",
         items: "uint256[]",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the inventory items of a in-game smart storage unit
      */
     InventoryItemTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
-      },
-      valueSchema: {
         quantity: "uint256",
         index: "uint256",
         stateUpdate: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId", "inventoryItemId"],
     },
     //EPHEMERAL INVENTORY MODULE
     /**
      * Used to Store Ephemeral Capacity by smartObjectId
      */
     EphemeralInvCapacityTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         capacity: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the ephemeral inventory details of a in-game smart storage unit
      * Each user has a separate ephemeral inventory capacity
      */
     EphemeralInvTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
         ephemeralInvOwner: "address",
-      },
-      valueSchema: {
         usedCapacity: "uint256",
         items: "uint256[]",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId", "ephemeralInvOwner"],
     },
     /**
      * Used to store the ephemeral inventory items details of a in-game smart storage unit
      */
     EphemeralInvItemTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
-        ephemeralInvItemOwner: "address",
-      },
-      valueSchema: {
+        ephemeralInvOwner: "address",
         quantity: "uint256",
         index: "uint256",
         stateUpdate: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId", "inventoryItemId", "ephemeralInvOwner"],
     },
     /**
      * Used to store the transfer details when a item is exchanged
      */
     ItemTransferOffchainTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
         inventoryItemId: "uint256",
-      },
-      valueSchema: {
         previousOwner: "address",
         currentOwner: "address",
         quantity: "uint256",
         updatedAt: "uint256",
       },
-      tableIdArgument: true,
-      // offchainOnly: true,
+      key: ["smartObjectId", "inventoryItemId"],
     },
 
     /*************************
-     * SMART Turret MODULE *
+     * SMART TURRET MODULE *
      *************************/
     SmartTurretConfigTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         systemId: "ResourceId",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
 
     /*************************
-     * SMART Gate MODULE *
+     * SMART GATE MODULE *
      *************************/
     SmartGateConfigTable: {
-      keySchema: {
+      schema: {
         smartObjectId: "uint256",
-      },
-      valueSchema: {
         systemId: "ResourceId",
-        maxDistance: "uint256", // This variable can be moved to a new table if needed
+        maxDistance: "uint256",
       },
-      tableIdArgument: true,
+      key: ["smartObjectId"],
     },
 
     SmartGateLinkTable: {
-      keySchema: {
+      schema: {
         sourceGateId: "uint256",
-      },
-      valueSchema: {
         destinationGateId: "uint256",
         isLinked: "bool",
       },
-      tableIdArgument: true,
+      key: ["sourceGateId"],
     },
 
     /************************
@@ -424,64 +384,87 @@ export default mudConfig({
      ************************/
 
     Balances: {
-      keySchema: {
+      schema: {
         account: "address",
-      },
-      valueSchema: {
         value: "uint256",
       },
-      tableIdArgument: true,
+      key: ["account"],
+      codegen: {
+        tableIdArgument: true,
+      },
+      deploy: {
+        disabled: true,
+      },
     },
 
     TokenURI: {
-      keySchema: {
+      schema: {
         tokenId: "uint256",
-      },
-      valueSchema: {
         tokenURI: "string",
       },
-      tableIdArgument: true,
+      key: ["tokenId"],
+      codegen: {
+        tableIdArgument: true,
+      },
+      deploy: {
+        disabled: true,
+      },
     },
 
     Owners: {
-      keySchema: {
+      schema: {
         tokenId: "uint256",
-      },
-      valueSchema: {
         owner: "address",
       },
-      tableIdArgument: true,
+      key: ["tokenId"],
+      codegen: {
+        tableIdArgument: true,
+      },
+      deploy: {
+        disabled: true,
+      },
     },
 
     ERC721Registry: {
-      keySchema: {
+      schema: {
         namespaceId: "ResourceId",
-      },
-      valueSchema: {
         tokenAddress: "address",
       },
-      tableIdArgument: true,
-    },
-
-    TokenApproval: {
-      keySchema: {
-        tokenId: "uint256",
+      key: ["namespaceId"],
+      codegen: {
+        tableIdArgument: true,
       },
-      valueSchema: {
+      deploy: {
+        disabled: true,
+      },
+    },
+    TokenApproval: {
+      schema: {
+        tokenId: "uint256",
         account: "address",
       },
-      tableIdArgument: true,
+      key: ["tokenId"],
+      codegen: {
+        tableIdArgument: true,
+      },
+      deploy: {
+        disabled: true,
+      },
     },
 
     OperatorApproval: {
-      keySchema: {
+      schema: {
         owner: "address",
         operator: "address",
-      },
-      valueSchema: {
         approved: "bool",
       },
-      tableIdArgument: true,
+      key: ["owner", "operator"],
+      codegen: {
+        tableIdArgument: true,
+      },
+      deploy: {
+        disabled: true,
+      },
     },
 
     /************************
@@ -489,17 +472,15 @@ export default mudConfig({
      ************************/
 
     KillMailTable: {
-      keySchema: {
+      schema: {
         killMailId: "uint256",
-      },
-      valueSchema: {
         killerCharacterId: "uint256",
         victimCharacterId: "uint256",
         lossType: "KillMailLossType",
         solarSystemId: "uint256",
         killTimestamp: "uint256",
       },
-      tableIdArgument: true,
+      key: ["killMailId"],
     },
   },
 });

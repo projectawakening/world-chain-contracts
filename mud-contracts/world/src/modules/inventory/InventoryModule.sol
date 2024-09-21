@@ -16,8 +16,8 @@ import { EphemeralInvTable } from "../../codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvItemTable } from "../../codegen/tables/EphemeralInvItemTable.sol";
 import { ItemTransferOffchainTable } from "../../codegen/tables/ItemTransferOffchainTable.sol";
 
-import { Inventory } from "./systems/Inventory.sol";
-import { EphemeralInventory } from "./systems/EphemeralInventory.sol";
+import { InventorySystem } from "./systems/InventorySystem.sol";
+import { EphemeralInventorySystem } from "./systems/EphemeralInventorySystem.sol";
 
 import { Utils } from "./Utils.sol";
 
@@ -93,17 +93,12 @@ contract InventoryModuleRegistrationLibrary {
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     //Register the tables and systems for inventory namespace
-    if (!ResourceIds.getExists(namespace.inventoryTableId())) InventoryTable.register(namespace.inventoryTableId());
-    if (!ResourceIds.getExists(namespace.inventoryItemTableId()))
-      InventoryItemTable.register(namespace.inventoryItemTableId());
-    if (!ResourceIds.getExists(namespace.ephemeralInvCapacityTableId()))
-      EphemeralInvTable.register(namespace.ephemeralInvCapacityTableId());
-    if (!ResourceIds.getExists(namespace.ephemeralInvTableId()))
-      EphemeralInvTable.register(namespace.ephemeralInvTableId());
-    if (!ResourceIds.getExists(namespace.ephemeralInventoryItemTableId()))
-      EphemeralInvItemTable.register(namespace.ephemeralInventoryItemTableId());
-    if (!ResourceIds.getExists(namespace.itemTransferTableId()))
-      ItemTransferOffchainTable.register(namespace.itemTransferTableId());
+    if (!ResourceIds.getExists(InventoryTable._tableId)) InventoryTable.register();
+    if (!ResourceIds.getExists(InventoryItemTable._tableId)) InventoryItemTable.register();
+    if (!ResourceIds.getExists(EphemeralInvTable._tableId)) EphemeralInvTable.register();
+    if (!ResourceIds.getExists(EphemeralInvTable._tableId)) EphemeralInvTable.register();
+    if (!ResourceIds.getExists(EphemeralInvItemTable._tableId)) EphemeralInvItemTable.register();
+    if (!ResourceIds.getExists(ItemTransferOffchainTable._tableId)) ItemTransferOffchainTable.register();
 
     //Register the systems
     if (!ResourceIds.getExists(namespace.inventorySystemId()))

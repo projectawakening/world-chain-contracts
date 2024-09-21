@@ -3,7 +3,7 @@ pragma solidity >=0.8.20;
 import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@eveworld/world/src/codegen/world/IWorld.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { System } from "@latticexyz/world/src/System.sol";
@@ -22,6 +22,7 @@ contract ConfigureSmartTurret is Script {
   using SmartTurretLib for SmartTurretLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using SmartDeployableUtils for bytes14;
+  using WorldResourceIdInstance for ResourceId;
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -55,7 +56,7 @@ contract ConfigureSmartTurret is Script {
     );
 
     // check global state and resume if needed
-    if (GlobalDeployableState.getIsPaused(FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.globalStateTableId()) == false) {
+    if (GlobalDeployableState.getIsPaused() == false) {
       smartDeployable.globalResume();
     }
 
@@ -65,16 +66,19 @@ contract ConfigureSmartTurret is Script {
     //Derploy the Mock contract and configure the smart turret to use it
     IBaseWorld world = IBaseWorld(worldAddress);
     SmartTurretTestSystem smartTurretTestSystem = new SmartTurretTestSystem();
-    ResourceId smartTurretTestSystemId = ResourceId.wrap(
-      (bytes32(abi.encodePacked(RESOURCE_SYSTEM, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE, "SmartTurretTestS")))
-    );
+    ResourceId smartTurretTestSystemId = WorldResourceIdLib.encode({
+      typeId: RESOURCE_SYSTEM,
+      namespace: "testnamespace",
+      name: "SmartTurretTestS"
+    });
 
     // register the smart turret system
+    world.registerNamespace(smartTurretTestSystemId.getNamespaceId());
     world.registerSystem(smartTurretTestSystemId, smartTurretTestSystem, true);
     //register the function selector
     world.registerFunctionSelector(
       smartTurretTestSystemId,
-      "inProximity(uint256, TargetPriority[],Turret,SmartTurretTarget)"
+      "inProximity(uint256,uint256,((uint256,uint256,uint256,uint256,uint256,uint256),uint256)[],(uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256))"
     );
     smartTurret.configureSmartTurret(smartObjectId, smartTurretTestSystemId);
 
@@ -111,6 +115,7 @@ contract ConfigureSmartTurret is Script {
 contract SmartTurretTestSystem is System {
   function inProximity(
     uint256 smartTurretId,
+    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -121,6 +126,7 @@ contract SmartTurretTestSystem is System {
 
   function aggression(
     uint256 smartTurretId,
+    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory aggressor,

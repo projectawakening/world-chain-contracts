@@ -10,6 +10,7 @@ bytes16 constant ACCESS_SYSTEM_NAME = "AccessSystem";
 
 // Table Names - must be unique per Namespace, must match one of the Table names provided to the mud.config.ts file
 bytes16 constant ACCESS_ROLE_TABLE_NAME = "AccessRole";
+bytes16 constant ACCESS_ROLE_PER_SYSTEM_TABLE_NAME = "AccessRolePerSys";
 bytes16 constant ACCESS_ENFORCEMENT_TABLE_NAME = "AccessEnforcemen";
 
 // the namespace of the core, SOF, EVE World and modules

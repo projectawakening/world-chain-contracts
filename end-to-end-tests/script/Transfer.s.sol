@@ -82,15 +82,10 @@ contract Transfer is Script {
     // SSU owner should have 1 ephInvItem after transfer
     // Ephermeral owner should have 1 invItem after transfer
 
-    InventoryItemTableData memory ephItemInInv = InventoryItemTable.get(
-      DEPLOYMENT_NAMESPACE.inventoryItemTableId(),
-      smartObjectId,
-      ephInvItems[0].inventoryItemId
-    );
+    InventoryItemTableData memory ephItemInInv = InventoryItemTable.get(smartObjectId, ephInvItems[0].inventoryItemId);
     console.log(ephItemInInv.quantity); //1
 
     EphemeralInvItemTableData memory itemInEphInv = EphemeralInvItemTable.get(
-      DEPLOYMENT_NAMESPACE.ephemeralInventoryItemTableId(),
       smartObjectId,
       invItems[0].inventoryItemId,
       ephemeralOwner

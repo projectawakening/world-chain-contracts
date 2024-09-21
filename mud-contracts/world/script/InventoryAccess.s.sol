@@ -12,18 +12,11 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { Utils as InventoryUtils } from "../src/modules/inventory/Utils.sol";
 import { Utils as SmartStorageUnitUtils } from "../src/modules/smart-storage-unit/Utils.sol";
-import { IInventory } from "../src/modules/inventory/interfaces/IInventory.sol";
-import { IEphemeralInventory } from "../src/modules/inventory/interfaces/IEphemeralInventory.sol";
-import { ISmartStorageUnit } from "../src/modules/smart-storage-unit/interfaces/ISmartStorageUnit.sol";
+import { IAccessSystem } from "../src/modules/access/interfaces/IAccessSystem.sol";
+import { IInventorySystem } from "../src/modules/inventory/interfaces/IInventorySystem.sol";
+import { IEphemeralInventorySystem } from "../src/modules/inventory/interfaces/IEphemeralInventorySystem.sol";
+import { ISmartStorageUnitSystem } from "../src/modules/smart-storage-unit/interfaces/ISmartStorageUnitSystem.sol";
 
-
-// not included in the @eveworld package yet, so include here for the time being
-interface IAccess {
-  function setAccessListByRole(bytes32 accessRoleId, address[] memory accessList) external;
-  function setAccessEnforcement(bytes32 target, bool isEnforced) external;
-}
-
-// NOTE: ASSUMES YOU HAVE APPLIED ACCESS-CONTROL UPDATES TO THE EVE WORLD
 contract InventoryAccess is Script {
   using InventoryUtils for bytes14;
   using SmartStorageUnitUtils for bytes14;
@@ -34,6 +27,13 @@ contract InventoryAccess is Script {
   
   bytes16 constant ACCESS_ROLE_TABLE_NAME = "AccessRole";
   ResourceId ACCESS_ROLE_TABLE_ID = WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ROLE_TABLE_NAME });
+
+  bytes16 constant ACCESS_ROLE_PER_SYS_TABLE_NAME = "AccessRolePerSys";
+  ResourceId ACCESS_ROLE_PER_SYS_TABLE_ID = WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ROLE_TABLE_NAME });
+
+
+  bytes16 constant ACCESS_ENFORCEMENT_TABLE_NAME = "AccessEnforcemen";
+  ResourceId ACCESS_ENFORCEMENT_TABLE_ID = WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: EVE_WORLD_NAMESPACE, name: ACCESS_ENFORCEMENT_TABLE_NAME });
 
   // AccessRole constants
   bytes32 constant ADMIN = bytes32("ADMIN_ACCESS_ROLE");
@@ -57,42 +57,49 @@ contract InventoryAccess is Script {
     vm.startBroadcast(deployerPrivateKey);
     IBaseWorld world = IBaseWorld(worldAddress);
 
-    // assumes AccessRole has been deployed into the eveworld namespace, and the current privkey is the eveworld namespace owner
+    // assumes the current vm.privkey is the eveworld namespace owner
     // if no access, grant self access to this resource allowing for Access configuration access
     if(!ResourceAccess.get(ACCESS_ROLE_TABLE_ID, deployer)) {
       world.grantAccess(ACCESS_ROLE_TABLE_ID, deployer);
     }
+    if(!ResourceAccess.get(ACCESS_ROLE_PER_SYS_TABLE_ID, deployer)) {
+      world.grantAccess(ACCESS_ROLE_PER_SYS_TABLE_ID, deployer);
+    }
+    if(!ResourceAccess.get(ACCESS_ENFORCEMENT_TABLE_ID, deployer)) {
+      world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, deployer);
+    }
 
     address[] memory approvedAccessList = new address[](1);
-    // currently we are only allowing InventoryInteract to be an APPROVED call forwarder
+    // currently we are only allowing InventoryInteract to be an APPROVED call forwarder for the Inventory and EphInv systems
     address interactAddr = Systems.getSystem(EVE_WORLD_NAMESPACE.inventoryInteractSystemId());
     approvedAccessList[0] = interactAddr;
     // set access ADMIN accounts
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (ADMIN, adminAccessList)));
-    // set access APPROVED account
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessListByRole, (APPROVED, approvedAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
+    // set access APPROVED account per system
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListPerSystemByRole, (EVE_WORLD_NAMESPACE.inventorySystemId(), APPROVED, approvedAccessList)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListPerSystemByRole, (EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), APPROVED, approvedAccessList)));
 
     // target functions to set access control enforcement for
     // Inventory.depositToInventory
-    bytes32 invDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.depositToInventory.selector));
+    bytes32 invDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventorySystem.depositToInventory.selector));
     // Inventory.withdrawalFromInventory
-    bytes32 invWithdraw = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventory.withdrawFromInventory.selector));
+    bytes32 invWithdraw = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.inventorySystemId(), IInventorySystem.withdrawFromInventory.selector));
     // EphemeralInventory.depositToEphemeralInventory
-    bytes32 ephInvDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventory.depositToEphemeralInventory.selector));
+    bytes32 ephInvDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventorySystem.depositToEphemeralInventory.selector));
     // EphemeralInventory.withdrawalFromEphemeralInventory
-    bytes32 ephInvWithdraw = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventory.withdrawFromEphemeralInventory.selector));
+    bytes32 ephInvWithdraw = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventorySystem.withdrawFromEphemeralInventory.selector));
     // SmartStorageUnit.createAndDepositItemsToInventory
-    bytes32 invCreateAndDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartStorageUnitSystemId(), ISmartStorageUnit.createAndDepositItemsToInventory.selector));
+    bytes32 invCreateAndDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartStorageUnitSystemId(), ISmartStorageUnitSystem.createAndDepositItemsToInventory.selector));
     // SmartStorageUnit.createAndDepositItemsToEphemeralInventory
-    bytes32 ephInvCreateAndDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartStorageUnitSystemId(), ISmartStorageUnit.createAndDepositItemsToEphemeralInventory.selector));
+    bytes32 ephInvCreateAndDeposit = keccak256(abi.encodePacked(EVE_WORLD_NAMESPACE.smartStorageUnitSystemId(), ISmartStorageUnitSystem.createAndDepositItemsToEphemeralInventory.selector));
 
     // set enforcement to true for all
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (invDeposit, true)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (invWithdraw, true)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (ephInvDeposit, true)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (ephInvWithdraw, true)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (invCreateAndDeposit, true)));
-    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccess.setAccessEnforcement, (ephInvCreateAndDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (invDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (invWithdraw, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (ephInvDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (ephInvWithdraw, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (invCreateAndDeposit, true)));
+    world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessEnforcement, (ephInvCreateAndDeposit, true)));
 
     vm.stopBroadcast();
   }

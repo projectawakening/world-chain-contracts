@@ -12,7 +12,7 @@ import { Utils } from "./Utils.sol";
 
 import { SmartGateConfigTable } from "../../codegen/tables/SmartGateConfigTable.sol";
 import { SmartGateLinkTable } from "../../codegen/tables/SmartGateLinkTable.sol";
-import { SmartGate } from "./systems/SmartGate.sol";
+import { SmartGateSystem } from "./systems/SmartGateSystem.sol";
 
 contract SmartGateModule is Module {
   error SmartGateModule_InvalidNamespace(bytes14 namespace);
@@ -80,13 +80,11 @@ contract SmartGateModuleRegistrationLibrary {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if (!ResourceIds.getExists(namespace.smartGateConfigTableId()))
-      SmartGateConfigTable.register(namespace.smartGateConfigTableId());
-    if (!ResourceIds.getExists(namespace.smartGateLinkTableId()))
-      SmartGateLinkTable.register(namespace.smartGateLinkTableId());
+    if (!ResourceIds.getExists(SmartGateConfigTable._tableId)) SmartGateConfigTable.register();
+    if (!ResourceIds.getExists(SmartGateLinkTable._tableId)) SmartGateLinkTable.register();
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartGateSystemId()))
-      world.registerSystem(namespace.smartGateSystemId(), new SmartGate(), true);
+      world.registerSystem(namespace.smartGateSystemId(), new SmartGateSystem(), true);
   }
 }

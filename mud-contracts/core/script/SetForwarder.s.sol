@@ -15,11 +15,11 @@ contract SetForwarder is Script {
 
     vm.startBroadcast(deployerPrivateKey);
 
-    IWorld(worldAddress).setTrustedForwarder(trustedForwarderAddress);
+    IWorld(worldAddress).eveworld__setTrustedForwarder(trustedForwarderAddress);
 
     console.log("TrustedForwarder: ");
     console.logAddress(trustedForwarderAddress);
-    console.log(IWorld(worldAddress).isTrustedForwarder(trustedForwarderAddress));
+    console.log(IWorld(worldAddress).eveworld__isTrustedForwarder(trustedForwarderAddress));
 
     vm.stopBroadcast();
   }

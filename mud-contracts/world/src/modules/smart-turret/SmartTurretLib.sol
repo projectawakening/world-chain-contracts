@@ -7,7 +7,7 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { EntityRecordData, WorldPosition } from "../smart-storage-unit/types.sol";
 import { SmartObjectData } from "../smart-deployable/types.sol";
 
-import { ISmartTurret } from "./interfaces/ISmartTurret.sol";
+import { ISmartTurretSystem } from "./interfaces/ISmartTurretSystem.sol";
 import { TargetPriority, Turret, SmartTurretTarget } from "./types.sol";
 import { Utils } from "./Utils.sol";
 
@@ -38,7 +38,7 @@ library SmartTurretLib {
     world.iface.call(
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
-        ISmartTurret.createAndAnchorSmartTurret,
+        ISmartTurretSystem.createAndAnchorSmartTurret,
         (
           smartObjectId,
           entityRecordData,
@@ -55,7 +55,7 @@ library SmartTurretLib {
   function configureSmartTurret(World memory world, uint256 smartObjectId, ResourceId systemId) internal {
     world.iface.call(
       world.namespace.smartTurretSystemId(),
-      abi.encodeCall(ISmartTurret.configureSmartTurret, (smartObjectId, systemId))
+      abi.encodeCall(ISmartTurretSystem.configureSmartTurret, (smartObjectId, systemId))
     );
   }
 
@@ -70,7 +70,7 @@ library SmartTurretLib {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
-        ISmartTurret.inProximity,
+        ISmartTurretSystem.inProximity,
         (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, turretTarget)
       )
     );
@@ -89,7 +89,7 @@ library SmartTurretLib {
     bytes memory data = world.iface.call(
       world.namespace.smartTurretSystemId(),
       abi.encodeCall(
-        ISmartTurret.aggression,
+        ISmartTurretSystem.aggression,
         (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, aggressor, victim)
       )
     );

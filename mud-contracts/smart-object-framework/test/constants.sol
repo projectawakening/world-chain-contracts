@@ -14,7 +14,7 @@ ResourceId constant TABLE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE
 ResourceId constant SYSTEM_ID = ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, SYSTEM_NAME))));
 
 // Constants for Hook Contract
-bytes16 constant HOOK_SYSTEM_NAME = bytes16("hookSystem");
+bytes16 constant HOOK_SYSTEM_NAME = bytes16("HookSystem");
 ResourceId constant HOOK_SYSTEM_ID = ResourceId.wrap(
   (bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, HOOK_SYSTEM_NAME)))
 );
