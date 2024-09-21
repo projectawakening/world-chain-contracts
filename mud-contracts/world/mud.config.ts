@@ -480,7 +480,7 @@ export default defineWorld({
         solarSystemId: "uint256",
         killTimestamp: "uint256",
       },
-      key: ["killMailId"]
+      key: ["killMailId"],
     },
   },
 });
