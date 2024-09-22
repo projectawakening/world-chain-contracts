@@ -1,6 +1,6 @@
 {
   "name": "@eveworld/smart-object-framework",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "license": "MIT",
   "scripts": {
     "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
