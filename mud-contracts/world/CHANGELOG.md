@@ -1,4 +1,14 @@
 # @eveworld/world
+## 0.0.16
+- all @latticexyz packages upgraded to version 2.2.3
+- implemented intialMsgSender() context capture as a customWorld contract named WorldWithEntryContext.sol
+- adding the term System to the end of all systems
+- mud.config updates for table declarations and custom world
+- removed tableId parameters from Table calls
+- adjusted System-to-System APPROVED access logic to be configurable per System
+- update the InventoryAccess.s.sol script to accommodate access logic changes
+- updating unit tests to use MudTest.sol instead of the basic forge Test.sol
+
 ## 0.0.15
 - changed kill mail implementation: killer and victim values from characterIds to evm addressess
 - bugfix for gate link distance calculation formula

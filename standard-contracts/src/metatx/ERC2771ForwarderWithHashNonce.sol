@@ -10,7 +10,7 @@ import { ECDSA } from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Address } from "openzeppelin-contracts/utils/Address.sol";
 import { HashNonce } from "./HashNonce.sol";
-import { IForwarderSystem } from "@eveworld/core/src/codegen/world/IForwarderSystem.sol";
+import { IForwarderSystem } from "@eveworld/world-core/src/codegen/world/IForwarderSystem.sol";
 
 /**
  * @dev A forwarder compatible with ERC-2771 contracts. See {ERC2771Context}.

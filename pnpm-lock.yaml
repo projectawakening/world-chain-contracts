@@ -30,16 +30,16 @@ importers:
   end-to-end-tests:
     dependencies:
       '@eveworld/common-constants':
-        specifier: link:../mud-contracts/common/constants
+        specifier: 0.0.13
         version: link:../mud-contracts/common/constants
       '@eveworld/smart-object-framework':
-        specifier: link:../mud-contracts/smart-object-framework
+        specifier: 0.0.8
         version: link:../mud-contracts/smart-object-framework
       '@eveworld/world':
-        specifier: link:../mud-contracts/world
+        specifier: 0.0.16
         version: link:../mud-contracts/world
       '@eveworld/world-core':
-        specifier: link:../mud-contracts/core
+        specifier: 0.0.2
         version: link:../mud-contracts/core
       '@latticexyz/cli':
         specifier: 2.2.3
@@ -167,13 +167,13 @@ importers:
   mud-contracts/core:
     dependencies:
       '@eveworld/common-constants':
-        specifier: link:../common/constants
+        specifier: 0.0.13
         version: link:../common/constants
       '@eveworld/smart-object-framework':
-        specifier: link:../smart-object-framework
+        specifier: 0.0.8
         version: link:../smart-object-framework
       '@eveworld/world':
-        specifier: link:../world
+        specifier: 0.0.16
         version: link:../world
       '@latticexyz/cli':
         specifier: 2.2.3
@@ -222,7 +222,7 @@ importers:
   mud-contracts/smart-object-framework:
     dependencies:
       '@eveworld/common-constants':
-        specifier: link:../common/constants
+        specifier: 0.0.13
         version: link:../common/constants
       '@latticexyz/cli':
         specifier: 2.2.3
@@ -329,10 +329,10 @@ importers:
   mud-contracts/world:
     dependencies:
       '@eveworld/common-constants':
-        specifier: link:../common/constants
+        specifier: 0.0.13
         version: link:../common/constants
       '@eveworld/smart-object-framework':
-        specifier: link:../smart-object-framework
+        specifier: 0.0.8
         version: link:../smart-object-framework
       '@latticexyz/cli':
         specifier: 2.2.3
@@ -436,14 +436,14 @@ importers:
   standard-contracts:
     dependencies:
       '@eveworld/common-constants':
-        specifier: link:../mud-contracts/common/constants
+        specifier: 0.0.13
         version: link:../mud-contracts/common/constants
-      '@eveworld/core':
-        specifier: link:../mud-contracts/core
-        version: link:../mud-contracts/core
       '@eveworld/world':
-        specifier: link:../mud-contracts/world
+        specifier: 0.0.16
         version: link:../mud-contracts/world
+      '@eveworld/world-core':
+        specifier: 0.0.2
+        version: link:../mud-contracts/core
       '@latticexyz/schema-type':
         specifier: 2.2.3
         version: 2.2.3

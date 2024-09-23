@@ -28,9 +28,9 @@
     "@latticexyz/schema-type": "2.2.3",
     "@latticexyz/store": "2.2.3",
     "@latticexyz/world": "2.2.3",
-    "@eveworld/world": "link:../mud-contracts/world",
-    "@eveworld/core": "link:../mud-contracts/core",
-    "@eveworld/common-constants": "link:../mud-contracts/common/constants"
+    "@eveworld/world": "0.0.16",
+    "@eveworld/world-core": "0.0.2",
+    "@eveworld/common-constants": "0.0.13"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
