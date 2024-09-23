@@ -7,16 +7,25 @@ import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResou
 import { IBaseWorld } from "@eveworld/world/src/codegen/world/IWorld.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "@eveworld/world/src/modules/smart-storage-unit/types.sol";
 import { SmartStorageUnitLib } from "@eveworld/world/src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartCharacterLib } from "@eveworld/world/src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordData as CharEntityRecordData } from "@eveworld/world/src/modules/smart-character/types.sol";
+import { EntityRecordOffchainTableData } from "@eveworld/world/src/codegen/tables/EntityRecordOffchainTable.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract CreateAndAnchor is Script {
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
+  using SmartCharacterLib for SmartCharacterLib.World;
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address player = vm.addr(deployerPrivateKey);
+
+    SmartCharacterLib.World memory smartCharacter = SmartCharacterLib.World({
+      iface: IBaseWorld(worldAddress),
+      namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE
+    });
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
@@ -26,7 +35,14 @@ contract CreateAndAnchor is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-
+    smartCharacter.createCharacter(
+      12512,
+      player,
+      222,
+      CharEntityRecordData({ typeId: 123, itemId: 237, volume: 100 }),
+      EntityRecordOffchainTableData({ name: "awesome character", dappURL: "noURL", description: "." }),
+      "azert"
+    );
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
       EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 }),
