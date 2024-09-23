@@ -18,11 +18,11 @@
   },
   "dependencies": {
     "@eveworld/common-constants": "0.0.13",
-    "@latticexyz/cli": "2.2.3",
-    "@latticexyz/schema-type": "2.2.3",
-    "@latticexyz/store": "2.2.3",
-    "@latticexyz/world": "2.2.3",
-    "@latticexyz/world-modules": "2.2.3"
+    "@latticexyz/cli": "2.2.8",
+    "@latticexyz/schema-type": "2.2.8",
+    "@latticexyz/store": "2.2.8",
+    "@latticexyz/world": "2.2.8",
+    "@latticexyz/world-modules": "2.2.8"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",
@@ -33,8 +33,8 @@
     "prettier": "3.2.5",
     "prettier-plugin-solidity": "1.3.1",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "2.2.3",
-    "solhint-plugin-mud": "2.2.3",
+    "solhint-config-mud": "2.2.8",
+    "solhint-plugin-mud": "2.2.8",
     "typescript": "^5.4.5"
   }
 }
