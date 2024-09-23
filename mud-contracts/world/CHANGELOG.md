@@ -1,6 +1,6 @@
 # @eveworld/world
 ## 0.0.16
-- all @latticexyz packages upgraded to version 2.2.7
+- all @latticexyz packages upgraded to version 2.2.8
 - implemented intialMsgSender() context capture as a customWorld contract named WorldWithEntryContext.sol
 - adding the term System to the end of all systems
 - mud.config updates for table declarations and custom world
