@@ -3,10 +3,10 @@
   "version": "0.0.13",
   "license": "MIT",
   "dependencies": {
-    "@latticexyz/cli": "2.2.3",
-    "@latticexyz/schema-type": "2.2.3",
-    "@latticexyz/store": "2.2.3",
-    "@latticexyz/world": "2.2.3",
-    "@latticexyz/world-modules": "2.2.3"
+    "@latticexyz/cli": "2.2.7",
+    "@latticexyz/schema-type": "2.2.7",
+    "@latticexyz/store": "2.2.7",
+    "@latticexyz/world": "2.2.7",
+    "@latticexyz/world-modules": "2.2.7"
   }
 }
