@@ -18,6 +18,7 @@ import { DeployableState, DeployableStateData } from "../../../codegen/tables/De
 import { LocationTableData } from "../../../codegen/tables/LocationTable.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../../codegen/tables/DeployableFuelBalance.sol";
 import { SmartAssemblyTable } from "../../../codegen/tables/SmartAssemblyTable.sol";
+import { CharactersByAddressTable } from "../../../codegen/tables/CharactersByAddressTable.sol";
 
 import { SmartDeployableErrors } from "../SmartDeployableErrors.sol";
 import { State, SmartObjectData, SmartAssemblyType } from "../types.sol";
@@ -65,9 +66,18 @@ contract SmartDeployableSystem is AccessModified, EveSystem, SmartDeployableErro
       revert SmartDeployable_IncorrectState(entityId, previousState);
     }
 
-    //Revert if the fuelUnitConsumption interval is min 1
+    // Revert if the fuelUnitConsumption interval is min 1
     if (fuelConsumptionIntervalInSeconds < 1) {
       revert SmartDeployable_InvalidFuelConsumptionInterval(entityId);
+    }
+
+    // revert if the given smart object owner is not a valid character
+    if (CharactersByAddressTable.get(smartObjectData.owner) == 0) {
+      revert SmartDeployableErrors.SmartDeployable_InvalidObjectOwner(
+        "SmartDeployableSystem: Smart Object owner is not a valid Smart Character",
+        smartObjectData.owner,
+        entityId
+      );
     }
 
     //Create a new deployable when its new

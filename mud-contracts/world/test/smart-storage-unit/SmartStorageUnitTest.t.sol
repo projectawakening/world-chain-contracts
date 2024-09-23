@@ -10,7 +10,7 @@ import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_STORAGE_UNIT_DEPLOYMENT_NAMESPACE, SMART_CHARACTER_DEPLOYMENT_NAMESPACE, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE, INVENTORY_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { EntityRecordOffchainTable, EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { EntityRecordTableData, EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
@@ -24,6 +24,9 @@ import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInv
 
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
+import { EntityRecordData as CharEntityRecordData } from "../../src/modules/smart-character/types.sol";
 
 import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
@@ -52,6 +55,7 @@ contract SmartStorageUnitTest is MudTest {
   using SmartDeployableUtils for bytes14;
   using InventoryUtils for bytes14;
   using LocationUtils for bytes14;
+  using SmartCharacterLib for SmartCharacterLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
   using InventoryLib for InventoryLib.World;
@@ -68,6 +72,24 @@ contract SmartStorageUnitTest is MudTest {
   uint256 ssuClassId = uint256(keccak256("SSUClass"));
   uint256 storageCapacity = 100000;
   uint256 ephemeralStorageCapacity = 100000;
+
+  // SmartCharacter variables
+  SmartCharacterLib.World smartCharacter;
+  uint256 characterId = 1111;
+  uint256 diffCharacterId = 2222;
+
+  uint256 tribeId = 1122;
+  CharEntityRecordData charEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+  CharEntityRecordData diffCharEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+
+  EntityRecordOffchainTableData charOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+
+  string tokenCID = "Qm1234abcdxxxx";
 
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
@@ -93,6 +115,12 @@ contract SmartStorageUnitTest is MudTest {
         WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_ERC721_NAMESPACE)
       )
     );
+
+    smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
+    // create Smart Deployable Owner as Smart Character
+    smartCharacter.createCharacter(characterId, alice, tribeId, charEntityRecordData, charOffchainData, tokenCID);
+    // create Ephemeral ivnnetory Owner as Smart Character
+    smartCharacter.createCharacter(diffCharacterId, bob, tribeId, diffCharEntityRecordData, charOffchainData, tokenCID);
 
     smartDeployable.globalResume();
   }
@@ -194,11 +222,11 @@ contract SmartStorageUnitTest is MudTest {
     vm.assume(smartObjectId != 0);
     testCreateAndAnchorSmartStorageUnit(smartObjectId);
     InventoryItem[] memory items = new InventoryItem[](1);
-    address ephemeralInventoryOwner = bob;
-    items[0] = InventoryItem({ inventoryItemId: 456, owner: bob, itemId: 45, typeId: 6, volume: 10, quantity: 5 });
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
 
-    EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(smartObjectId, ephemeralInventoryOwner);
+    items[0] = InventoryItem({ inventoryItemId: 456, owner: bob, itemId: 45, typeId: 6, volume: 10, quantity: 5 });
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, items);
+
+    EphemeralInvTableData memory ephemeralInvTableData = EphemeralInvTable.get(smartObjectId, bob);
 
     uint256 useCapacity = items[0].volume * items[0].quantity;
     assertEq(EphemeralInvCapacityTable.getCapacity(smartObjectId), ephemeralStorageCapacity);
@@ -220,7 +248,6 @@ contract SmartStorageUnitTest is MudTest {
     items[0] = InventoryItem({ inventoryItemId: 123, owner: alice, itemId: 12, typeId: 3, volume: 10, quantity: 5 });
 
     InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
-    address ephemeralInventoryOwner = bob;
     ephemeralItems[0] = InventoryItem({
       inventoryItemId: 456,
       owner: bob,
@@ -231,7 +258,7 @@ contract SmartStorageUnitTest is MudTest {
     });
 
     testCreateAndDepositItemsToInventory(smartObjectId);
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
 
     smartDeployable.bringOffline(smartObjectId);
     smartDeployable.unanchor(smartObjectId);
@@ -258,8 +285,6 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(deployableStateData.anchoredAt >= ephemeralInvItemTableData.stateUpdate, true);
 
     vm.warp(block.timestamp + 10);
-    // set ssu classId in the config
-    smartStorageUnit.setSSUClassId(ssuClassId);
 
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
@@ -280,7 +305,7 @@ contract SmartStorageUnitTest is MudTest {
     smartDeployable.bringOnline(smartObjectId);
 
     smartStorageUnit.createAndDepositItemsToInventory(smartObjectId, items);
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
 
     deployableStateData = DeployableState.get(smartObjectId);
 
@@ -305,7 +330,6 @@ contract SmartStorageUnitTest is MudTest {
     items[0] = InventoryItem({ inventoryItemId: 123, owner: alice, itemId: 12, typeId: 3, volume: 10, quantity: 5 });
 
     InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
-    address ephemeralInventoryOwner = bob;
     ephemeralItems[0] = InventoryItem({
       inventoryItemId: 456,
       owner: bob,
@@ -316,7 +340,7 @@ contract SmartStorageUnitTest is MudTest {
     });
 
     testCreateAndDepositItemsToInventory(smartObjectId);
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
 
     smartDeployable.bringOffline(smartObjectId);
     smartDeployable.unanchor(smartObjectId);
@@ -344,7 +368,7 @@ contract SmartStorageUnitTest is MudTest {
         State.UNANCHORED
       )
     );
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
   }
 
   function testUnanchorWithdrawRevert(uint256 smartObjectId) public {
@@ -353,7 +377,6 @@ contract SmartStorageUnitTest is MudTest {
     items[0] = InventoryItem({ inventoryItemId: 123, owner: alice, itemId: 12, typeId: 3, volume: 10, quantity: 5 });
 
     InventoryItem[] memory ephemeralItems = new InventoryItem[](1);
-    address ephemeralInventoryOwner = bob;
     ephemeralItems[0] = InventoryItem({
       inventoryItemId: 456,
       owner: bob,
@@ -364,7 +387,7 @@ contract SmartStorageUnitTest is MudTest {
     });
 
     testCreateAndDepositItemsToInventory(smartObjectId);
-    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+    smartStorageUnit.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
 
     smartDeployable.bringOffline(smartObjectId);
     smartDeployable.unanchor(smartObjectId);
@@ -391,7 +414,7 @@ contract SmartStorageUnitTest is MudTest {
         ephemeralItems[0].quantity
       )
     );
-    inventory.withdrawFromEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephemeralItems);
+    inventory.withdrawFromEphemeralInventory(smartObjectId, bob, ephemeralItems);
     vm.stopPrank();
   }
 

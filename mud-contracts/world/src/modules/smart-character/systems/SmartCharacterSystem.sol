@@ -60,7 +60,7 @@ contract SmartCharacterSystem is AccessModified, EveSystem {
     }
 
     // enforce one-to-one mapping
-    if(CharactersByAddressTable.get(characterAddress) != 0) {
+    if (CharactersByAddressTable.get(characterAddress) != 0) {
       revert ISmartCharacterErrors.SmartCharacter_AlreadyCreated(characterAddress, characterId);
     }
 
@@ -85,8 +85,6 @@ contract SmartCharacterSystem is AccessModified, EveSystem {
     );
     IERC721Mintable(CharactersConstantsTable.getErc721Address()).mint(characterAddress, characterId);
     IERC721Mintable(CharactersConstantsTable.getErc721Address()).setCid(characterId, tokenCid);
-
-
   }
 
   function updateCorpId(uint256 characterId, uint256 corpId) public onlyAdmin hookable(characterId, _systemId()) {

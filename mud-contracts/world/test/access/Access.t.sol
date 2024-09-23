@@ -11,10 +11,6 @@ import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM, RESOURCE_TABLE } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-// SOF imports
-import { SmartObjectLib } from "@eveworld/smart-object-framework/src/SmartObjectLib.sol";
-import { Utils as SOFUtils } from "@eveworld/smart-object-framework/src/utils.sol";
-
 // SD & dependency imports
 import { IERC721 } from "../../src/modules/eve-erc721-puppet/IERC721.sol";
 import { ISmartDeployableSystem } from "../../src/modules/smart-deployable/interfaces/ISmartDeployableSystem.sol";
@@ -24,12 +20,16 @@ import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployabl
 
 //SSU & dependency imports
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { TransferItem } from "../../src/modules/inventory/types.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { IInventorySystem } from "../../src/modules/inventory/interfaces/IInventorySystem.sol";
 import { IEphemeralInventorySystem } from "../../src/modules/inventory/interfaces/IEphemeralInventorySystem.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordData as CharEntityRecordData } from "../../src/modules/smart-character/types.sol";
 
 import { ERC721Registry } from "../../src/codegen/tables/ERC721Registry.sol";
 
@@ -48,11 +48,10 @@ import { ERC721_REGISTRY_TABLE_ID } from "../../src/modules/eve-erc721-puppet/co
 
 contract AccessTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
-  using SmartObjectLib for SmartObjectLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartCharacterLib for SmartCharacterLib.World;
   using SmartDeployableUtils for bytes14;
   using InventoryUtils for bytes14;
-  using SOFUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
   using EntityRecordLib for EntityRecordLib.World;
@@ -65,19 +64,12 @@ contract AccessTest is MudTest {
   uint256 bobPK = vm.deriveKey(mnemonic, 2);
   uint256 charliePK = vm.deriveKey(mnemonic, 3);
 
-  address deployer = vm.addr(deployerPK);
-  address alice = vm.addr(alicePK);
-  address bob = vm.addr(bobPK);
-  address charlie = vm.addr(charliePK);
+  address deployer = vm.addr(deployerPK); // ADMIN
+  address alice = vm.addr(alicePK); // Inventory and EphemeralInventory Owner
+  address bob = vm.addr(bobPK); // not granted to access control update functions
+  address charlie = vm.addr(charliePK); // granted to access control update functions but not ADMIN or an OWNER
 
   IWorldWithEntryContext world;
-
-  // SOF variables
-  SmartObjectLib.World SOFInterface;
-  uint8 constant CLASS = 2;
-  uint256 sdClassId = uint256(keccak256("SD_CLASS"));
-  uint256 ssuClassId = uint256(keccak256("SSU_CLASS"));
-  uint256 scClassId = uint256(keccak256("SMART_CHARACTER_CLASS"));
 
   // Deployable variables
   EntityRecordLib.World EntityRecordInterface;
@@ -142,6 +134,22 @@ contract AccessTest is MudTest {
       name: ACCESS_ENFORCEMENT_TABLE_NAME
     });
 
+  // SmartCharacter variables
+  SmartCharacterLib.World SCInterface;
+  uint256 characterId = 1111;
+
+  uint256 tribeId = 1122;
+  CharEntityRecordData charEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+
+  EntityRecordOffchainTableData charOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+
+  string tokenCID = "Qm1234abcdxxxx";
+
   function setUp() public override {
     vm.startPrank(deployer);
 
@@ -157,21 +165,11 @@ contract AccessTest is MudTest {
     // END: DEPLOY AND REGISTER FOR EVE WORLD
 
     // START: WORLD CONFIGURATION
-    SOFInterface = SmartObjectLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     SDInterface = SmartDeployableLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
+    SCInterface = SmartCharacterLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     SSUInterface = SmartStorageUnitLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     EntityRecordInterface = EntityRecordLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     InventoryInterface = InventoryLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
-
-    // SOF setup
-    // register the SD CLASS ID as a CLASS entity
-    SOFInterface.registerEntity(sdClassId, CLASS);
-
-    // register the SSU CLASS ID as a CLASS entity
-    SOFInterface.registerEntity(ssuClassId, CLASS);
-
-    //register SMART CHARACTER CLASS ID as a CLASS entity
-    SOFInterface.registerEntity(scClassId, CLASS);
 
     // SD setup
     // active SDs
@@ -182,8 +180,9 @@ contract AccessTest is MudTest {
       ERC721_REGISTRY_TABLE_ID,
       WorldResourceIdLib.encodeNamespace(ERC721_DEPLOYABLE_NAMESPACE)
     );
-    // set ssu classId in the config
-    SSUInterface.setSSUClassId(ssuClassId);
+
+    // create SSU Inventory and Ephemeral Owner as Smart Character
+    SCInterface.createCharacter(characterId, alice, tribeId, charEntityRecordData, charOffchainData, tokenCID);
 
     // create a test SSU Object (internally registers SSU ID as Object and tags it to SSU CLASS ID)
     SSUInterface.createAndAnchorSmartStorageUnit(
@@ -206,6 +205,7 @@ contract AccessTest is MudTest {
     EntityRecordInterface.createEntityRecord(inventoryItemId, itemId, typeId, volume);
 
     interact = Systems.getSystem(FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventoryInteractSystemId());
+
     // END: WORLD CONFIGURATION
 
     // GRANT ACCESS
@@ -223,6 +223,7 @@ contract AccessTest is MudTest {
     world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, alice);
     // not bob so we have an account to test against
     world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, charlie);
+
     vm.stopPrank();
   }
 
@@ -387,7 +388,7 @@ contract AccessTest is MudTest {
   }
 
   function testOnlyAdminOrObjectOwner2() public {
-    // new initialization with charlie who is not ADMIN nor OWNER, this is needed fro initMsgSender testing since parnk don't reliably update transient storage values in the same test
+    // new initialization with charlie who is not ADMIN nor OWNER, this is needed fro initMsgSender testing since prank doesn't reliably update transient storage values in the same test
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     bytes32 target1 = keccak256(
@@ -537,6 +538,7 @@ contract AccessTest is MudTest {
     // no permissions enforced.. populate items and test flows with free calls
     InventoryInterface.depositToEphemeralInventory(ssuId, alice, inItems);
     InventoryInterface.withdrawFromEphemeralInventory(ssuId, alice, outItems);
+
     // set ADMIN account
     world.call(ACCESS_SYSTEM_ID, abi.encodeCall(IAccessSystem.setAccessListByRole, (ADMIN, adminAccessList)));
     // enforce permissions (deposit)
@@ -569,6 +571,8 @@ contract AccessTest is MudTest {
         (FRONTIER_WORLD_DEPLOYMENT_NAMESPACE.inventorySystemId(), APPROVED, approvedAccessList)
       )
     );
+    TransferItem[] memory ephOutItems = new TransferItem[](1);
+    ephOutItems[0] = TransferItem({ inventoryItemId: inventoryItemId, owner: alice, quantity: 1 });
     world.call(
       ACCESS_SYSTEM_ID,
       abi.encodeCall(
@@ -578,10 +582,10 @@ contract AccessTest is MudTest {
     );
     // make forwarded call
     // success, is not ADMIN, is EPH INV OWNER, is APPROVED (forwarded call from InventoryInteract)
-    // this implies both EphemeralInventory.withdrawalFromEphemeralInventory and Inventory.depostiToInventory pass under APPROVED conditions
-    InventoryInterface.ephemeralToInventoryTransfer(ssuId, outItems);
+    // this implies both EphemeralInventory.withdrawalFromEphemeralInventory and Inventory.depostToInventory pass under APPROVED conditions
+    InventoryInterface.ephemeralToInventoryTransfer(ssuId, ephOutItems);
 
-    vm.expectRevert( // revert with the APPROVED fail error because this was a cross system call form the Mock Forawrder (who has not been added to the APPROVED list for our systems)
+    vm.expectRevert( // revert with the APPROVED fail error because this was a cross system call from the Mock Forwarder (who has not been added to the APPROVED list for our systems)
         abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(mockForwarder), APPROVED)
       );
     world.call(

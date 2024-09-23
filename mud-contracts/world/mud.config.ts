@@ -115,8 +115,6 @@ export default defineWorld({
       key: ["systemId", "roleId"],
     },
 
-
-    
     /**
      * ClassId Configuration - for setting a list of classIds to tag an object with during creation
      */

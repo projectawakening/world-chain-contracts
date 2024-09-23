@@ -76,7 +76,10 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
     }
     // ephemeralInventoryOwner MUST be an existing character
     if (CharactersByAddressTable.get(ephemeralInventoryOwner) == 0) {
-      revert IInventoryErrors.Inventory_InvalidEphemeralInventoryDepositor("EpehemeralInventorySystem: ephemeralInventoryOwner has not been created as a Character", ephemeralInventoryOwner);
+      revert IInventoryErrors.Inventory_InvalidEphemeralInventoryOwner(
+        "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
+        ephemeralInventoryOwner
+      );
     }
 
     uint256 totalUsedCapacity = _processAndReturnTotalUsedCapacity(smartObjectId, ephemeralInventoryOwner, items);
@@ -167,14 +170,14 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
         usedCapacity + reqCapacity
       );
     }
-    if (ephemeralInventoryOwner != item.owner) {
-      revert IInventoryErrors.Inventory_InvalidItemOwner(
-        "EphemeralInventorySystem:  ephemeralInventoryOwner and item.owner should be the same",
-        item.inventoryItemId,
-        item.owner,
-        ephemeralInventoryOwner
-      );
-    }
+    // if (ephemeralInventoryOwner != item.owner) {
+    //   revert IInventoryErrors.Inventory_InvalidItemOwner(
+    //     "EphemeralInventorySystem:  ephemeralInventoryOwner and item.owner should be the same",
+    //     item.inventoryItemId,
+    //     item.owner,
+    //     ephemeralInventoryOwner
+    //   );
+    // }
     _updateEphemeralInvAfterDeposit(smartObjectId, ephemeralInventoryOwner, item, index);
     return usedCapacity + reqCapacity;
   }
@@ -244,14 +247,14 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
     InventoryItem memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
-    if (ephemeralInventoryOwner != item.owner) {
-      revert IInventoryErrors.Inventory_InvalidItemOwner(
-        "EphemeralInventorySystem: ephemeralInventoryOwner and item.owner should be the same",
-        item.inventoryItemId,
-        item.owner,
-        ephemeralInventoryOwner
-      );
-    }
+    // if (ephemeralInventoryOwner != item.owner) {
+    //   revert IInventoryErrors.Inventory_InvalidItemOwner(
+    //     "EphemeralInventorySystem: ephemeralInventoryOwner and item.owner should be the same",
+    //     item.inventoryItemId,
+    //     item.owner,
+    //     ephemeralInventoryOwner
+    //   );
+    // }
     EphemeralInvItemTableData memory itemData = EphemeralInvItemTable.get(
       smartObjectId,
       item.inventoryItemId,
@@ -266,7 +269,7 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
 
   function _validateWithdrawal(InventoryItem memory item, EphemeralInvItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
-      revert IInventoryErrors.Inventory_InvalidQuantity(
+      revert IInventoryErrors.Inventory_InvalidItemQuantity(
         "EphemeralInventorySystem: invalid quantity",
         itemData.quantity,
         item.quantity

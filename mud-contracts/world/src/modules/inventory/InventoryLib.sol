@@ -7,6 +7,7 @@ import { IEphemeralInventorySystem } from "./interfaces/IEphemeralInventorySyste
 import { IInventoryInteractSystem } from "./interfaces/IInventoryInteractSystem.sol";
 import { Utils } from "./Utils.sol";
 import { InventoryItem } from "./types.sol";
+import { TransferItem } from "./types.sol";
 
 /**
  * @title InventoryLib (makes interacting with the underlying systems cleaner)
@@ -78,51 +79,58 @@ library InventoryLib {
     );
   }
 
-  function configureInteractionHandler(
+  // InventoryInteract System functionality
+  function ephemeralToInventoryTransfer(
     World memory world,
     uint256 smartObjectId,
-    bytes memory interactionParams
+    TransferItem[] memory items
   ) internal {
     world.iface.call(
       world.namespace.inventoryInteractSystemId(),
-      abi.encodeCall(IInventoryInteractSystem.configureInteractionHandler, (smartObjectId, interactionParams))
+      abi.encodeCall(IInventoryInteractSystem.ephemeralToInventoryTransfer, (smartObjectId, items))
     );
   }
 
   function inventoryToEphemeralTransfer(
     World memory world,
     uint256 smartObjectId,
-    InventoryItem[] memory items
-  ) internal {
-    world.iface.call(
-      world.namespace.inventoryInteractSystemId(),
-      abi.encodeCall(IInventoryInteractSystem.inventoryToEphemeralTransfer, (smartObjectId, items))
-    );
-  }
-
-  function inventoryToEphemeralTransferWithParam(
-    World memory world,
-    uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem[] memory outItems
+    TransferItem[] memory outItems
   ) internal {
     world.iface.call(
       world.namespace.inventoryInteractSystemId(),
       abi.encodeCall(
-        IInventoryInteractSystem.inventoryToEphemeralTransferWithParam,
+        IInventoryInteractSystem.inventoryToEphemeralTransfer,
         (smartObjectId, ephemeralInventoryOwner, outItems)
       )
     );
   }
 
-  function ephemeralToInventoryTransfer(
-    World memory world,
-    uint256 smartObjectId,
-    InventoryItem[] memory items
-  ) internal {
+  function setApprovedAccessList(World memory world, uint256 smartObjectId, address[] memory accessList) internal {
     world.iface.call(
       world.namespace.inventoryInteractSystemId(),
-      abi.encodeCall(IInventoryInteractSystem.ephemeralToInventoryTransfer, (smartObjectId, items))
+      abi.encodeCall(IInventoryInteractSystem.setApprovedAccessList, (smartObjectId, accessList))
+    );
+  }
+
+  function setAllInventoryTransferAccess(World memory world, uint256 smartObjectId, bool isEnforced) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IInventoryInteractSystem.setAllInventoryTransferAccess, (smartObjectId, isEnforced))
+    );
+  }
+
+  function setEphemeralToInventoryTransferAccess(World memory world, uint256 smartObjectId, bool isEnforced) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IInventoryInteractSystem.setEphemeralToInventoryTransferAccess, (smartObjectId, isEnforced))
+    );
+  }
+
+  function setInventoryToEphemeralTransferAccess(World memory world, uint256 smartObjectId, bool isEnforced) internal {
+    world.iface.call(
+      world.namespace.inventoryInteractSystemId(),
+      abi.encodeCall(IInventoryInteractSystem.setInventoryToEphemeralTransferAccess, (smartObjectId, isEnforced))
     );
   }
 }

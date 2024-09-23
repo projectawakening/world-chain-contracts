@@ -14,9 +14,9 @@ struct InventoryItem {
   uint256 quantity;
 }
 
-  // TransferItem is a subset of InventoryItem for easier interfacing
-  struct TransferItem {
-    uint256 inventoryItemId;
-    address owner; // current item owner before transfer
-    uint256 quantity;
-  }
+// TransferItem is a subset of InventoryItem for easier interfacing
+struct TransferItem {
+  uint256 inventoryItemId;
+  address owner; // current item owner before transfer
+  uint256 quantity;
+}

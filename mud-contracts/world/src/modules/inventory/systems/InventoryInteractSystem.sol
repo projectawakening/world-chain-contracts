@@ -32,8 +32,6 @@ contract InventoryInteractSystem is EveSystem {
   using SmartDeployableUtils for bytes14;
   using InventoryLib for InventoryLib.World;
 
-
-
   bytes32 constant APPROVED = bytes32("APPROVED_ACCESS_ROLE");
 
   modifier onlyOwner(uint256 smartObjectId) {
@@ -46,7 +44,7 @@ contract InventoryInteractSystem is EveSystem {
 
   modifier onlyOwnerOrSystemApproved(uint256 smartObjectId) {
     ResourceId systemId = SystemRegistry.get(address(this));
-    
+
     // check enforcement
     if (_isEnforced(smartObjectId)) {
       bool ownerAccess;
@@ -73,15 +71,11 @@ contract InventoryInteractSystem is EveSystem {
     _;
   }
 
-  modifier onlyEphInvOwnerOrSystemApproved(uint256 smartObjectId) {
+  modifier onlySystemApproved(uint256 smartObjectId) {
     ResourceId systemId = SystemRegistry.get(address(this));
-    
+
     // check enforcement
     if (_isEnforced(smartObjectId)) {
-      bool ephInvOwnerAccess;
-      if (ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0)) {
-        ephInvOwnerAccess = true;
-      }
       address[] memory accessListApproved = AccessRolePerObject.get(smartObjectId, APPROVED);
       bool approvedAccess;
       for (uint256 i = 0; i < accessListApproved.length; i++) {
@@ -91,12 +85,8 @@ contract InventoryInteractSystem is EveSystem {
         }
       }
 
-      if (!(ephInvOwnerAccess || approvedAccess)) {
-        if (!ephInvOwnerAccess && ResourceId.unwrap(SystemRegistry.get(_msgSender())) == bytes32(0)) {
-          revert IAccessSystemErrors.AccessSystem_NoPermission(_initialMsgSender(), bytes32("OWNER"));
-        } else {
-          revert IAccessSystemErrors.AccessSystem_NoPermission(_msgSender(), APPROVED);
-        }
+      if (!approvedAccess) {
+        revert IAccessSystemErrors.AccessSystem_NoPermission(_msgSender(), APPROVED);
       }
     }
     _;
@@ -111,55 +101,51 @@ contract InventoryInteractSystem is EveSystem {
   function ephemeralToInventoryTransfer(
     uint256 smartObjectId,
     TransferItem[] memory items
-  ) public onlyEphInvOwnerOrSystemApproved(smartObjectId) {
+  ) public onlySystemApproved(smartObjectId) {
     InventoryItem[] memory ephInvOut = new InventoryItem[](items.length);
     InventoryItem[] memory invIn = new InventoryItem[](items.length);
-    
+    address ephInvOwner = _initialMsgSender();
+    address objectInvOwner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
     for (uint i = 0; i < items.length; i++) {
       TransferItem memory item = items[i];
-      //check the _initialMsgSender() has enough items to transfer to the inventory
-      if (
-        EphemeralInvItemTable.get(smartObjectId, item.inventoryItemId, _initialMsgSender()).quantity < item.quantity
-      ) {
-        revert IInventoryErrors.Inventory_InvalidItemQuantity(
+      //check the ephInvOwner has enough items to transfer to the inventory
+      if (EphemeralInvItemTable.get(smartObjectId, item.inventoryItemId, ephInvOwner).quantity < item.quantity) {
+        revert IInventoryErrors.Inventory_InvalidTransferItemQuantity(
           "InventoryInteractSystem: not enough items to transfer",
+          smartObjectId,
+          "EPHEMERAL",
+          ephInvOwner,
           item.inventoryItemId,
           item.quantity
         );
       }
       EntityRecordTableData memory itemRecord = EntityRecordTable.get(item.inventoryItemId);
-      if(!itemRecord.recordExists) {
-        revert IInventoryErrors.Inventory_InvalidItem(
-          "InventoryInteractSystem: item is not created on-chain",
-          itemRecord.typeId
-        );
-      }
 
       ephInvOut[i] = InventoryItem({
         inventoryItemId: item.inventoryItemId,
-        owner: _initialMsgSender(),
+        owner: ephInvOwner,
         itemId: itemRecord.itemId,
         typeId: itemRecord.typeId,
         volume: itemRecord.volume,
         quantity: item.quantity
       });
 
-      invIn[i] = ephInvOut[i];
-      invIn[i].owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
-
       //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
       ItemTransferOffchainTable.set(
         smartObjectId,
         item.inventoryItemId,
-        _initialMsgSender(),
-        IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId),
+        ephInvOwner,
+        objectInvOwner,
         item.quantity,
         block.timestamp
       );
     }
-    //withdraw the items from ephemeral and deposit to inventory table
-    _inventoryLib().withdrawFromEphemeralInventory(smartObjectId, _initialMsgSender(), ephInvOut);
-    //transfer items to the ssu owner
+    // withdraw the items from ephemeral and deposit to inventory table
+    _inventoryLib().withdrawFromEphemeralInventory(smartObjectId, ephInvOwner, ephInvOut);
+    for (uint i = 0; i < items.length; i++) {
+      invIn[i] = ephInvOut[i];
+      invIn[i].owner = objectInvOwner;
+    }
     _inventoryLib().depositToInventory(smartObjectId, invIn);
   }
 
@@ -177,71 +163,62 @@ contract InventoryInteractSystem is EveSystem {
   ) public onlyOwnerOrSystemApproved(smartObjectId) {
     InventoryItem[] memory invOut = new InventoryItem[](items.length);
     InventoryItem[] memory ephInvIn = new InventoryItem[](items.length);
+    address objectInvOwner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
 
     for (uint i = 0; i < items.length; i++) {
       TransferItem memory item = items[i];
       if (InventoryItemTable.get(smartObjectId, item.inventoryItemId).quantity < item.quantity) {
-        revert IInventoryErrors.Inventory_InvalidItemQuantity(
+        revert IInventoryErrors.Inventory_InvalidTransferItemQuantity(
           "InventoryInteractSystem: not enough items to transfer",
+          smartObjectId,
+          "OBJECT",
+          objectInvOwner,
           item.inventoryItemId,
           item.quantity
         );
       }
-      
+
       EntityRecordTableData memory itemRecord = EntityRecordTable.get(item.inventoryItemId);
-      if(!itemRecord.recordExists) {
-        revert IInventoryErrors.Inventory_InvalidItem(
-          "InventoryInteractSystem: item is not created on-chain",
-          itemRecord.typeId
-        );
-      }
 
       invOut[i] = InventoryItem({
         inventoryItemId: item.inventoryItemId,
-        owner: IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId),
+        owner: objectInvOwner,
         itemId: itemRecord.itemId,
         typeId: itemRecord.typeId,
         volume: itemRecord.volume,
         quantity: item.quantity
       });
 
-      ephInvIn[i] = invOut[i];
-      ephInvIn[i].owner = _initialMsgSender();
-
-
       //Emitting the event before the transfer to reduce loop execution, might need to consider security implications later
       ItemTransferOffchainTable.set(
         smartObjectId,
         item.inventoryItemId,
-        IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId),
-        _initialMsgSender(),
+        objectInvOwner,
+        ephemeralInventoryOwner,
         item.quantity,
         block.timestamp
       );
     }
 
-    //withdraw the items from inventory and deposit to ephemeral table
+    //withdraw the items from inventory and deposit to ephemeral inventory
     _inventoryLib().withdrawFromInventory(smartObjectId, invOut);
-    //transfer the items to ephemeral owner who is the caller of this function
+    for (uint i = 0; i < items.length; i++) {
+      ephInvIn[i] = invOut[i];
+      ephInvIn[i].owner = ephemeralInventoryOwner;
+    }
     _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, ephInvIn);
   }
 
-  function setApprovedAccessList(
-    uint256 smartObjectId,
-    address[] memory accessList
-  ) public onlyOwner(smartObjectId) {
+  function setApprovedAccessList(uint256 smartObjectId, address[] memory accessList) public onlyOwner(smartObjectId) {
     AccessRolePerObject.set(smartObjectId, APPROVED, accessList);
   }
 
-  function setAllTransferAccess(
-    uint256 smartObjectId,
-    bool isEnforced
-  ) public onlyOwner(smartObjectId) {
-    setEphToInvTransferAccess(smartObjectId, isEnforced);
-    setInvToEphTransferAccess(smartObjectId, isEnforced);
+  function setAllInventoryTransferAccess(uint256 smartObjectId, bool isEnforced) public onlyOwner(smartObjectId) {
+    setEphemeralToInventoryTransferAccess(smartObjectId, isEnforced);
+    setInventoryToEphemeralTransferAccess(smartObjectId, isEnforced);
   }
 
-  function setEphToInvTransferAccess(
+  function setEphemeralToInventoryTransferAccess(
     uint256 smartObjectId,
     bool isEnforced
   ) public onlyOwner(smartObjectId) {
@@ -250,7 +227,7 @@ contract InventoryInteractSystem is EveSystem {
     AccessEnforcePerObject.set(smartObjectId, target, isEnforced);
   }
 
-  function setInvToEphTransferAccess(
+  function setInventoryToEphemeralTransferAccess(
     uint256 smartObjectId,
     bool isEnforced
   ) public onlyOwner(smartObjectId) {
@@ -267,7 +244,7 @@ contract InventoryInteractSystem is EveSystem {
     return InventoryLib.World({ iface: IBaseWorld(_world()), namespace: INVENTORY_DEPLOYMENT_NAMESPACE });
   }
 
-    function _isEnforced(uint256 smartObjectId) private view returns (bool) {
+  function _isEnforced(uint256 smartObjectId) private view returns (bool) {
     ResourceId systemId = SystemRegistry.get(address(this));
     bytes32 target = keccak256(abi.encodePacked(systemId, msg.sig));
     return AccessEnforcePerObject.get(smartObjectId, target);

@@ -21,9 +21,9 @@ interface IInventoryInteractSystem {
 
   function eveworld__setApprovedAccessList(uint256 smartObjectId, address[] memory accessList) external;
 
-  function eveworld__setAllTransferAccess(uint256 smartObjectId, bool isEnforced) external;
+  function eveworld__setAllInventoryTransferAccess(uint256 smartObjectId, bool isEnforced) external;
 
-  function eveworld__setEphToInvTransferAccess(uint256 smartObjectId, bool isEnforced) external;
+  function eveworld__setEphemeralToInventoryTransferAccess(uint256 smartObjectId, bool isEnforced) external;
 
-  function eveworld__setInvToEphTransferAccess(uint256 smartObjectId, bool isEnforced) external;
+  function eveworld__setInventoryToEphemeralTransferAccess(uint256 smartObjectId, bool isEnforced) external;
 }

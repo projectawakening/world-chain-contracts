@@ -79,7 +79,6 @@ contract InventorySystem is AccessModified, EveSystem {
   /**
    * @notice Withdraw items from the inventory
    * @dev Withdraw items from the inventory by smart storage unit id
-   * //TODO Only owner(msg.sender) of the smart storage unit can withdraw items from the inventory
    * @param smartObjectId The smart storage unit id
    * @param items The items to withdraw from the inventory
    */
@@ -120,7 +119,10 @@ contract InventorySystem is AccessModified, EveSystem {
       //Revert if the items to deposit is not created on-chain
       EntityRecordTableData memory entityRecord = EntityRecordTable.get(items[i].inventoryItemId);
       if (entityRecord.recordExists == false) {
-        revert IInventoryErrors.Inventory_InvalidItem("InventorySystem: item is not created on-chain", items[i].typeId);
+        revert IInventoryErrors.Inventory_InvalidItem(
+          "InventorySystem: item is not created on-chain",
+          items[i].inventoryItemId
+        );
       }
       //If there are inventory items exists for the smartObjectId, then the itemIndex is the length of the inventoryItems + i
       uint256 itemIndex = existingItemsLength + i;
@@ -136,10 +138,10 @@ contract InventorySystem is AccessModified, EveSystem {
     uint256 maxCapacity,
     uint256 itemIndex
   ) internal returns (uint256) {
-    // item.owner must be assigned to the Smart Object Inventory Owner
-    if (item.owner != IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId)) {
-      revert IInventoryErrors.Inventory_InvalidItemOwner("InventorySystem: smartObjectId inventory owner and item.owner should be the same", item.inventoryItemId, item.owner, IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId));
-    }
+    // // item.owner must be assigned to the Smart Object Inventory Owner
+    // if (item.owner != IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId)) {
+    //   revert IInventoryErrors.Inventory_InvalidItemOwner("InventorySystem: smartObjectId inventory owner and item.owner should be the same", item.inventoryItemId, item.owner, IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId));
+    // }
     uint256 reqCapacity = item.volume * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
       revert IInventoryErrors.Inventory_InsufficientCapacity(
@@ -189,10 +191,10 @@ contract InventorySystem is AccessModified, EveSystem {
     InventoryItem memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
-    // item.owner must be assigned to the Smart Object Inventory Owner
-    if (item.owner != IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId)) {
-      revert IInventoryErrors.Inventory_InvalidItemOwner("InventorySystem: smartObjectId inventory owner and item.owner should be the same", item.inventoryItemId, item.owner, IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId));
-    }
+    // // item.owner must be assigned to the Smart Object Inventory Owner
+    // if (item.owner != IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId)) {
+    //   revert IInventoryErrors.Inventory_InvalidItemOwner("InventorySystem: smartObjectId inventory owner and item.owner should be the same", item.inventoryItemId, item.owner, IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId));
+    // }
     InventoryItemTableData memory itemData = InventoryItemTable.get(smartObjectId, item.inventoryItemId);
     _validateWithdrawal(item, itemData);
 
@@ -203,7 +205,7 @@ contract InventorySystem is AccessModified, EveSystem {
 
   function _validateWithdrawal(InventoryItem memory item, InventoryItemTableData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
-      revert IInventoryErrors.Inventory_InvalidQuantity(
+      revert IInventoryErrors.Inventory_InvalidItemQuantity(
         "InventorySystem: invalid quantity",
         itemData.quantity,
         item.quantity

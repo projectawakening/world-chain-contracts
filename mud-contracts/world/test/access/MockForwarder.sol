@@ -47,16 +47,19 @@ contract MockForwarder is EveSystem {
     InventoryItem[] memory items
   ) public {
     address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
-
+    InventoryItem[] memory inItems = new InventoryItem[](items.length);
     // check if ephemeralInventoryOwner has enough items to transfer to the inventory
     for (uint i = 0; i < items.length; i++) {
       InventoryItem memory item = items[i];
-
+      inItems[i] = InventoryItem(item.inventoryItemId, owner, 4325, 12, 100, item.quantity);
       if (
         EphemeralInvItemTable.get(smartObjectId, item.inventoryItemId, ephemeralInventoryOwner).quantity < item.quantity
       ) {
-        revert IInventoryErrors.Inventory_InvalidItemQuantity(
-          "InventoryInteract: Not enough items to transfer",
+        revert IInventoryErrors.Inventory_InvalidTransferItemQuantity(
+          "MockForwarder: Not enough items to transfer",
+          smartObjectId,
+          "EPHEMERAL",
+          ephemeralInventoryOwner,
           item.inventoryItemId,
           item.quantity
         );
@@ -66,7 +69,7 @@ contract MockForwarder is EveSystem {
     // withdraw the items from ephemeral and deposit to inventory table
     _inventoryLib().withdrawFromEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
     // transfer items to the ssu owner
-    _inventoryLib().depositToInventory(smartObjectId, items);
+    _inventoryLib().depositToInventory(smartObjectId, inItems);
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {
