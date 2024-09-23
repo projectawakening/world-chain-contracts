@@ -47,6 +47,7 @@ contract CallWorld is Script {
       ISmartCharacterSystem.createCharacter.selector,
       characterId,
       characterAddress,
+      1000,
       EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume }),
       EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
       cid

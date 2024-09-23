@@ -1,4 +1,7 @@
 # @eveworld/common-constants
+## 0.0.13
+
+- adding the term System to the end of all systems
 
 ## 0.0.7
 

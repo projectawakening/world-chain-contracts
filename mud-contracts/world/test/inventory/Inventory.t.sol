@@ -152,6 +152,8 @@ contract InventoryTest is MudTest {
     // inventory interface setting
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
+    smartDeployable.globalResume();
+
     vm.stopPrank();
   }
 

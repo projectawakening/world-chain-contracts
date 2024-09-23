@@ -50,16 +50,16 @@
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'"
   },
   "dependencies": {
-    "@eveworld/common-constants": "link:../mud-contracts/common/constants",
-    "@eveworld/smart-object-framework": "link:../mud-contracts/smart-object-framework",
-    "@eveworld/world": "link:../mud-contracts/world",
-    "@eveworld/world-core": "link:../mud-contracts/core",
-    "@latticexyz/cli": "2.2.3",
-    "@latticexyz/gas-report": "2.2.3",
-    "@latticexyz/schema-type": "2.2.3",
-    "@latticexyz/store": "2.2.3",
-    "@latticexyz/world": "2.2.3",
-    "@latticexyz/world-modules": "2.2.3"
+    "@eveworld/common-constants": "0.0.13",
+    "@eveworld/smart-object-framework": "0.0.8",
+    "@eveworld/world": "0.0.16",
+    "@eveworld/world-core": "0.0.2",
+    "@latticexyz/cli": "2.2.8",
+    "@latticexyz/gas-report": "2.2.8",
+    "@latticexyz/schema-type": "2.2.8",
+    "@latticexyz/store": "2.2.8",
+    "@latticexyz/world": "2.2.8",
+    "@latticexyz/world-modules": "2.2.8"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",
@@ -70,7 +70,7 @@
     "prettier": "^2.6.2",
     "prettier-plugin-solidity": "1.1.3",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "2.2.3",
-    "solhint-plugin-mud": "2.2.3"
+    "solhint-config-mud": "2.2.8",
+    "solhint-plugin-mud": "2.2.8"
   }
 }

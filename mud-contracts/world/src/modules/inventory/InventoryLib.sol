@@ -5,6 +5,9 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { IInventorySystem } from "./interfaces/IInventorySystem.sol";
 import { IEphemeralInventorySystem } from "./interfaces/IEphemeralInventorySystem.sol";
 import { IInventoryInteractSystem } from "./interfaces/IInventoryInteractSystem.sol";
+import { IInventorySystem } from "./interfaces/IInventorySystem.sol";
+import { IEphemeralInventorySystem } from "./interfaces/IEphemeralInventorySystem.sol";
+import { IInventoryInteractSystem } from "./interfaces/IInventoryInteractSystem.sol";
 import { Utils } from "./Utils.sol";
 import { InventoryItem } from "./types.sol";
 import { TransferItem } from "./types.sol";

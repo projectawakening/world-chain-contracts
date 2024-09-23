@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { Test, console } from "forge-std/Test.sol";
-import { CallReceiverMockTrustingForwarder, CallReceiverMock } from "openzeppelin-contracts/mocks/CallReceiverMock.sol";
+import { CallReceiverMockTrustingForwarder, CallReceiverMock } from "./CallReceiverMock.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771Forwarder.sol";
 
 contract ERC2771ForwarderTest is Test {

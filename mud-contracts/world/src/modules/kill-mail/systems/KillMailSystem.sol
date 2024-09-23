@@ -16,7 +16,7 @@ contract KillMailSystem is AccessModified, EveSystem {
     uint256 killMailId,
     KillMailTableData memory killMailTableData
   ) public onlyAdmin hookable(killMailId, _systemId()) {
-    if (KillMailTable.getKiller(killMailId) != address(0)) {
+    if (KillMailTable.getKillerCharacterId(killMailId) != 0) {
       revert IKillMailErrors.KillMail_AlreadyExists("KillMailSystem: Can't report an already reported kill");
     }
 

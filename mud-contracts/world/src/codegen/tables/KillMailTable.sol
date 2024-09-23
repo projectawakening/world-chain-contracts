@@ -20,8 +20,8 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { KillMailLossType } from "../common.sol";
 
 struct KillMailTableData {
-  address killer;
-  address victim;
+  uint256 killerCharacterId;
+  uint256 victimCharacterId;
   KillMailLossType lossType;
   uint256 solarSystemId;
   uint256 killTimestamp;
@@ -32,12 +32,12 @@ library KillMailTable {
   ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004b696c6c4d61696c5461626c65000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0069050014140120200000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0081050020200120200000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (address, address, uint8, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x006905006161001f1f0000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, uint256, uint8, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x008105001f1f001f1f0000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -54,8 +54,8 @@ library KillMailTable {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](5);
-    fieldNames[0] = "killer";
-    fieldNames[1] = "victim";
+    fieldNames[0] = "killerCharacterId";
+    fieldNames[1] = "victimCharacterId";
     fieldNames[2] = "lossType";
     fieldNames[3] = "solarSystemId";
     fieldNames[4] = "killTimestamp";
@@ -76,87 +76,87 @@ library KillMailTable {
   }
 
   /**
-   * @notice Get killer.
+   * @notice Get killerCharacterId.
    */
-  function getKiller(uint256 killMailId) internal view returns (address killer) {
+  function getKillerCharacterId(uint256 killMailId) internal view returns (uint256 killerCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (address(bytes20(_blob)));
+    return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get killer.
+   * @notice Get killerCharacterId.
    */
-  function _getKiller(uint256 killMailId) internal view returns (address killer) {
+  function _getKillerCharacterId(uint256 killMailId) internal view returns (uint256 killerCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (address(bytes20(_blob)));
+    return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set killer.
+   * @notice Set killerCharacterId.
    */
-  function setKiller(uint256 killMailId, address killer) internal {
+  function setKillerCharacterId(uint256 killMailId, uint256 killerCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((killer)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((killerCharacterId)), _fieldLayout);
   }
 
   /**
-   * @notice Set killer.
+   * @notice Set killerCharacterId.
    */
-  function _setKiller(uint256 killMailId, address killer) internal {
+  function _setKillerCharacterId(uint256 killMailId, uint256 killerCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((killer)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((killerCharacterId)), _fieldLayout);
   }
 
   /**
-   * @notice Get victim.
+   * @notice Get victimCharacterId.
    */
-  function getVictim(uint256 killMailId) internal view returns (address victim) {
+  function getVictimCharacterId(uint256 killMailId) internal view returns (uint256 victimCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
-    return (address(bytes20(_blob)));
+    return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get victim.
+   * @notice Get victimCharacterId.
    */
-  function _getVictim(uint256 killMailId) internal view returns (address victim) {
+  function _getVictimCharacterId(uint256 killMailId) internal view returns (uint256 victimCharacterId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
-    return (address(bytes20(_blob)));
+    return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set victim.
+   * @notice Set victimCharacterId.
    */
-  function setVictim(uint256 killMailId, address victim) internal {
+  function setVictimCharacterId(uint256 killMailId, uint256 victimCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((victim)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((victimCharacterId)), _fieldLayout);
   }
 
   /**
-   * @notice Set victim.
+   * @notice Set victimCharacterId.
    */
-  function _setVictim(uint256 killMailId, address victim) internal {
+  function _setVictimCharacterId(uint256 killMailId, uint256 victimCharacterId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(killMailId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((victim)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((victimCharacterId)), _fieldLayout);
   }
 
   /**
@@ -320,13 +320,19 @@ library KillMailTable {
    */
   function set(
     uint256 killMailId,
-    address killer,
-    address victim,
+    uint256 killerCharacterId,
+    uint256 victimCharacterId,
     KillMailLossType lossType,
     uint256 solarSystemId,
     uint256 killTimestamp
   ) internal {
-    bytes memory _staticData = encodeStatic(killer, victim, lossType, solarSystemId, killTimestamp);
+    bytes memory _staticData = encodeStatic(
+      killerCharacterId,
+      victimCharacterId,
+      lossType,
+      solarSystemId,
+      killTimestamp
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -342,13 +348,19 @@ library KillMailTable {
    */
   function _set(
     uint256 killMailId,
-    address killer,
-    address victim,
+    uint256 killerCharacterId,
+    uint256 victimCharacterId,
     KillMailLossType lossType,
     uint256 solarSystemId,
     uint256 killTimestamp
   ) internal {
-    bytes memory _staticData = encodeStatic(killer, victim, lossType, solarSystemId, killTimestamp);
+    bytes memory _staticData = encodeStatic(
+      killerCharacterId,
+      victimCharacterId,
+      lossType,
+      solarSystemId,
+      killTimestamp
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -364,8 +376,8 @@ library KillMailTable {
    */
   function set(uint256 killMailId, KillMailTableData memory _table) internal {
     bytes memory _staticData = encodeStatic(
-      _table.killer,
-      _table.victim,
+      _table.killerCharacterId,
+      _table.victimCharacterId,
       _table.lossType,
       _table.solarSystemId,
       _table.killTimestamp
@@ -385,8 +397,8 @@ library KillMailTable {
    */
   function _set(uint256 killMailId, KillMailTableData memory _table) internal {
     bytes memory _staticData = encodeStatic(
-      _table.killer,
-      _table.victim,
+      _table.killerCharacterId,
+      _table.victimCharacterId,
       _table.lossType,
       _table.solarSystemId,
       _table.killTimestamp
@@ -409,17 +421,23 @@ library KillMailTable {
   )
     internal
     pure
-    returns (address killer, address victim, KillMailLossType lossType, uint256 solarSystemId, uint256 killTimestamp)
+    returns (
+      uint256 killerCharacterId,
+      uint256 victimCharacterId,
+      KillMailLossType lossType,
+      uint256 solarSystemId,
+      uint256 killTimestamp
+    )
   {
-    killer = (address(Bytes.getBytes20(_blob, 0)));
+    killerCharacterId = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    victim = (address(Bytes.getBytes20(_blob, 20)));
+    victimCharacterId = (uint256(Bytes.getBytes32(_blob, 32)));
 
-    lossType = KillMailLossType(uint8(Bytes.getBytes1(_blob, 40)));
+    lossType = KillMailLossType(uint8(Bytes.getBytes1(_blob, 64)));
 
-    solarSystemId = (uint256(Bytes.getBytes32(_blob, 41)));
+    solarSystemId = (uint256(Bytes.getBytes32(_blob, 65)));
 
-    killTimestamp = (uint256(Bytes.getBytes32(_blob, 73)));
+    killTimestamp = (uint256(Bytes.getBytes32(_blob, 97)));
   }
 
   /**
@@ -433,9 +451,13 @@ library KillMailTable {
     EncodedLengths,
     bytes memory
   ) internal pure returns (KillMailTableData memory _table) {
-    (_table.killer, _table.victim, _table.lossType, _table.solarSystemId, _table.killTimestamp) = decodeStatic(
-      _staticData
-    );
+    (
+      _table.killerCharacterId,
+      _table.victimCharacterId,
+      _table.lossType,
+      _table.solarSystemId,
+      _table.killTimestamp
+    ) = decodeStatic(_staticData);
   }
 
   /**
@@ -463,13 +485,13 @@ library KillMailTable {
    * @return The static data, encoded into a sequence of bytes.
    */
   function encodeStatic(
-    address killer,
-    address victim,
+    uint256 killerCharacterId,
+    uint256 victimCharacterId,
     KillMailLossType lossType,
     uint256 solarSystemId,
     uint256 killTimestamp
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(killer, victim, lossType, solarSystemId, killTimestamp);
+    return abi.encodePacked(killerCharacterId, victimCharacterId, lossType, solarSystemId, killTimestamp);
   }
 
   /**
@@ -479,13 +501,19 @@ library KillMailTable {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    address killer,
-    address victim,
+    uint256 killerCharacterId,
+    uint256 victimCharacterId,
     KillMailLossType lossType,
     uint256 solarSystemId,
     uint256 killTimestamp
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(killer, victim, lossType, solarSystemId, killTimestamp);
+    bytes memory _staticData = encodeStatic(
+      killerCharacterId,
+      victimCharacterId,
+      lossType,
+      solarSystemId,
+      killTimestamp
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
