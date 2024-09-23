@@ -25,9 +25,9 @@
     "@latticexyz/store": "2.2.3",
     "@latticexyz/world": "2.2.3",
     "@latticexyz/world-modules": "2.2.3",
-    "@eveworld/common-constants": "link:../common/constants",
-    "@eveworld/smart-object-framework": "link:../smart-object-framework",
-    "@eveworld/world": "link:../world"
+    "@eveworld/common-constants": "0.0.13",
+    "@eveworld/smart-object-framework": "0.0.8",
+    "@eveworld/world": "0.0.16"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
