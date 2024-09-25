@@ -590,4 +590,8 @@ contract AccessTest is MudTest {
     );
     vm.stopPrank();
   }
+
+  /**
+   * CONFIGURATION TESTS - the following are verbatim configuration code from the correlary access-config /script respectively
+   */
 }

@@ -449,24 +449,4 @@ contract SmartStorageUnitTest is MudTest {
 
     inventory.withdrawFromInventory(smartObjectId, items);
   }
-
-  function testOnlyAdminCanCreateAndAnchor() public {
-    //TODO : Add test case for only admin can create and anchor an SSU after RBAC
-  }
-
-  function testOnlyAdminCanCreateAndDepositInventory() public {
-    //TODO : Add test case for only admin can create and deposit items to an SSU inventory after RBAC
-  }
-
-  function testOnlyAdminCanCreateAndDepositEphemeral() public {
-    //TODO : Add test case for only admin can create and deposit items to an SSU ephemeral inv after RBAC
-  }
-
-  function testOnlyAdminCanSetClass() public {
-    //TODO : Add test case for only admin can set the SSU class after RBAC
-  }
-
-  function testOnlyAdminOrOwnerCanSetMetadata() public {
-    //TODO : Add test case for only admin or owner can set metadata for SSU after RBAC
-  }
 }

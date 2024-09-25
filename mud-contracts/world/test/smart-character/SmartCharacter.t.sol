@@ -159,16 +159,4 @@ contract SmartCharacterTest is MudTest {
     vm.expectRevert(abi.encodeWithSelector(ISmartCharacterErrors.SmartCharacterDoesNotExist.selector, characterId));
     smartCharacter.updateCorpId(characterId, corpId);
   }
-
-  function testOnlyAdminCanCreateCharacter() public {
-    //TODO : Add test case for only admin can create a smart character after RBAC
-  }
-
-  function testOnlyAdminCanSetCorpId() public {
-    //TODO : Add test case for only admin can set smart character corpid after RBAC
-  }
-
-  function testOnlyAdminCanSetClass() public {
-    //TODO : Add test case for only admin can set smart character class after RBAC
-  }
 }

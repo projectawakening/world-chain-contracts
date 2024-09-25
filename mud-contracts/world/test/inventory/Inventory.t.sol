@@ -475,16 +475,4 @@ contract InventoryTest is MudTest {
     );
     inventory.withdrawFromInventory(smartObjectId, items);
   }
-
-  function testOnlyAdminCanSetInventoryCapacity() public {
-    //TODO : Add test case for only admin can set inventory capacity after RBAC
-  }
-
-  function testOnlyOwnerCanDepositToInventory() public {
-    //TODO : Add test case for only owner can deposit to inventory after RBAC
-  }
-
-  function testOnlyOwnerCanWithdrawFromInventory() public {
-    //TODO : Add test case for only owner can deposit to inventory after RBAC
-  }
 }

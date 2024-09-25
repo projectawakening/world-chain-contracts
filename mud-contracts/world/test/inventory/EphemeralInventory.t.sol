@@ -439,20 +439,4 @@ contract EphemeralInventoryTest is MudTest {
     );
     ephemeralInventory.withdrawFromEphemeralInventory(smartObjectId, owner, items);
   }
-
-  function testOnlyAdminCanSetEphemeralInventoryCapacity(
-    uint256 smartObjectId,
-    address owner,
-    uint256 storageCapacity
-  ) public {
-    //TODO: Implement the logic to check if the caller is admin after RBAC implementation
-  }
-
-  function testAnyoneCanDepositToInventory() public {
-    //TODO : Add test case for only owner can withdraw from inventory after RBAC
-  }
-
-  function testOnlyItemOwnerCanWithdrawFromInventory() public {
-    //TODO : Add test case for only owner can withdraw from inventory after RBAC
-  }
 }

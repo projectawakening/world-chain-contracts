@@ -18,7 +18,7 @@ import {ADMIN, APPROVED } from "../src/modules/access/constants.sol";
 
 import { IAccessSystem } from "../src/modules/access/interfaces/IAccessSystem.sol";
 
-contract InventoryAccess is Script {
+contract AccessListConfig is Script {
   using AccessUtils for bytes14;
   using InventoryUtils for bytes14;
 

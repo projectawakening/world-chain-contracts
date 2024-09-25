@@ -144,7 +144,10 @@ contract SmartGateSystem is EveSystem, AccessModified {
    * @param sourceGateId is the id of the source gate
    * @param destinationGateId is the id of the destination gate
    */
-  function unlinkSmartGates(uint256 sourceGateId, uint256 destinationGateId) public onlyAdminOrObjectOwner(sourceGateId) {
+  function unlinkSmartGates(
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) public onlyAdminOrObjectOwner(sourceGateId) {
     //Check if the gates are linked
     if (!isGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);

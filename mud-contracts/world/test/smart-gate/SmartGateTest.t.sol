@@ -282,8 +282,4 @@ contract SmartGateTest is MudTest {
     testLinkSmartGates();
     assert(smartGate.canJump(characterId, destinationGateId, sourceGateId));
   }
-
-  function testOnlyAdminOrOwnerCanConfigure() public {
-    // TODO: only the owner of a gate can configure its logic
-  }
 }

@@ -51,8 +51,4 @@ contract LocationTest is MudTest {
     assertEq(locationData.y, tableData.y);
     assertEq(locationData.z, tableData.z);
   }
-
-  function testOnlyAdminCanSetLocation() public {
-    //TODO : Add test case for only admin can set an object's location after RBAC
-  }
 }

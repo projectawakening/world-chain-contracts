@@ -13,7 +13,7 @@ import { Utils } from "../src/modules/kill-mail/Utils.sol";
 import { IAccessSystem } from "../src/modules/access/interfaces/IAccessSystem.sol";
 import { IKillMailSystem } from "../src/modules/kill-mail/interfaces/IKillMailSystem.sol";
 
-contract KilMailAccessConfig is Script {
+contract KillMailAccessConfig is Script {
   using AccessUtils for bytes14;
   using Utils for bytes14;
 

@@ -65,8 +65,4 @@ contract KillMailTest is MudTest {
     assertEq(killMailTableData.victimCharacterId, storedKillMailTableData.victimCharacterId);
     assertEq(killMailTableData.killTimestamp, storedKillMailTableData.killTimestamp);
   }
-
-  function testOnlyAdminCanReport() public {
-    //TODO : Add test case for only admin can report a KillMail onchain after RBAC
-  }
 }
