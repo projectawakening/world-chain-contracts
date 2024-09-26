@@ -19,7 +19,10 @@ contract AccessSystem is EveSystem {
     }
     // only account granted access to the AccessRole table can sucessfully call this function
     if (!ResourceAccess.get(AccessRole._tableId, IWorldWithEntryContext(_world()).initialMsgSender())) {
-      revert IAccessSystemErrors.AccessSystem_AccessConfigDenied();
+      revert IAccessSystemErrors.AccessSystem_AccessConfigDenied(
+        IWorldWithEntryContext(_world()).initialMsgSender(),
+        "AccessRole"
+      );
     }
     AccessRole.set(accessRoleId, accessList);
   }
@@ -31,7 +34,10 @@ contract AccessSystem is EveSystem {
     }
     // only accounts granted access to the AccessRolePerSys table can sucessfully call this function
     if (!ResourceAccess.get(AccessRolePerSys._tableId, IWorldWithEntryContext(_world()).initialMsgSender())) {
-      revert IAccessSystemErrors.AccessSystem_AccessConfigDenied();
+      revert IAccessSystemErrors.AccessSystem_AccessConfigDenied(
+        IWorldWithEntryContext(_world()).initialMsgSender(),
+        "AccessRolePerSys"
+      );
     }
     AccessRolePerSys.set(systemId, accessRoleId, accessList);
   }
@@ -39,7 +45,10 @@ contract AccessSystem is EveSystem {
   function setAccessEnforcement(bytes32 target, bool isEnforced) public {
     // only accounts granted access to the AccessEnforcement table can sucessfully call this function
     if (!ResourceAccess.get(AccessEnforcement._tableId, IWorldWithEntryContext(_world()).initialMsgSender())) {
-      revert IAccessSystemErrors.AccessSystem_AccessConfigDenied();
+      revert IAccessSystemErrors.AccessSystem_AccessConfigDenied(
+        IWorldWithEntryContext(_world()).initialMsgSender(),
+        "AccessEnforcement"
+      );
     }
     AccessEnforcement.set(target, isEnforced);
   }

@@ -6,5 +6,5 @@ interface IAccessSystemErrors {
 
   error AccessSystem_InvalidRoleId();
 
-  error AccessSystem_AccessConfigDenied();
+  error AccessSystem_AccessConfigDenied(address sender, string configType);
 }

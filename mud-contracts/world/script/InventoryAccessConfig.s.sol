@@ -40,7 +40,7 @@ contract InventoryAccessConfig is Script {
     
     // EphemeralInventorySystem
     // EphemeralInventory.setEphemeralInventoryCapacity
-    bytes32 ephInvCapacity = keccak256(abi.encodePacked(WORLD_NAMESPACE.inventorySystemId(), IEphemeralInventorySystem.setEphemeralInventoryCapacity.selector));
+    bytes32 ephInvCapacity = keccak256(abi.encodePacked(WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventorySystem.setEphemeralInventoryCapacity.selector));
     // EphemeralInventory.depositToEphemeralInventory
     bytes32 ephInvDeposit = keccak256(abi.encodePacked(WORLD_NAMESPACE.ephemeralInventorySystemId(), IEphemeralInventorySystem.depositToEphemeralInventory.selector));
     // EphemeralInventory.withdrawalFromEphemeralInventory

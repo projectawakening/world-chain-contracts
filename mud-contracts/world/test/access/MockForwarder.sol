@@ -19,13 +19,12 @@ import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 
 import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
+import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 contract MockForwarder is EveSystem {
   using InventoryUtils for bytes14;
   using SmartDeployableUtils for bytes14;
   using InventoryLib for InventoryLib.World;
-
-  bytes14 constant EVE_WORLD_NAMESPACE = "eveworld";
 
   bytes14 constant ERC721_DEPLOYABLE_NAMESPACE = "erc721deploybl";
 
@@ -41,43 +40,48 @@ contract MockForwarder is EveSystem {
     return returnData;
   }
 
-  function openEphemeralToInventoryTransfer(
+  function unapprovedEphemeralToInventoryTransfer(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public {
-    address owner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
-
-    // check if ephemeralInventoryOwner has enough items to transfer to the inventory
-    for (uint i = 0; i < items.length; i++) {
-      InventoryItem memory item = items[i];
-
-      if (
-        EphemeralInvItemTable.get(smartObjectId, item.inventoryItemId, ephemeralInventoryOwner).quantity < item.quantity
-      ) {
-        revert IInventoryErrors.Inventory_InvalidItemQuantity(
-          "InventoryInteract: Not enough items to transfer",
-          item.inventoryItemId,
-          item.quantity
-        );
-      }
-    }
-
-    // withdraw the items from ephemeral and deposit to inventory table
     _inventoryLib().withdrawFromEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
-    // transfer items to the ssu owner
     _inventoryLib().depositToInventory(smartObjectId, items);
   }
 
+  function callInventoryDeposit(uint256 smartObjectId, InventoryItem[] memory items) public {
+    _inventoryLib().depositToInventory(smartObjectId, items);
+  }
+
+  function callInventoryWithdraw(uint256 smartObjectId, InventoryItem[] memory items) public {
+    _inventoryLib().depositToInventory(smartObjectId, items);
+  }
+
+  function callEphemeralInventoryDeposit(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) public {
+    _inventoryLib().depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
+  }
+
+  function callEphemeralInventoryWithdraw(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) public {
+    _inventoryLib().withdrawFromEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
+  }
+
   function _inventoryLib() internal view returns (InventoryLib.World memory) {
-    return InventoryLib.World({ iface: IBaseWorld(_world()), namespace: EVE_WORLD_NAMESPACE });
+    return InventoryLib.World({ iface: IBaseWorld(_world()), namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE });
   }
 
   function _systemId() internal pure returns (ResourceId) {
     return
       WorldResourceIdLib.encode({
         typeId: RESOURCE_SYSTEM,
-        namespace: bytes14("eveworld"),
+        namespace: FRONTIER_WORLD_DEPLOYMENT_NAMESPACE,
         name: bytes16("MockForwarder")
       });
   }

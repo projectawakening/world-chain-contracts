@@ -29,6 +29,8 @@ contract SmartGateAccessConfig is Script {
 
     // target functions to set access control enforcement for
     // SmartGateSystem
+    // SmartGate.createAndAnchorSmartGate
+    bytes32 create = keccak256(abi.encodePacked(WORLD_NAMESPACE.smartGateSystemId(), ISmartGateSystem.createAndAnchorSmartGate.selector));
     // SmartGate.configureSmartGate
     bytes32 configure = keccak256(abi.encodePacked(WORLD_NAMESPACE.smartGateSystemId(), ISmartGateSystem.configureSmartGate.selector));
     // SmartGate.linkSmartGates
@@ -37,6 +39,7 @@ contract SmartGateAccessConfig is Script {
     bytes32 unlink = keccak256(abi.encodePacked(WORLD_NAMESPACE.smartGateSystemId(), ISmartGateSystem.unlinkSmartGates.selector));
 
     // set enforcement to true for all
+    world.call(WORLD_NAMESPACE.accessSystemId(), abi.encodeCall(IAccessSystem.setAccessEnforcement, (create, true)));
     world.call(WORLD_NAMESPACE.accessSystemId(), abi.encodeCall(IAccessSystem.setAccessEnforcement, (configure, true)));
     world.call(WORLD_NAMESPACE.accessSystemId(), abi.encodeCall(IAccessSystem.setAccessEnforcement, (link, true)));
     world.call(WORLD_NAMESPACE.accessSystemId(), abi.encodeCall(IAccessSystem.setAccessEnforcement, (unlink, true)));
