@@ -150,6 +150,7 @@ contract SmartGateSystem is EveSystem, AccessModified {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }
     SmartGateLinkTable.set(sourceGateId, destinationGateId, false);
+    SmartGateLinkTable.set(destinationGateId, sourceGateId, false);
   }
 
   /**
@@ -227,7 +228,7 @@ contract SmartGateSystem is EveSystem, AccessModified {
 
     // Sum of squares (distance squared in meters)
     uint256 distanceSquaredMeters = (dx * dx) + (dy * dy) + (dz * dz);
-    return distanceSquaredMeters <= maxDistance;
+    return distanceSquaredMeters <= (maxDistance * maxDistance);
   }
 
   function _entityRecordLib() internal view returns (EntityRecordLib.World memory) {
