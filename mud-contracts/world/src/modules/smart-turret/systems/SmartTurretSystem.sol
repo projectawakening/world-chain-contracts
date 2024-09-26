@@ -208,6 +208,8 @@ contract SmartTurretSystem is EveSystem, AccessModified {
         }
 
         updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: aggressor, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
+      } else {
+        updatedPriorityQueue = priorityQueue;
       }
     } else {
       bytes memory returnData = world().call(
