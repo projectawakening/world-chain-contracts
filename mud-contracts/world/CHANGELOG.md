@@ -1,4 +1,17 @@
 # @eveworld/world
+## 0.0.17
+- Enforce one-to-one mapping for smart character address to id - includes a new error - `SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);`
+- Added a reverse lookup table called `CharctersByAddressTable` - key characterAddress, returns characterId - used to enforce that any Ephemeral Inventory Owner that get sent items is in-fact a created character (so items don't get sent to blackhole addresses)
+- Created a new simpler struct `TransferItem`, to make InventoryInteract usability easier
+- `TransferItem` only includes: the `inventoryItemId`, `owner`, and `quantity` since the other fieilds are already in `EntityRecord`
+- Subsequently use EntityRecord data to create the full InventoryItem object to pass into the Inventory and EphemeralInventory modules
+- Implemented a `InventoryInteract.setApprovedAccessList` - this allows the Inventory owner to APPROVE others access to the InventoryInteract transfer functions via `_msgSender()` checking (including other Systems or EOAs)
+- Implemented `setAllTransferAccess`, `setEphemeralToInventoryTransferAccess`, and `setInventoryToEphemeralTransferAccess` - these allow the Inventory Owner `onlyOwner` to toggle the access control on/off for the InventoryInteract.transfer functions.
+- Enforcement modifier `onlyOwnerOrSystemApproved` for `InventoryInteract.inventoryToEphemeralTransfer` 
+- When`onlyOwnerOrSystemApproved` is active, the Inventory Owner can still call directly to the function or through other System calls ( because `_initialMsgSender `is checked), however, other EOAs can only call by being APPROVED and calling direct OR they can cal via an APPROVED System (`_msgSender` is checked). This gives the Inventory Owner freedom to call how they wish but protect the `InventoryInteract.inventoryToEphemeralTransfer` function from 3rd party calls (unless APPROVED or calling via an APPROVED System).
+- Enforcement rmodifier `onlySystemApproved` for `InventoryInteract.ephemeralToInventoryTransfer`
+-  When `onlySystemApproved` is active, the Ephemeral Inventory Owner can no longer call directly unless they are APPROVED or call via and APPROVED System. This give the Object Inventory Owner the ability to control how Ephemeral Owners interact with their Object.
+
 ## 0.0.16
 - all @latticexyz packages upgraded to version 2.2.8
 - implemented intialMsgSender() context capture as a customWorld contract named WorldWithEntryContext.sol
