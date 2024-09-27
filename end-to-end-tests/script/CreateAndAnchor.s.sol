@@ -36,7 +36,7 @@ contract CreateAndAnchor is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    if(CharactersTable.getCharacterAddress(12513) == address(0)) {
+    if (CharactersTable.getCharacterAddress(12513) == address(0)) {
       smartCharacter.createCharacter(
         12513,
         player,
