@@ -12,7 +12,7 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { DeployableTokenTable } from "../../src/codegen/tables/DeployableTokenTable.sol";
 import { IERC721 } from "../../src/modules/eve-erc721-puppet/IERC721.sol";
-import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { TransferItem } from "../../src/modules/inventory/types.sol";
 
 contract VendingMachineMock is System {
   using InventoryLib for InventoryLib.World;
@@ -28,27 +28,27 @@ contract VendingMachineMock is System {
    * @param ephInvOwner The owner of the ephemeral inventory we want to interact with
    * @param quantity is the quanity of the item to be exchanged
    */
-  function interactHandler(uint256 smartObjectId, address ephInvOwner, uint256 quantity) public {
+  function interactCall(uint256 smartObjectId, address ephInvOwner, uint256 quantity) public {
     //NOTE: Store the IN and OUT item details in table by configuring in a seperate function.
     // Its hardcoded only for testing purpose
     //Inventory Item IN data
     uint256 inItemId = uint256(keccak256(abi.encode("item:46")));
     uint256 outItemId = uint256(keccak256(abi.encode("item:45")));
-    uint256 ratio = 1;
+    uint256 ratio = 2; // in 1 : out 2
 
     address inventoryOwner = IERC721(DeployableTokenTable.getErc721Address()).ownerOf(smartObjectId);
 
     //Below Data should be stored in a table and fetched from there
-    InventoryItem[] memory inItems = new InventoryItem[](1);
-    inItems[0] = InventoryItem(inItemId, ephInvOwner, 46, 2, 70, quantity * ratio);
+    TransferItem[] memory inItems = new TransferItem[](1);
+    inItems[0] = TransferItem(inItemId, ephInvOwner, quantity);
 
-    InventoryItem[] memory outItems = new InventoryItem[](1);
-    outItems[0] = InventoryItem(outItemId, inventoryOwner, 45, 1, 50, quantity * ratio);
+    TransferItem[] memory outItems = new TransferItem[](1);
+    outItems[0] = TransferItem(outItemId, inventoryOwner, quantity * ratio);
 
     // Withdraw from ephemeralInventory and deposit to inventory
     _inventoryLib().ephemeralToInventoryTransfer(smartObjectId, inItems);
     // Withdraw from inventory and deposit to ephemeral inventory
-    _inventoryLib().inventoryToEphemeralTransferWithParam(smartObjectId, ephInvOwner, outItems);
+    _inventoryLib().inventoryToEphemeralTransfer(smartObjectId, ephInvOwner, outItems);
   }
 
   function _inventoryLib() internal view returns (InventoryLib.World memory) {

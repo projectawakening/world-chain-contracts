@@ -20,13 +20,17 @@ import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDepl
 import { Utils as SmartDeployableUtils } from "../../src/modules/smart-deployable/Utils.sol";
 
 //SSU & dependency imports
-import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { InventoryItem, TransferItem } from "../../src/modules/inventory/types.sol";
+import { TransferItem } from "../../src/modules/inventory/types.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { IInventorySystem } from "../../src/modules/inventory/interfaces/IInventorySystem.sol";
 import { IEphemeralInventorySystem } from "../../src/modules/inventory/interfaces/IEphemeralInventorySystem.sol";
 import { Utils as InventoryUtils } from "../../src/modules/inventory/Utils.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordData as CharEntityRecordData } from "../../src/modules/smart-character/types.sol";
 
 import { ERC721Registry } from "../../src/codegen/tables/ERC721Registry.sol";
 
@@ -91,6 +95,7 @@ import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGl
 contract AccessTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartCharacterLib for SmartCharacterLib.World;
   using SmartDeployableUtils for bytes14;
   using InventoryUtils for bytes14;
   using AccessUtils for bytes14;
@@ -202,6 +207,22 @@ contract AccessTest is MudTest {
       name: ACCESS_ENFORCEMENT_TABLE_NAME
     });
 
+  // SmartCharacter variables
+  SmartCharacterLib.World SCInterface;
+  uint256 characterId = 1111;
+
+  uint256 tribeId = 1122;
+  CharEntityRecordData charEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+
+  EntityRecordOffchainTableData charOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+
+  string tokenCID = "Qm1234abcdxxxx";
+
   function setUp() public override {
     vm.startPrank(deployer);
 
@@ -228,10 +249,6 @@ contract AccessTest is MudTest {
     smartTurret = SmartTurretLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
     staticData = StaticDataLib.World(world, FRONTIER_WORLD_DEPLOYMENT_NAMESPACE);
 
-    // SD setup
-    // active SDs
-    smartDeployable.globalResume();
-
     // SSU setup
     erc721SmartDeployableToken = ERC721Registry.get(
       ERC721_REGISTRY_TABLE_ID,
@@ -241,6 +258,15 @@ contract AccessTest is MudTest {
     erc721SmartCharacterToken = ERC721Registry.get(
       ERC721_REGISTRY_TABLE_ID,
       WorldResourceIdLib.encodeNamespace(ERC721_CHARACTER_NAMESPACE)
+    );
+
+    smartCharacter.createCharacter(
+      3333,
+      alice,
+      369369,
+      CharEntityRecordData(12, 13, 1),
+      EntityRecordOffchainTableData("name", "URL", "description"),
+      "cid"
     );
 
     // create a test SSU Object (internally registers SSU ID as Object and tags it to SSU CLASS ID)
@@ -255,6 +281,8 @@ contract AccessTest is MudTest {
       100000000, // storageCapacity,
       100000000000 // ephemeralStorageCapacity
     );
+
+    smartDeployable.globalResume();
 
     // put SSU in a state to accept Items
     smartDeployable.depositFuel(ssuId, 200000);
@@ -281,6 +309,7 @@ contract AccessTest is MudTest {
     world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, alice);
     // not bob so we have an account to test against
     world.grantAccess(ACCESS_ENFORCEMENT_TABLE_ID, charlie);
+
     vm.stopPrank();
   }
 
@@ -451,7 +480,7 @@ contract AccessTest is MudTest {
   }
 
   function testOnlyAdminOrObjectOwner2() public {
-    // new initialization with charlie who is not ADMIN nor OWNER, this is needed for initMsgSender testing since parnk don't reliably update transient storage values in the same test
+    // new initialization with charlie who is not ADMIN nor OWNER, this is needed fro initMsgSender testing since prank doesn't reliably update transient storage values in the same test
     address[] memory adminAccessList = new address[](1);
     adminAccessList[0] = deployer;
     bytes32 target1 = keccak256(
@@ -639,10 +668,13 @@ contract AccessTest is MudTest {
     vm.expectRevert(abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, alice, ADMIN));
     inventory.depositToInventory(ssuId, inItems);
 
+    TransferItem[] memory transferItemsOut = new TransferItem[](1);
+    transferItemsOut[0] = TransferItem(outItems[0].inventoryItemId, outItems[0].owner, outItems[0].quantity);
+
     // make forwarded call
     // success, is not ADMIN, is EPH INV OWNER, is APPROVED (forwarded call from InventoryInteract)
     // this implies both EphemeralInventory.withdrawalFromEphemeralInventory and Inventory.depostiToInventory pass under APPROVED conditions
-    inventory.ephemeralToInventoryTransfer(ssuId, outItems);
+    inventory.ephemeralToInventoryTransfer(ssuId, transferItemsOut);
 
     vm.expectRevert( // revert with the APPROVED fail error because this was a cross system call form the Mock Forwarder (who has not been added to the APPROVED list for our systems)
         abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, address(mockForwarder), APPROVED)
@@ -1040,6 +1072,13 @@ contract AccessTest is MudTest {
     invItemsOut[0] = invItemsIn[0];
     invItemsOut[0].quantity = 1;
 
+    TransferItem[] memory invTransferItemsOut = new TransferItem[](1);
+    invTransferItemsOut[0] = TransferItem(
+      invItemsOut[0].inventoryItemId,
+      invItemsOut[0].owner,
+      invItemsOut[0].quantity
+    );
+
     InventoryItem[] memory ephInvItemsIn = new InventoryItem[](1);
     ephInvItemsIn[0] = InventoryItem({
       inventoryItemId: 2,
@@ -1053,6 +1092,13 @@ contract AccessTest is MudTest {
     InventoryItem[] memory ephInvItemsOut = new InventoryItem[](1);
     ephInvItemsOut[0] = ephInvItemsIn[0];
     ephInvItemsOut[0].quantity = 1;
+
+    TransferItem[] memory ephTransferItemsOut = new TransferItem[](1);
+    ephTransferItemsOut[0] = TransferItem(
+      ephInvItemsOut[0].inventoryItemId,
+      ephInvItemsOut[0].owner,
+      ephInvItemsOut[0].quantity
+    );
 
     setAccessListConfig(alice);
     setInventoryEnforcement(alice);
@@ -1076,9 +1122,9 @@ contract AccessTest is MudTest {
     // APPROVED success
     vm.startPrank(alice, bob);
     // covers inventory.withdrawFromEphemeralInventory and inventory.depositToInventory
-    inventory.ephemeralToInventoryTransfer(ssuId, ephInvItemsOut);
+    inventory.ephemeralToInventoryTransfer(ssuId, ephTransferItemsOut);
     // covers inventory.withdrawFromInventory and inventory.depositToEphemeralInventory
-    inventory.inventoryToEphemeralTransferWithParam(ssuId, alice, invItemsOut);
+    inventory.inventoryToEphemeralTransfer(ssuId, alice, invTransferItemsOut);
     vm.stopPrank();
   }
 
@@ -1292,8 +1338,8 @@ contract AccessTest is MudTest {
     // ADMIN success
     vm.startPrank(alice, deployer);
     smartCharacter.createCharacter(
-      3333,
-      alice,
+      3334,
+      bob,
       369369,
       CharEntityRecordData(12, 13, 1),
       EntityRecordOffchainTableData("name", "URL", "description"),
@@ -1316,8 +1362,8 @@ contract AccessTest is MudTest {
       abi.encodeWithSelector(IAccessSystemErrors.AccessSystem_NoPermission.selector, bob, bytes32(ADMIN))
     );
     smartCharacter.createCharacter(
-      3333,
-      bob,
+      3335,
+      charlie,
       369369,
       CharEntityRecordData(12, 13, 1),
       EntityRecordOffchainTableData("name", "URL", "description"),

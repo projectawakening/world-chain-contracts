@@ -10,4 +10,5 @@ interface SmartDeployableErrors {
   error SmartDeployable_TooMuchFuelDeposited(uint256 entityId, uint256 amountDeposited);
   error SmartDeployableERC721AlreadyInitialized();
   error SmartDeployable_InvalidFuelConsumptionInterval(uint256 entityId);
+  error SmartDeployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 }

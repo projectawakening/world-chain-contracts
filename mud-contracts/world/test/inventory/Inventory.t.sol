@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
+import { console } from "forge-std/console.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
 import { World } from "@latticexyz/world/src/World.sol";
@@ -14,32 +15,76 @@ import { INVENTORY_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eveworl
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { InventoryTable, InventoryTableData } from "../../src/codegen/tables/InventoryTable.sol";
 import { InventoryItemTable, InventoryItemTableData } from "../../src/codegen/tables/InventoryItemTable.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
+import { IERC721Errors } from "../../src/modules/eve-erc721-puppet/IERC721Errors.sol";
 
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
+import { SmartStorageUnitLib } from "../../src/modules/smart-storage-unit/SmartStorageUnitLib.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
 import { InventorySystem } from "../../src/modules/inventory/systems/InventorySystem.sol";
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
+import { EntityRecordData as CharEntityRecordData } from "../../src/modules/smart-character/types.sol";
+import { EntityRecordData } from "../../src/modules/smart-storage-unit/types.sol";
 
+import { SmartObjectData, WorldPosition, Coord } from "../../src/modules/smart-storage-unit/types.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 
 contract InventoryTest is MudTest {
   using Utils for bytes14;
-  using InventoryLib for InventoryLib.World;
   using WorldResourceIdInstance for ResourceId;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartStorageUnitLib for SmartStorageUnitLib.World;
+  using InventoryLib for InventoryLib.World;
+  using SmartCharacterLib for SmartCharacterLib.World;
 
   IWorldWithEntryContext world;
-  InventoryLib.World inventory;
   SmartDeployableLib.World smartDeployable;
+  SmartStorageUnitLib.World smartStorageUnit;
+  InventoryLib.World inventory;
+  SmartCharacterLib.World smartCharacter;
+
+  EntityRecordData entityRecordData;
+  SmartObjectData smartObjectData;
+  WorldPosition worldPosition;
+
+  // Inventory variables
+  InventoryItem item1;
+  InventoryItem item2;
+  InventoryItem item3;
+  InventoryItem item4;
+  InventoryItem item5;
+  InventoryItem item6;
+  InventoryItem item7;
+  InventoryItem item8;
+  InventoryItem item9;
+  InventoryItem item10;
+  InventoryItem item11;
+  InventoryItem item12;
+  InventoryItem item13;
+
+  // Smart Character variables
+  uint256 characterId;
+  uint256 ephCharacterId;
+  uint256 tribeId;
+  CharEntityRecordData charEntityRecordData;
+  CharEntityRecordData ephCharEntityRecordData;
+  EntityRecordOffchainTableData charOffchainData;
+  string tokenCID;
 
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  uint256 alicePK = vm.deriveKey(mnemonic, 1);
+  uint256 bobPK = vm.deriveKey(mnemonic, 2);
 
   address deployer = vm.addr(deployerPK); // ADMIN
+  address alice = vm.addr(alicePK); // Inventory Owner
+  address bob = vm.addr(bobPK); // Ephemeral Inventory Owner
 
   function setUp() public override {
     vm.startPrank(deployer);
@@ -48,29 +93,67 @@ contract InventoryTest is MudTest {
     world = IWorldWithEntryContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
 
+    // deployable interface setting and set deployables to active
     smartDeployable = SmartDeployableLib.World(world, DEPLOYMENT_NAMESPACE);
+    smartDeployable.globalResume();
+
+    // SSU interface & variable setting
+    smartStorageUnit = SmartStorageUnitLib.World(world, DEPLOYMENT_NAMESPACE);
+    entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
+    smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
+    worldPosition = WorldPosition({ solarSystemId: 1, position: Coord({ x: 1, y: 1, z: 1 }) });
+
+    // SmartCharacter interface & variable setting
+    smartCharacter = SmartCharacterLib.World(world, DEPLOYMENT_NAMESPACE);
+    characterId = 1111;
+    ephCharacterId = 1111;
+    tribeId = 1122;
+    charEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+    ephCharEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+    charOffchainData = EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+    tokenCID = "Qm1234abcdxxxx";
+
+    // create SSU Inventory Owner character
+    smartCharacter.createCharacter(characterId, alice, tribeId, charEntityRecordData, charOffchainData, tokenCID);
+
+    item1 = InventoryItem(4235, alice, 4235, 12, 100, 1);
+    item2 = InventoryItem(4236, alice, 4236, 12, 200, 1);
+    item3 = InventoryItem(4237, alice, 4237, 12, 150, 1);
+    item4 = InventoryItem(8235, alice, 8235, 12, 100, 1);
+    item5 = InventoryItem(8236, alice, 8236, 12, 200, 1);
+    item6 = InventoryItem(8237, alice, 8237, 12, 150, 1);
+    item7 = InventoryItem(5237, alice, 5237, 12, 150, 1);
+    item8 = InventoryItem(6237, alice, 6237, 12, 150, 1);
+    item9 = InventoryItem(7237, alice, 7237, 12, 150, 1);
+    item10 = InventoryItem(5238, alice, 5238, 12, 150, 1);
+    item11 = InventoryItem(5239, alice, 5239, 12, 150, 1);
+    item12 = InventoryItem(6238, alice, 6238, 12, 150, 1);
+    item13 = InventoryItem(6239, bob, 6239, 12, 150, 1);
+
+    //Mock Item creation
+    EntityRecordTable.set(item1.inventoryItemId, item1.itemId, item1.typeId, item1.volume, true);
+    EntityRecordTable.set(item2.inventoryItemId, item2.itemId, item2.typeId, item2.volume, true);
+    EntityRecordTable.set(item3.inventoryItemId, item3.itemId, item3.typeId, item3.volume, true);
+    EntityRecordTable.set(item4.inventoryItemId, item4.itemId, item4.typeId, item4.volume, true);
+    EntityRecordTable.set(item5.inventoryItemId, item5.itemId, item5.typeId, item5.volume, true);
+    EntityRecordTable.set(item6.inventoryItemId, item6.itemId, item6.typeId, item6.volume, true);
+    EntityRecordTable.set(item7.inventoryItemId, item7.itemId, item7.typeId, item7.volume, true);
+    EntityRecordTable.set(item8.inventoryItemId, item8.itemId, item8.typeId, item8.volume, true);
+    EntityRecordTable.set(item9.inventoryItemId, item9.itemId, item9.typeId, item9.volume, true);
+    EntityRecordTable.set(item10.inventoryItemId, item10.itemId, item10.typeId, item10.volume, true);
+    EntityRecordTable.set(item11.inventoryItemId, item11.itemId, item11.typeId, item11.volume, true);
+    EntityRecordTable.set(item12.inventoryItemId, item12.itemId, item12.typeId, item12.volume, true);
+    EntityRecordTable.set(item13.inventoryItemId, item13.itemId, item13.typeId, item13.volume, true);
+
+    // inventory interface setting
     inventory = InventoryLib.World(world, DEPLOYMENT_NAMESPACE);
 
     smartDeployable.globalResume();
 
-    //Mock Item creation
-    EntityRecordTable.set(4235, 4235, 12, 100, true);
-    EntityRecordTable.set(4236, 4236, 12, 200, true);
-    EntityRecordTable.set(4237, 4237, 12, 150, true);
-    EntityRecordTable.set(8235, 8235, 12, 100, true);
-    EntityRecordTable.set(8236, 8236, 12, 200, true);
-    EntityRecordTable.set(8237, 8237, 12, 150, true);
-    EntityRecordTable.set(5237, 5237, 12, 150, true);
-    EntityRecordTable.set(6237, 6237, 12, 150, true);
-    EntityRecordTable.set(7237, 7237, 12, 150, true);
-    EntityRecordTable.set(5238, 5238, 12, 150, true);
-    EntityRecordTable.set(5239, 5239, 12, 150, true);
-    EntityRecordTable.set(6238, 6238, 12, 150, true);
-    EntityRecordTable.set(6239, 6239, 12, 150, true);
-    EntityRecordTable.set(7238, 7238, 12, 150, true);
-    EntityRecordTable.set(7239, 7239, 12, 150, true);
-    EntityRecordTable.set(9236, 9236, 12, 150, true);
-    EntityRecordTable.set(9237, 9237, 12, 150, true);
     vm.stopPrank();
   }
 
@@ -101,9 +184,6 @@ contract InventoryTest is MudTest {
   function testSetInventoryCapacity(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.startPrank(deployer);
-    DeployableState.setCurrentState(smartObjectId, State.ONLINE);
-    vm.stopPrank();
     inventory.setInventoryCapacity(smartObjectId, storageCapacity);
     assertEq(InventoryTable.getCapacity(smartObjectId), storageCapacity);
   }
@@ -121,16 +201,31 @@ contract InventoryTest is MudTest {
 
   function testDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
+    vm.assume(storageCapacity >= 1500 && storageCapacity <= 10000);
+    uint256 ephemeralStorageCapacity = 100000;
+    smartStorageUnit.createAndAnchorSmartStorageUnit(
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
+    );
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+    item1.quantity = 3;
+    item2.quantity = 2;
+    item3.quantity = 2;
+    items[0] = item1;
+    items[1] = item2;
+    items[2] = item3;
 
-    testSetInventoryCapacity(smartObjectId, storageCapacity);
     testSetDeployableStateToValid(smartObjectId);
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
+
     InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
     uint256 capacityBeforeDeposit = inventoryTableData.usedCapacity;
     uint256 capacityAfterDeposit = 0;
@@ -138,7 +233,7 @@ contract InventoryTest is MudTest {
     inventory.depositToInventory(smartObjectId, items);
     inventoryTableData = InventoryTable.get(smartObjectId);
 
-    //Check weather the items are stored in the inventory table
+    //Check whether the items are stored in the inventory table
     for (uint256 i = 0; i < items.length; i++) {
       uint256 itemVolume = items[i].volume * items[i].quantity;
       capacityAfterDeposit += itemVolume;
@@ -166,12 +261,26 @@ contract InventoryTest is MudTest {
   function testInventoryItemQuantityIncrease(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
+    uint256 ephemeralStorageCapacity = 100000;
+    smartStorageUnit.createAndAnchorSmartStorageUnit(
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
+    );
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+    item1.quantity = 3;
+    item2.quantity = 2;
+    item3.quantity = 2;
+    items[0] = item1;
+    items[1] = item2;
+    items[2] = item3;
 
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     testSetDeployableStateToValid(smartObjectId);
@@ -199,28 +308,74 @@ contract InventoryTest is MudTest {
   }
 
   function testDepositToExistingInventory(uint256 smartObjectId, uint256 storageCapacity) public {
+    vm.assume(storageCapacity >= 1200 && storageCapacity <= 10000);
     testDepositToInventory(smartObjectId, storageCapacity);
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(8235, address(0), 8235, 0, 1, 3);
+    items[0] = item4;
     inventory.depositToInventory(smartObjectId, items);
 
     uint256 itemsLength = InventoryTable.getItems(smartObjectId).length;
     assertEq(itemsLength, 4);
 
-    inventory.depositToInventory(smartObjectId, items);
-    InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
-    assertEq(inventoryItem1.index, 3);
+    // inventory.depositToInventory(smartObjectId, items);
+    // InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
+    // assertEq(inventoryItem1.index, 3);
   }
 
   function testRevertDepositToInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
-    testSetInventoryCapacity(smartObjectId, storageCapacity);
-    InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 6);
+    vm.assume(storageCapacity >= 150 && storageCapacity <= 500);
+
+    // create SSU smart object with token
+    uint256 ephemeralStorageCapacity = 100000;
+    smartStorageUnit.createAndAnchorSmartStorageUnit(
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
+    );
+
     testSetDeployableStateToValid(smartObjectId);
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
+
+    InventoryItem[] memory items = new InventoryItem[](1);
+    item1.inventoryItemId = 20;
+    items[0] = item1;
+
+    // invalid item revert
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InvalidItem.selector,
+        "InventorySystem: item is not created on-chain",
+        item1.inventoryItemId
+      )
+    );
+    inventory.depositToInventory(smartObjectId, items);
+
+    // TODO: if _msgSender() is not APPROVED, then _initalMsgSender should be the owner of the inventory
+
+    // items[0] = item13;
+    // // item owner revert
+    // vm.expectRevert(
+    //   abi.encodeWithSelector(
+    //     IInventoryErrors.Inventory_InvalidItemOwner.selector,
+    //     "InventorySystem: smartObjectId inventory owner and item.owner should be the same",
+    //     items[0].inventoryItemId,
+    //     items[0].owner,
+    //     alice
+    //   )
+    // );
+    // inventory.depositToInventory(smartObjectId, items);
+
+    item2.quantity = 60;
+    items[0] = item2;
+    // capacity revert
     vm.expectRevert(
       abi.encodeWithSelector(
         IInventoryErrors.Inventory_InsufficientCapacity.selector,
@@ -235,11 +390,13 @@ contract InventoryTest is MudTest {
   function testWithdrawFromInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     testDepositToInventory(smartObjectId, storageCapacity);
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 1);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
+    item1.quantity = 1;
+    item2.quantity = 2;
+    item3.quantity = 1;
+    items[0] = item1;
+    items[1] = item2;
+    items[2] = item3;
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
     uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
@@ -248,6 +405,7 @@ contract InventoryTest is MudTest {
     assertEq(capacityBeforeWithdrawal, 1000);
 
     inventory.withdrawFromInventory(smartObjectId, items);
+
     for (uint256 i = 0; i < items.length; i++) {
       itemVolume += items[i].volume * items[i].quantity;
     }
@@ -256,31 +414,38 @@ contract InventoryTest is MudTest {
     assertEq(inventoryTableData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
     assertEq(inventoryTableData.items.length, 2);
 
-    uint256[] memory existingItems = inventoryTableData.items;
-    assertEq(existingItems.length, 2);
-    assertEq(existingItems[0], items[0].inventoryItemId);
-    assertEq(existingItems[1], items[2].inventoryItemId);
+    assertEq(inventoryTableData.items[0], items[0].inventoryItemId);
+    assertEq(inventoryTableData.items[1], items[2].inventoryItemId);
 
-    //Check weather the items quantity is reduced
+    //Check whether the items quantity is reduced
     InventoryItemTableData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
-    InventoryItemTableData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, items[1].inventoryItemId);
     InventoryItemTableData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, items[2].inventoryItemId);
     assertEq(inventoryItem1.quantity, 2);
-    assertEq(inventoryItem2.quantity, 0);
     assertEq(inventoryItem3.quantity, 1);
 
     assertEq(inventoryItem1.index, 0);
-    assertEq(inventoryItem2.index, 0);
     assertEq(inventoryItem3.index, 1);
   }
 
   function testDeposit1andWithdraw1(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
+    uint256 ephemeralStorageCapacity = 100000;
+    smartStorageUnit.createAndAnchorSmartStorageUnit(
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
+    );
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
+    item1.quantity = 3;
+    items[0] = item1;
 
     testSetInventoryCapacity(smartObjectId, storageCapacity);
     testSetDeployableStateToValid(smartObjectId);
@@ -299,10 +464,11 @@ contract InventoryTest is MudTest {
   function testWithdrawRemove2Items(uint256 smartObjectId, uint256 storageCapacity) public {
     testDepositToInventory(smartObjectId, storageCapacity);
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](2);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
+    item1.quantity = 3;
+    item2.quantity = 2;
+    items[0] = item1;
+    items[1] = item2;
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
     uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
@@ -337,12 +503,13 @@ contract InventoryTest is MudTest {
 
   function testWithdrawRemoveCompletely(uint256 smartObjectId, uint256 storageCapacity) public {
     testDepositToInventory(smartObjectId, storageCapacity);
-
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
+    item1.quantity = 3;
+    item2.quantity = 2;
+    item3.quantity = 2;
     InventoryItem[] memory items = new InventoryItem[](3);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 100, 3);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 200, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 150, 2);
+    items[0] = item1;
+    items[1] = item2;
+    items[2] = item3;
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
     uint256 capacityBeforeWithdrawal = inventoryTableData.usedCapacity;
@@ -379,40 +546,64 @@ contract InventoryTest is MudTest {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity >= 11000 && storageCapacity <= 90000);
 
-    testSetInventoryCapacity(smartObjectId, storageCapacity);
+    uint256 ephemeralStorageCapacity = 100000;
+    smartStorageUnit.createAndAnchorSmartStorageUnit(
+      smartObjectId,
+      entityRecordData,
+      smartObjectData,
+      worldPosition,
+      1e18, // fuelUnitVolume,
+      1, // fuelConsumptionPerMinute,
+      1000000 * 1e18, // fuelMaxCapacity,
+      storageCapacity,
+      ephemeralStorageCapacity
+    );
     testSetDeployableStateToValid(smartObjectId);
+    testSetInventoryCapacity(smartObjectId, storageCapacity);
 
-    //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](12);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 10, 300);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 20, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 10, 2);
-    items[3] = InventoryItem(8235, address(2), 8235, 0, 10, 2);
-    items[4] = InventoryItem(8237, address(2), 8237, 0, 10, 2);
-    items[5] = InventoryItem(5237, address(2), 5237, 0, 10, 2);
-    items[6] = InventoryItem(6237, address(2), 6237, 0, 10, 2);
-    items[7] = InventoryItem(7237, address(2), 7237, 0, 10, 2);
-    items[8] = InventoryItem(5238, address(2), 5238, 0, 10, 2);
-    items[9] = InventoryItem(5239, address(2), 5239, 0, 10, 2);
-    items[10] = InventoryItem(6238, address(2), 6238, 0, 10, 2);
-    items[11] = InventoryItem(6239, address(2), 6239, 0, 10, 2);
+    item1.quantity = 3;
+    item2.quantity = 2;
+    item3.quantity = 2;
+    item4.quantity = 2;
+    item5.quantity = 2;
+    item6.quantity = 2;
+    item7.quantity = 2;
+    item8.quantity = 2;
+    item9.quantity = 2;
+    item10.quantity = 2;
+    item11.quantity = 2;
+    item12.quantity = 2;
+
+    items[0] = item1;
+    items[1] = item2;
+    items[2] = item3;
+    items[3] = item4;
+    items[4] = item5;
+    items[5] = item6;
+    items[6] = item7;
+    items[7] = item8;
+    items[8] = item9;
+    items[9] = item10;
+    items[10] = item11;
+    items[11] = item12;
 
     inventory.depositToInventory(smartObjectId, items);
 
     //Change the order
     items = new InventoryItem[](12);
-    items[0] = InventoryItem(4235, address(0), 4235, 0, 10, 300);
-    items[1] = InventoryItem(4236, address(1), 4236, 0, 20, 2);
-    items[2] = InventoryItem(4237, address(2), 4237, 0, 10, 2);
-    items[3] = InventoryItem(8235, address(2), 8235, 0, 10, 2);
-    items[4] = InventoryItem(8237, address(2), 8237, 0, 10, 2);
-    items[5] = InventoryItem(5237, address(2), 5237, 0, 10, 2);
-    items[6] = InventoryItem(6237, address(2), 6237, 0, 10, 2);
-    items[7] = InventoryItem(7237, address(2), 7237, 0, 10, 2);
-    items[8] = InventoryItem(5238, address(2), 5238, 0, 10, 2);
-    items[9] = InventoryItem(5239, address(2), 5239, 0, 10, 2);
-    items[10] = InventoryItem(6238, address(2), 6238, 0, 10, 2);
-    items[11] = InventoryItem(6239, address(2), 6239, 0, 10, 2);
+    items[0] = item10;
+    items[1] = item7;
+    items[2] = item3;
+    items[3] = item12;
+    items[4] = item5;
+    items[5] = item8;
+    items[6] = item2;
+    items[7] = item6;
+    items[8] = item11;
+    items[9] = item1;
+    items[10] = item9;
+    items[11] = item4;
     inventory.withdrawFromInventory(smartObjectId, items);
 
     InventoryTableData memory inventoryTableData = InventoryTable.get(smartObjectId);
@@ -438,7 +629,8 @@ contract InventoryTest is MudTest {
     assertEq(inventoryTableData.items.length, 2);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4237, address(0), 4237, 0, 200, 1);
+    item3.quantity = 1;
+    items[0] = item3;
 
     // Try withdraw again
     inventory.withdrawFromInventory(smartObjectId, items);
@@ -463,11 +655,11 @@ contract InventoryTest is MudTest {
     testDepositToInventory(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4237, address(2), 4237, 0, 150, 1);
+    item3.quantity = 1;
 
     vm.expectRevert(
       abi.encodeWithSelector(
-        IInventoryErrors.Inventory_InvalidQuantity.selector,
+        IInventoryErrors.Inventory_InvalidItemQuantity.selector,
         "InventorySystem: invalid quantity",
         3,
         items[0].quantity

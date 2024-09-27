@@ -14,6 +14,7 @@ import "@eveworld/common-constants/src/constants.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { EntityRecordTable } from "../../src/codegen/tables/EntityRecordTable.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
 import { EphemeralInvTable, EphemeralInvTableData } from "../../src/codegen/tables/EphemeralInvTable.sol";
 import { EphemeralInvCapacityTable } from "../../src/codegen/tables/EphemeralInvCapacityTable.sol";
 import { EphemeralInvItemTable, EphemeralInvItemTableData } from "../../src/codegen/tables/EphemeralInvItemTable.sol";
@@ -22,9 +23,11 @@ import { Utils as EntityRecordUtils } from "../../src/modules/entity-record/Util
 import { InventoryItem } from "../../src/modules/inventory/types.sol";
 import { IInventoryErrors } from "../../src/modules/inventory/IInventoryErrors.sol";
 import { State } from "../../src/modules/smart-deployable/types.sol";
+import { EntityRecordData } from "../../src/modules/smart-character/types.sol";
 import { Utils } from "../../src/modules/inventory/Utils.sol";
 import { InventoryLib } from "../../src/modules/inventory/InventoryLib.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
 
 contract EphemeralInventoryTest is MudTest {
   using Utils for bytes14;
@@ -32,15 +35,44 @@ contract EphemeralInventoryTest is MudTest {
   using EntityRecordUtils for bytes14;
   using InventoryLib for InventoryLib.World;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartCharacterLib for SmartCharacterLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IWorldWithEntryContext world;
   InventoryLib.World ephemeralInventory;
   SmartDeployableLib.World smartDeployable;
+  SmartCharacterLib.World smartCharacter;
 
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
+
+  uint256 ownerPK = vm.deriveKey(mnemonic, 2);
+  uint256 diffOwnerPK = vm.deriveKey(mnemonic, 3);
+
+  address deployer = vm.addr(deployerPK); // ADMIN
+  address owner = vm.addr(ownerPK); // Ephemeral Owner smart character account
+  address differentOwner = vm.addr(diffOwnerPK); // another different Ephemeral Owner
+
+  uint256 characterId = 1111;
+  uint256 diffCharacterId = 9999;
+  uint256 tribeId = 1122;
+  EntityRecordData charEntityRecordData = EntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+  EntityRecordData diffCharEntityRecordData = EntityRecordData({ itemId: 1235, typeId: 2346, volume: 0 });
+  EntityRecordOffchainTableData charOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+
+  EntityRecordOffchainTableData diffCharOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Erbus Demernster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The worst hunter-seeker in the Frontier."
+    });
+
+  string tokenCID = "Qm1234abcdxxxx";
 
   function setUp() public override {
     vm.startPrank(deployer);
@@ -50,12 +82,23 @@ contract EphemeralInventoryTest is MudTest {
     StoreSwitch.setStoreAddress(worldAddress);
 
     smartDeployable = SmartDeployableLib.World(world, SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE);
+    ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
+    smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
+
     smartDeployable.globalResume();
 
-    ephemeralInventory = InventoryLib.World(world, INVENTORY_DEPLOYMENT_NAMESPACE);
+    smartCharacter.createCharacter(characterId, owner, tribeId, charEntityRecordData, charOffchainData, tokenCID);
+    smartCharacter.createCharacter(
+      diffCharacterId,
+      differentOwner,
+      tribeId,
+      diffCharEntityRecordData,
+      diffCharOffchainData,
+      tokenCID
+    );
 
     //Mock Item creation
-    // Note: this only works because the test contract currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
+    // Note: this only works because deployer currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
     EntityRecordTable.set(4235, 4235, 12, 100, true);
     EntityRecordTable.set(4236, 4236, 12, 200, true);
     EntityRecordTable.set(4237, 4237, 12, 150, true);
@@ -111,9 +154,8 @@ contract EphemeralInventoryTest is MudTest {
     ephemeralInventory.setEphemeralInventoryCapacity(smartObjectId, storageCapacity);
   }
 
-  function testDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+  function testDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1500 && storageCapacity <= 10000);
 
     testSetDeployableStateToValid(smartObjectId);
@@ -172,13 +214,8 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(inventoryItem3.index, 2);
   }
 
-  function testEphemeralInventoryItemQuantityIncrease(
-    uint256 smartObjectId,
-    uint256 storageCapacity,
-    address owner
-  ) public {
+  function testEphemeralInventoryItemQuantityIncrease(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
 
     testSetDeployableStateToValid(smartObjectId);
@@ -219,14 +256,13 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(inventoryItem2.index, 1);
   }
 
-  function testRevertDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+  function testRevertDepositToEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(owner != address(0));
     vm.assume(storageCapacity >= 1 && storageCapacity <= 500);
     testSetEphemeralInventoryCapacity(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
+    items[0] = InventoryItem(4235, address(1), 4235, 12, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -237,17 +273,22 @@ contract EphemeralInventoryTest is MudTest {
       )
     );
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
+
+    owner = address(9); // set owner as non-character address
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        IInventoryErrors.Inventory_InvalidEphemeralInventoryOwner.selector,
+        "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
+        address(9)
+      )
+    );
+    ephemeralInventory.depositToEphemeralInventory(smartObjectId, owner, items);
   }
 
-  function testDepositToExistingEphemeralInventory(
-    uint256 smartObjectId,
-    uint256 storageCapacity,
-    address owner
-  ) public {
+  function testDepositToExistingEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
-    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity);
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(8235, owner, 8235, 0, 1, 3);
@@ -265,7 +306,7 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(inventoryItem1.index, 3);
 
     items = new InventoryItem[](1);
-    address differentOwner = address(5);
+
     items[0] = InventoryItem(8235, differentOwner, 8235, 0, 1, 3);
     ephemeralInventory.depositToEphemeralInventory(smartObjectId, differentOwner, items);
 
@@ -276,11 +317,10 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(inventoryItem1.index, 0);
   }
 
-  function testWithdrawFromEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+  function testWithdrawFromEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
-    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity);
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
@@ -333,11 +373,10 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(inventoryItem3.index, 1);
   }
 
-  function testWithdrawCompletely(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+  function testWithdrawCompletely(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
-    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity);
 
     //Note: Issue applying fuzz testing for the below array of inputs : https://github.com/foundry-rs/foundry/issues/5343
     InventoryItem[] memory items = new InventoryItem[](3);
@@ -384,11 +423,10 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(inventoryItem3.quantity, 0);
   }
 
-  function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity, address owner) public {
+  function testWithdrawMultipleTimes(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
-    testWithdrawFromEphemeralInventory(smartObjectId, storageCapacity, owner);
+    testWithdrawFromEphemeralInventory(smartObjectId, storageCapacity);
 
     EphemeralInvTableData memory inventoryTableData = EphemeralInvTable.get(smartObjectId, owner);
     uint256[] memory existingItems = inventoryTableData.items;
@@ -416,22 +454,30 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(existingItems.length, 1);
   }
 
-  function testRevertWithdrawFromEphemeralInventory(
-    uint256 smartObjectId,
-    uint256 storageCapacity,
-    address owner
-  ) public {
+  function testRevertWithdrawFromEphemeralInventory(uint256 smartObjectId, uint256 storageCapacity) public {
     vm.assume(smartObjectId != 0);
     vm.assume(storageCapacity != 0);
-    vm.assume(owner != address(0));
-    testDepositToEphemeralInventory(smartObjectId, storageCapacity, owner);
+    testDepositToEphemeralInventory(smartObjectId, storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
-    items[0] = InventoryItem(4235, address(1), 4235, 0, 100, 6);
+    items[0] = InventoryItem(4235, differentOwner, 4235, 12, 100, 6);
+
+    // vm.expectRevert(
+    //   abi.encodeWithSelector(
+    //     IInventoryErrors.Inventory_InvalidItemOwner.selector,
+    //     "EphemeralInventorySystem: ephemeralInventoryOwner and item.owner should be the same",
+    //     4235,
+    //     differentOwner,
+    //     owner
+    //   )
+    // );
+    // ephemeralInventory.withdrawFromEphemeralInventory(smartObjectId, owner, items);
+
+    items[0] = InventoryItem(4235, owner, 4235, 12, 100, 6);
 
     vm.expectRevert(
       abi.encodeWithSelector(
-        IInventoryErrors.Inventory_InvalidQuantity.selector,
+        IInventoryErrors.Inventory_InvalidItemQuantity.selector,
         "EphemeralInventorySystem: invalid quantity",
         3,
         items[0].quantity

@@ -34,6 +34,10 @@ import { IERC721 } from "../../src/modules/eve-erc721-puppet/IERC721.sol";
 import { ERC721Registry } from "../../src/codegen/tables/ERC721Registry.sol";
 import { ERC721_REGISTRY_TABLE_ID } from "../../src/modules/eve-erc721-puppet/constants.sol";
 
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
+import { EntityRecordData as CharEntityRecordData } from "../../src/modules/smart-character/types.sol";
+
 import { SmartGateCustomMock } from "./SmartGateCustomMock.sol";
 
 /**
@@ -65,14 +69,27 @@ contract SmartGateTest is MudTest {
 
   uint256 sourceGateId = 1234;
   uint256 destinationGateId = 1235;
-  uint256 characterId = 11111;
+
+  uint256 characterId = 1111;
+
+  uint256 tribeId = 1122;
+  CharEntityRecordData charEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+
+  EntityRecordOffchainTableData charOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+
+  string tokenCID = "Qm1234abcdxxxx";
 
   string mnemonic = "test test test test test test test test test test test junk";
   uint256 deployerPK = vm.deriveKey(mnemonic, 0);
   uint256 alicePK = vm.deriveKey(mnemonic, 1);
 
   address deployer = vm.addr(deployerPK); // ADMIN
-  address alice = vm.addr(alicePK); // BUILDER
+  address alice = vm.addr(alicePK); // gate depoyable owner
 
   function setUp() public override {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
@@ -96,15 +113,8 @@ contract SmartGateTest is MudTest {
     smartGate = SmartGateLib.World(world, DEPLOYMENT_NAMESPACE);
     smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
 
-    // Create a smart character
-    smartCharacter.createCharacter(
-      characterId,
-      alice,
-      100,
-      EntityRecordCharacter({ typeId: 111, itemId: 1, volume: 10 }),
-      EntityRecordOffchainTableData({ name: "characterName", dappURL: "noURL", description: "." }),
-      "tokenCid"
-    );
+    // create Smart Deployable Owner as Smart Character
+    smartCharacter.createCharacter(characterId, alice, tribeId, charEntityRecordData, charOffchainData, tokenCID);
 
     erc721GateToken = IERC721(
       ERC721Registry.get(
@@ -129,7 +139,7 @@ contract SmartGateTest is MudTest {
   function testAnchorSmartGate(uint256 smartObjectId) public {
     vm.assume(smartObjectId != 0);
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
     WorldPosition memory worldPosition = WorldPosition({
       solarSystemId: 1,
       position: Coord({ x: 10000, y: 10000, z: 10000 })
@@ -196,7 +206,7 @@ contract SmartGateTest is MudTest {
     uint256 smartObjectIdA = 234;
     uint256 smartObjectIdB = 345;
     EntityRecordData memory entityRecordData = EntityRecordData({ typeId: 12345, itemId: 45, volume: 10 });
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: address(1), tokenURI: "test" });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
     WorldPosition memory worldPositionA = WorldPosition({
       solarSystemId: 1,
       position: Coord({ x: 10000, y: 10000, z: 10000 })
