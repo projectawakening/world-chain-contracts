@@ -10,13 +10,16 @@ import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { SMART_DEPLOYABLE_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_CHARACTER_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 
 import { Utils } from "../../src/modules/smart-deployable/Utils.sol";
 import { Utils as LocationUtils } from "../../src/modules/location/Utils.sol";
 import { State, SmartObjectData } from "../../src/modules/smart-deployable/types.sol";
 import { SmartDeployableErrors } from "../../src/modules/smart-deployable/SmartDeployableErrors.sol";
 import { SmartDeployableLib } from "../../src/modules/smart-deployable/SmartDeployableLib.sol";
+import { SmartCharacterLib } from "../../src/modules/smart-character/SmartCharacterLib.sol";
+import { EntityRecordOffchainTableData } from "../../src/codegen/tables/EntityRecordOffchainTable.sol";
+import { EntityRecordData as CharEntityRecordData } from "../../src/modules/smart-character/types.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";
 import { DeployableFuelBalance, DeployableFuelBalanceData } from "../../src/codegen/tables/DeployableFuelBalance.sol";
@@ -36,12 +39,38 @@ contract smartDeployableTest is MudTest {
   using LocationUtils for bytes14;
   using ERC721Utils for bytes14;
   using SmartDeployableLib for SmartDeployableLib.World;
+  using SmartCharacterLib for SmartCharacterLib.World;
   using WorldResourceIdInstance for ResourceId;
 
   IWorldWithEntryContext world;
   SmartDeployableLib.World smartDeployable;
   IERC721 erc721Token;
   bytes14 constant SMART_DEPLOYABLE_ERC721_NAMESPACE = "erc721deploybl";
+
+  // SmartCharacter variables
+  SmartCharacterLib.World smartCharacter;
+  uint256 characterId = 1111;
+
+  uint256 tribeId = 1122;
+  CharEntityRecordData charEntityRecordData = CharEntityRecordData({ itemId: 1234, typeId: 2345, volume: 0 });
+
+  EntityRecordOffchainTableData charOffchainData =
+    EntityRecordOffchainTableData({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
+
+  string tokenCID = "Qm1234abcdxxxx";
+
+  SmartObjectData smartObjectData;
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  uint256 alicePK = vm.deriveKey(mnemonic, 2);
+
+  address deployer = vm.addr(deployerPK); // ADMIN
+  address alice = vm.addr(alicePK); // Deployable object Owner smart character account
 
   function setUp() public override {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
@@ -55,6 +84,11 @@ contract smartDeployableTest is MudTest {
         WorldResourceIdLib.encodeNamespace(SMART_DEPLOYABLE_ERC721_NAMESPACE)
       )
     );
+    smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
+
+    smartCharacter = SmartCharacterLib.World(world, SMART_CHARACTER_DEPLOYMENT_NAMESPACE);
+    // create Smart Deployable Owner as Smart Character
+    smartCharacter.createCharacter(characterId, alice, tribeId, charEntityRecordData, charOffchainData, tokenCID);
   }
 
   function testSetup() public {
@@ -65,7 +99,6 @@ contract smartDeployableTest is MudTest {
 
   function testRegisterDeployable(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity
@@ -86,7 +119,6 @@ contract smartDeployableTest is MudTest {
       updatedBlockNumber: block.number,
       updatedBlockTime: block.timestamp
     });
-    vm.assume(smartObjectData.owner != address(0));
     vm.assume(bytes(smartObjectData.tokenURI).length != 0);
 
     smartDeployable.registerDeployable(
@@ -130,14 +162,13 @@ contract smartDeployableTest is MudTest {
 
   function testAnchor(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
     vm.assume(entityId != 0);
-    testRegisterDeployable(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
+    testRegisterDeployable(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity);
 
     smartDeployable.anchor(entityId, location);
     LocationTableData memory tableData = LocationTable.get(entityId);
@@ -151,15 +182,13 @@ contract smartDeployableTest is MudTest {
 
   function testBringOnline(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
     vm.assume(entityId != 0);
-
-    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     vm.assume(fuelUnitVolume < type(uint64).max / 2);
     vm.assume(fuelUnitVolume < fuelMaxCapacity);
     smartDeployable.depositFuel(entityId, 1);
@@ -169,45 +198,39 @@ contract smartDeployableTest is MudTest {
 
   function testBringOffline(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
     vm.assume(entityId != 0);
-
-    testBringOnline(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testBringOnline(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.bringOffline(entityId);
     assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(entityId)));
   }
 
   function testUnanchor(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
     vm.assume(entityId != 0);
-
-    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.unanchor(entityId);
     assertEq(uint8(State.UNANCHORED), uint8(DeployableState.getCurrentState(entityId)));
   }
 
   function testDestroyDeployable(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
     LocationTableData memory location
   ) public {
     vm.assume(entityId != 0);
-
-    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.destroyDeployable(entityId);
     assertEq(uint8(State.DESTROYED), uint8(DeployableState.getCurrentState(entityId)));
   }
@@ -222,7 +245,6 @@ contract smartDeployableTest is MudTest {
 
   function testDepositFuel(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
@@ -234,8 +256,7 @@ contract smartDeployableTest is MudTest {
     vm.assume(fuelUnitAmount < type(uint64).max);
     vm.assume(fuelUnitVolume < type(uint64).max);
     vm.assume(fuelUnitAmount * fuelUnitVolume < fuelMaxCapacity);
-
-    testAnchor(entityId, smartObjectData, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
+    testAnchor(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location);
     smartDeployable.depositFuel(entityId, fuelUnitAmount);
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(entityId);
     assertEq(data.fuelAmount, fuelUnitAmount * (10 ** DECIMALS));
@@ -244,7 +265,6 @@ contract smartDeployableTest is MudTest {
 
   function testDepositFuelTwice(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
@@ -256,15 +276,7 @@ contract smartDeployableTest is MudTest {
     vm.assume(fuelUnitVolume < type(uint64).max / 2);
     vm.assume(fuelUnitAmount * fuelUnitVolume * 2 < fuelMaxCapacity);
 
-    testDepositFuel(
-      entityId,
-      smartObjectData,
-      fuelUnitVolume,
-      fuelConsumptionPerMinute,
-      fuelMaxCapacity,
-      location,
-      fuelUnitAmount
-    );
+    testDepositFuel(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location, fuelUnitAmount);
     smartDeployable.depositFuel(entityId, fuelUnitAmount);
     DeployableFuelBalanceData memory data = DeployableFuelBalance.get(entityId);
     assertEq(data.fuelAmount, fuelUnitAmount * 2 * (10 ** DECIMALS));
@@ -273,7 +285,6 @@ contract smartDeployableTest is MudTest {
 
   function testFuelConsumption(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelMaxCapacity,
@@ -289,15 +300,7 @@ contract smartDeployableTest is MudTest {
     uint256 fuelConsumption = ((timeElapsed * (10 ** DECIMALS)) / fuelConsumptionPerMinute) + (1 * (10 ** DECIMALS)); // bringing online consumes exactly one wei's worth of gas for tick purposes
     vm.assume(fuelUnitAmount * (10 ** DECIMALS) > fuelConsumption);
 
-    testDepositFuel(
-      entityId,
-      smartObjectData,
-      fuelUnitVolume,
-      fuelConsumptionPerMinute,
-      fuelMaxCapacity,
-      location,
-      fuelUnitAmount
-    );
+    testDepositFuel(entityId, fuelUnitVolume, fuelConsumptionPerMinute, fuelMaxCapacity, location, fuelUnitAmount);
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsed);
     smartDeployable.updateFuel(entityId);
@@ -309,7 +312,6 @@ contract smartDeployableTest is MudTest {
   }
 
   function testFuelConsumptionRunsOut(
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     uint256 fuelUnitAmount,
@@ -325,15 +327,7 @@ contract smartDeployableTest is MudTest {
 
     uint256 entityId = 1;
     LocationTableData memory location = LocationTableData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
-    testDepositFuel(
-      entityId,
-      smartObjectData,
-      fuelUnitVolume,
-      fuelConsumptionPerMinute,
-      UINT256_MAX,
-      location,
-      fuelUnitAmount
-    );
+    testDepositFuel(entityId, fuelUnitVolume, fuelConsumptionPerMinute, UINT256_MAX, location, fuelUnitAmount);
     uint256 fuelUnitAmount = 500;
     smartDeployable.bringOnline(entityId);
     vm.warp(block.timestamp + timeElapsed);
@@ -347,7 +341,6 @@ contract smartDeployableTest is MudTest {
 
   function testFuelRefundDuringGlobalOffline(
     uint256 entityId,
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionPerMinute,
     LocationTableData memory location,
@@ -367,7 +360,6 @@ contract smartDeployableTest is MudTest {
       (1 * (10 ** DECIMALS));
     fuelConsumption += ((timeElapsedAfterOffline * (10 ** DECIMALS)) / fuelConsumptionPerMinute);
     vm.assume(fuelUnitAmount * (10 ** DECIMALS) > fuelConsumption); // this time we want to run out of fuel
-    vm.assume(smartObjectData.owner != address(0));
 
     smartDeployable.globalResume();
     // have to disable fuel max because we're getting a [FAIL. Reason: The `vm.assume` cheatcode rejected too many inputs (65536 allowed)]

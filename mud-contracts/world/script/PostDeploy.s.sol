@@ -197,6 +197,9 @@ contract PostDeploy is Script {
     // allow object to class tagging
     SOFInterface.registerEntityTypeAssociation(OBJECT, CLASS);
 
+    // // register the SD CLASS ID as a CLASS entity
+    // SOFInterface.registerEntity(sdClassId, CLASS);
+
     // initalize the smart character class
     SOFInterface.registerEntity(smartCharacterClassId, CLASS);
     // set smart character classId in the config

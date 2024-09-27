@@ -17,6 +17,7 @@ import { IERC721Mintable } from "../../eve-erc721-puppet/IERC721Mintable.sol";
 import { AccessModified } from "../../access/systems/AccessModified.sol";
 import { ClassConfig } from "../../../codegen/tables/ClassConfig.sol";
 import { CharactersTable } from "../../../codegen/tables/CharactersTable.sol";
+import { CharactersByAddressTable } from "../../../codegen/tables/CharactersByAddressTable.sol";
 import { CharactersConstantsTable } from "../../../codegen/tables/CharactersConstantsTable.sol";
 import { EntityRecordTableData } from "../../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTableData } from "../../../codegen/tables/EntityRecordOffchainTable.sol";
@@ -58,6 +59,11 @@ contract SmartCharacterSystem is AccessModified, EveSystem {
       revert ISmartCharacterErrors.SmartCharacter_UndefinedClassIds();
     }
 
+    // enforce one-to-one mapping
+    if (CharactersByAddressTable.get(characterAddress) != 0) {
+      revert ISmartCharacterErrors.SmartCharacter_AlreadyCreated(characterAddress, characterId);
+    }
+
     // register smartObjectId as an object
     _smartObjectLib().registerEntity(characterId, 1);
 
@@ -65,7 +71,9 @@ contract SmartCharacterSystem is AccessModified, EveSystem {
     _smartObjectLib().tagEntity(characterId, classId);
 
     uint256 createdAt = block.timestamp;
+
     CharactersTable.set(characterId, characterAddress, corpId, createdAt);
+    CharactersByAddressTable.set(characterAddress, characterId);
     //Save the entity record in EntityRecord Module
     _entityRecordLib().createEntityRecord(characterId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume);
     //Save the smartObjectData in ERC721 Module

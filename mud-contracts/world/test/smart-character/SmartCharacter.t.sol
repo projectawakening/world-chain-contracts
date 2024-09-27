@@ -115,6 +115,40 @@ contract SmartCharacterTest is MudTest {
     assertEq(taggedEntityIds.length, 1);
     assertEq(taggedEntityIds[0], smartCharacterClassId);
   }
+  function testOnlyOneSmartCharacterPerAddress(
+    address characterAddress,
+    uint256 corpId,
+    uint256 itemId,
+    uint256 typeId,
+    uint256 volume,
+    EntityRecordOffchainTableData memory offchainData,
+    string memory tokenCid
+  ) public {
+    uint256 characterId = 3690;
+    vm.assume(corpId != 0);
+    vm.assume(characterAddress != address(0));
+    vm.assume(bytes(tokenCid).length != 0);
+    testCreateSmartCharacter(characterId, characterAddress, corpId, itemId, typeId, volume, offchainData, tokenCid);
+
+    characterId = 3691;
+    itemId = 3691;
+
+    EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
+    CharactersTableData memory charactersData = CharactersTableData({
+      characterAddress: characterAddress,
+      corpId: corpId,
+      createdAt: block.timestamp
+    });
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        ISmartCharacterErrors.SmartCharacter_AlreadyCreated.selector,
+        characterAddress,
+        characterId
+      )
+    );
+    smartCharacter.createCharacter(characterId, characterAddress, corpId, entityRecordData, offchainData, tokenCid);
+  }
 
   function testCreateSmartCharacterOffchain(
     uint256 entityId,
@@ -134,7 +168,6 @@ contract SmartCharacterTest is MudTest {
 
   function testUpdateCorpId(uint256 entityId) public {
     vm.assume(entityId != 0);
-    smartCharacter.setCharClassId(smartCharacterClassId);
 
     smartCharacter.createCharacter(
       entityId,
