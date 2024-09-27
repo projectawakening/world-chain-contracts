@@ -64,7 +64,6 @@ contract SmartCharacterTest is MudTest {
     uint256 entityId,
     address characterAddress,
     uint256 corpId,
-    uint256 itemId,
     uint256 typeId,
     uint256 volume,
     EntityRecordOffchainTableData memory offchainData,
@@ -75,7 +74,7 @@ contract SmartCharacterTest is MudTest {
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
 
-    EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
+    EntityRecordData memory entityRecordData = EntityRecordData({ itemId: 5555, typeId: typeId, volume: volume });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
       corpId: corpId,
@@ -118,7 +117,6 @@ contract SmartCharacterTest is MudTest {
   function testOnlyOneSmartCharacterPerAddress(
     address characterAddress,
     uint256 corpId,
-    uint256 itemId,
     uint256 typeId,
     uint256 volume,
     EntityRecordOffchainTableData memory offchainData,
@@ -128,12 +126,11 @@ contract SmartCharacterTest is MudTest {
     vm.assume(corpId != 0);
     vm.assume(characterAddress != address(0));
     vm.assume(bytes(tokenCid).length != 0);
-    testCreateSmartCharacter(characterId, characterAddress, corpId, itemId, typeId, volume, offchainData, tokenCid);
+    testCreateSmartCharacter(characterId, characterAddress, corpId, typeId, volume, offchainData, tokenCid);
 
     characterId = 3691;
-    itemId = 3691;
 
-    EntityRecordData memory entityRecordData = EntityRecordData({ itemId: itemId, typeId: typeId, volume: volume });
+    EntityRecordData memory entityRecordData = EntityRecordData({ itemId: 5555, typeId: typeId, volume: volume });
     CharactersTableData memory charactersData = CharactersTableData({
       characterAddress: characterAddress,
       corpId: corpId,
@@ -173,7 +170,7 @@ contract SmartCharacterTest is MudTest {
       entityId,
       address(this),
       111,
-      EntityRecordData({ typeId: 111, itemId: 11, volume: 11 }),
+      EntityRecordData({ typeId: 111, itemId: 116, volume: 11 }),
       EntityRecordOffchainTableData({ name: "characterName", dappURL: "noURL", description: "." }),
       "cid"
     );
@@ -191,17 +188,5 @@ contract SmartCharacterTest is MudTest {
 
     vm.expectRevert(abi.encodeWithSelector(ISmartCharacterErrors.SmartCharacterDoesNotExist.selector, characterId));
     smartCharacter.updateCorpId(characterId, corpId);
-  }
-
-  function testOnlyAdminCanCreateCharacter() public {
-    //TODO : Add test case for only admin can create a smart character after RBAC
-  }
-
-  function testOnlyAdminCanSetCorpId() public {
-    //TODO : Add test case for only admin can set smart character corpid after RBAC
-  }
-
-  function testOnlyAdminCanSetClass() public {
-    //TODO : Add test case for only admin can set smart character class after RBAC
   }
 }

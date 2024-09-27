@@ -82,14 +82,10 @@ contract AccessModified is System {
         }
       }
       if (!(adminAccess || IWorldWithEntryContext(_world()).initialMsgSender() == _getOwner(smartObjectId))) {
-        if (!adminAccess) {
-          revert IAccessSystemErrors.AccessSystem_NoPermission(tx.origin, ADMIN);
-        } else {
-          revert IAccessSystemErrors.AccessSystem_NoPermission(
-            IWorldWithEntryContext(_world()).initialMsgSender(),
-            bytes32("OWNER")
-          );
-        }
+        revert IAccessSystemErrors.AccessSystem_NoPermission(
+          IWorldWithEntryContext(_world()).initialMsgSender(),
+          bytes32("OWNER")
+        );
       }
     }
     _;
@@ -143,6 +139,7 @@ contract AccessModified is System {
         }
       }
       address[] memory accessListApproved = AccessRolePerSys.get(systemId, APPROVED);
+
       bool approvedAccess;
       for (uint256 i = 0; i < accessListApproved.length; i++) {
         if (_msgSender() == accessListApproved[i]) {

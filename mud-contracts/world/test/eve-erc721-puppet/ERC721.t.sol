@@ -167,15 +167,6 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     assertEq(token.ownerOf(id), owner);
   }
 
-  // TODO: re-enable this once access control is re-implemented properly; systems must be able to mint token in certain conditions
-  // function testMintRevertAccessDenied(uint256 id, address owner, address operator) public {
-  //   _assumeDifferentNonZero(owner, operator, address(this));
-
-  //   _expectAccessDenied(operator);
-  //   vm.prank(operator);
-  //   token.mint(owner, id);
-  // }
-
   function testBurn(uint256 id, address owner) public {
     vm.assume(owner != address(0));
 
@@ -196,18 +187,6 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
     vm.expectRevert(abi.encodeWithSelector(ERC721NonexistentToken.selector, id));
     token.ownerOf(id);
   }
-
-  // WE NO LONGER REQUIRE burn functionality to be System owner only, we require ADMIN account access currently, this can be tested in the access tests
-  // function testBurnRevertAccessDenied(uint256 id, address owner, address operator) public {
-  //   _assumeDifferentNonZero(owner, operator, address(this));
-
-  //   _expectMintEvent(owner, id);
-  //   token.mint(owner, id);
-
-  //   _expectAccessDenied(operator);
-  //   vm.prank(operator);
-  //   token.burn(id);
-  // }
 
   function testTransferFrom(address owner, address to, uint256 tokenId) public {
     _assumeDifferentNonZero(owner, to);
@@ -627,17 +606,5 @@ contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
 
   function testSafeMintToEOAGas() public {
     testSafeMintToEOA(1, address(0xABCD));
-  }
-
-  function testOnlyAdminCanMint() public {
-    //TODO : Add test case for only admin can mint after RBAC
-  }
-
-  function testOnlyAdminCanBurn() public {
-    //TODO : Add test case for only admin can burn after RBAC
-  }
-
-  function testOnlyAdminSetCID() public {
-    //TODO : Add test case for only admin can set a token CID after RBAC
   }
 }

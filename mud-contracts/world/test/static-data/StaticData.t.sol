@@ -88,24 +88,4 @@ contract StaticDataTest is MudTest {
     staticData.setCid(entityId, newCid);
     assertEq(StaticDataTable.getCid(entityId), newCid);
   }
-
-  function testOnlyAdminCanSetBaseURI() public {
-    //TODO : Add test case for only admin can set the baseURI after RBAC
-  }
-
-  function testOnlyAdminCanSetMetadata() public {
-    //TODO : Add test case for only admin can set the metadata after RBAC
-  }
-
-  function testOnlyAdminCanSetName() public {
-    //TODO : Add test case for only admin can set the name after RBAC
-  }
-
-  function testOnlyAdminCanSetSymbol() public {
-    //TODO : Add test case for only admin can set the symbol after RBAC
-  }
-
-  function testOnlyAdminCanSetCID() public {
-    //TODO : Add test case for only admin can set the CID after RBAC
-  }
 }

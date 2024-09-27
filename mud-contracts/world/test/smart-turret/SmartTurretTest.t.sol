@@ -374,8 +374,4 @@ contract SmartTurretTest is MudTest {
 
     smartTurret.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   }
-
-  function testOnlyAdminOrOwnerCanConfigure() public {
-    // TODO: only the owner of a gate can configure its logic
-  }
 }
