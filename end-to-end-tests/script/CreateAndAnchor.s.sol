@@ -11,6 +11,7 @@ import { SmartCharacterLib } from "@eveworld/world/src/modules/smart-character/S
 import { EntityRecordData as CharEntityRecordData } from "@eveworld/world/src/modules/smart-character/types.sol";
 import { EntityRecordOffchainTableData } from "@eveworld/world/src/codegen/tables/EntityRecordOffchainTable.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { CharactersTable } from "@eveworld/world/src/codegen/tables/CharactersTable.sol";
 
 contract CreateAndAnchor is Script {
   using SmartStorageUnitLib for SmartStorageUnitLib.World;
@@ -35,14 +36,17 @@ contract CreateAndAnchor is Script {
     });
 
     uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-    smartCharacter.createCharacter(
-      12512,
-      player,
-      222,
-      CharEntityRecordData({ typeId: 123, itemId: 237, volume: 100 }),
-      EntityRecordOffchainTableData({ name: "awesome character", dappURL: "noURL", description: "." }),
-      "azert"
-    );
+    if(CharactersTable.getCharacterAddress(12513) == address(0)) {
+      smartCharacter.createCharacter(
+        12513,
+        player,
+        222,
+        CharEntityRecordData({ typeId: 123, itemId: 234, volume: 100 }),
+        EntityRecordOffchainTableData({ name: "awesome character", dappURL: "noURL", description: "." }),
+        "azert"
+      );
+    }
+
     smartStorageUnit.createAndAnchorSmartStorageUnit(
       smartObjectId,
       EntityRecordData({ typeId: 7888, itemId: 111, volume: 10 }),
