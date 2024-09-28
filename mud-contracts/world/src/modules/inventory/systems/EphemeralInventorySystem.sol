@@ -75,12 +75,12 @@ contract EphemeralInventorySystem is AccessModified, EveSystem {
       }
     }
     // ephemeralInventoryOwner MUST be an existing character
-    if (CharactersByAddressTable.get(ephemeralInventoryOwner) == 0) {
-      revert IInventoryErrors.Inventory_InvalidEphemeralInventoryOwner(
-        "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
-        ephemeralInventoryOwner
-      );
-    }
+    // if (CharactersByAddressTable.get(ephemeralInventoryOwner) == 0) {
+    //   revert IInventoryErrors.Inventory_InvalidEphemeralInventoryOwner(
+    //     "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
+    //     ephemeralInventoryOwner
+    //   );
+    // }
 
     uint256 totalUsedCapacity = _processAndReturnTotalUsedCapacity(smartObjectId, ephemeralInventoryOwner, items);
 

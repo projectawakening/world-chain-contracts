@@ -72,13 +72,13 @@ contract SmartDeployableSystem is AccessModified, EveSystem, SmartDeployableErro
     }
 
     // revert if the given smart object owner is not a valid character
-    if (CharactersByAddressTable.get(smartObjectData.owner) == 0) {
-      revert SmartDeployableErrors.SmartDeployable_InvalidObjectOwner(
-        "SmartDeployableSystem: Smart Object owner is not a valid Smart Character",
-        smartObjectData.owner,
-        entityId
-      );
-    }
+    // if (CharactersByAddressTable.get(smartObjectData.owner) == 0) {
+    //   revert SmartDeployableErrors.SmartDeployable_InvalidObjectOwner(
+    //     "SmartDeployableSystem: Smart Object owner is not a valid Smart Character",
+    //     smartObjectData.owner,
+    //     entityId
+    //   );
+    // }
 
     //Create a new deployable when its new
     if (previousState == State.NULL) {
