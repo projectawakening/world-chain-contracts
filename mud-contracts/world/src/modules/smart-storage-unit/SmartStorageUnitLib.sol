@@ -4,7 +4,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
 import { Utils } from "./Utils.sol";
-import { ISmartStorageUnit } from "./interfaces/ISmartStorageUnit.sol";
+import { ISmartStorageUnitSystem } from "./interfaces/ISmartStorageUnitSystem.sol";
 import { EntityRecordData, SmartObjectData, WorldPosition } from "./types.sol";
 import { InventoryItem } from "../inventory/types.sol";
 
@@ -29,7 +29,7 @@ library SmartStorageUnitLib {
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionPerMinute,
+    uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
@@ -37,14 +37,14 @@ library SmartStorageUnitLib {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
-        ISmartStorageUnit.createAndAnchorSmartStorageUnit,
+        ISmartStorageUnitSystem.createAndAnchorSmartStorageUnit,
         (
           smartObjectId,
           entityRecordData,
           smartObjectData,
           worldPosition,
           fuelUnitVolume,
-          fuelConsumptionPerMinute,
+          fuelConsumptionIntervalInSeconds,
           fuelMaxCapacity,
           storageCapacity,
           ephemeralStorageCapacity
@@ -60,7 +60,7 @@ library SmartStorageUnitLib {
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.createAndDepositItemsToInventory, (smartObjectId, items))
+      abi.encodeCall(ISmartStorageUnitSystem.createAndDepositItemsToInventory, (smartObjectId, items))
     );
   }
 
@@ -73,13 +73,13 @@ library SmartStorageUnitLib {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
       abi.encodeCall(
-        ISmartStorageUnit.createAndDepositItemsToEphemeralInventory,
+        ISmartStorageUnitSystem.createAndDepositItemsToEphemeralInventory,
         (smartObjectId, inventoryOwner, items)
       )
     );
   }
 
-  function setDeploybaleMetadata(
+  function setDeployableMetadata(
     World memory world,
     uint256 smartObjectId,
     string memory name,
@@ -88,14 +88,14 @@ library SmartStorageUnitLib {
   ) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.setDeploybaleMetadata, (smartObjectId, name, dappURL, description))
+      abi.encodeCall(ISmartStorageUnitSystem.setDeployableMetadata, (smartObjectId, name, dappURL, description))
     );
   }
 
   function setSSUClassId(World memory world, uint256 classId) internal {
     world.iface.call(
       world.namespace.smartStorageUnitSystemId(),
-      abi.encodeCall(ISmartStorageUnit.setSSUClassId, (classId))
+      abi.encodeCall(ISmartStorageUnitSystem.setSSUClassId, (classId))
     );
   }
 }

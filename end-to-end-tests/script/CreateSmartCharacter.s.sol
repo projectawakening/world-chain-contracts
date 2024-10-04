@@ -21,8 +21,9 @@ contract CreateSmartCharacter is Script {
     // Test values for creating the smart character
     // TODO accept as parameters to the run method for test reproducability
     uint256 characterId = 12513;
-    // The address this character will be minted to
-    address characterAddress = address(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+    uint256 corpId = 222;
+    // The token of this character will be minted to
+    address characterAddress = vm.addr(deployerPrivateKey);
 
     uint256 typeId = 123;
     uint256 itemId = 234;
@@ -40,6 +41,7 @@ contract CreateSmartCharacter is Script {
     smartCharacter.createCharacter(
       characterId,
       characterAddress,
+      corpId,
       EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume }),
       EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
       cid

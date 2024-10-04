@@ -14,7 +14,7 @@ import { Utils } from "./Utils.sol";
 import { StaticDataTable } from "../../codegen/tables/StaticDataTable.sol";
 import { StaticDataGlobalTable } from "../../codegen/tables/StaticDataGlobalTable.sol";
 
-import { StaticData } from "./systems/StaticData.sol";
+import { StaticDataSystem } from "./systems/StaticDataSystem.sol";
 
 contract StaticDataModule is Module {
   error StaticDataModule_InvalidNamespace(bytes14 namespace);
@@ -83,12 +83,11 @@ contract StaticDataModuleRegistrationLibrary {
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
 
     // Register the tables
-    if (!ResourceIds.getExists(namespace.staticDataTableId())) StaticDataTable.register(namespace.staticDataTableId());
-    if (!ResourceIds.getExists(namespace.staticDataGlobalTableId()))
-      StaticDataGlobalTable.register(namespace.staticDataGlobalTableId());
+    if (!ResourceIds.getExists(StaticDataTable._tableId)) StaticDataTable.register();
+    if (!ResourceIds.getExists(StaticDataGlobalTable._tableId)) StaticDataGlobalTable.register();
 
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.staticDataSystemId()))
-      world.registerSystem(namespace.staticDataSystemId(), new StaticData(), true);
+      world.registerSystem(namespace.staticDataSystemId(), new StaticDataSystem(), true);
   }
 }

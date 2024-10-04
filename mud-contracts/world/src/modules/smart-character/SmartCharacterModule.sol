@@ -14,7 +14,7 @@ import { StaticDataGlobalTableData } from "../../codegen/tables/StaticDataGlobal
 import { CharactersTable } from "../../codegen/tables/CharactersTable.sol";
 import { CharactersConstantsTable } from "../../codegen/tables/CharactersConstantsTable.sol";
 
-import { SmartCharacter } from "./systems/SmartCharacter.sol";
+import { SmartCharacterSystem } from "./systems/SmartCharacterSystem.sol";
 
 contract SmartCharacterModule is Module {
   error SmartCharacterModule_InvalidNamespace(bytes14 namespace);
@@ -81,11 +81,10 @@ contract SmartCharacterModuleRegistrationLibrary {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if (!ResourceIds.getExists(namespace.charactersTableId())) CharactersTable.register(namespace.charactersTableId());
-    if (!ResourceIds.getExists(namespace.charactersConstantsTableId()))
-      CharactersConstantsTable.register(namespace.charactersConstantsTableId());
+    if (!ResourceIds.getExists(CharactersTable._tableId)) CharactersTable.register();
+    if (!ResourceIds.getExists(CharactersConstantsTable._tableId)) CharactersConstantsTable.register();
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.smartCharacterSystemId()))
-      world.registerSystem(namespace.smartCharacterSystemId(), new SmartCharacter(), true);
+      world.registerSystem(namespace.smartCharacterSystemId(), new SmartCharacterSystem(), true);
   }
 }

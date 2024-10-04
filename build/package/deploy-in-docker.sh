@@ -151,9 +151,9 @@ pnpm nx delegateNamespaceAccess @eveworld/world-core 1> '/dev/null'
 show_progress 6 7
 
 echo " - Collecting ABIs"
-mkdir abis
-mkdir abis/trusted-forwarder
-mkdir abis/world
+mkdir -p abis
+mkdir -p abis/trusted-forwarder
+mkdir -p abis/world
 
 #7 Copy ABIS to be used for External consumption
 cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-${IMAGE_TAG}.abi.json"

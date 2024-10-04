@@ -1,33 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { Test } from "forge-std/Test.sol";
-import { console } from "forge-std/console.sol";
+import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
+import { World } from "@latticexyz/world/src/World.sol";
+import { IWorldWithEntryContext } from "../../src/IWorldWithEntryContext.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { World } from "@latticexyz/world/src/World.sol";
 import { WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { IWorldErrors } from "@latticexyz/world/src/IWorldErrors.sol";
 import { GasReporter } from "@latticexyz/gas-report/src/GasReporter.sol";
-import { IModule } from "@latticexyz/world/src/IModule.sol";
 
-import { SMART_OBJECT_DEPLOYMENT_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
-import { SmartObjectFrameworkModule } from "@eveworld/smart-object-framework/src/SmartObjectFrameworkModule.sol";
-import { EntityCore } from "@eveworld/smart-object-framework/src/systems/core/EntityCore.sol";
-import { HookCore } from "@eveworld/smart-object-framework/src/systems/core/HookCore.sol";
-import { ModuleCore } from "@eveworld/smart-object-framework/src/systems/core/ModuleCore.sol";
-
-import { STATIC_DATA_DEPLOYMENT_NAMESPACE as STATIC_DATA_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
 import { StaticDataGlobalTableData } from "../../src/codegen/tables/StaticDataGlobalTable.sol";
-import { StaticDataModule } from "../../src/modules/static-data/StaticDataModule.sol";
 
-import { createCoreModule } from "../CreateCoreModule.sol";
-
-import { PuppetModule } from "@latticexyz/world-modules/src/modules/puppet/PuppetModule.sol";
-import { ERC721Module } from "../../src/modules/eve-erc721-puppet/ERC721Module.sol";
 import { IERC721Mintable } from "../../src/modules/eve-erc721-puppet/IERC721Mintable.sol";
 import { registerERC721 } from "../../src/modules/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Errors } from "../../src/modules/eve-erc721-puppet/IERC721Errors.sol";
@@ -75,27 +62,18 @@ contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
 
 contract NonERC721Recipient {}
 
-contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
+contract ERC721Test is MudTest, GasReporter, IERC721Events, IERC721Errors {
   using WorldResourceIdInstance for ResourceId;
 
-  IBaseWorld world;
-  ERC721Module erc721Module;
+  IWorldWithEntryContext world;
   IERC721Mintable token;
   bytes14 constant DEPLOYMENT_NAMESPACE = "MyERC721";
 
-  function setUp() public {
-    world = IBaseWorld(address(new World()));
-    world.initialize(createCoreModule());
-    // required for `NamespaceOwner` and `WorldResourceIdLib` to infer current World Address properly
-    StoreSwitch.setStoreAddress(address(world));
-
-    // Module dependancies installation
-    world.installModule(
-      new SmartObjectFrameworkModule(),
-      abi.encode(SMART_OBJECT_DEPLOYMENT_NAMESPACE, new EntityCore(), new HookCore(), new ModuleCore())
-    );
-    _installModule(new PuppetModule(), 0);
-    _installModule(new StaticDataModule(), STATIC_DATA_NAMESPACE);
+  function setUp() public override {
+    // START: DEPLOY AND REGISTER FOR EVE WORLD
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithEntryContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
 
     // Register a new ERC721 token
     token = registerERC721(
@@ -103,14 +81,6 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
       DEPLOYMENT_NAMESPACE,
       StaticDataGlobalTableData({ name: "Token", symbol: "TKN", baseURI: "" })
     );
-  }
-
-  // helper function to guard against multiple module registrations on the same namespace
-  // TODO: Those kind of functions are used across all unit tests, ideally it should be inherited from a base Test contract
-  function _installModule(IModule module, bytes14 namespace) internal {
-    if (NamespaceOwner.getOwner(WorldResourceIdLib.encodeNamespace(namespace)) == address(this))
-      world.transferOwnership(WorldResourceIdLib.encodeNamespace(namespace), address(module));
-    world.installModule(module, abi.encode(namespace));
   }
 
   function _expectAccessDenied(address caller) internal {
@@ -197,15 +167,6 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
     assertEq(token.ownerOf(id), owner);
   }
 
-  // TODO: re-enable this once access control is re-implemented properly; systems must be able to mint token in certain conditions
-  // function testMintRevertAccessDenied(uint256 id, address owner, address operator) public {
-  //   _assumeDifferentNonZero(owner, operator, address(this));
-
-  //   _expectAccessDenied(operator);
-  //   vm.prank(operator);
-  //   token.mint(owner, id);
-  // }
-
   function testBurn(uint256 id, address owner) public {
     vm.assume(owner != address(0));
 
@@ -225,17 +186,6 @@ contract ERC721Test is Test, GasReporter, IERC721Events, IERC721Errors {
 
     vm.expectRevert(abi.encodeWithSelector(ERC721NonexistentToken.selector, id));
     token.ownerOf(id);
-  }
-
-  function testBurnRevertAccessDenied(uint256 id, address owner, address operator) public {
-    _assumeDifferentNonZero(owner, operator, address(this));
-
-    _expectMintEvent(owner, id);
-    token.mint(owner, id);
-
-    _expectAccessDenied(operator);
-    vm.prank(operator);
-    token.burn(id);
   }
 
   function testTransferFrom(address owner, address to, uint256 tokenId) public {

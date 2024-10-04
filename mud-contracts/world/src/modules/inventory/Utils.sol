@@ -32,39 +32,4 @@ library Utils {
         name: INVENTORY_INTERACT_SYSTEM_NAME
       });
   }
-
-  function inventoryTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: INVENTORY_TABLE_NAME });
-  }
-
-  function inventoryItemTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: INVENTORY_ITEM_TABLE_NAME });
-  }
-
-  function ephemeralInvCapacityTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: EPHEMERAL_INVENTORY_CAPACITY_TABLE_NAME
-      });
-  }
-
-  function ephemeralInvTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: EPHEMERAL_INVENTORY_TABLE_NAME });
-  }
-
-  function ephemeralInventoryItemTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return
-      WorldResourceIdLib.encode({
-        typeId: RESOURCE_TABLE,
-        namespace: namespace,
-        name: EPHEMERAL_INVENTORY_ITEM_TABLE_NAME
-      });
-  }
-
-  function itemTransferTableId(bytes14 namespace) internal pure returns (ResourceId) {
-    return WorldResourceIdLib.encode({ typeId: RESOURCE_TABLE, namespace: namespace, name: ITEM_TRANSFER_TABLE_NAME });
-  }
 }

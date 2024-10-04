@@ -7,9 +7,9 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { Utils } from "./utils.sol";
 import { HookType } from "./types.sol";
 
-import { IEntityCore } from "./interfaces/IEntityCore.sol";
-import { IHookCore } from "./interfaces/IHookCore.sol";
-import { IModuleCore } from "./interfaces/IModuleCore.sol";
+import { IEntitySystem } from "./interfaces/IEntitySystem.sol";
+import { IHookSystem } from "./interfaces/IHookSystem.sol";
+import { IModuleSystem } from "./interfaces/IModuleSystem.sol";
 
 /**
  * @title Smart Object Framework Library (makes interacting with the underlying Systems cleaner)
@@ -29,62 +29,59 @@ library SmartObjectLib {
     bytes14 namespace;
   }
 
-  // EntityCore methods
+  // EntitySystem methods
   function registerEntityType(World memory world, uint8 entityTypeId, bytes32 entityType) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.registerEntityType, (entityTypeId, entityType))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.registerEntityType, (entityTypeId, entityType))
     );
   }
 
   function registerEntity(World memory world, uint256 entityId, uint8 entityType) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.registerEntity, (entityId, entityType))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.registerEntity, (entityId, entityType))
     );
   }
 
   function registerEntities(World memory world, uint256[] memory entityId, uint8[] memory entityType) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.registerEntities, (entityId, entityType))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.registerEntities, (entityId, entityType))
     );
   }
 
   function registerEntityTypeAssociation(World memory world, uint8 entityType, uint8 tagEntityType) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.registerEntityTypeAssociation, (entityType, tagEntityType))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.registerEntityTypeAssociation, (entityType, tagEntityType))
     );
   }
 
   function tagEntity(World memory world, uint256 entityId, uint256 entityTagId) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.tagEntity, (entityId, entityTagId))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.tagEntity, (entityId, entityTagId))
     );
   }
 
   function tagEntities(World memory world, uint256 entityId, uint256[] memory entityTagIds) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.tagEntities, (entityId, entityTagIds))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.tagEntities, (entityId, entityTagIds))
     );
   }
 
   function removeEntityTag(World memory world, uint256 entityId, uint256 entityTagId) internal {
     world.iface.call(
-      world.namespace.entityCoreSystemId(),
-      abi.encodeCall(IEntityCore.removeEntityTag, (entityId, entityTagId))
+      world.namespace.entitySystemId(),
+      abi.encodeCall(IEntitySystem.removeEntityTag, (entityId, entityTagId))
     );
   }
 
-  // HookCore methods
+  // HookSystem methods
   function registerHook(World memory world, ResourceId systemId, bytes4 functionId) internal {
-    world.iface.call(
-      world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCore.registerHook, (systemId, functionId))
-    );
+    world.iface.call(world.namespace.hookSystemId(), abi.encodeCall(IHookSystem.registerHook, (systemId, functionId)));
   }
 
   function addHook(
@@ -95,8 +92,8 @@ library SmartObjectLib {
     bytes4 functionSelector
   ) internal {
     world.iface.call(
-      world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCore.addHook, (hookId, hookType, systemId, functionSelector))
+      world.namespace.hookSystemId(),
+      abi.encodeCall(IHookSystem.addHook, (hookId, hookType, systemId, functionSelector))
     );
   }
 
@@ -108,31 +105,31 @@ library SmartObjectLib {
     bytes4 functionSelector
   ) internal {
     world.iface.call(
-      world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCore.removeHook, (hookId, hookType, systemId, functionSelector))
+      world.namespace.hookSystemId(),
+      abi.encodeCall(IHookSystem.removeHook, (hookId, hookType, systemId, functionSelector))
     );
   }
 
   function associateHook(World memory world, uint256 entityId, uint256 hookId) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(), abi.encodeCall(IHookCore.associateHook, (entityId, hookId)));
+    world.iface.call(world.namespace.hookSystemId(), abi.encodeCall(IHookSystem.associateHook, (entityId, hookId)));
   }
 
   function associateHooks(World memory world, uint256 entityId, uint256[] memory hookIds) internal {
-    world.iface.call(world.namespace.hookCoreSystemId(), abi.encodeCall(IHookCore.associateHooks, (entityId, hookIds)));
+    world.iface.call(world.namespace.hookSystemId(), abi.encodeCall(IHookSystem.associateHooks, (entityId, hookIds)));
   }
 
   function removeEntityHookAssociation(World memory world, uint256 entityId, uint256 hookId) internal {
     world.iface.call(
-      world.namespace.hookCoreSystemId(),
-      abi.encodeCall(IHookCore.removeEntityHookAssociation, (entityId, hookId))
+      world.namespace.hookSystemId(),
+      abi.encodeCall(IHookSystem.removeEntityHookAssociation, (entityId, hookId))
     );
   }
 
-  // ModuleCore methods
+  // ModuleSystem methods
   function registerEVEModule(World memory world, uint256 moduleId, bytes16 moduleName, ResourceId systemId) internal {
     world.iface.call(
-      world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCore.registerEVEModule, (moduleId, moduleName, systemId))
+      world.namespace.moduleSystemId(),
+      abi.encodeCall(IModuleSystem.registerEVEModule, (moduleId, moduleName, systemId))
     );
   }
 
@@ -143,36 +140,36 @@ library SmartObjectLib {
     ResourceId[] memory systemIds
   ) internal {
     world.iface.call(
-      world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCore.registerEVEModules, (moduleId, moduleName, systemIds))
+      world.namespace.moduleSystemId(),
+      abi.encodeCall(IModuleSystem.registerEVEModules, (moduleId, moduleName, systemIds))
     );
   }
 
   function associateModule(World memory world, uint256 entityId, uint256 moduleId) internal {
     world.iface.call(
-      world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCore.associateModule, (entityId, moduleId))
+      world.namespace.moduleSystemId(),
+      abi.encodeCall(IModuleSystem.associateModule, (entityId, moduleId))
     );
   }
 
   function associateModules(World memory world, uint256 entityId, uint256[] memory moduleIds) internal {
     world.iface.call(
-      world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCore.associateModules, (entityId, moduleIds))
+      world.namespace.moduleSystemId(),
+      abi.encodeCall(IModuleSystem.associateModules, (entityId, moduleIds))
     );
   }
 
   function removeEntityModuleAssociation(World memory world, uint256 entityId, uint256 moduleId) internal {
     world.iface.call(
-      world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCore.removeEntityModuleAssociation, (entityId, moduleId))
+      world.namespace.moduleSystemId(),
+      abi.encodeCall(IModuleSystem.removeEntityModuleAssociation, (entityId, moduleId))
     );
   }
 
   function removeSystemModuleAssociation(World memory world, ResourceId systemId, uint256 moduleId) internal {
     world.iface.call(
-      world.namespace.moduleCoreSystemId(),
-      abi.encodeCall(IModuleCore.removeSystemModuleAssociation, (systemId, moduleId))
+      world.namespace.moduleSystemId(),
+      abi.encodeCall(IModuleSystem.removeSystemModuleAssociation, (systemId, moduleId))
     );
   }
 }

@@ -25,3 +25,4 @@ fs_permissions = [{ access = "read", path = "./"}]
 
 [profile.devnet]
 eth_rpc_url = "https://devnet-data-sync.nursery.reitnorf.com"
+

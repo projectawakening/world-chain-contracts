@@ -10,7 +10,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ENTITY_RECORD_MODULE_NAME as MODULE_NAME, ENTITY_RECORD_MODULE_NAMESPACE as MODULE_NAMESPACE } from "./constants.sol";
 import { Utils } from "./Utils.sol";
 
-import { EntityRecord } from "./systems/EntityRecord.sol";
+import { EntityRecordSystem } from "./systems/EntityRecordSystem.sol";
 
 import { EntityRecordTable } from "../../codegen/tables/EntityRecordTable.sol";
 import { EntityRecordOffchainTable } from "../../codegen/tables/EntityRecordOffchainTable.sol";
@@ -81,12 +81,10 @@ contract EntityRecordModuleRegistrationLibrary {
     if (!ResourceIds.getExists(WorldResourceIdLib.encodeNamespace(namespace)))
       world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Register the tables
-    if (!ResourceIds.getExists(namespace.entityRecordTableId()))
-      EntityRecordTable.register(namespace.entityRecordTableId());
-    if (!ResourceIds.getExists(namespace.entityRecordOffchainTableId()))
-      EntityRecordOffchainTable.register(namespace.entityRecordOffchainTableId());
+    if (!ResourceIds.getExists(EntityRecordTable._tableId)) EntityRecordTable.register();
+    if (!ResourceIds.getExists(EntityRecordOffchainTable._tableId)) EntityRecordOffchainTable.register();
     // Register a new Systems suite
     if (!ResourceIds.getExists(namespace.entityRecordSystemId()))
-      world.registerSystem(namespace.entityRecordSystemId(), new EntityRecord(), true);
+      world.registerSystem(namespace.entityRecordSystemId(), new EntityRecordSystem(), true);
   }
 }

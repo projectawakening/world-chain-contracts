@@ -68,7 +68,7 @@ contract ERC721Module is Module {
     ResourceId namespaceId = WorldResourceIdLib.encodeNamespace(namespace);
     world.transferOwnership(namespaceId, _msgSender());
 
-    // Register the ERC721 in the ERC20Registry
+    // Register the ERC721 in the ERC721Registry
     if (!ResourceIds.getExists(ERC721_REGISTRY_TABLE_ID)) {
       world.registerNamespace(MODULE_NAMESPACE_ID);
       ERC721Registry.register(ERC721_REGISTRY_TABLE_ID);

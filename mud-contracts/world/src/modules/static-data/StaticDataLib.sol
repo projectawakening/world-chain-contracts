@@ -5,7 +5,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { Utils } from "./Utils.sol";
-import { IStaticData } from "./interfaces/IStaticData.sol";
+import { IStaticDataSystem } from "./interfaces/IStaticDataSystem.sol";
 import { StaticDataGlobalTableData } from "../../codegen/tables/StaticDataGlobalTable.sol";
 
 /**
@@ -23,22 +23,31 @@ library StaticDataLib {
   }
 
   function setBaseURI(World memory world, ResourceId systemId, string memory baseURI) internal {
-    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setBaseURI, (systemId, baseURI)));
+    world.iface.call(
+      world.namespace.staticDataSystemId(),
+      abi.encodeCall(IStaticDataSystem.setBaseURI, (systemId, baseURI))
+    );
   }
 
   function setName(World memory world, ResourceId systemId, string memory name) internal {
-    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setName, (systemId, name)));
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticDataSystem.setName, (systemId, name)));
   }
 
   function setSymbol(World memory world, ResourceId systemId, string memory symbol) internal {
-    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setSymbol, (systemId, symbol)));
+    world.iface.call(
+      world.namespace.staticDataSystemId(),
+      abi.encodeCall(IStaticDataSystem.setSymbol, (systemId, symbol))
+    );
   }
 
   function setMetadata(World memory world, ResourceId systemId, StaticDataGlobalTableData memory data) internal {
-    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setMetadata, (systemId, data)));
+    world.iface.call(
+      world.namespace.staticDataSystemId(),
+      abi.encodeCall(IStaticDataSystem.setMetadata, (systemId, data))
+    );
   }
 
   function setCid(World memory world, uint256 entityId, string memory cid) internal {
-    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticData.setCid, (entityId, cid)));
+    world.iface.call(world.namespace.staticDataSystemId(), abi.encodeCall(IStaticDataSystem.setCid, (entityId, cid)));
   }
 }

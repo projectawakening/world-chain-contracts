@@ -1,48 +1,54 @@
-import { mudConfig } from "@latticexyz/world/register";
+import { defineWorld } from "@latticexyz/world";
 import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
 
-export default mudConfig({
+export default defineWorld({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,
+  deploy: {
+    customWorld: {
+      sourcePath: "src/WorldWithEntryContext.sol",
+      name: "WorldWithEntryContext",
+    },
+  },
   excludeSystems: ["EveSystem"],
   systems: {
-    EntityCore: {
-      name: constants.systemName.ENTITY_CORE,
+    EntitySystem: {
+      name: "EntitySystem",
       openAccess: true,
     },
-    ModuleCore: {
-      name: constants.systemName.MODULE_CORE,
+    ModuleSystem: {
+      name: "ModuleSystem",
       openAccess: true,
     },
-    HookCore: {
-      name: constants.systemName.HOOK_CORE,
+    HookSystem: {
+      name: "HookSystem",
       openAccess: true,
     },
   },
   userTypes: {
-    ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", internalType: "bytes32" },
+    ResourceId: { type: "bytes32", filePath: "@latticexyz/store/src/ResourceId.sol" },
   },
   tables: {
     /**
      * Used to store the entity type
      */
     EntityType: {
-      keySchema: { typeId: "uint8" },
-      valueSchema: {
+      schema: {
+        typeId: "uint8",
         doesExists: "bool",
         typeName: "bytes32",
       },
-      tableIdArgument: true,
+      key: ["typeId"],
     },
     /**
      * Used to register an entity by its type
      */
     EntityTable: {
-      keySchema: { entityId: "uint256" },
-      valueSchema: {
-        doesExists: "bool", //Tracks the entity which is no longer valid
+      schema: {
+        entityId: "uint256",
+        doesExists: "bool",
         entityType: "uint8",
       },
-      tableIdArgument: true,
+      key: ["entityId"],
     },
     /**
      * Used to enforce association/tagging possibility by entity types
@@ -50,11 +56,12 @@ export default mudConfig({
      * also it should prohibit Object-to-Object and Class-to-Class tagging as well
      */
     EntityTypeAssociation: {
-      keySchema: { entityType: "uint8", taggedEntityType: "uint8" },
-      valueSchema: {
+      schema: {
+        entityType: "uint8",
+        taggedEntityType: "uint8",
         isAllowed: "bool",
       },
-      tableIdArgument: true,
+      key: ["entityType", "taggedEntityType"],
     },
     /**
      * Used to tag/map an entity by its tagged entityIds
@@ -62,23 +69,23 @@ export default mudConfig({
      * One entity can be tagged with multiple classIds
      */
     EntityMap: {
-      keySchema: { entityId: "uint256" },
-      valueSchema: {
+      schema: {
+        entityId: "uint256",
         taggedEntityIds: "uint256[]",
       },
-      tableIdArgument: true,
+      key: ["entityId"],
     },
     /**
      * Used to associate a entity with a specific set of modules and hooks
      * to inherit the functionality of those modules(systems) and hooks
      */
     EntityAssociation: {
-      keySchema: { entityId: "uint256" },
-      valueSchema: {
+      schema: {
+        entityId: "uint256",
         moduleIds: "uint256[]",
         hookIds: "uint256[]",
       },
-      tableIdArgument: true,
+      key: ["entityId"],
     },
 
     /************************
@@ -88,13 +95,13 @@ export default mudConfig({
      * Used to semantically group systems associated with a module
      */
     ModuleTable: {
-      keySchema: { moduleId: "uint256", systemId: "ResourceId" },
-      valueSchema: {
-        //Can add functions registered in this system if we need granular control
+      schema: {
+        moduleId: "uint256",
+        systemId: "ResourceId",
         moduleName: "bytes16",
         doesExists: "bool",
       },
-      tableIdArgument: true,
+      key: ["moduleId", "systemId"],
     },
 
     /**
@@ -102,11 +109,11 @@ export default mudConfig({
      * TODO - Do we need this table?
      */
     ModuleSystemLookup: {
-      keySchema: { moduleId: "uint256" },
-      valueSchema: {
+      schema: {
+        moduleId: "uint256",
         systemIds: "bytes32[]",
       },
-      tableIdArgument: true,
+      key: ["moduleId"],
     },
 
     /************************
@@ -117,37 +124,39 @@ export default mudConfig({
      * before or after a existing function in the system
      */
     HookTable: {
-      keySchema: { hookId: "uint256" }, //keccak(hookSystemId, hookFunctionId)
-      valueSchema: {
+      schema: {
+        hookId: "uint256",
         isHook: "bool",
-        systemId: "ResourceId", //Callback systemId of the hook
-        functionSelector: "bytes4", //Callback functionId of the hook
+        systemId: "ResourceId",
+        functionSelector: "bytes4",
       },
-      tableIdArgument: true,
+      key: ["hookId"],
     },
     /**
      * Used to map the function to be executed before a existing function in a system by hookId
      */
     HookTargetBefore: {
-      keySchema: { hookId: "uint256", targetId: "uint256" }, // targetId - uint256(keccak(systemSelector, functionId))
-      valueSchema: {
+      schema: {
+        hookId: "uint256",
+        targetId: "uint256",
         hasHook: "bool",
-        systemSelector: "ResourceId", //Target system to hook against
-        functionSelector: "bytes4", //Target function to hook against
+        systemSelector: "ResourceId",
+        functionSelector: "bytes4",
       },
-      tableIdArgument: true,
+      key: ["hookId", "targetId"],
     },
     /**
      * Used to map the function to be executed after a existing function in a system by hookId
      */
     HookTargetAfter: {
-      keySchema: { hookId: "uint256", targetId: "uint256" },
-      valueSchema: {
+      schema: {
+        hookId: "uint256",
+        targetId: "uint256",
         hasHook: "bool",
-        systemSelector: "ResourceId", //Target system to hook against
-        functionSelector: "bytes4", //Target function to hook against
+        systemSelector: "ResourceId",
+        functionSelector: "bytes4",
       },
-      tableIdArgument: true,
+      key: ["hookId", "targetId"],
     },
   },
 });

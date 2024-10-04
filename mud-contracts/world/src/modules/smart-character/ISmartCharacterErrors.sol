@@ -4,4 +4,6 @@ pragma solidity >=0.8.24;
 interface ISmartCharacterErrors {
   error SmartCharacter_ERC721AlreadyInitialized();
   error SmartCharacter_UndefinedClassIds();
+  error SmartCharacterDoesNotExist(uint256 characterId);
+  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
 }

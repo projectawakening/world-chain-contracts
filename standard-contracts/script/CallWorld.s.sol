@@ -10,7 +10,7 @@ import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/world
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IWorldCall } from "@latticexyz/world/src/IWorldKernel.sol";
 
-import { ISmartCharacter } from "@eveworld/world/src/modules/smart-character/interfaces/ISmartCharacter.sol";
+import { ISmartCharacterSystem } from "@eveworld/world/src/modules/smart-character/interfaces/ISmartCharacterSystem.sol";
 import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as DEPLOYMENT_NAMESPACE, SMART_CHARACTER_SYSTEM_NAME } from "@eveworld/common-constants/src/constants.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771ForwarderWithHashNonce.sol";
 
@@ -44,9 +44,10 @@ contract CallWorld is Script {
     string memory cid = "azerty";
     string memory characterName = "awesome-o";
     bytes memory data = abi.encodeWithSelector(
-      ISmartCharacter.createCharacter.selector,
+      ISmartCharacterSystem.createCharacter.selector,
       characterId,
       characterAddress,
+      1000,
       EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume }),
       EntityRecordOffchainTableData({ name: characterName, dappURL: "noURL", description: "." }),
       cid
