@@ -7,6 +7,6 @@
     "@latticexyz/schema-type": "2.2.8",
     "@latticexyz/store": "2.2.8",
     "@latticexyz/world": "2.2.8",
-    "@latticexyz/world-modules": "2.2.8"
+    "@latticexyz/world-modules": "2.2.11"
   }
 }
