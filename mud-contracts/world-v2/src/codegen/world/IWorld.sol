@@ -8,8 +8,10 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
 import { IERC721System } from "./IERC721System.sol";
 import { IEveSystem } from "./IEveSystem.sol";
+import { IFuelSystem } from "./IFuelSystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
+import { ISmartDeployableSystem } from "./ISmartDeployableSystem.sol";
 import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
 /**
@@ -24,7 +26,9 @@ interface IWorld is
   IEntityRecordSystem,
   IERC721System,
   IEveSystem,
+  IFuelSystem,
   ILocationSystem,
   ISmartCharacterSystem,
+  ISmartDeployableSystem,
   IStaticDataSystem
 {}

@@ -17,7 +17,7 @@ import { EntityRecord, EntityRecordData } from "../../src/codegen/tables/EntityR
 import { EntityRecordMetadata, EntityRecordMetadataData } from "../../src/codegen/tables/EntityRecordMetadata.sol";
 import { EntityRecordData as EntityRecordInput, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 
-import { Utils as EntityRecordUtils } from "../../src/systems/entity-record/Utils.sol";
+import { EntityRecordUtils } from "../../src/systems/entity-record/EntityRecordUtils.sol";
 
 contract EntityRecordTest is MudTest {
   IBaseWorld world;

@@ -17,3 +17,7 @@ import { TokenApproval } from "./tables/TokenApproval.sol";
 import { OperatorApproval } from "./tables/OperatorApproval.sol";
 import { ERC721Registry } from "./tables/ERC721Registry.sol";
 import { Location, LocationData } from "./tables/Location.sol";
+import { Fuel, FuelData } from "./tables/Fuel.sol";
+import { GlobalDeployableState, GlobalDeployableStateData } from "./tables/GlobalDeployableState.sol";
+import { DeployableState, DeployableStateData } from "./tables/DeployableState.sol";
+import { DeployableTokenTable } from "./tables/DeployableTokenTable.sol";

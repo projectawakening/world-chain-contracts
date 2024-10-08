@@ -23,6 +23,15 @@ contract LocationSystem is System {
   }
 
   /**
+   * @dev creates a new location entry
+   * @param smartObjectId smartObjectId of the in-game object
+   * @param locationData the location data of the object
+   */
+  function saveLocationData(uint256 smartObjectId, LocationData memory locationData) public {
+    Location.set(smartObjectId, locationData);
+  }
+
+  /**
    * @dev updates the solar system id of the in-game object
    * @param smartObjectId smartObjectId of the in-game object
    * @param solarSystemId the solarSystemId of the location
