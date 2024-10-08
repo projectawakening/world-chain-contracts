@@ -15,11 +15,12 @@ import { EveSystem } from "../EveSystem.sol";
 
 import { Utils as EntityRecordUtils } from "../entity-record/Utils.sol";
 import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
-import { ISmartCharacterErrors } from "./ISmartCharacterErrors.sol";
 
 contract SmartCharacterSystem is EveSystem {
   using StaticDataUtils for bytes14;
   using EntityRecordUtils for bytes14;
+
+  error SmartCharacter_ERC721AlreadyInitialized();
 
   /**
    * @notice Register a new character token
@@ -27,7 +28,7 @@ contract SmartCharacterSystem is EveSystem {
    */
   function registerCharacterToken(address tokenAddress) public {
     if (CharacterToken.get() != address(0)) {
-      revert ISmartCharacterErrors.SmartCharacter_ERC721AlreadyInitialized();
+      revert SmartCharacter_ERC721AlreadyInitialized();
     }
     CharacterToken.set(tokenAddress);
   }

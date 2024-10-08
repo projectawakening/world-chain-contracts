@@ -43,7 +43,7 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    _installPuppet(world, deployer);
+    _installPuppet(world);
 
     // register new ERC20 EVE Token
     _createEVEToken(world);
@@ -56,7 +56,7 @@ contract PostDeploy is Script {
     vm.stopBroadcast();
   }
 
-  function _installPuppet(IBaseWorld world, address deployer) internal {
+  function _installPuppet(IBaseWorld world) internal {
     StoreSwitch.setStoreAddress(address(world));
     // creating all module contracts
     PuppetModule puppetModule = new PuppetModule();

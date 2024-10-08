@@ -6,7 +6,7 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 
-import { AccessControlLib } from "@latticexyz/world-modules/src/utils/AccessControlLib.sol";
+import { AccessControl } from "@latticexyz/world/src/AccessControl.sol";
 import { PuppetMaster } from "@latticexyz/world-modules/src/modules/puppet/PuppetMaster.sol";
 import { toTopic } from "@latticexyz/world-modules/src/modules/puppet/utils.sol";
 
@@ -533,6 +533,6 @@ contract ERC721System is IERC721Mintable, EveSystem, PuppetMaster {
   }
 
   function _requireOwner() internal view {
-    AccessControlLib.requireOwner(SystemRegistry.get(address(this)), _msgSender());
+    AccessControl.requireOwner(SystemRegistry.get(address(this)), _msgSender());
   }
 }
