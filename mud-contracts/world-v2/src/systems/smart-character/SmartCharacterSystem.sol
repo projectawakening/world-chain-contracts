@@ -13,11 +13,9 @@ import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 import { EveSystem } from "../EveSystem.sol";
 
-import { Utils as EntityRecordUtils } from "../entity-record/Utils.sol";
-import { Utils as StaticDataUtils } from "../static-data/Utils.sol";
+import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
 
 contract SmartCharacterSystem is EveSystem {
-  using StaticDataUtils for bytes14;
   using EntityRecordUtils for bytes14;
 
   error SmartCharacter_ERC721AlreadyInitialized();

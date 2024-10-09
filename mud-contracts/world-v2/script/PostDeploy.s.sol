@@ -22,8 +22,8 @@ import { registerERC721 } from "../src/systems/eve-erc721-puppet/registerERC721.
 import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
 import { StaticDataSystem } from "../src/systems/static-data/StaticDataSystem.sol";
 
-import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
-import { Utils as StaticDataUtils } from "../src/systems/static-data/Utils.sol";
+import { SmartCharacterUtils } from "../src/systems/smart-character/SmartCharacterUtils.sol";
+import { StaticDataUtils } from "../src/systems/static-data/StaticDataUtils.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 

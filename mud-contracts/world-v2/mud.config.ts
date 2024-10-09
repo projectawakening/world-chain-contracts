@@ -5,7 +5,26 @@ export default defineWorld({
   userTypes: {
     ResourceId: { filePath: "@latticexyz/store/src/ResourceId.sol", type: "bytes32" },
   },
+  enums: {
+    State: ["NULL", "UNANCHORED", "ANCHORED", "ONLINE", "DESTROYED"],
+    KillMailLossType: ["SHIP", "POD"],
+  },
   tables: {
+    /***************************
+    * SMART ASSEMBLY MODULE *
+    ***************************/
+    /**
+     * Used to store the assembly of a smart object
+     */
+    SmartAssembly: {
+      schema: {
+        smartObjectId: "uint256",
+        smartAssemblyId: "uint256",
+        smartAssemblyType: "string",
+      },
+      key: ["smartObjectId"],
+    },
+
     /**********************
      * ENTITY RECORD MODULE *
      **********************/
@@ -165,5 +184,47 @@ export default defineWorld({
       },
       key: ["smartObjectId"],
     },
+
+    /***************************
+     * SMART DEPLOYABLE MODULE *
+     ***************************/
+    /**
+     * Used to store the Global state of the Smart Deployable
+     */
+    GlobalDeployableState: {
+      schema: {
+        isPaused: "bool",
+        updatedBlockNumber: "uint256",
+        lastGlobalOffline: "uint256",
+        lastGlobalOnline: "uint256",
+      },
+      key: [],
+    },
+    /**
+     * Used to store the current state of a deployable
+     */
+    DeployableState: {
+      schema: {
+        entityId: "uint256",
+        createdAt: "uint256",
+        previousState: "State",
+        currentState: "State",
+        isValid: "bool",
+        anchoredAt: "uint256",
+        updatedBlockNumber: "uint256",
+        updatedBlockTime: "uint256",
+      },
+      key: ["entityId"],
+    },
+    /**
+     * Used to store the deployable details of a in-game entity
+     */
+    DeployableTokenTable: {
+      schema: {
+        erc721Address: "address",
+      },
+      key: [],
+    },
+
   },
 });
