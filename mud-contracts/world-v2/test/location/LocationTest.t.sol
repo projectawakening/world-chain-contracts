@@ -38,7 +38,13 @@ contract StaticDataTest is MudTest {
     bytes4 functionSelector = ILocationSystem.eveworld__saveLocation.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(LocationSystem.saveLocation, (smartObjectId, solarSystemId, x, y, z)));
+    world.call(
+      systemId,
+      abi.encodeCall(
+        LocationSystem.saveLocation,
+        (smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }))
+      )
+    );
 
     LocationData memory location = Location.get(smartObjectId);
 
@@ -54,7 +60,13 @@ contract StaticDataTest is MudTest {
     bytes4 functionSelector = ILocationSystem.eveworld__saveLocation.selector;
 
     ResourceId systemId = FunctionSelectors.getSystemId(functionSelector);
-    world.call(systemId, abi.encodeCall(LocationSystem.saveLocation, (smartObjectId, solarSystemId, x, y, z)));
+    world.call(
+      systemId,
+      abi.encodeCall(
+        LocationSystem.saveLocation,
+        (smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }))
+      )
+    );
 
     LocationData memory location = Location.get(smartObjectId);
 
