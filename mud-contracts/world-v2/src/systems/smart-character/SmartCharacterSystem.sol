@@ -8,6 +8,7 @@ import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/Function
 
 import { Characters, CharacterToken } from "../../codegen/index.sol";
 import { IEntityRecordSystem } from "../../codegen/world/IEntityRecordSystem.sol";
+import { CharactersByAddressTable } from "../../codegen/tables/CharactersByAddressTable.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
 import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
@@ -19,6 +20,8 @@ contract SmartCharacterSystem is EveSystem {
   using EntityRecordUtils for bytes14;
 
   error SmartCharacter_ERC721AlreadyInitialized();
+  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
+  error SmartCharacterDoesNotExist(uint256 characterId);
 
   /**
    * @notice Register a new character token
@@ -41,11 +44,19 @@ contract SmartCharacterSystem is EveSystem {
   function createCharacter(
     uint256 characterId,
     address characterAddress,
+    uint256 tribeId,
     EntityRecordData memory entityRecord,
     EntityMetadata memory entityRecordMetadata
   ) public {
     uint256 createdAt = block.timestamp;
-    Characters.set(characterId, characterAddress, createdAt);
+
+    // enforce one-to-one mapping
+    if (CharactersByAddressTable.get(characterAddress) != 0) {
+      revert SmartCharacter_AlreadyCreated(characterAddress, characterId);
+    }
+
+    Characters.set(characterId, characterAddress, tribeId, createdAt);
+    CharactersByAddressTable.set(characterAddress, characterId);
 
     //Save the entity record in EntityRecord Module
     ResourceId entityRecordSystemId = EntityRecordUtils.entityRecordSystemId();
@@ -57,5 +68,12 @@ contract SmartCharacterSystem is EveSystem {
 
     //Mint a new character token
     IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
+  }
+
+  function updateTribeId(uint256 characterId, uint256 tribeId) public {
+    if (Characters.getTribeId(characterId) == 0) {
+      revert SmartCharacterDoesNotExist(characterId);
+    }
+    Characters.setTribeId(characterId, tribeId);
   }
 }

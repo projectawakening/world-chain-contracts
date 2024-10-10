@@ -18,6 +18,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct CharactersData {
   address characterAddress;
+  uint256 tribeId;
   uint256 createdAt;
 }
 
@@ -26,12 +27,12 @@ library Characters {
   ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c6400000000000043686172616374657273000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0034020014200000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0054030014202000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (address, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x00340200611f0000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (address, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x00540300611f1f00000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,9 +48,10 @@ library Characters {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
+    fieldNames = new string[](3);
     fieldNames[0] = "characterAddress";
-    fieldNames[1] = "createdAt";
+    fieldNames[1] = "tribeId";
+    fieldNames[2] = "createdAt";
   }
 
   /**
@@ -109,13 +111,55 @@ library Characters {
   }
 
   /**
+   * @notice Get tribeId.
+   */
+  function getTribeId(uint256 characterId) internal view returns (uint256 tribeId) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get tribeId.
+   */
+  function _getTribeId(uint256 characterId) internal view returns (uint256 tribeId) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set tribeId.
+   */
+  function setTribeId(uint256 characterId, uint256 tribeId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((tribeId)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set tribeId.
+   */
+  function _setTribeId(uint256 characterId, uint256 tribeId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(characterId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((tribeId)), _fieldLayout);
+  }
+
+  /**
    * @notice Get createdAt.
    */
   function getCreatedAt(uint256 characterId) internal view returns (uint256 createdAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -126,7 +170,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -137,7 +181,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((createdAt)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((createdAt)), _fieldLayout);
   }
 
   /**
@@ -147,7 +191,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(characterId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((createdAt)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((createdAt)), _fieldLayout);
   }
 
   /**
@@ -183,8 +227,8 @@ library Characters {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 characterId, address characterAddress, uint256 createdAt) internal {
-    bytes memory _staticData = encodeStatic(characterAddress, createdAt);
+  function set(uint256 characterId, address characterAddress, uint256 tribeId, uint256 createdAt) internal {
+    bytes memory _staticData = encodeStatic(characterAddress, tribeId, createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -198,8 +242,8 @@ library Characters {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 characterId, address characterAddress, uint256 createdAt) internal {
-    bytes memory _staticData = encodeStatic(characterAddress, createdAt);
+  function _set(uint256 characterId, address characterAddress, uint256 tribeId, uint256 createdAt) internal {
+    bytes memory _staticData = encodeStatic(characterAddress, tribeId, createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -214,7 +258,7 @@ library Characters {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 characterId, CharactersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.createdAt);
+    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.tribeId, _table.createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -229,7 +273,7 @@ library Characters {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 characterId, CharactersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.createdAt);
+    bytes memory _staticData = encodeStatic(_table.characterAddress, _table.tribeId, _table.createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -243,10 +287,14 @@ library Characters {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (address characterAddress, uint256 createdAt) {
+  function decodeStatic(
+    bytes memory _blob
+  ) internal pure returns (address characterAddress, uint256 tribeId, uint256 createdAt) {
     characterAddress = (address(Bytes.getBytes20(_blob, 0)));
 
-    createdAt = (uint256(Bytes.getBytes32(_blob, 20)));
+    tribeId = (uint256(Bytes.getBytes32(_blob, 20)));
+
+    createdAt = (uint256(Bytes.getBytes32(_blob, 52)));
   }
 
   /**
@@ -260,7 +308,7 @@ library Characters {
     EncodedLengths,
     bytes memory
   ) internal pure returns (CharactersData memory _table) {
-    (_table.characterAddress, _table.createdAt) = decodeStatic(_staticData);
+    (_table.characterAddress, _table.tribeId, _table.createdAt) = decodeStatic(_staticData);
   }
 
   /**
@@ -287,8 +335,12 @@ library Characters {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(address characterAddress, uint256 createdAt) internal pure returns (bytes memory) {
-    return abi.encodePacked(characterAddress, createdAt);
+  function encodeStatic(
+    address characterAddress,
+    uint256 tribeId,
+    uint256 createdAt
+  ) internal pure returns (bytes memory) {
+    return abi.encodePacked(characterAddress, tribeId, createdAt);
   }
 
   /**
@@ -299,9 +351,10 @@ library Characters {
    */
   function encode(
     address characterAddress,
+    uint256 tribeId,
     uint256 createdAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(characterAddress, createdAt);
+    bytes memory _staticData = encodeStatic(characterAddress, tribeId, createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

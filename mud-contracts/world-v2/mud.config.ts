@@ -81,6 +81,7 @@ export default defineWorld({
       schema: {
         characterId: "uint256",
         characterAddress: "address",
+        tribeId: "uint256",
         createdAt: "uint256",
       },
       key: ["characterId"],
@@ -90,6 +91,14 @@ export default defineWorld({
         erc721Address: "address",
       },
       key: [],
+    },
+
+    CharactersByAddressTable: {
+      schema: {
+        characterAddress: "address",
+        characterId: "uint256",
+      },
+      key: ["characterAddress"],
     },
 
     /*************************

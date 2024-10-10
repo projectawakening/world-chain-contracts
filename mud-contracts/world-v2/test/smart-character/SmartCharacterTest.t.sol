@@ -52,6 +52,7 @@ contract SmartCharacterTest is MudTest {
   function testSmartCharacter() public {
     uint256 characterId = 123;
     address characterAddress = address(0x123);
+    uint256 tribeId = 100;
     EntityRecordData memory entityRecord = EntityRecordData({
       smartObjectId: characterId,
       typeId: 123,
@@ -71,7 +72,7 @@ contract SmartCharacterTest is MudTest {
       systemId,
       abi.encodeCall(
         SmartCharacterSystem.createCharacter,
-        (characterId, characterAddress, entityRecord, entityRecordMetadata)
+        (characterId, characterAddress, tribeId, entityRecord, entityRecordMetadata)
       )
     );
 
