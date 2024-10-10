@@ -40,7 +40,7 @@ library EntityRecordMetadata {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "entityId";
+    keyNames[0] = "smartObjectId";
   }
 
   /**
@@ -71,9 +71,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get name.
    */
-  function getName(uint256 entityId) internal view returns (string memory name) {
+  function getName(uint256 smartObjectId) internal view returns (string memory name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -82,9 +82,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get name.
    */
-  function _getName(uint256 entityId) internal view returns (string memory name) {
+  function _getName(uint256 smartObjectId) internal view returns (string memory name) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -93,9 +93,9 @@ library EntityRecordMetadata {
   /**
    * @notice Set name.
    */
-  function setName(uint256 entityId, string memory name) internal {
+  function setName(uint256 smartObjectId, string memory name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
   }
@@ -103,9 +103,9 @@ library EntityRecordMetadata {
   /**
    * @notice Set name.
    */
-  function _setName(uint256 entityId, string memory name) internal {
+  function _setName(uint256 smartObjectId, string memory name) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((name)));
   }
@@ -113,9 +113,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the length of name.
    */
-  function lengthName(uint256 entityId) internal view returns (uint256) {
+  function lengthName(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -126,9 +126,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the length of name.
    */
-  function _lengthName(uint256 entityId) internal view returns (uint256) {
+  function _lengthName(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -140,9 +140,9 @@ library EntityRecordMetadata {
    * @notice Get an item of name.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemName(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function getItemName(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -154,9 +154,9 @@ library EntityRecordMetadata {
    * @notice Get an item of name.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemName(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function _getItemName(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -167,9 +167,9 @@ library EntityRecordMetadata {
   /**
    * @notice Push a slice to name.
    */
-  function pushName(uint256 entityId, string memory _slice) internal {
+  function pushName(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -177,9 +177,9 @@ library EntityRecordMetadata {
   /**
    * @notice Push a slice to name.
    */
-  function _pushName(uint256 entityId, string memory _slice) internal {
+  function _pushName(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -187,9 +187,9 @@ library EntityRecordMetadata {
   /**
    * @notice Pop a slice from name.
    */
-  function popName(uint256 entityId) internal {
+  function popName(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -197,9 +197,9 @@ library EntityRecordMetadata {
   /**
    * @notice Pop a slice from name.
    */
-  function _popName(uint256 entityId) internal {
+  function _popName(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -207,9 +207,9 @@ library EntityRecordMetadata {
   /**
    * @notice Update a slice of name at `_index`.
    */
-  function updateName(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function updateName(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -220,9 +220,9 @@ library EntityRecordMetadata {
   /**
    * @notice Update a slice of name at `_index`.
    */
-  function _updateName(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function _updateName(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -233,9 +233,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get dappURL.
    */
-  function getDappURL(uint256 entityId) internal view returns (string memory dappURL) {
+  function getDappURL(uint256 smartObjectId) internal view returns (string memory dappURL) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 1);
     return (string(_blob));
@@ -244,9 +244,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get dappURL.
    */
-  function _getDappURL(uint256 entityId) internal view returns (string memory dappURL) {
+  function _getDappURL(uint256 smartObjectId) internal view returns (string memory dappURL) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 1);
     return (string(_blob));
@@ -255,9 +255,9 @@ library EntityRecordMetadata {
   /**
    * @notice Set dappURL.
    */
-  function setDappURL(uint256 entityId, string memory dappURL) internal {
+  function setDappURL(uint256 smartObjectId, string memory dappURL) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 1, bytes((dappURL)));
   }
@@ -265,9 +265,9 @@ library EntityRecordMetadata {
   /**
    * @notice Set dappURL.
    */
-  function _setDappURL(uint256 entityId, string memory dappURL) internal {
+  function _setDappURL(uint256 smartObjectId, string memory dappURL) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 1, bytes((dappURL)));
   }
@@ -275,9 +275,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the length of dappURL.
    */
-  function lengthDappURL(uint256 entityId) internal view returns (uint256) {
+  function lengthDappURL(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 1);
     unchecked {
@@ -288,9 +288,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the length of dappURL.
    */
-  function _lengthDappURL(uint256 entityId) internal view returns (uint256) {
+  function _lengthDappURL(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 1);
     unchecked {
@@ -302,9 +302,9 @@ library EntityRecordMetadata {
    * @notice Get an item of dappURL.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemDappURL(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function getItemDappURL(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 1, _index * 1, (_index + 1) * 1);
@@ -316,9 +316,9 @@ library EntityRecordMetadata {
    * @notice Get an item of dappURL.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemDappURL(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function _getItemDappURL(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 1, _index * 1, (_index + 1) * 1);
@@ -329,9 +329,9 @@ library EntityRecordMetadata {
   /**
    * @notice Push a slice to dappURL.
    */
-  function pushDappURL(uint256 entityId, string memory _slice) internal {
+  function pushDappURL(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 1, bytes((_slice)));
   }
@@ -339,9 +339,9 @@ library EntityRecordMetadata {
   /**
    * @notice Push a slice to dappURL.
    */
-  function _pushDappURL(uint256 entityId, string memory _slice) internal {
+  function _pushDappURL(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 1, bytes((_slice)));
   }
@@ -349,9 +349,9 @@ library EntityRecordMetadata {
   /**
    * @notice Pop a slice from dappURL.
    */
-  function popDappURL(uint256 entityId) internal {
+  function popDappURL(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 1, 1);
   }
@@ -359,9 +359,9 @@ library EntityRecordMetadata {
   /**
    * @notice Pop a slice from dappURL.
    */
-  function _popDappURL(uint256 entityId) internal {
+  function _popDappURL(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 1, 1);
   }
@@ -369,9 +369,9 @@ library EntityRecordMetadata {
   /**
    * @notice Update a slice of dappURL at `_index`.
    */
-  function updateDappURL(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function updateDappURL(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -382,9 +382,9 @@ library EntityRecordMetadata {
   /**
    * @notice Update a slice of dappURL at `_index`.
    */
-  function _updateDappURL(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function _updateDappURL(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -395,9 +395,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get description.
    */
-  function getDescription(uint256 entityId) internal view returns (string memory description) {
+  function getDescription(uint256 smartObjectId) internal view returns (string memory description) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 2);
     return (string(_blob));
@@ -406,9 +406,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get description.
    */
-  function _getDescription(uint256 entityId) internal view returns (string memory description) {
+  function _getDescription(uint256 smartObjectId) internal view returns (string memory description) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 2);
     return (string(_blob));
@@ -417,9 +417,9 @@ library EntityRecordMetadata {
   /**
    * @notice Set description.
    */
-  function setDescription(uint256 entityId, string memory description) internal {
+  function setDescription(uint256 smartObjectId, string memory description) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 2, bytes((description)));
   }
@@ -427,9 +427,9 @@ library EntityRecordMetadata {
   /**
    * @notice Set description.
    */
-  function _setDescription(uint256 entityId, string memory description) internal {
+  function _setDescription(uint256 smartObjectId, string memory description) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 2, bytes((description)));
   }
@@ -437,9 +437,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the length of description.
    */
-  function lengthDescription(uint256 entityId) internal view returns (uint256) {
+  function lengthDescription(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 2);
     unchecked {
@@ -450,9 +450,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the length of description.
    */
-  function _lengthDescription(uint256 entityId) internal view returns (uint256) {
+  function _lengthDescription(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 2);
     unchecked {
@@ -464,9 +464,9 @@ library EntityRecordMetadata {
    * @notice Get an item of description.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemDescription(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function getItemDescription(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 2, _index * 1, (_index + 1) * 1);
@@ -478,9 +478,9 @@ library EntityRecordMetadata {
    * @notice Get an item of description.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemDescription(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function _getItemDescription(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 2, _index * 1, (_index + 1) * 1);
@@ -491,9 +491,9 @@ library EntityRecordMetadata {
   /**
    * @notice Push a slice to description.
    */
-  function pushDescription(uint256 entityId, string memory _slice) internal {
+  function pushDescription(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 2, bytes((_slice)));
   }
@@ -501,9 +501,9 @@ library EntityRecordMetadata {
   /**
    * @notice Push a slice to description.
    */
-  function _pushDescription(uint256 entityId, string memory _slice) internal {
+  function _pushDescription(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 2, bytes((_slice)));
   }
@@ -511,9 +511,9 @@ library EntityRecordMetadata {
   /**
    * @notice Pop a slice from description.
    */
-  function popDescription(uint256 entityId) internal {
+  function popDescription(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 2, 1);
   }
@@ -521,9 +521,9 @@ library EntityRecordMetadata {
   /**
    * @notice Pop a slice from description.
    */
-  function _popDescription(uint256 entityId) internal {
+  function _popDescription(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 2, 1);
   }
@@ -531,9 +531,9 @@ library EntityRecordMetadata {
   /**
    * @notice Update a slice of description at `_index`.
    */
-  function updateDescription(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function updateDescription(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -544,9 +544,9 @@ library EntityRecordMetadata {
   /**
    * @notice Update a slice of description at `_index`.
    */
-  function _updateDescription(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function _updateDescription(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -557,9 +557,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 entityId) internal view returns (EntityRecordMetadataData memory _table) {
+  function get(uint256 smartObjectId) internal view returns (EntityRecordMetadataData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -572,9 +572,9 @@ library EntityRecordMetadata {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 entityId) internal view returns (EntityRecordMetadataData memory _table) {
+  function _get(uint256 smartObjectId) internal view returns (EntityRecordMetadataData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -587,13 +587,13 @@ library EntityRecordMetadata {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 entityId, string memory name, string memory dappURL, string memory description) internal {
+  function set(uint256 smartObjectId, string memory name, string memory dappURL, string memory description) internal {
     bytes memory _staticData;
     EncodedLengths _encodedLengths = encodeLengths(name, dappURL, description);
     bytes memory _dynamicData = encodeDynamic(name, dappURL, description);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -601,13 +601,13 @@ library EntityRecordMetadata {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 entityId, string memory name, string memory dappURL, string memory description) internal {
+  function _set(uint256 smartObjectId, string memory name, string memory dappURL, string memory description) internal {
     bytes memory _staticData;
     EncodedLengths _encodedLengths = encodeLengths(name, dappURL, description);
     bytes memory _dynamicData = encodeDynamic(name, dappURL, description);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -615,13 +615,13 @@ library EntityRecordMetadata {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 entityId, EntityRecordMetadataData memory _table) internal {
+  function set(uint256 smartObjectId, EntityRecordMetadataData memory _table) internal {
     bytes memory _staticData;
     EncodedLengths _encodedLengths = encodeLengths(_table.name, _table.dappURL, _table.description);
     bytes memory _dynamicData = encodeDynamic(_table.name, _table.dappURL, _table.description);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -629,13 +629,13 @@ library EntityRecordMetadata {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 entityId, EntityRecordMetadataData memory _table) internal {
+  function _set(uint256 smartObjectId, EntityRecordMetadataData memory _table) internal {
     bytes memory _staticData;
     EncodedLengths _encodedLengths = encodeLengths(_table.name, _table.dappURL, _table.description);
     bytes memory _dynamicData = encodeDynamic(_table.name, _table.dappURL, _table.description);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -684,9 +684,9 @@ library EntityRecordMetadata {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 entityId) internal {
+  function deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -694,9 +694,9 @@ library EntityRecordMetadata {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 entityId) internal {
+  function _deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -749,9 +749,9 @@ library EntityRecordMetadata {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 entityId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
   }

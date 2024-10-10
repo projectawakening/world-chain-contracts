@@ -15,9 +15,9 @@ interface IEntityRecordSystem {
 
   function eveworld__createEntityRecordMetadata(EntityMetadata memory entityRecordMetadata) external;
 
-  function eveworld__setName(uint256 entityId, string memory name) external;
+  function eveworld__setName(uint256 smartObjectId, string memory name) external;
 
-  function eveworld__setDappURL(uint256 entityId, string memory dappURL) external;
+  function eveworld__setDappURL(uint256 smartObjectId, string memory dappURL) external;
 
-  function eveworld__setDescription(uint256 entityId, string memory description) external;
+  function eveworld__setDescription(uint256 smartObjectId, string memory description) external;
 }

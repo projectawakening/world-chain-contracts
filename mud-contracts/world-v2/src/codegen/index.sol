@@ -21,3 +21,4 @@ import { Location, LocationData } from "./tables/Location.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "./tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "./tables/DeployableState.sol";
 import { DeployableTokenTable } from "./tables/DeployableTokenTable.sol";
+import { Fuel, FuelData } from "./tables/Fuel.sol";

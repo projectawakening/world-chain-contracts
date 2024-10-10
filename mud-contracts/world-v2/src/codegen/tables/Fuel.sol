@@ -16,24 +16,25 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct EntityRecordData {
-  uint256 itemId;
-  uint256 typeId;
-  uint256 volume;
-  bool recordExists;
+struct FuelData {
+  uint256 fuelUnitVolume;
+  uint256 fuelConsumptionIntervalInSeconds;
+  uint256 fuelMaxCapacity;
+  uint256 fuelAmount;
+  uint256 lastUpdatedAt;
 }
 
-library EntityRecord {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "EntityRecord", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000456e746974795265636f726400000000);
+library Fuel {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "Fuel", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004675656c000000000000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0061040020202001000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x00a0050020202020200000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256, uint256, bool)
-  Schema constant _valueSchema = Schema.wrap(0x006104001f1f1f60000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, uint256, uint256, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x00a005001f1f1f1f1f0000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -49,11 +50,12 @@ library EntityRecord {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](4);
-    fieldNames[0] = "itemId";
-    fieldNames[1] = "typeId";
-    fieldNames[2] = "volume";
-    fieldNames[3] = "recordExists";
+    fieldNames = new string[](5);
+    fieldNames[0] = "fuelUnitVolume";
+    fieldNames[1] = "fuelConsumptionIntervalInSeconds";
+    fieldNames[2] = "fuelMaxCapacity";
+    fieldNames[3] = "fuelAmount";
+    fieldNames[4] = "lastUpdatedAt";
   }
 
   /**
@@ -71,9 +73,9 @@ library EntityRecord {
   }
 
   /**
-   * @notice Get itemId.
+   * @notice Get fuelUnitVolume.
    */
-  function getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
+  function getFuelUnitVolume(uint256 smartObjectId) internal view returns (uint256 fuelUnitVolume) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -82,9 +84,9 @@ library EntityRecord {
   }
 
   /**
-   * @notice Get itemId.
+   * @notice Get fuelUnitVolume.
    */
-  function _getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
+  function _getFuelUnitVolume(uint256 smartObjectId) internal view returns (uint256 fuelUnitVolume) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -93,29 +95,31 @@ library EntityRecord {
   }
 
   /**
-   * @notice Set itemId.
+   * @notice Set fuelUnitVolume.
    */
-  function setItemId(uint256 smartObjectId, uint256 itemId) internal {
+  function setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((itemId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((fuelUnitVolume)), _fieldLayout);
   }
 
   /**
-   * @notice Set itemId.
+   * @notice Set fuelUnitVolume.
    */
-  function _setItemId(uint256 smartObjectId, uint256 itemId) internal {
+  function _setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((itemId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((fuelUnitVolume)), _fieldLayout);
   }
 
   /**
-   * @notice Get typeId.
+   * @notice Get fuelConsumptionIntervalInSeconds.
    */
-  function getTypeId(uint256 smartObjectId) internal view returns (uint256 typeId) {
+  function getFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId
+  ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -124,9 +128,11 @@ library EntityRecord {
   }
 
   /**
-   * @notice Get typeId.
+   * @notice Get fuelConsumptionIntervalInSeconds.
    */
-  function _getTypeId(uint256 smartObjectId) internal view returns (uint256 typeId) {
+  function _getFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId
+  ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -135,29 +141,47 @@ library EntityRecord {
   }
 
   /**
-   * @notice Set typeId.
+   * @notice Set fuelConsumptionIntervalInSeconds.
    */
-  function setTypeId(uint256 smartObjectId, uint256 typeId) internal {
+  function setFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds
+  ) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((typeId)), _fieldLayout);
+    StoreSwitch.setStaticField(
+      _tableId,
+      _keyTuple,
+      1,
+      abi.encodePacked((fuelConsumptionIntervalInSeconds)),
+      _fieldLayout
+    );
   }
 
   /**
-   * @notice Set typeId.
+   * @notice Set fuelConsumptionIntervalInSeconds.
    */
-  function _setTypeId(uint256 smartObjectId, uint256 typeId) internal {
+  function _setFuelConsumptionIntervalInSeconds(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds
+  ) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((typeId)), _fieldLayout);
+    StoreCore.setStaticField(
+      _tableId,
+      _keyTuple,
+      1,
+      abi.encodePacked((fuelConsumptionIntervalInSeconds)),
+      _fieldLayout
+    );
   }
 
   /**
-   * @notice Get volume.
+   * @notice Get fuelMaxCapacity.
    */
-  function getVolume(uint256 smartObjectId) internal view returns (uint256 volume) {
+  function getFuelMaxCapacity(uint256 smartObjectId) internal view returns (uint256 fuelMaxCapacity) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -166,9 +190,9 @@ library EntityRecord {
   }
 
   /**
-   * @notice Get volume.
+   * @notice Get fuelMaxCapacity.
    */
-  function _getVolume(uint256 smartObjectId) internal view returns (uint256 volume) {
+  function _getFuelMaxCapacity(uint256 smartObjectId) internal view returns (uint256 fuelMaxCapacity) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -177,71 +201,113 @@ library EntityRecord {
   }
 
   /**
-   * @notice Set volume.
+   * @notice Set fuelMaxCapacity.
    */
-  function setVolume(uint256 smartObjectId, uint256 volume) internal {
+  function setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((volume)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((fuelMaxCapacity)), _fieldLayout);
   }
 
   /**
-   * @notice Set volume.
+   * @notice Set fuelMaxCapacity.
    */
-  function _setVolume(uint256 smartObjectId, uint256 volume) internal {
+  function _setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((volume)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((fuelMaxCapacity)), _fieldLayout);
   }
 
   /**
-   * @notice Get recordExists.
+   * @notice Get fuelAmount.
    */
-  function getRecordExists(uint256 smartObjectId) internal view returns (bool recordExists) {
+  function getFuelAmount(uint256 smartObjectId) internal view returns (uint256 fuelAmount) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
-    return (_toBool(uint8(bytes1(_blob))));
+    return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get recordExists.
+   * @notice Get fuelAmount.
    */
-  function _getRecordExists(uint256 smartObjectId) internal view returns (bool recordExists) {
+  function _getFuelAmount(uint256 smartObjectId) internal view returns (uint256 fuelAmount) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
-    return (_toBool(uint8(bytes1(_blob))));
+    return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set recordExists.
+   * @notice Set fuelAmount.
    */
-  function setRecordExists(uint256 smartObjectId, bool recordExists) internal {
+  function setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((recordExists)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((fuelAmount)), _fieldLayout);
   }
 
   /**
-   * @notice Set recordExists.
+   * @notice Set fuelAmount.
    */
-  function _setRecordExists(uint256 smartObjectId, bool recordExists) internal {
+  function _setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((recordExists)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((fuelAmount)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get lastUpdatedAt.
+   */
+  function getLastUpdatedAt(uint256 smartObjectId) internal view returns (uint256 lastUpdatedAt) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get lastUpdatedAt.
+   */
+  function _getLastUpdatedAt(uint256 smartObjectId) internal view returns (uint256 lastUpdatedAt) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set lastUpdatedAt.
+   */
+  function setLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set lastUpdatedAt.
+   */
+  function _setLastUpdatedAt(uint256 smartObjectId, uint256 lastUpdatedAt) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
   }
 
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId) internal view returns (EntityRecordData memory _table) {
+  function get(uint256 smartObjectId) internal view returns (FuelData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -256,7 +322,7 @@ library EntityRecord {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 smartObjectId) internal view returns (EntityRecordData memory _table) {
+  function _get(uint256 smartObjectId) internal view returns (FuelData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -271,8 +337,21 @@ library EntityRecord {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
-    bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
+  function set(
+    uint256 smartObjectId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
+  ) internal {
+    bytes memory _staticData = encodeStatic(
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      fuelMaxCapacity,
+      fuelAmount,
+      lastUpdatedAt
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -286,8 +365,21 @@ library EntityRecord {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
-    bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
+  function _set(
+    uint256 smartObjectId,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
+  ) internal {
+    bytes memory _staticData = encodeStatic(
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      fuelMaxCapacity,
+      fuelAmount,
+      lastUpdatedAt
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -301,8 +393,14 @@ library EntityRecord {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, EntityRecordData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.itemId, _table.typeId, _table.volume, _table.recordExists);
+  function set(uint256 smartObjectId, FuelData memory _table) internal {
+    bytes memory _staticData = encodeStatic(
+      _table.fuelUnitVolume,
+      _table.fuelConsumptionIntervalInSeconds,
+      _table.fuelMaxCapacity,
+      _table.fuelAmount,
+      _table.lastUpdatedAt
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -316,8 +414,14 @@ library EntityRecord {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, EntityRecordData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.itemId, _table.typeId, _table.volume, _table.recordExists);
+  function _set(uint256 smartObjectId, FuelData memory _table) internal {
+    bytes memory _staticData = encodeStatic(
+      _table.fuelUnitVolume,
+      _table.fuelConsumptionIntervalInSeconds,
+      _table.fuelMaxCapacity,
+      _table.fuelAmount,
+      _table.lastUpdatedAt
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -333,14 +437,26 @@ library EntityRecord {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) {
-    itemId = (uint256(Bytes.getBytes32(_blob, 0)));
+  )
+    internal
+    pure
+    returns (
+      uint256 fuelUnitVolume,
+      uint256 fuelConsumptionIntervalInSeconds,
+      uint256 fuelMaxCapacity,
+      uint256 fuelAmount,
+      uint256 lastUpdatedAt
+    )
+  {
+    fuelUnitVolume = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    typeId = (uint256(Bytes.getBytes32(_blob, 32)));
+    fuelConsumptionIntervalInSeconds = (uint256(Bytes.getBytes32(_blob, 32)));
 
-    volume = (uint256(Bytes.getBytes32(_blob, 64)));
+    fuelMaxCapacity = (uint256(Bytes.getBytes32(_blob, 64)));
 
-    recordExists = (_toBool(uint8(Bytes.getBytes1(_blob, 96))));
+    fuelAmount = (uint256(Bytes.getBytes32(_blob, 96)));
+
+    lastUpdatedAt = (uint256(Bytes.getBytes32(_blob, 128)));
   }
 
   /**
@@ -353,8 +469,14 @@ library EntityRecord {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (EntityRecordData memory _table) {
-    (_table.itemId, _table.typeId, _table.volume, _table.recordExists) = decodeStatic(_staticData);
+  ) internal pure returns (FuelData memory _table) {
+    (
+      _table.fuelUnitVolume,
+      _table.fuelConsumptionIntervalInSeconds,
+      _table.fuelMaxCapacity,
+      _table.fuelAmount,
+      _table.lastUpdatedAt
+    ) = decodeStatic(_staticData);
   }
 
   /**
@@ -382,12 +504,14 @@ library EntityRecord {
    * @return The static data, encoded into a sequence of bytes.
    */
   function encodeStatic(
-    uint256 itemId,
-    uint256 typeId,
-    uint256 volume,
-    bool recordExists
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(itemId, typeId, volume, recordExists);
+    return
+      abi.encodePacked(fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt);
   }
 
   /**
@@ -397,12 +521,19 @@ library EntityRecord {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    uint256 itemId,
-    uint256 typeId,
-    uint256 volume,
-    bool recordExists
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount,
+    uint256 lastUpdatedAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
+    bytes memory _staticData = encodeStatic(
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      fuelMaxCapacity,
+      fuelAmount,
+      lastUpdatedAt
+    );
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -418,17 +549,5 @@ library EntityRecord {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
-  }
-}
-
-/**
- * @notice Cast a value to a bool.
- * @dev Boolean values are encoded as uint8 (1 = true, 0 = false), but Solidity doesn't allow casting between uint8 and bool.
- * @param value The uint8 value to convert.
- * @return result The boolean value.
- */
-function _toBool(uint8 value) pure returns (bool result) {
-  assembly {
-    result := value
   }
 }

@@ -11,7 +11,7 @@ export default defineWorld({
   },
   tables: {
     /***************************
-    * SMART ASSEMBLY MODULE *
+    * SMART ASSEMBLY *
     ***************************/
     /**
      * Used to store the assembly of a smart object
@@ -35,22 +35,22 @@ export default defineWorld({
      */
     EntityRecord: {
       schema: {
-        entityId: "uint256",
+        smartObjectId: "uint256",
         itemId: "uint256",
         typeId: "uint256",
         volume: "uint256",
         recordExists: "bool",
       },
-      key: ["entityId"],
+      key: ["smartObjectId"],
     },
     EntityRecordMetadata: {
       schema: {
-        entityId: "uint256",
+        smartObjectId: "uint256",
         name: "string",
         dappURL: "string",
         description: "string",
       },
-      key: ["entityId"],
+      key: ["smartObjectId"],
     },
     /**********************
      * STATIC DATA MODULE *
@@ -60,10 +60,10 @@ export default defineWorld({
      */
     StaticData: {
       schema: {
-        entityId: "uint256",
+        smartObjectId: "uint256",
         cid: "string",
       },
-      key: ["entityId"],
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the DNS which servers the IPFS gateway
@@ -186,10 +186,10 @@ export default defineWorld({
     },
 
     /***************************
-     * SMART DEPLOYABLE MODULE *
+     * DEPLOYABLE MODULE *
      ***************************/
     /**
-     * Used to store the Global state of the Smart Deployable
+     * Used to store the Global state of the Deployable
      */
     GlobalDeployableState: {
       schema: {
@@ -205,7 +205,7 @@ export default defineWorld({
      */
     DeployableState: {
       schema: {
-        entityId: "uint256",
+        smartObjectId: "uint256",
         createdAt: "uint256",
         previousState: "State",
         currentState: "State",
@@ -214,7 +214,7 @@ export default defineWorld({
         updatedBlockNumber: "uint256",
         updatedBlockTime: "uint256",
       },
-      key: ["entityId"],
+      key: ["smartObjectId"],
     },
     /**
      * Used to store the deployable details of a in-game entity
@@ -225,6 +225,23 @@ export default defineWorld({
       },
       key: [],
     },
+    /*******************
+     * FUEL MODULE *
+     *******************/
 
+    /**
+     * Used to store the fuel balance of a Deployable
+     */
+    Fuel: {
+      schema: {
+        smartObjectId: "uint256",
+        fuelUnitVolume: "uint256",
+        fuelConsumptionIntervalInSeconds: "uint256",
+        fuelMaxCapacity: "uint256",
+        fuelAmount: "uint256",
+        lastUpdatedAt: "uint256", // unix time in seconds
+      },
+      key: ["smartObjectId"],
+    },
   },
 });

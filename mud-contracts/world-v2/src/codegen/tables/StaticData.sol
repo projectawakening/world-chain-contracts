@@ -34,7 +34,7 @@ library StaticData {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "entityId";
+    keyNames[0] = "smartObjectId";
   }
 
   /**
@@ -63,9 +63,9 @@ library StaticData {
   /**
    * @notice Get cid.
    */
-  function getCid(uint256 entityId) internal view returns (string memory cid) {
+  function getCid(uint256 smartObjectId) internal view returns (string memory cid) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -74,9 +74,9 @@ library StaticData {
   /**
    * @notice Get cid.
    */
-  function _getCid(uint256 entityId) internal view returns (string memory cid) {
+  function _getCid(uint256 smartObjectId) internal view returns (string memory cid) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -85,9 +85,9 @@ library StaticData {
   /**
    * @notice Get cid.
    */
-  function get(uint256 entityId) internal view returns (string memory cid) {
+  function get(uint256 smartObjectId) internal view returns (string memory cid) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -96,9 +96,9 @@ library StaticData {
   /**
    * @notice Get cid.
    */
-  function _get(uint256 entityId) internal view returns (string memory cid) {
+  function _get(uint256 smartObjectId) internal view returns (string memory cid) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (string(_blob));
@@ -107,9 +107,9 @@ library StaticData {
   /**
    * @notice Set cid.
    */
-  function setCid(uint256 entityId, string memory cid) internal {
+  function setCid(uint256 smartObjectId, string memory cid) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((cid)));
   }
@@ -117,9 +117,9 @@ library StaticData {
   /**
    * @notice Set cid.
    */
-  function _setCid(uint256 entityId, string memory cid) internal {
+  function _setCid(uint256 smartObjectId, string memory cid) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((cid)));
   }
@@ -127,9 +127,9 @@ library StaticData {
   /**
    * @notice Set cid.
    */
-  function set(uint256 entityId, string memory cid) internal {
+  function set(uint256 smartObjectId, string memory cid) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((cid)));
   }
@@ -137,9 +137,9 @@ library StaticData {
   /**
    * @notice Set cid.
    */
-  function _set(uint256 entityId, string memory cid) internal {
+  function _set(uint256 smartObjectId, string memory cid) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((cid)));
   }
@@ -147,9 +147,9 @@ library StaticData {
   /**
    * @notice Get the length of cid.
    */
-  function lengthCid(uint256 entityId) internal view returns (uint256) {
+  function lengthCid(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -160,9 +160,9 @@ library StaticData {
   /**
    * @notice Get the length of cid.
    */
-  function _lengthCid(uint256 entityId) internal view returns (uint256) {
+  function _lengthCid(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -173,9 +173,9 @@ library StaticData {
   /**
    * @notice Get the length of cid.
    */
-  function length(uint256 entityId) internal view returns (uint256) {
+  function length(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -186,9 +186,9 @@ library StaticData {
   /**
    * @notice Get the length of cid.
    */
-  function _length(uint256 entityId) internal view returns (uint256) {
+  function _length(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -200,9 +200,9 @@ library StaticData {
    * @notice Get an item of cid.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemCid(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function getItemCid(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -214,9 +214,9 @@ library StaticData {
    * @notice Get an item of cid.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemCid(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function _getItemCid(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -228,9 +228,9 @@ library StaticData {
    * @notice Get an item of cid.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItem(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function getItem(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -242,9 +242,9 @@ library StaticData {
    * @notice Get an item of cid.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItem(uint256 entityId, uint256 _index) internal view returns (string memory) {
+  function _getItem(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
@@ -255,9 +255,9 @@ library StaticData {
   /**
    * @notice Push a slice to cid.
    */
-  function pushCid(uint256 entityId, string memory _slice) internal {
+  function pushCid(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -265,9 +265,9 @@ library StaticData {
   /**
    * @notice Push a slice to cid.
    */
-  function _pushCid(uint256 entityId, string memory _slice) internal {
+  function _pushCid(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -275,9 +275,9 @@ library StaticData {
   /**
    * @notice Push a slice to cid.
    */
-  function push(uint256 entityId, string memory _slice) internal {
+  function push(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -285,9 +285,9 @@ library StaticData {
   /**
    * @notice Push a slice to cid.
    */
-  function _push(uint256 entityId, string memory _slice) internal {
+  function _push(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
   }
@@ -295,9 +295,9 @@ library StaticData {
   /**
    * @notice Pop a slice from cid.
    */
-  function popCid(uint256 entityId) internal {
+  function popCid(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -305,9 +305,9 @@ library StaticData {
   /**
    * @notice Pop a slice from cid.
    */
-  function _popCid(uint256 entityId) internal {
+  function _popCid(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -315,9 +315,9 @@ library StaticData {
   /**
    * @notice Pop a slice from cid.
    */
-  function pop(uint256 entityId) internal {
+  function pop(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -325,9 +325,9 @@ library StaticData {
   /**
    * @notice Pop a slice from cid.
    */
-  function _pop(uint256 entityId) internal {
+  function _pop(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
   }
@@ -335,9 +335,9 @@ library StaticData {
   /**
    * @notice Update a slice of cid at `_index`.
    */
-  function updateCid(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function updateCid(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -348,9 +348,9 @@ library StaticData {
   /**
    * @notice Update a slice of cid at `_index`.
    */
-  function _updateCid(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function _updateCid(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -361,9 +361,9 @@ library StaticData {
   /**
    * @notice Update a slice of cid at `_index`.
    */
-  function update(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function update(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -374,9 +374,9 @@ library StaticData {
   /**
    * @notice Update a slice of cid at `_index`.
    */
-  function _update(uint256 entityId, uint256 _index, string memory _slice) internal {
+  function _update(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     unchecked {
       bytes memory _encoded = bytes((_slice));
@@ -387,9 +387,9 @@ library StaticData {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 entityId) internal {
+  function deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -397,9 +397,9 @@ library StaticData {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 entityId) internal {
+  function _deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -440,9 +440,9 @@ library StaticData {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 entityId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
   }
