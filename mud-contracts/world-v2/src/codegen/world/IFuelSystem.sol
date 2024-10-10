@@ -10,7 +10,7 @@ pragma solidity >=0.8.24;
  */
 interface IFuelSystem {
   error Fuel_NoFuel(uint256 smartObjectId);
-  error Fuel_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
+  error Fuel_ExceedsMaxCapacity(uint256 smartObjectId, uint256 amountDeposited);
   error Fuel_InvalidFuelConsumptionInterval(uint256 smartObjectId);
 
   function eveworld__configureFuelParameters(
@@ -38,4 +38,6 @@ interface IFuelSystem {
   function eveworld__withdrawFuel(uint256 smartObjectId, uint256 fuelAmount) external;
 
   function eveworld__updateFuel(uint256 smartObjectId) external;
+
+  function eveworld__currentFuelAmountInWei(uint256 smartObjectId) external view returns (uint256 amount);
 }

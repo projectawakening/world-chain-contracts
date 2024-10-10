@@ -12,13 +12,18 @@ import { EntityRecordData, EntityMetadata } from "../../systems/entity-record/ty
  */
 interface ISmartCharacterSystem {
   error SmartCharacter_ERC721AlreadyInitialized();
+  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
+  error SmartCharacterDoesNotExist(uint256 characterId);
 
   function eveworld__registerCharacterToken(address tokenAddress) external;
 
   function eveworld__createCharacter(
     uint256 characterId,
     address characterAddress,
+    uint256 tribeId,
     EntityRecordData memory entityRecord,
     EntityMetadata memory entityRecordMetadata
   ) external;
+
+  function eveworld__updateTribeId(uint256 characterId, uint256 tribeId) external;
 }

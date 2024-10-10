@@ -6,20 +6,20 @@ import { Fuel, FuelData } from "../../codegen/index.sol";
 import { DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 
 import { State } from "../../codegen/common.sol";
-import { DECIMALS, ONE_UNIT_IN_WEI } from "../deployable/constants.sol";
+import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
 
 /**
  * @title FuelSystem
  * @author CCP Games
- * FuelSystem: stores the Fuel balance of a Smart Deployable
+ * FuelSystem: stores the Fuel balance of a Deployable
  */
 contract FuelSystem is System {
   error Fuel_NoFuel(uint256 smartObjectId);
-  error Fuel_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
+  error Fuel_ExceedsMaxCapacity(uint256 smartObjectId, uint256 amountDeposited);
   error Fuel_InvalidFuelConsumptionInterval(uint256 smartObjectId);
 
   /**
-   * @dev sets fuel parameters for a smart deployable
+   * @dev sets fuel parameters for a Deployable
    * @param smartObjectId on-chain id of the in-game object
    * @param fuelUnitVolume the volume of a single unit of fuel
    * @param fuelMaxCapacity the maximum fuel capacity of the object
@@ -57,6 +57,10 @@ contract FuelSystem is System {
 
   /**
    * @dev sets the interval in seconds at which fuel is consumed
+   * This resets the rate of Fuel consumption of Onlined deployables
+   * WARNING: this will retroactively change the consumption rate of all deployables since they were last brought online.
+   * do not tweak this too much. Right now this will have to do, or, ideally, we would need to update all fuel balances before changing this
+   * TODO: needs to be only callable by admin
    * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelConsumptionIntervalInSeconds the interval in seconds at which fuel is consumed
    */
@@ -75,16 +79,17 @@ contract FuelSystem is System {
 
   /**
    * @dev sets the current fuel amount
-   * @param smartObjectId on-chain if of the in-game deployable
+   * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelAmount the current fuel amount
    */
   function setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) public {
+    _updateFuel(smartObjectId);
     Fuel.setFuelAmount(smartObjectId, fuelAmount);
     Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 
   /**
-   * @dev deposit an amount of fuel for a Smart Deployable
+   * @dev deposit an amount of fuel for a Deployable
    * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelAmount of fuel in full units
    * TODO: make this function admin only
@@ -92,11 +97,11 @@ contract FuelSystem is System {
   function depositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
     _updateFuel(smartObjectId);
     if (
-      (((Fuel.getFuelAmount(smartObjectId) + fuelAmount * ONE_UNIT_IN_WEI) * Fuel.getFuelUnitVolume(smartObjectId))) /
+      (((Fuel.getFuelAmount(smartObjectId) + (fuelAmount * ONE_UNIT_IN_WEI)) * Fuel.getFuelUnitVolume(smartObjectId))) /
         ONE_UNIT_IN_WEI >
       Fuel.getFuelMaxCapacity(smartObjectId)
     ) {
-      revert Fuel_TooMuchFuelDeposited(smartObjectId, fuelAmount);
+      revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount);
     }
 
     Fuel.setFuelAmount(smartObjectId, _currentFuelAmount(smartObjectId) + fuelAmount * ONE_UNIT_IN_WEI);
@@ -104,7 +109,7 @@ contract FuelSystem is System {
   }
 
   /**
-   * @dev withdraw an amount of fuel for a Smart Deployable
+   * @dev withdraw an amount of fuel for a Deployable
    * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelAmount of fuel in full units
    * TODO: make this function admin only
@@ -114,9 +119,9 @@ contract FuelSystem is System {
 
     Fuel.setFuelAmount(
       smartObjectId,
-      (_currentFuelAmount(smartObjectId) - fuelAmount * ONE_UNIT_IN_WEI) // will revert if underflow
+      (_currentFuelAmount(smartObjectId) - (fuelAmount * ONE_UNIT_IN_WEI)) // will revert if underflow
     );
-    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
+    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp); // this line seems to be buggy
   }
 
   /**
@@ -129,12 +134,16 @@ contract FuelSystem is System {
     _updateFuel(smartObjectId);
   }
 
+  function currentFuelAmountInWei(uint256 smartObjectId) public view returns (uint256 amount) {
+    return _currentFuelAmount(smartObjectId);
+  }
+
   /*************************
    * INTERNAL FUEL METHODS *
    **************************/
 
   /**
-   * @dev Deposit fuel into a smart deployable.
+   * @dev Updates current fuel state on-chain
    * @param smartObjectId on-chain id of the in-game deployable
    */
   function _updateFuel(uint256 smartObjectId) internal {
@@ -157,7 +166,7 @@ contract FuelSystem is System {
   /**
    * @dev Calculate the current fuel amount for a given entity.
    * @param smartObjectId on-chain id of the in-game deployable
-   * @return the current fuel amount.
+   * @return the current fuel amount in WEI.
    */
   function _currentFuelAmount(uint256 smartObjectId) internal view returns (uint256) {
     // Check if the entity is not online. If it's not online, return the fuel amount directly.
@@ -168,6 +177,10 @@ contract FuelSystem is System {
     // Fetch the fuel balance data for the entity.
     FuelData memory fuelData = Fuel.get(smartObjectId);
 
+    // For example:
+    // OneFuelUnitConsumptionIntervalInSec = 1; // Consuming 1 unit of fuel every second.
+    // OneFuelUnitConsumptionIntervalInSec = 60; // Consuming 1 unit of fuel every minute.
+    // OneFuelUnitConsumptionIntervalInSec = 3600; // Consuming 1 unit of fuel every hour.
     uint256 oneFuelUnitConsumptionIntervalInSec = fuelData.fuelConsumptionIntervalInSeconds;
 
     // Calculate the fuel consumed since the last update.

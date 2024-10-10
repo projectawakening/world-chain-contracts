@@ -10,6 +10,7 @@ import { StaticData } from "./tables/StaticData.sol";
 import { StaticDataMetadata } from "./tables/StaticDataMetadata.sol";
 import { Characters, CharactersData } from "./tables/Characters.sol";
 import { CharacterToken } from "./tables/CharacterToken.sol";
+import { CharactersByAddressTable } from "./tables/CharactersByAddressTable.sol";
 import { Balances } from "./tables/Balances.sol";
 import { ERC721Metadata, ERC721MetadataData } from "./tables/ERC721Metadata.sol";
 import { TokenURI } from "./tables/TokenURI.sol";
