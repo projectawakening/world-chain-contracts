@@ -23,8 +23,8 @@ struct EntityRecordMetadataData {
 }
 
 library EntityRecordMetadata {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "EntityRecordMeta", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000456e746974795265636f72644d657461);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "EntityRecordMeta", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000456e746974795265636f72644d657461);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0000000300000000000000000000000000000000000000000000000000000000);

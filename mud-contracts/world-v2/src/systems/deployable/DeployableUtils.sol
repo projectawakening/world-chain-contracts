@@ -11,8 +11,8 @@ import { RESOURCE_TABLE } from "@latticexyz/store/src/storeResourceTypes.sol";
 import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
 
 library DeployableUtils {
-  function smartDeployableSystemId() public pure returns (ResourceId systemId) {
+  function deployableSystemId() public pure returns (ResourceId systemId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartDeployableS" });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "DeployableSystem" });
   }
 }

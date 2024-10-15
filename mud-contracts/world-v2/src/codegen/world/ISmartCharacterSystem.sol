@@ -15,9 +15,9 @@ interface ISmartCharacterSystem {
   error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
   error SmartCharacterDoesNotExist(uint256 characterId);
 
-  function eveworld__registerCharacterToken(address tokenAddress) external;
+  function evefrontier__registerCharacterToken(address tokenAddress) external;
 
-  function eveworld__createCharacter(
+  function evefrontier__createCharacter(
     uint256 characterId,
     address characterAddress,
     uint256 tribeId,
@@ -25,5 +25,5 @@ interface ISmartCharacterSystem {
     EntityMetadata memory entityRecordMetadata
   ) external;
 
-  function eveworld__updateTribeId(uint256 characterId, uint256 tribeId) external;
+  function evefrontier__updateTribeId(uint256 characterId, uint256 tribeId) external;
 }

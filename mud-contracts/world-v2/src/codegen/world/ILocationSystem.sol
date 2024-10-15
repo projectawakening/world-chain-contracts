@@ -11,13 +11,13 @@ import { LocationData } from "../index.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ILocationSystem {
-  function eveworld__saveLocation(uint256 smartObjectId, LocationData memory locationData) external;
+  function evefrontier__saveLocation(uint256 smartObjectId, LocationData memory locationData) external;
 
-  function eveworld__setSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) external;
+  function evefrontier__setSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) external;
 
-  function eveworld__setX(uint256 smartObjectId, uint256 x) external;
+  function evefrontier__setX(uint256 smartObjectId, uint256 x) external;
 
-  function eveworld__setY(uint256 smartObjectId, uint256 y) external;
+  function evefrontier__setY(uint256 smartObjectId, uint256 y) external;
 
-  function eveworld__setZ(uint256 smartObjectId, uint256 z) external;
+  function evefrontier__setZ(uint256 smartObjectId, uint256 z) external;
 }

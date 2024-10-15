@@ -25,8 +25,8 @@ struct FuelData {
 }
 
 library Fuel {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "Fuel", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004675656c000000000000000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "Fuel", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004675656c000000000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x00a0050020202020200000000000000000000000000000000000000000000000);

@@ -22,8 +22,8 @@ struct SmartAssemblyData {
 }
 
 library SmartAssembly {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "SmartAssembly", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000536d617274417373656d626c79000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "SmartAssembly", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000536d617274417373656d626c79000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0020010120000000000000000000000000000000000000000000000000000000);

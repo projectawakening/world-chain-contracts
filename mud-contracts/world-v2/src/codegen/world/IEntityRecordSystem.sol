@@ -11,13 +11,13 @@ import { EntityRecordData, EntityMetadata } from "../../systems/entity-record/ty
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IEntityRecordSystem {
-  function eveworld__createEntityRecord(EntityRecordData memory entityRecord) external;
+  function evefrontier__createEntityRecord(EntityRecordData memory entityRecord) external;
 
-  function eveworld__createEntityRecordMetadata(EntityMetadata memory entityRecordMetadata) external;
+  function evefrontier__createEntityRecordMetadata(EntityMetadata memory entityRecordMetadata) external;
 
-  function eveworld__setName(uint256 smartObjectId, string memory name) external;
+  function evefrontier__setName(uint256 smartObjectId, string memory name) external;
 
-  function eveworld__setDappURL(uint256 smartObjectId, string memory dappURL) external;
+  function evefrontier__setDappURL(uint256 smartObjectId, string memory dappURL) external;
 
-  function eveworld__setDescription(uint256 smartObjectId, string memory description) external;
+  function evefrontier__setDescription(uint256 smartObjectId, string memory description) external;
 }

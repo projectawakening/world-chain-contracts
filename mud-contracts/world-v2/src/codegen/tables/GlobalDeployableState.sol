@@ -24,8 +24,8 @@ struct GlobalDeployableStateData {
 }
 
 library GlobalDeployableState {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "GlobalDeployable", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000476c6f62616c4465706c6f7961626c65);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "GlobalDeployable", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000476c6f62616c4465706c6f7961626c65);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0061040001202020000000000000000000000000000000000000000000000000);

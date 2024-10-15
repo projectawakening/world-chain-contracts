@@ -15,7 +15,7 @@ import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
  */
 contract FuelSystem is System {
   error Fuel_NoFuel(uint256 smartObjectId);
-  error Fuel_ExceedsMaxCapacity(uint256 smartObjectId, uint256 amountDeposited);
+  error Fuel_ExceedsMaxCapacity(uint256 smartObjectId, uint256 maxCapacity, uint256 fuelAmount);
   error Fuel_InvalidFuelConsumptionInterval(uint256 smartObjectId);
 
   /**
@@ -25,7 +25,6 @@ contract FuelSystem is System {
    * @param fuelMaxCapacity the maximum fuel capacity of the object
    * @param fuelConsumptionIntervalInSeconds the interval in seconds at which fuel is consumed
    * @param fuelAmount the current fuel amount
-   * @param lastUpdatedAt the last time the fuel was updated
    *
    */
   function configureFuelParameters(
@@ -33,8 +32,7 @@ contract FuelSystem is System {
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity,
-    uint256 fuelAmount,
-    uint256 lastUpdatedAt
+    uint256 fuelAmount
   ) public {
     Fuel.set(
       smartObjectId,
@@ -42,7 +40,7 @@ contract FuelSystem is System {
       fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity,
       fuelAmount,
-      lastUpdatedAt
+      block.timestamp
     );
   }
 
@@ -97,11 +95,16 @@ contract FuelSystem is System {
   function depositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
     _updateFuel(smartObjectId);
     if (
-      (((Fuel.getFuelAmount(smartObjectId) + (fuelAmount * ONE_UNIT_IN_WEI)) * Fuel.getFuelUnitVolume(smartObjectId))) /
+      (((Fuel.getFuelAmount(smartObjectId) + fuelAmount * ONE_UNIT_IN_WEI) * Fuel.getFuelUnitVolume(smartObjectId))) /
         ONE_UNIT_IN_WEI >
       Fuel.getFuelMaxCapacity(smartObjectId)
     ) {
-      revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount);
+      revert Fuel_ExceedsMaxCapacity(
+        smartObjectId,
+        Fuel.getFuelMaxCapacity(smartObjectId),
+        (((Fuel.getFuelAmount(smartObjectId) + fuelAmount * ONE_UNIT_IN_WEI) * Fuel.getFuelUnitVolume(smartObjectId))) /
+          ONE_UNIT_IN_WEI
+      );
     }
 
     Fuel.setFuelAmount(smartObjectId, _currentFuelAmount(smartObjectId) + fuelAmount * ONE_UNIT_IN_WEI);
@@ -148,11 +151,11 @@ contract FuelSystem is System {
    */
   function _updateFuel(uint256 smartObjectId) internal {
     uint256 currentFuel = _currentFuelAmount(smartObjectId);
-    State previousState = DeployableState.getCurrentState(smartObjectId);
+    State currentState = DeployableState.getCurrentState(smartObjectId);
 
-    if (currentFuel == 0 && (previousState == State.ONLINE)) {
+    if (currentFuel == 0 && (currentState == State.ONLINE)) {
       // _bringOffline() with manual function calls to avoid circular references (TODO: refactor decoupling to avoid redundancy)
-      DeployableState.setPreviousState(smartObjectId, previousState);
+      DeployableState.setPreviousState(smartObjectId, currentState);
       DeployableState.setCurrentState(smartObjectId, State.ANCHORED);
       DeployableState.setUpdatedBlockNumber(smartObjectId, block.number);
       DeployableState.setUpdatedBlockTime(smartObjectId, block.timestamp);
@@ -161,6 +164,7 @@ contract FuelSystem is System {
     } else {
       Fuel.setFuelAmount(smartObjectId, currentFuel);
     }
+    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 
   /**

@@ -124,7 +124,7 @@ contract DeployableSystem is EveSystem {
       fuelSystemId,
       abi.encodeCall(
         FuelSystem.configureFuelParameters,
-        (smartObjectId, fuelUnitVolumeInWei, fuelConsumptionIntervalInSeconds, fuelMaxCapacityInWei, 0, block.timestamp)
+        (smartObjectId, fuelUnitVolumeInWei, fuelConsumptionIntervalInSeconds, fuelMaxCapacityInWei, 0)
       )
     );
   }
@@ -156,7 +156,7 @@ contract DeployableSystem is EveSystem {
     world().call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (smartObjectId)));
 
     uint256 currentFuel = Fuel.getFuelAmount(smartObjectId);
-    if (currentFuel < ONE_UNIT_IN_WEI) revert Deployable_NoFuel(smartObjectId);
+    if (currentFuel < 1) revert Deployable_NoFuel(smartObjectId);
 
     world().call(
       fuelSystemId,

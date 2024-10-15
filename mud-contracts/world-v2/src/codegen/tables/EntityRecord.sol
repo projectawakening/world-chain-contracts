@@ -24,8 +24,8 @@ struct EntityRecordData {
 }
 
 library EntityRecord {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "EntityRecord", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000456e746974795265636f726400000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "EntityRecord", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000456e746974795265636f726400000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0061040020202001000000000000000000000000000000000000000000000000);

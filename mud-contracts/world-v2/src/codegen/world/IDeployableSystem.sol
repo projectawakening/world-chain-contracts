@@ -20,9 +20,9 @@ interface IDeployableSystem {
   error Deployable_InvalidFuelConsumptionInterval(uint256 smartObjectId);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
-  function eveworld__registerDeployableToken(address erc721Address) external;
+  function evefrontier__registerDeployableToken(address erc721Address) external;
 
-  function eveworld__registerDeployable(
+  function evefrontier__registerDeployable(
     uint256 smartObjectId,
     SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolumeInWei,
@@ -30,17 +30,17 @@ interface IDeployableSystem {
     uint256 fuelMaxCapacityInWei
   ) external;
 
-  function eveworld__destroyDeployable(uint256 smartObjectId) external;
+  function evefrontier__destroyDeployable(uint256 smartObjectId) external;
 
-  function eveworld__bringOnline(uint256 smartObjectId) external;
+  function evefrontier__bringOnline(uint256 smartObjectId) external;
 
-  function eveworld__bringOffline(uint256 smartObjectId) external;
+  function evefrontier__bringOffline(uint256 smartObjectId) external;
 
-  function eveworld__anchor(uint256 smartObjectId, LocationData memory locationData) external;
+  function evefrontier__anchor(uint256 smartObjectId, LocationData memory locationData) external;
 
-  function eveworld__unanchor(uint256 smartObjectId) external;
+  function evefrontier__unanchor(uint256 smartObjectId) external;
 
-  function eveworld__globalPause() external;
+  function evefrontier__globalPause() external;
 
-  function eveworld__globalResume() external;
+  function evefrontier__globalResume() external;
 }

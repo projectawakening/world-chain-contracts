@@ -26,7 +26,6 @@ import { SmartCharacterUtils } from "../../src/systems/smart-character/SmartChar
 
 contract SmartCharacterTest is MudTest {
   IBaseWorld world;
-  using SmartCharacterUtils for bytes14;
 
   function setUp() public virtual override {
     super.setUp();
