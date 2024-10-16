@@ -30,8 +30,8 @@ export default defineWorld({
      **********************/
     /**
      * Used to create a record for an game entity onchain
-     * Singleton entityId is calculated as `uint256(keccak256("item:<placeholder_tenantID>-<game-itemID>"))`
-     * Non Singleton entityId is calculated as `id = uint256(keccak256("item:<placeholder_tenantID>-<game-typeID>"))`
+     * Singleton smartObjectId is calculated as `uint256(keccak256("item:<placeholder_tenantID>-<game-itemID>"))`
+     * Non Singleton smartObjectId is calculated as `id = uint256(keccak256("item:<placeholder_tenantID>-<game-typeID>"))`
      */
     EntityRecord: {
       schema: {

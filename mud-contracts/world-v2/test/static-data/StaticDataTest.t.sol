@@ -44,12 +44,12 @@ contract StaticDataTest is MudTest {
     assertEq(baseURI, baseuri);
   }
 
-  function testSetCid(uint256 entityId, string memory cid) public {
-    vm.assume(entityId != 0);
+  function testSetCid(uint256 smartObjectId, string memory cid) public {
+    vm.assume(smartObjectId != 0);
     ResourceId systemId = StaticDataUtils.staticDataSystemId();
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, cid)));
+    world.call(systemId, abi.encodeCall(StaticDataSystem.setCid, (smartObjectId, cid)));
 
-    string memory storedCid = StaticData.get(entityId);
+    string memory storedCid = StaticData.get(smartObjectId);
 
     assertEq(cid, storedCid);
   }
