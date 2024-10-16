@@ -21,9 +21,11 @@ import { SmartCharacterSystem } from "../src/systems/smart-character/SmartCharac
 import { registerERC721 } from "../src/systems/eve-erc721-puppet/registerERC721.sol";
 import { IERC721Mintable } from "../src/systems/eve-erc721-puppet/IERC721Mintable.sol";
 import { StaticDataSystem } from "../src/systems/static-data/StaticDataSystem.sol";
+import { DeployableSystem } from "../src/systems/deployable/DeployableSystem.sol";
 
-import { Utils as SmartCharacterUtils } from "../src/systems/smart-character/Utils.sol";
-import { Utils as StaticDataUtils } from "../src/systems/static-data/Utils.sol";
+import { SmartCharacterUtils } from "../src/systems/smart-character/SmartCharacterUtils.sol";
+import { StaticDataUtils } from "../src/systems/static-data/StaticDataUtils.sol";
+import { DeployableUtils } from "../src/systems/deployable/DeployableUtils.sol";
 
 import { DEPLOYMENT_NAMESPACE } from "../src/systems/constants.sol";
 
@@ -43,7 +45,7 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    _installPuppet(world, deployer);
+    _installPuppet(world);
 
     // register new ERC20 EVE Token
     _createEVEToken(world);
@@ -56,7 +58,7 @@ contract PostDeploy is Script {
     vm.stopBroadcast();
   }
 
-  function _installPuppet(IBaseWorld world, address deployer) internal {
+  function _installPuppet(IBaseWorld world) internal {
     StoreSwitch.setStoreAddress(address(world));
     // creating all module contracts
     PuppetModule puppetModule = new PuppetModule();
@@ -129,7 +131,12 @@ contract PostDeploy is Script {
     ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
     world.call(staticDataSystemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
 
-    // regiseter token address for smart deployable
+    // register token address for smart deployable
+    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
+    world.call(
+      deployableSystemId,
+      abi.encodeCall(DeployableSystem.registerDeployableToken, (address(erc721SmartDeployableToken)))
+    );
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {

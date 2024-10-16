@@ -16,9 +16,9 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-library CharacterToken {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "CharacterToken", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000436861726163746572546f6b656e0000);
+library DeployableTokenTable {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "DeployableTokenT", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004465706c6f7961626c65546f6b656e54);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0014010014000000000000000000000000000000000000000000000000000000);

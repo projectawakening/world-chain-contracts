@@ -11,15 +11,12 @@ import { Location, LocationData } from "../../codegen/index.sol";
  */
 contract LocationSystem is System {
   /**
-   * @dev creates a new location entry
+   * @dev saves the location data of the in-game object
    * @param smartObjectId smartObjectId of the in-game object
-   * @param solarSystemId the solarSystemId of the location
-   * @param x x coordinate of the location
-   * @param y y coordinate of the location
-   * @param z z coordinate of the location
+   * @param locationData the location data of the location
    */
-  function saveLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
-    Location.set(smartObjectId, solarSystemId, x, y, z);
+  function saveLocation(uint256 smartObjectId, LocationData memory locationData) public {
+    Location.set(smartObjectId, locationData);
   }
 
   /**
