@@ -11,8 +11,8 @@ export default defineWorld({
   },
   tables: {
     /***************************
-    * SMART ASSEMBLY *
-    ***************************/
+     * SMART ASSEMBLY *
+     ***************************/
     /**
      * Used to store the assembly of a smart object
      */
