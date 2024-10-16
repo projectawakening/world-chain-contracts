@@ -30,7 +30,7 @@ interface IFuelSystem {
 
   function evefrontier__setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) external;
 
-  function evefrontier__setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) external;
+  function evefrontier__setFuelAmount(uint256 smartObjectId, uint256 fuelAmountInWei) external;
 
   function evefrontier__depositFuel(uint256 smartObjectId, uint256 fuelAmount) external;
 

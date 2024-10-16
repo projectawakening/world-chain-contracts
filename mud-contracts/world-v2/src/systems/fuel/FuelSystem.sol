@@ -39,7 +39,7 @@ contract FuelSystem is System {
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity,
-      fuelAmount,
+      fuelAmount * ONE_UNIT_IN_WEI,
       block.timestamp
     );
   }
@@ -78,11 +78,11 @@ contract FuelSystem is System {
   /**
    * @dev sets the current fuel amount
    * @param smartObjectId on-chain id of the in-game deployable
-   * @param fuelAmount the current fuel amount
+   * @param fuelAmountInWei the new fuel amount in WEI. This will rest the existing fuel amount
    */
-  function setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) public {
+  function setFuelAmount(uint256 smartObjectId, uint256 fuelAmountInWei) public {
     _updateFuel(smartObjectId);
-    Fuel.setFuelAmount(smartObjectId, fuelAmount);
+    Fuel.setFuelAmount(smartObjectId, fuelAmountInWei);
     Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 

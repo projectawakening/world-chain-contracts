@@ -46,10 +46,12 @@ contract FuelTest is DeployableTest {
     uint256 fuelAmount
   ) public {
     vm.assume(smartObjectId != 0);
-    vm.assume(fuelUnitVolume != 0);
-    vm.assume(fuelConsumptionIntervalInSeconds >= ONE_UNIT_IN_WEI);
+    vm.assume(fuelUnitVolume != 0 && fuelUnitVolume < type(uint128).max);
+    vm.assume(fuelConsumptionIntervalInSeconds >= 1);
     vm.assume(fuelMaxCapacity != 0);
-    vm.assume(fuelAmount != 0);
+    vm.assume(fuelAmount != 0 && fuelAmount < type(uint128).max);
+    vm.assume((fuelAmount * ONE_UNIT_IN_WEI) < type(uint64).max / 2);
+    vm.assume(fuelMaxCapacity > (fuelAmount * fuelUnitVolume));
 
     ResourceId systemId = FuelUtils.fuelSystemId();
 
@@ -62,8 +64,7 @@ contract FuelTest is DeployableTest {
     );
 
     FuelData memory fuel = Fuel.get(smartObjectId);
-
-    assertEq(fuelAmount, fuel.fuelAmount);
+    assertEq(fuelAmount * ONE_UNIT_IN_WEI, fuel.fuelAmount);
   }
 
   function testSetFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) public {
@@ -192,7 +193,6 @@ contract FuelTest is DeployableTest {
 
   // test fuel runs out
   function testFuelConsumptionRunsOut(
-    SmartObjectData memory smartObjectData,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelAmount,
@@ -266,5 +266,4 @@ contract FuelTest is DeployableTest {
     assertEq(data.lastUpdatedAt, block.timestamp);
     assertEq(uint8(State.ONLINE), uint8(DeployableState.getCurrentState(smartObjectId)));
   }
-
 }
