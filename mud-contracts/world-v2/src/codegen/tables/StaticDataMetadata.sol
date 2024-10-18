@@ -17,8 +17,8 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 library StaticDataMetadata {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "StaticDataMetada", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000537461746963446174614d6574616461);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "StaticDataMetada", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000537461746963446174614d6574616461);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0000000100000000000000000000000000000000000000000000000000000000);

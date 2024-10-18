@@ -16,11 +16,13 @@ import { StaticDataSystem } from "../../src/systems/static-data/StaticDataSystem
 import { StaticData } from "../../src/codegen/tables/StaticData.sol";
 import { StaticDataMetadata } from "../../src/codegen/tables/StaticDataMetadata.sol";
 
-import { Utils as StaticDataUtils } from "../../src/systems/static-data/Utils.sol";
+import { StaticDataUtils } from "../../src/systems/static-data/StaticDataUtils.sol";
 
 contract StaticDataTest is MudTest {
   IBaseWorld world;
   using StaticDataUtils for bytes14;
+
+  ResourceId systemId = StaticDataUtils.staticDataSystemId();
 
   function setUp() public virtual override {
     super.setUp();
@@ -37,19 +39,17 @@ contract StaticDataTest is MudTest {
   }
 
   function testSetBaseURI(string memory baseURI) public {
-    ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
 
     string memory baseuri = StaticDataMetadata.get();
     assertEq(baseURI, baseuri);
   }
 
-  function testSetCid(uint256 entityId, string memory cid) public {
-    vm.assume(entityId != 0);
-    ResourceId systemId = StaticDataUtils.staticDataSystemId();
-    world.call(systemId, abi.encodeCall(StaticDataSystem.setCid, (entityId, cid)));
+  function testSetCid(uint256 smartObjectId, string memory cid) public {
+    vm.assume(smartObjectId != 0);
+    world.call(systemId, abi.encodeCall(StaticDataSystem.setCid, (smartObjectId, cid)));
 
-    string memory storedCid = StaticData.get(entityId);
+    string memory storedCid = StaticData.get(smartObjectId);
 
     assertEq(cid, storedCid);
   }

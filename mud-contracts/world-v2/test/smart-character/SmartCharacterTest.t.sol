@@ -18,16 +18,15 @@ import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { Characters, CharactersData } from "../../src/codegen/index.sol";
 import { ISmartCharacterSystem } from "../../src/codegen/world/ISmartCharacterSystem.sol";
 import { SmartCharacterSystem } from "../../src/systems/smart-character/SmartCharacterSystem.sol";
-import { ISmartCharacterErrors } from "../../src/systems/smart-character/ISmartCharacterErrors.sol";
 import { EntityRecord, EntityRecordData as RecordData } from "../../src/codegen/index.sol";
 import { EntityRecordData, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 import { Characters, CharacterToken } from "../../src/codegen/index.sol";
 
-import { Utils as SmartCharacterUtils } from "../../src/systems/smart-character/Utils.sol";
+import { SmartCharacterUtils } from "../../src/systems/smart-character/SmartCharacterUtils.sol";
 
 contract SmartCharacterTest is MudTest {
   IBaseWorld world;
-  using SmartCharacterUtils for bytes14;
+  ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
 
   function setUp() public virtual override {
     super.setUp();
@@ -44,8 +43,7 @@ contract SmartCharacterTest is MudTest {
   }
 
   function testRevertTokenAlreadyInitialized() public {
-    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
-    vm.expectRevert(abi.encodeWithSelector(ISmartCharacterErrors.SmartCharacter_ERC721AlreadyInitialized.selector));
+    vm.expectRevert(abi.encodeWithSelector(SmartCharacterSystem.SmartCharacter_ERC721AlreadyInitialized.selector));
     world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(0x123))));
   }
 
@@ -53,33 +51,27 @@ contract SmartCharacterTest is MudTest {
   function testSmartCharacter() public {
     uint256 characterId = 123;
     address characterAddress = address(0x123);
-    EntityRecordData memory entityRecord = EntityRecordData({
-      entityId: characterId,
-      typeId: 123,
-      itemId: 234,
-      volume: 100
-    });
+    uint256 tribeId = 100;
+    EntityRecordData memory entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
 
     EntityMetadata memory entityRecordMetadata = EntityMetadata({
-      entityId: characterId,
       name: "name",
       dappURL: "dappURL",
       description: "description"
     });
 
-    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
     world.call(
       systemId,
       abi.encodeCall(
         SmartCharacterSystem.createCharacter,
-        (characterId, characterAddress, entityRecord, entityRecordMetadata)
+        (characterId, characterAddress, tribeId, entityRecord, entityRecordMetadata)
       )
     );
 
     CharactersData memory character = Characters.get(characterId);
     assertEq(characterAddress, character.characterAddress);
 
-    RecordData memory storedEntityRecord = EntityRecord.get(entityRecord.entityId);
+    RecordData memory storedEntityRecord = EntityRecord.get(characterId);
     assertEq(entityRecord.typeId, storedEntityRecord.typeId);
     assertEq(entityRecord.itemId, storedEntityRecord.itemId);
     assertEq(entityRecord.volume, storedEntityRecord.volume);

@@ -8,11 +8,9 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 
 import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/systems/entity-record/types.sol";
 import { SmartCharacterSystem } from "@eveworld/world-v2/src/systems/smart-character/SmartCharacterSystem.sol";
-import { Utils as SmartCharacterUtils } from "@eveworld/world-v2/src/systems/smart-character/Utils.sol";
+import { SmartCharacterUtils } from "@eveworld/world-v2/src/systems/smart-character/SmartCharacterUtils.sol";
 
 contract CreateSmartCharacter is Script {
-  using SmartCharacterUtils for bytes14;
-
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
@@ -23,15 +21,10 @@ contract CreateSmartCharacter is Script {
     // Test values for creating the smart character
     uint256 characterId = 123;
     address characterAddress = vm.addr(deployerPrivateKey);
-    EntityRecordData memory entityRecord = EntityRecordData({
-      entityId: characterId,
-      typeId: 123,
-      itemId: 234,
-      volume: 100
-    });
+    uint256 tribeId = 100;
+    EntityRecordData memory entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
 
     EntityMetadata memory entityRecordMetadata = EntityMetadata({
-      entityId: characterId,
       name: "name",
       dappURL: "dappURL",
       description: "description"
@@ -42,7 +35,7 @@ contract CreateSmartCharacter is Script {
       systemId,
       abi.encodeCall(
         SmartCharacterSystem.createCharacter,
-        (characterId, characterAddress, entityRecord, entityRecordMetadata)
+        (characterId, characterAddress, tribeId, entityRecord, entityRecordMetadata)
       )
     );
 

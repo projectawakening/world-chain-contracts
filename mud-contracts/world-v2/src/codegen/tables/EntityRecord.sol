@@ -24,8 +24,8 @@ struct EntityRecordData {
 }
 
 library EntityRecord {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "EntityRecord", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c64000000000000456e746974795265636f726400000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "EntityRecord", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000456e746974795265636f726400000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0061040020202001000000000000000000000000000000000000000000000000);
@@ -41,7 +41,7 @@ library EntityRecord {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "entityId";
+    keyNames[0] = "smartObjectId";
   }
 
   /**
@@ -73,9 +73,9 @@ library EntityRecord {
   /**
    * @notice Get itemId.
    */
-  function getItemId(uint256 entityId) internal view returns (uint256 itemId) {
+  function getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -84,9 +84,9 @@ library EntityRecord {
   /**
    * @notice Get itemId.
    */
-  function _getItemId(uint256 entityId) internal view returns (uint256 itemId) {
+  function _getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -95,9 +95,9 @@ library EntityRecord {
   /**
    * @notice Set itemId.
    */
-  function setItemId(uint256 entityId, uint256 itemId) internal {
+  function setItemId(uint256 smartObjectId, uint256 itemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((itemId)), _fieldLayout);
   }
@@ -105,9 +105,9 @@ library EntityRecord {
   /**
    * @notice Set itemId.
    */
-  function _setItemId(uint256 entityId, uint256 itemId) internal {
+  function _setItemId(uint256 smartObjectId, uint256 itemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((itemId)), _fieldLayout);
   }
@@ -115,9 +115,9 @@ library EntityRecord {
   /**
    * @notice Get typeId.
    */
-  function getTypeId(uint256 entityId) internal view returns (uint256 typeId) {
+  function getTypeId(uint256 smartObjectId) internal view returns (uint256 typeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -126,9 +126,9 @@ library EntityRecord {
   /**
    * @notice Get typeId.
    */
-  function _getTypeId(uint256 entityId) internal view returns (uint256 typeId) {
+  function _getTypeId(uint256 smartObjectId) internal view returns (uint256 typeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -137,9 +137,9 @@ library EntityRecord {
   /**
    * @notice Set typeId.
    */
-  function setTypeId(uint256 entityId, uint256 typeId) internal {
+  function setTypeId(uint256 smartObjectId, uint256 typeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((typeId)), _fieldLayout);
   }
@@ -147,9 +147,9 @@ library EntityRecord {
   /**
    * @notice Set typeId.
    */
-  function _setTypeId(uint256 entityId, uint256 typeId) internal {
+  function _setTypeId(uint256 smartObjectId, uint256 typeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((typeId)), _fieldLayout);
   }
@@ -157,9 +157,9 @@ library EntityRecord {
   /**
    * @notice Get volume.
    */
-  function getVolume(uint256 entityId) internal view returns (uint256 volume) {
+  function getVolume(uint256 smartObjectId) internal view returns (uint256 volume) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -168,9 +168,9 @@ library EntityRecord {
   /**
    * @notice Get volume.
    */
-  function _getVolume(uint256 entityId) internal view returns (uint256 volume) {
+  function _getVolume(uint256 smartObjectId) internal view returns (uint256 volume) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -179,9 +179,9 @@ library EntityRecord {
   /**
    * @notice Set volume.
    */
-  function setVolume(uint256 entityId, uint256 volume) internal {
+  function setVolume(uint256 smartObjectId, uint256 volume) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((volume)), _fieldLayout);
   }
@@ -189,9 +189,9 @@ library EntityRecord {
   /**
    * @notice Set volume.
    */
-  function _setVolume(uint256 entityId, uint256 volume) internal {
+  function _setVolume(uint256 smartObjectId, uint256 volume) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((volume)), _fieldLayout);
   }
@@ -199,9 +199,9 @@ library EntityRecord {
   /**
    * @notice Get recordExists.
    */
-  function getRecordExists(uint256 entityId) internal view returns (bool recordExists) {
+  function getRecordExists(uint256 smartObjectId) internal view returns (bool recordExists) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -210,9 +210,9 @@ library EntityRecord {
   /**
    * @notice Get recordExists.
    */
-  function _getRecordExists(uint256 entityId) internal view returns (bool recordExists) {
+  function _getRecordExists(uint256 smartObjectId) internal view returns (bool recordExists) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -221,9 +221,9 @@ library EntityRecord {
   /**
    * @notice Set recordExists.
    */
-  function setRecordExists(uint256 entityId, bool recordExists) internal {
+  function setRecordExists(uint256 smartObjectId, bool recordExists) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((recordExists)), _fieldLayout);
   }
@@ -231,9 +231,9 @@ library EntityRecord {
   /**
    * @notice Set recordExists.
    */
-  function _setRecordExists(uint256 entityId, bool recordExists) internal {
+  function _setRecordExists(uint256 smartObjectId, bool recordExists) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((recordExists)), _fieldLayout);
   }
@@ -241,9 +241,9 @@ library EntityRecord {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 entityId) internal view returns (EntityRecordData memory _table) {
+  function get(uint256 smartObjectId) internal view returns (EntityRecordData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -256,9 +256,9 @@ library EntityRecord {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 entityId) internal view returns (EntityRecordData memory _table) {
+  function _get(uint256 smartObjectId) internal view returns (EntityRecordData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -271,14 +271,14 @@ library EntityRecord {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
+  function set(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
     bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -286,14 +286,14 @@ library EntityRecord {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
+  function _set(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
     bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -301,14 +301,14 @@ library EntityRecord {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 entityId, EntityRecordData memory _table) internal {
+  function set(uint256 smartObjectId, EntityRecordData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.itemId, _table.typeId, _table.volume, _table.recordExists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -316,14 +316,14 @@ library EntityRecord {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 entityId, EntityRecordData memory _table) internal {
+  function _set(uint256 smartObjectId, EntityRecordData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.itemId, _table.typeId, _table.volume, _table.recordExists);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
 
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -360,9 +360,9 @@ library EntityRecord {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 entityId) internal {
+  function deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -370,9 +370,9 @@ library EntityRecord {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 entityId) internal {
+  function _deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -413,9 +413,9 @@ library EntityRecord {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 entityId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
   }
