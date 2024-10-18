@@ -60,10 +60,13 @@ contract SmartCharacterSystem is EveSystem {
 
     //Save the entity record in EntityRecord Module
     ResourceId entityRecordSystemId = EntityRecordUtils.entityRecordSystemId();
-    world().call(entityRecordSystemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, entityRecord));
     world().call(
       entityRecordSystemId,
-      abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, entityRecordMetadata)
+      abi.encodeCall(EntityRecordSystem.createEntityRecord, (characterId, entityRecord))
+    );
+    world().call(
+      entityRecordSystemId,
+      abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, (characterId, entityRecordMetadata))
     );
 
     //Mint a new character token

@@ -52,15 +52,9 @@ contract SmartCharacterTest is MudTest {
     uint256 characterId = 123;
     address characterAddress = address(0x123);
     uint256 tribeId = 100;
-    EntityRecordData memory entityRecord = EntityRecordData({
-      smartObjectId: characterId,
-      typeId: 123,
-      itemId: 234,
-      volume: 100
-    });
+    EntityRecordData memory entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
 
     EntityMetadata memory entityRecordMetadata = EntityMetadata({
-      smartObjectId: characterId,
       name: "name",
       dappURL: "dappURL",
       description: "description"
@@ -77,7 +71,7 @@ contract SmartCharacterTest is MudTest {
     CharactersData memory character = Characters.get(characterId);
     assertEq(characterAddress, character.characterAddress);
 
-    RecordData memory storedEntityRecord = EntityRecord.get(entityRecord.smartObjectId);
+    RecordData memory storedEntityRecord = EntityRecord.get(characterId);
     assertEq(entityRecord.typeId, storedEntityRecord.typeId);
     assertEq(entityRecord.itemId, storedEntityRecord.itemId);
     assertEq(entityRecord.volume, storedEntityRecord.volume);

@@ -13,19 +13,21 @@ import { EntityRecordData, EntityMetadata } from "./types.sol";
 contract EntityRecordSystem is System {
   /**
    * @dev creates a new entity record
+   * @param smartObjectId the id of a in game entity referred as smart object id
    * @param entityRecord is the EnityRecordData struct with all the data needed to create a new entity record
    */
-  function createEntityRecord(EntityRecordData memory entityRecord) public {
-    EntityRecord.set(entityRecord.smartObjectId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume, true);
+  function createEntityRecord(uint256 smartObjectId, EntityRecordData memory entityRecord) public {
+    EntityRecord.set(smartObjectId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume, true);
   }
 
   /**
    * @dev creates the metadata for an entity record
+   * @param smartObjectId the id of a in game entity referred as smart object id
    * @param entityRecordMetadata is the EntityMetadata struct with all the data needed to create a new entity record metadata
    */
-  function createEntityRecordMetadata(EntityMetadata memory entityRecordMetadata) public {
+  function createEntityRecordMetadata(uint256 smartObjectId, EntityMetadata memory entityRecordMetadata) public {
     EntityRecordMetadata.set(
-      entityRecordMetadata.smartObjectId,
+      smartObjectId,
       entityRecordMetadata.name,
       entityRecordMetadata.dappURL,
       entityRecordMetadata.description
