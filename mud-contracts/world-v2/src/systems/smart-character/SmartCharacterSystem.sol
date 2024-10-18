@@ -8,7 +8,7 @@ import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/Function
 
 import { Characters, CharacterToken } from "../../codegen/index.sol";
 import { IEntityRecordSystem } from "../../codegen/world/IEntityRecordSystem.sol";
-import { CharactersByAddressTable } from "../../codegen/tables/CharactersByAddressTable.sol";
+import { CharactersByAddress } from "../../codegen/tables/CharactersByAddress.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
 import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
@@ -51,12 +51,12 @@ contract SmartCharacterSystem is EveSystem {
     uint256 createdAt = block.timestamp;
 
     // enforce one-to-one mapping
-    if (CharactersByAddressTable.get(characterAddress) != 0) {
+    if (CharactersByAddress.get(characterAddress) != 0) {
       revert SmartCharacter_AlreadyCreated(characterAddress, characterId);
     }
 
     Characters.set(characterId, characterAddress, tribeId, createdAt);
-    CharactersByAddressTable.set(characterAddress, characterId);
+    CharactersByAddress.set(characterAddress, characterId);
 
     //Save the entity record in EntityRecord Module
     ResourceId entityRecordSystemId = EntityRecordUtils.entityRecordSystemId();

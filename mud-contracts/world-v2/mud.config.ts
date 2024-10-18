@@ -93,7 +93,7 @@ export default defineWorld({
       key: [],
     },
 
-    CharactersByAddressTable: {
+    CharactersByAddress: {
       schema: {
         characterAddress: "address",
         characterId: "uint256",
@@ -228,7 +228,7 @@ export default defineWorld({
     /**
      * Used to store the deployable details of a in-game entity
      */
-    DeployableTokenTable: {
+    DeployableToken: {
       schema: {
         erc721Address: "address",
       },
@@ -251,6 +251,84 @@ export default defineWorld({
         lastUpdatedAt: "uint256", // unix time in seconds
       },
       key: ["smartObjectId"],
+    },
+
+    /*******************
+     * INVENTORY MODULE *
+     *******************/
+    Inventory: {
+      schema: {
+        smartObjectId: "uint256",
+        capacity: "uint256",
+        usedCapacity: "uint256",
+        items: "uint256[]",
+      },
+      key: ["smartObjectId"],
+    },
+    /**
+     * Used to store the inventory items of a in-game smart storage unit
+     */
+    InventoryItem: {
+      schema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+        quantity: "uint256",
+        index: "uint256",
+        stateUpdate: "uint256",
+      },
+      key: ["smartObjectId", "inventoryItemId"],
+    },
+    //EPHEMERAL INVENTORY MODULE
+    /**
+     * Used to Store Ephemeral Capacity by smartObjectId
+     */
+    EphemeralInvCapacity: {
+      schema: {
+        smartObjectId: "uint256",
+        capacity: "uint256",
+      },
+      key: ["smartObjectId"],
+    },
+    /**
+     * Used to store the ephemeral inventory details of a in-game smart storage unit
+     * Each user has a separate ephemeral inventory capacity
+     */
+    EphemeralInv: {
+      schema: {
+        smartObjectId: "uint256",
+        ephemeralInvOwner: "address",
+        usedCapacity: "uint256",
+        items: "uint256[]",
+      },
+      key: ["smartObjectId", "ephemeralInvOwner"],
+    },
+    /**
+     * Used to store the ephemeral inventory items details of a in-game smart storage unit
+     */
+    EphemeralInvItem: {
+      schema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+        ephemeralInvOwner: "address",
+        quantity: "uint256",
+        index: "uint256",
+        stateUpdate: "uint256",
+      },
+      key: ["smartObjectId", "inventoryItemId", "ephemeralInvOwner"],
+    },
+    /**
+     * Used to store the transfer details when a item is exchanged
+     */
+    ItemTransferOffchain: {
+      schema: {
+        smartObjectId: "uint256",
+        inventoryItemId: "uint256",
+        previousOwner: "address",
+        currentOwner: "address",
+        quantity: "uint256",
+        updatedAt: "uint256",
+      },
+      key: ["smartObjectId", "inventoryItemId"],
     },
   },
 });

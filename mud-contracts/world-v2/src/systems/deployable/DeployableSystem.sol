@@ -6,8 +6,8 @@ import { System } from "@latticexyz/world/src/System.sol";
 
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
-import { CharactersByAddressTable } from "../../codegen/index.sol";
-import { DeployableTokenTable } from "../../codegen/index.sol";
+import { CharactersByAddress } from "../../codegen/index.sol";
+import { DeployableToken } from "../../codegen/index.sol";
 import { FuelSystem } from "../fuel/FuelSystem.sol";
 import { Fuel, FuelData } from "../../codegen/index.sol";
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -56,10 +56,10 @@ contract DeployableSystem is EveSystem {
    * @param erc721Address the address of the ERC721 contract
    */
   function registerDeployableToken(address erc721Address) public {
-    if (DeployableTokenTable.getErc721Address() != address(0)) {
+    if (DeployableToken.getErc721Address() != address(0)) {
       revert DeployableERC721AlreadyInitialized();
     }
-    DeployableTokenTable.set(erc721Address);
+    DeployableToken.set(erc721Address);
   }
 
   /**
@@ -88,7 +88,7 @@ contract DeployableSystem is EveSystem {
     }
 
     // revert if the given smart object owner is not a valid character
-    if (CharactersByAddressTable.get(smartObjectData.owner) == 0) {
+    if (CharactersByAddress.get(smartObjectData.owner) == 0) {
       revert Deployable_InvalidObjectOwner(
         "SmartDeployableSystem: Smart Object owner is not a valid Smart Character",
         smartObjectData.owner,
@@ -97,7 +97,7 @@ contract DeployableSystem is EveSystem {
     }
 
     if (previousState == State.NULL) {
-      address erc721Address = DeployableTokenTable.getErc721Address();
+      address erc721Address = DeployableToken.getErc721Address();
       IERC721Mintable(erc721Address).mint(smartObjectData.owner, smartObjectId);
 
       ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();

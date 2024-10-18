@@ -12,7 +12,7 @@ import { State, SmartObjectData } from "../../src/systems/deployable/types.sol";
 
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { State } from "../../src/codegen/common.sol";
-import { GlobalDeployableState, DeployableState, DeployableTokenTable } from "../../src/codegen/index.sol";
+import { GlobalDeployableState, DeployableState, DeployableToken } from "../../src/codegen/index.sol";
 import { SmartCharacterSystem } from "../../src/systems/smart-character/SmartCharacterSystem.sol";
 import { GlobalDeployableStateData } from "../../src/codegen/tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "../../src/codegen/tables/DeployableState.sol";

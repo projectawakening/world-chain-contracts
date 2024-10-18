@@ -2,8 +2,11 @@
 
 ## 0.1.0
 
-### Patch Changes
+### Major Changes
 
-#### world-v2
 - removing module implementation 
-- implemented cross system calls using world.call(systemId, callData). `systemIds` is being queried from FunctionSelectors table in the world. 
+- implemented cross system calls using world.call(systemId, callData). `systemIds` is being generated from the Utils
+- renaming all on-chain ids to smartObjectIds
+- changed deployment namespace from `eveworld` to `evefrontier`
+- changed the struct definition for external interfaces to reduce dependancy on table defined structs 
+- defined all errors in System to include all errors in abi by default
