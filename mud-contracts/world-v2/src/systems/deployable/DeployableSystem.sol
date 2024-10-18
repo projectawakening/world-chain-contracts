@@ -42,6 +42,10 @@ contract DeployableSystem is EveSystem {
   using LocationUtils for bytes14;
   using StaticDataUtils for bytes14;
 
+  ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
+  ResourceId locationSystemId = LocationUtils.locationSystemId();
+  ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
@@ -100,7 +104,6 @@ contract DeployableSystem is EveSystem {
       address erc721Address = DeployableToken.getErc721Address();
       IERC721Mintable(erc721Address).mint(smartObjectData.owner, smartObjectId);
 
-      ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
       world().call(
         staticDataSystemId,
         abi.encodeCall(StaticDataSystem.setCid, (smartObjectId, smartObjectData.tokenURI))
@@ -119,7 +122,6 @@ contract DeployableSystem is EveSystem {
       block.timestamp
     );
 
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world().call(
       fuelSystemId,
       abi.encodeCall(
@@ -152,7 +154,6 @@ contract DeployableSystem is EveSystem {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world().call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (smartObjectId)));
 
     uint256 currentFuel = Fuel.getFuelAmount(smartObjectId);
@@ -176,7 +177,6 @@ contract DeployableSystem is EveSystem {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world().call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (smartObjectId)));
     _bringOffline(smartObjectId, previousState);
   }
@@ -193,7 +193,6 @@ contract DeployableSystem is EveSystem {
     }
     _setDeployableState(smartObjectId, previousState, State.ANCHORED);
 
-    ResourceId locationSystemId = LocationUtils.locationSystemId();
     world().call(locationSystemId, abi.encodeCall(LocationSystem.saveLocation, (smartObjectId, locationData)));
 
     DeployableState.setIsValid(smartObjectId, true);
@@ -212,7 +211,6 @@ contract DeployableSystem is EveSystem {
 
     _setDeployableState(smartObjectId, previousState, State.UNANCHORED);
 
-    ResourceId locationSystemId = LocationUtils.locationSystemId();
     world().call(
       locationSystemId,
       abi.encodeCall(LocationSystem.saveLocation, (smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 })))

@@ -26,6 +26,7 @@ import { SmartCharacterUtils } from "../../src/systems/smart-character/SmartChar
 
 contract SmartCharacterTest is MudTest {
   IBaseWorld world;
+  ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
 
   function setUp() public virtual override {
     super.setUp();
@@ -42,7 +43,6 @@ contract SmartCharacterTest is MudTest {
   }
 
   function testRevertTokenAlreadyInitialized() public {
-    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
     vm.expectRevert(abi.encodeWithSelector(SmartCharacterSystem.SmartCharacter_ERC721AlreadyInitialized.selector));
     world.call(systemId, abi.encodeCall(SmartCharacterSystem.registerCharacterToken, (address(0x123))));
   }
@@ -66,7 +66,6 @@ contract SmartCharacterTest is MudTest {
       description: "description"
     });
 
-    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
     world.call(
       systemId,
       abi.encodeCall(

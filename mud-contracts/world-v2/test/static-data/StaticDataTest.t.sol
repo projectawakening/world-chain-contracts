@@ -22,6 +22,8 @@ contract StaticDataTest is MudTest {
   IBaseWorld world;
   using StaticDataUtils for bytes14;
 
+  ResourceId systemId = StaticDataUtils.staticDataSystemId();
+
   function setUp() public virtual override {
     super.setUp();
     world = IBaseWorld(worldAddress);
@@ -37,7 +39,6 @@ contract StaticDataTest is MudTest {
   }
 
   function testSetBaseURI(string memory baseURI) public {
-    ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.setBaseURI, (baseURI)));
 
     string memory baseuri = StaticDataMetadata.get();
@@ -46,7 +47,6 @@ contract StaticDataTest is MudTest {
 
   function testSetCid(uint256 smartObjectId, string memory cid) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = StaticDataUtils.staticDataSystemId();
     world.call(systemId, abi.encodeCall(StaticDataSystem.setCid, (smartObjectId, cid)));
 
     string memory storedCid = StaticData.get(smartObjectId);

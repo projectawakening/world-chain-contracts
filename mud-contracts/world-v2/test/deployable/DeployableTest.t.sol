@@ -41,6 +41,10 @@ contract DeployableTest is MudTest {
   uint256 tribeId = 100;
   SmartObjectData smartObjectData;
 
+  ResourceId characterSystemId = SmartCharacterUtils.smartCharacterSystemId();
+  ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
+  ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+
   function setUp() public virtual override {
     super.setUp();
     world = IBaseWorld(worldAddress);
@@ -61,9 +65,8 @@ contract DeployableTest is MudTest {
 
     smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
 
-    ResourceId systemId = SmartCharacterUtils.smartCharacterSystemId();
     world.call(
-      systemId,
+      characterSystemId,
       abi.encodeCall(
         SmartCharacterSystem.createCharacter,
         (characterId, alice, tribeId, entityRecord, entityRecordMetadata)
@@ -91,8 +94,7 @@ contract DeployableTest is MudTest {
     vm.assume(fuelConsumptionIntervalInSeconds >= 1);
     vm.assume(fuelMaxCapacity != 0);
 
-    ResourceId systemId = DeployableUtils.deployableSystemId();
-    world.call(systemId, abi.encodeCall(DeployableSystem.globalResume, ()));
+    world.call(deployableSystemId, abi.encodeCall(DeployableSystem.globalResume, ()));
 
     DeployableStateData memory data = DeployableStateData({
       createdAt: block.timestamp,
@@ -105,7 +107,7 @@ contract DeployableTest is MudTest {
     });
 
     world.call(
-      systemId,
+      deployableSystemId,
       abi.encodeCall(
         DeployableSystem.registerDeployable,
         (smartObjectId, smartObjectData, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity)
@@ -129,7 +131,6 @@ contract DeployableTest is MudTest {
     vm.assume(smartObjectId != 0);
     testRegisterDeployable(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity);
 
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.anchor, (smartObjectId, location)));
 
     LocationData memory tableData = Location.get(smartObjectId);
@@ -154,8 +155,6 @@ contract DeployableTest is MudTest {
     vm.assume(fuelUnitVolume < type(uint64).max / 2);
     vm.assume(fuelUnitVolume < fuelMaxCapacity);
 
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, 1)));
 
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.bringOnline, (smartObjectId)));
@@ -171,7 +170,6 @@ contract DeployableTest is MudTest {
   ) public {
     vm.assume(smartObjectId != 0);
     testBringOnline(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, location);
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.bringOffline, (smartObjectId)));
     assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(smartObjectId)));
   }
@@ -185,8 +183,6 @@ contract DeployableTest is MudTest {
   ) public {
     vm.assume(smartObjectId != 0);
     testAnchor(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, location);
-
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.unanchor, (smartObjectId)));
 
     assertEq(uint8(State.UNANCHORED), uint8(DeployableState.getCurrentState(smartObjectId)));
@@ -201,8 +197,6 @@ contract DeployableTest is MudTest {
   ) public {
     vm.assume(smartObjectId != 0);
     testAnchor(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, location);
-
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.destroyDeployable, (smartObjectId)));
 
     assertEq(uint8(State.DESTROYED), uint8(DeployableState.getCurrentState(smartObjectId)));

@@ -74,8 +74,6 @@ contract InventoryInteractSystem is EveSystem {
         block.timestamp
       );
     }
-    // ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
-    // ResourceId ephemeralInventorySystemId = InventoryUtils.ephemeralInventorySystemId();
 
     // withdraw the items from ephemeral and deposit to inventory table
     world().call(

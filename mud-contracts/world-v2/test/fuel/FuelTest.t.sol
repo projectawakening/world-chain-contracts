@@ -53,10 +53,8 @@ contract FuelTest is DeployableTest {
     vm.assume((fuelAmount * ONE_UNIT_IN_WEI) < type(uint64).max / 2);
     vm.assume(fuelMaxCapacity > (fuelAmount * fuelUnitVolume));
 
-    ResourceId systemId = FuelUtils.fuelSystemId();
-
     world.call(
-      systemId,
+      fuelSystemId,
       abi.encodeCall(
         FuelSystem.configureFuelParameters,
         (smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount)
@@ -69,9 +67,7 @@ contract FuelTest is DeployableTest {
 
   function testSetFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) public {
     vm.assume(smartObjectId != 0);
-
-    ResourceId systemId = FuelUtils.fuelSystemId();
-    world.call(systemId, abi.encodeCall(FuelSystem.setFuelUnitVolume, (smartObjectId, fuelUnitVolume)));
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelUnitVolume, (smartObjectId, fuelUnitVolume)));
 
     FuelData memory fuel = Fuel.get(smartObjectId);
 
@@ -83,10 +79,8 @@ contract FuelTest is DeployableTest {
     uint256 fuelConsumptionIntervalInSeconds
   ) public {
     vm.assume(smartObjectId != 0);
-
-    ResourceId systemId = FuelUtils.fuelSystemId();
     world.call(
-      systemId,
+      fuelSystemId,
       abi.encodeCall(FuelSystem.setFuelConsumptionIntervalInSeconds, (smartObjectId, fuelConsumptionIntervalInSeconds))
     );
 
@@ -97,9 +91,7 @@ contract FuelTest is DeployableTest {
 
   function testSetFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) public {
     vm.assume(smartObjectId != 0);
-
-    ResourceId systemId = FuelUtils.fuelSystemId();
-    world.call(systemId, abi.encodeCall(FuelSystem.setFuelMaxCapacity, (smartObjectId, fuelMaxCapacity)));
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.setFuelMaxCapacity, (smartObjectId, fuelMaxCapacity)));
 
     FuelData memory fuel = Fuel.get(smartObjectId);
 
@@ -124,9 +116,7 @@ contract FuelTest is DeployableTest {
     vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); // Ensure ratePerMinute doesn't overflow when adjusted for precision
 
     testAnchor(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, location);
-
-    ResourceId systemId = FuelUtils.fuelSystemId();
-    world.call(systemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
 
     FuelData memory fuelData = Fuel.get(smartObjectId);
 
@@ -147,9 +137,7 @@ contract FuelTest is DeployableTest {
     vm.assume(fuelAmount * fuelUnitVolume * 2 < fuelMaxCapacity);
 
     testDepositFuel(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount);
-
-    ResourceId systemId = FuelUtils.fuelSystemId();
-    world.call(systemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
+    world.call(fuelSystemId, abi.encodeCall(FuelSystem.depositFuel, (smartObjectId, fuelAmount)));
 
     FuelData memory fuelData = Fuel.get(smartObjectId);
 
@@ -178,12 +166,9 @@ contract FuelTest is DeployableTest {
 
     testDepositFuel(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount);
 
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.bringOnline, (smartObjectId)));
 
     vm.warp(block.timestamp + timeElapsed);
-
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (smartObjectId)));
 
     FuelData memory fuelData = Fuel.get(smartObjectId);
@@ -210,12 +195,9 @@ contract FuelTest is DeployableTest {
     uint256 smartObjectId = 1;
 
     testDepositFuel(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, UINT256_MAX, fuelAmount);
-
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.bringOnline, (smartObjectId)));
 
     vm.warp(block.timestamp + timeElapsed);
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
     world.call(fuelSystemId, abi.encodeCall(FuelSystem.updateFuel, (smartObjectId)));
 
     FuelData memory fuelData = Fuel.get(smartObjectId);
@@ -245,9 +227,6 @@ contract FuelTest is DeployableTest {
       (1 * (10 ** DECIMALS));
     fuelConsumption += ((timeElapsedAfterOffline * (10 ** DECIMALS)) / fuelConsumptionIntervalInSeconds);
     vm.assume(fuelAmount * (10 ** DECIMALS) > fuelConsumption); // this time we want to run out of fuel
-
-    ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
-    ResourceId fuelSystemId = FuelUtils.fuelSystemId();
 
     testDepositFuel(smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, UINT256_MAX, fuelAmount);
     world.call(deployableSystemId, abi.encodeCall(DeployableSystem.bringOnline, (smartObjectId)));

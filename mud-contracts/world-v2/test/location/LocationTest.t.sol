@@ -19,6 +19,8 @@ import { LocationData } from "../../src/codegen/tables/Location.sol";
 contract StaticDataTest is MudTest {
   IBaseWorld world;
 
+  ResourceId systemId = LocationUtils.locationSystemId();
+
   function setUp() public virtual override {
     super.setUp();
     world = IBaseWorld(worldAddress);
@@ -36,7 +38,6 @@ contract StaticDataTest is MudTest {
   function testSaveLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(smartObjectId != 0);
 
-    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(
       systemId,
       abi.encodeCall(
@@ -56,7 +57,6 @@ contract StaticDataTest is MudTest {
   // test get location
   function testGetLocation(uint256 smartObjectId, uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(
       systemId,
       abi.encodeCall(
@@ -75,7 +75,6 @@ contract StaticDataTest is MudTest {
 
   function testSetSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setSolarSystemId, (smartObjectId, solarSystemId)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -85,7 +84,6 @@ contract StaticDataTest is MudTest {
 
   function testSetX(uint256 smartObjectId, uint256 x) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setX, (smartObjectId, x)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -95,7 +93,6 @@ contract StaticDataTest is MudTest {
 
   function testSetY(uint256 smartObjectId, uint256 y) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setY, (smartObjectId, y)));
 
     LocationData memory location = Location.get(smartObjectId);
@@ -105,7 +102,6 @@ contract StaticDataTest is MudTest {
 
   function testSetZ(uint256 smartObjectId, uint256 z) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = LocationUtils.locationSystemId();
     world.call(systemId, abi.encodeCall(LocationSystem.setZ, (smartObjectId, z)));
 
     LocationData memory location = Location.get(smartObjectId);

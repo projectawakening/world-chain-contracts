@@ -23,6 +23,8 @@ contract EntityRecordTest is MudTest {
   IBaseWorld world;
   using EntityRecordUtils for bytes14;
 
+  ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
+
   function setUp() public virtual override {
     super.setUp();
     world = IBaseWorld(worldAddress);
@@ -40,7 +42,6 @@ contract EntityRecordTest is MudTest {
   function testEntityRecord(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume) public {
     vm.assume(smartObjectId != 0);
 
-    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
     EntityRecordInput memory entityRecordInput = EntityRecordInput({
       smartObjectId: smartObjectId,
       typeId: typeId,
@@ -49,7 +50,6 @@ contract EntityRecordTest is MudTest {
     });
 
     world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, (entityRecordInput)));
-
     EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
 
     assertEq(itemId, entityRecord.itemId);
@@ -64,7 +64,6 @@ contract EntityRecordTest is MudTest {
     string memory description
   ) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
     EntityMetadata memory entityMetadata = EntityMetadata({
       smartObjectId: smartObjectId,
       name: name,
@@ -82,7 +81,6 @@ contract EntityRecordTest is MudTest {
 
   function testSetName(uint256 smartObjectId, string memory name) public {
     vm.assume(smartObjectId != 0);
-    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
     world.call(systemId, abi.encodeCall(EntityRecordSystem.setName, (smartObjectId, name)));
 
     EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
