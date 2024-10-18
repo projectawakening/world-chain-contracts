@@ -22,15 +22,9 @@ contract CreateSmartCharacter is Script {
     uint256 characterId = 123;
     address characterAddress = vm.addr(deployerPrivateKey);
     uint256 tribeId = 100;
-    EntityRecordData memory entityRecord = EntityRecordData({
-      smartObjectId: characterId,
-      typeId: 123,
-      itemId: 234,
-      volume: 100
-    });
+    EntityRecordData memory entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
 
     EntityMetadata memory entityRecordMetadata = EntityMetadata({
-      smartObjectId: characterId,
       name: "name",
       dappURL: "dappURL",
       description: "description"
