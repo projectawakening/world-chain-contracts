@@ -31,7 +31,7 @@ contract InventorySystem is EveSystem {
     address expectedOwner
   );
   error Inventory_InvalidDeployable(string message, uint256 deployableId);
-  
+
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
