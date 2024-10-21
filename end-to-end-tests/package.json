@@ -57,7 +57,7 @@
     "@latticexyz/cli": "2.2.8",
     "@latticexyz/gas-report": "2.2.8",
     "@latticexyz/schema-type": "2.2.8",
-    "@latticexyz/store": "2.2.8",
+    "@latticexyz/store": "2.2.12",
     "@latticexyz/world": "2.2.8",
     "@latticexyz/world-modules": "2.2.8"
   },
