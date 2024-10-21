@@ -17,7 +17,11 @@ import { State, SmartObjectData } from "../deployable/types.sol";
 import { EveSystem } from "../EveSystem.sol";
 
 contract EphemeralInventorySystem is EveSystem {
-  error Inventory_InvalidEphemeralInventoryOwner(string message, address ephemeralInvOwner);
+  error InvalidEphemeralInventoryOwner(string message, address ephemeralInvOwner);
+  error Ephemeral_Inventory_InsufficientCapacity(string message, uint256 maxCapacity, uint256 usedCapacity);
+  error Ephemeral_Inventory_InvalidCapacity(string message);
+  error Ephemeral_Inventory_InvalidItem(string message, uint256 inventoryItemId);
+  error Ephemeral_Inventory_InvalidItemQuantity(string message, uint256 quantity, uint256 maxQuantity);
 
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
@@ -38,7 +42,7 @@ contract EphemeralInventorySystem is EveSystem {
    */
   function setEphemeralInventoryCapacity(uint256 smartObjectId, uint256 ephemeralStorageCapacity) public {
     if (ephemeralStorageCapacity == 0) {
-      revert InventorySystem.Inventory_InvalidCapacity("EphemeralInventorySystem: storage capacity cannot be 0");
+      revert Ephemeral_Inventory_InvalidCapacity("EphemeralInventorySystem: storage capacity cannot be 0");
     }
     EphemeralInvCapacity.setCapacity(smartObjectId, ephemeralStorageCapacity);
   }
@@ -64,7 +68,7 @@ contract EphemeralInventorySystem is EveSystem {
     }
     // ephemeralInventoryOwner MUST be an existing character
     if (CharactersByAddress.get(ephemeralInventoryOwner) == 0) {
-      revert Inventory_InvalidEphemeralInventoryOwner(
+      revert InvalidEphemeralInventoryOwner(
         "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
         ephemeralInventoryOwner
       );
@@ -118,7 +122,7 @@ contract EphemeralInventorySystem is EveSystem {
       //Revert if the items to deposit is not created on-chain
       EntityRecordData memory entityRecord = EntityRecord.get(items[i].inventoryItemId);
       if (entityRecord.recordExists == false) {
-        revert InventorySystem.Inventory_InvalidItem(
+        revert Ephemeral_Inventory_InvalidItem(
           "EphemeralInventorySystem: item is not created on-chain",
           items[i].typeId
         );
@@ -148,7 +152,7 @@ contract EphemeralInventorySystem is EveSystem {
     uint256 reqCapacity = item.volume * item.quantity;
 
     if ((usedCapacity + reqCapacity) > maxCapacity) {
-      revert InventorySystem.Inventory_InsufficientCapacity(
+      revert Ephemeral_Inventory_InsufficientCapacity(
         "EphemeralInventorySystem: insufficient capacity",
         maxCapacity,
         usedCapacity + reqCapacity
@@ -237,7 +241,7 @@ contract EphemeralInventorySystem is EveSystem {
 
   function _validateWithdrawal(InventoryItem memory item, EphemeralInvItemData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
-      revert InventorySystem.Inventory_InvalidItemQuantity(
+      revert Ephemeral_Inventory_InvalidItemQuantity(
         "EphemeralInventorySystem: invalid quantity",
         itemData.quantity,
         item.quantity
@@ -255,7 +259,7 @@ contract EphemeralInventorySystem is EveSystem {
 
     if (itemData.stateUpdate < deployableStateData.anchoredAt) {
       // Disable withdraw if its has been re-anchored
-      revert InventorySystem.Inventory_InvalidItemQuantity(
+      revert Ephemeral_Inventory_InvalidItemQuantity(
         "EphemeralInventorySystem: invalid quantity",
         smartObjectId,
         item.quantity

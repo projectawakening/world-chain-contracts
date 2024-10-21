@@ -11,7 +11,11 @@ import { InventoryItem } from "../../systems/inventory/types.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IEphemeralInventorySystem {
-  error Inventory_InvalidEphemeralInventoryOwner(string message, address ephemeralInvOwner);
+  error InvalidEphemeralInventoryOwner(string message, address ephemeralInvOwner);
+  error Ephemeral_Inventory_InsufficientCapacity(string message, uint256 maxCapacity, uint256 usedCapacity);
+  error Ephemeral_Inventory_InvalidCapacity(string message);
+  error Ephemeral_Inventory_InvalidItem(string message, uint256 inventoryItemId);
+  error Ephemeral_Inventory_InvalidItemQuantity(string message, uint256 quantity, uint256 maxQuantity);
 
   function evefrontier__setEphemeralInventoryCapacity(uint256 smartObjectId, uint256 ephemeralStorageCapacity) external;
 

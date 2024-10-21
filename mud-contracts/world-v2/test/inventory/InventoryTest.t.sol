@@ -41,7 +41,7 @@ contract InventoryTest is MudTest {
   InventoryItem item12;
   InventoryItem item13;
 
-  // Smart Character variables
+  
   uint256 characterId;
   uint256 ephCharacterId;
   uint256 tribeId;
@@ -61,7 +61,6 @@ contract InventoryTest is MudTest {
 
   ResourceId smartCharacterSystemId = SmartCharacterUtils.smartCharacterSystemId();
   ResourceId deployableSystemId = DeployableUtils.deployableSystemId();
-  ResourceId fuelSystemId = FuelUtils.fuelSystemId();
   ResourceId inventorySystemId = InventoryUtils.inventorySystemId();
 
   function setUp() public virtual override {
