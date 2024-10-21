@@ -51,7 +51,7 @@ contract InventorySystem is EveSystem {
    */
   function setInventoryCapacity(uint256 smartObjectId, uint256 capacity) public {
     if (capacity == 0) {
-      revert Inventory_InvalidCapacity("Inventory capacity cannot be 0");
+      revert Inventory_InvalidCapacity("InventorySystem: storage capacity cannot be 0");
     }
     Inventory.setCapacity(smartObjectId, capacity);
   }
