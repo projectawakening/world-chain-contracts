@@ -21,6 +21,7 @@ import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
 import { SmartAssemblyUtils } from "../smart-assembly/SmartAssemblyUtils.sol";
 import { EntityRecordData } from "../entity-record/types.sol";
 import { FuelUtils } from "../fuel/FuelUtils.sol";
+import { LocationSystem } from "../location/LocationSystem.sol";
 import { EveSystem } from "../EveSystem.sol";
 
 import { State, SmartObjectData } from "./types.sol";
