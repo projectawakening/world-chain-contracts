@@ -92,15 +92,11 @@ contract EphemeralInventorySystem is EveSystem {
     address ephemeralInventoryOwner,
     InventoryItem[] memory items
   ) public {
-    {
-      State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
-        revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
-      }
+    State currentState = DeployableState.getCurrentState(smartObjectId);
+    if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+      revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
     }
-
     uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
-
     for (uint256 i = 0; i < items.length; i++) {
       usedCapacity = _processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
     }

@@ -20,7 +20,11 @@ interface IInventoryInteractSystem {
     uint256 quantity
   );
 
-  function evefrontier__ephemeralToInventoryTransfer(uint256 smartObjectId, TransferItem[] memory items) external;
+  function evefrontier__ephemeralToInventoryTransfer(
+    uint256 smartObjectId,
+    address ephInvOwner,
+    TransferItem[] memory items
+  ) external;
 
   function evefrontier__inventoryToEphemeralTransfer(
     uint256 smartObjectId,

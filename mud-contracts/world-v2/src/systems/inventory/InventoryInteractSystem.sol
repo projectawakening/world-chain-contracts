@@ -3,8 +3,6 @@ pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { EveSystem } from "@eveworld/smart-object-framework/src/systems/internal/EveSystem.sol";
-
 import { InventorySystem } from "./InventorySystem.sol";
 import { EphemeralInventorySystem } from "./EphemeralInventorySystem.sol";
 import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
@@ -16,6 +14,7 @@ import { EphemeralInvItem } from "../../codegen/index.sol";
 import { InventoryUtils } from "./InventoryUtils.sol";
 
 import { TransferItem, InventoryItem } from "./types.sol";
+import { EveSystem } from "../EveSystem.sol";
 
 contract InventoryInteractSystem is EveSystem {
   error Inventory_InvalidTransferItemQuantity(
@@ -33,12 +32,18 @@ contract InventoryInteractSystem is EveSystem {
    * @notice Transfer items from ephemeral to inventory
    * @dev transfer items from ephemeral to inventory
    * @param smartObjectId is the smart object id
+   * @param ephInvOwner is the ephemeral inventory owner
    * @param items is the array of items to transfer
+   * TODO: get the _initialMsgSender when execution context is implemented
    */
-  function ephemeralToInventoryTransfer(uint256 smartObjectId, TransferItem[] memory items) public {
+  function ephemeralToInventoryTransfer(
+    uint256 smartObjectId,
+    address ephInvOwner,
+    TransferItem[] memory items
+  ) public {
     InventoryItem[] memory ephInvOut = new InventoryItem[](items.length);
     InventoryItem[] memory invIn = new InventoryItem[](items.length);
-    address ephInvOwner = _initialMsgSender();
+    // address ephInvOwner = _initialMsgSender();
     address objectInvOwner = IERC721(DeployableToken.getErc721Address()).ownerOf(smartObjectId);
     for (uint i = 0; i < items.length; i++) {
       TransferItem memory item = items[i];
@@ -77,7 +82,7 @@ contract InventoryInteractSystem is EveSystem {
 
     // withdraw the items from ephemeral and deposit to inventory table
     world().call(
-      inventorySystemId,
+      ephemeralInventorySystemId,
       abi.encodeWithSelector(
         EphemeralInventorySystem.withdrawFromEphemeralInventory.selector,
         smartObjectId,
