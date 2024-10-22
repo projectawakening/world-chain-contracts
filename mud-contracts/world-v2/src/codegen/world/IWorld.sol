@@ -13,6 +13,7 @@ import { IEphemeralInventorySystem } from "./IEphemeralInventorySystem.sol";
 import { IInventoryInteractSystem } from "./IInventoryInteractSystem.sol";
 import { IInventorySystem } from "./IInventorySystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
+import { ISmartAssemblySystem } from "./ISmartAssemblySystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
 import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
@@ -34,6 +35,7 @@ interface IWorld is
   IInventoryInteractSystem,
   IInventorySystem,
   ILocationSystem,
+  ISmartAssemblySystem,
   ISmartCharacterSystem,
   IStaticDataSystem
 {}

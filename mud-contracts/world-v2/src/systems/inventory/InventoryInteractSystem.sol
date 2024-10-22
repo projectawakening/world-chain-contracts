@@ -16,6 +16,12 @@ import { InventoryUtils } from "./InventoryUtils.sol";
 import { TransferItem, InventoryItem } from "./types.sol";
 import { EveSystem } from "../EveSystem.sol";
 
+/**
+ * @title InventoryInteractSystem
+ * @author CCP Games
+ * @notice This system is responsible for the interaction between the inventory and ephemeral inventory
+ * @dev This system is responsible for the interaction between the inventory and ephemeral inventory
+ */
 contract InventoryInteractSystem is EveSystem {
   error Inventory_InvalidTransferItemQuantity(
     string message,

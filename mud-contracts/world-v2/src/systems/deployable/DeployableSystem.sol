@@ -22,7 +22,6 @@ import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
 
 import { LocationUtils } from "../location/LocationUtils.sol";
 import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
-import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
 import { FuelUtils } from "../fuel/FuelUtils.sol";
 
 /**

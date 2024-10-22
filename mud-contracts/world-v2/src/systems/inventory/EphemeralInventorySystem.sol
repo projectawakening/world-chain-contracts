@@ -16,6 +16,11 @@ import { InventorySystem } from "./InventorySystem.sol";
 import { State, SmartObjectData } from "../deployable/types.sol";
 import { EveSystem } from "../EveSystem.sol";
 
+/**
+ * @title EphemeralInventorySystem
+ * @author CCP Games
+ * @notice EphemeralInventorySystem stores the ephemeral inventory of a smart object on-chain
+ */
 contract EphemeralInventorySystem is EveSystem {
   error InvalidEphemeralInventoryOwner(string message, address ephemeralInvOwner);
   error Ephemeral_Inventory_InsufficientCapacity(string message, uint256 maxCapacity, uint256 usedCapacity);
