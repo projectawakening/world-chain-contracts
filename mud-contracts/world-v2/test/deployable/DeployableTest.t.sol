@@ -193,4 +193,46 @@ contract DeployableTest is MudTest {
 
     assertEq(uint8(State.DESTROYED), uint8(DeployableState.getCurrentState(smartObjectId)));
   }
+
+  function testCreateAndAnchorDeployable(
+    uint256 smartObjectId,
+    string memory smartAssemblyType,
+    EntityRecordData memory entityRecordData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    LocationData memory locationData
+  ) public {
+    vm.assume(smartObjectId != 0);
+    vm.assume(fuelUnitVolume != 0);
+    vm.assume(fuelConsumptionIntervalInSeconds >= 1);
+    vm.assume(fuelMaxCapacity != 0);
+    vm.assume((keccak256(abi.encodePacked(smartAssemblyType)) != keccak256(abi.encodePacked(""))));
+
+    world.call(deployableSystemId, abi.encodeCall(DeployableSystem.globalResume, ()));
+    world.call(
+      deployableSystemId,
+      abi.encodeCall(
+        DeployableSystem.createAndAnchorDeployable,
+        (
+          smartObjectId,
+          smartAssemblyType,
+          entityRecordData,
+          smartObjectData,
+          fuelUnitVolume,
+          fuelConsumptionIntervalInSeconds,
+          fuelMaxCapacity,
+          locationData
+        )
+      )
+    );
+
+    LocationData memory location = Location.get(smartObjectId);
+
+    assertEq(locationData.solarSystemId, location.solarSystemId);
+    assertEq(locationData.x, location.x);
+    assertEq(locationData.y, location.y);
+    assertEq(locationData.z, location.z);
+    assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(smartObjectId)));
+  }
 }

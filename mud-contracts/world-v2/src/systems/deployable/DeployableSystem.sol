@@ -15,14 +15,16 @@ import { LocationData } from "../../codegen/tables/Location.sol";
 import { Location, LocationData } from "../../codegen/index.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 import { StaticDataSystem } from "../static-data/StaticDataSystem.sol";
+import { SmartAssemblySystem } from "../smart-assembly/SmartAssemblySystem.sol";
+import { LocationUtils } from "../location/LocationUtils.sol";
+import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
+import { SmartAssemblyUtils } from "../smart-assembly/SmartAssemblyUtils.sol";
+import { EntityRecordData } from "../entity-record/types.sol";
+import { FuelUtils } from "../fuel/FuelUtils.sol";
 import { EveSystem } from "../EveSystem.sol";
 
 import { State, SmartObjectData } from "./types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
-
-import { LocationUtils } from "../location/LocationUtils.sol";
-import { StaticDataUtils } from "../static-data/StaticDataUtils.sol";
-import { FuelUtils } from "../fuel/FuelUtils.sol";
 
 /**
  * @title DeployableSystem
@@ -44,6 +46,7 @@ contract DeployableSystem is EveSystem {
   ResourceId staticDataSystemId = StaticDataUtils.staticDataSystemId();
   ResourceId locationSystemId = LocationUtils.locationSystemId();
   ResourceId fuelSystemId = FuelUtils.fuelSystemId();
+  ResourceId smartAssemblySystemId = SmartAssemblyUtils.smartAssemblySystemId();
 
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
@@ -54,6 +57,43 @@ contract DeployableSystem is EveSystem {
     }
     _;
   }
+
+  /**
+   * @dev creates and anchors a deployable
+   * @param smartObjectId on-chain id of the in-game deployable
+   * @param smartAssemblyType the type of the smart assembly
+   * @param entityRecordData the entity record data
+   * @param smartObjectData the data of the smart object
+   * @param fuelUnitVolume the fuel unit volume in wei
+   * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
+   * @param fuelMaxCapacity the fuel max capacity in wei
+   * @param locationData the location data of the object
+   */
+  function createAndAnchorDeployable(
+    uint256 smartObjectId,
+    string memory smartAssemblyType,
+    EntityRecordData memory entityRecordData,
+    SmartObjectData memory smartObjectData,
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    LocationData memory locationData
+  ) public {
+    world().call(
+      smartAssemblySystemId,
+      abi.encodeCall(SmartAssemblySystem.createSmartAssembly, (smartObjectId, smartAssemblyType, entityRecordData))
+    );
+
+    registerDeployable(
+      smartObjectId,
+      smartObjectData,
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      fuelMaxCapacity
+    );
+    anchor(smartObjectId, locationData);
+  }
+
   /**
    * @dev sets the ERC721 address for a deployable token
    * @param erc721Address the address of the ERC721 contract
@@ -70,16 +110,16 @@ contract DeployableSystem is EveSystem {
    * @dev registers a new smart deployable (must be "NULL" state)
    * @param smartObjectId on-chain id of the in-game deployable
    * @param smartObjectData the data of the smart object
-   * @param fuelUnitVolumeInWei the fuel unit volume in wei
+   * @param fuelUnitVolume the fuel unit volume in wei
    * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
-   * @param fuelMaxCapacityInWei the fuel max capacity in wei
+   * @param fuelMaxCapacity the fuel max capacity in wei
    */
   function registerDeployable(
     uint256 smartObjectId,
     SmartObjectData memory smartObjectData,
-    uint256 fuelUnitVolumeInWei,
+    uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacityInWei
+    uint256 fuelMaxCapacity
   ) public onlyActive {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
@@ -125,7 +165,7 @@ contract DeployableSystem is EveSystem {
       fuelSystemId,
       abi.encodeCall(
         FuelSystem.configureFuelParameters,
-        (smartObjectId, fuelUnitVolumeInWei, fuelConsumptionIntervalInSeconds, fuelMaxCapacityInWei, 0)
+        (smartObjectId, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, 0)
       )
     );
   }
