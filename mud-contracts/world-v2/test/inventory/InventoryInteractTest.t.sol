@@ -271,6 +271,4 @@ contract InventoryInteractTest is MudTest {
   }
 
   //TODO All access control tests
-
-  
 }

@@ -41,7 +41,6 @@ contract InventoryTest is MudTest {
   InventoryItem item12;
   InventoryItem item13;
 
-  
   uint256 characterId;
   uint256 ephCharacterId;
   uint256 tribeId;
