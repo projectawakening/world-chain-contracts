@@ -16,7 +16,7 @@ import { InventorySystem } from "../../src/systems/inventory/InventorySystem.sol
 import { SmartCharacterSystem } from "../../src/systems/smart-character/SmartCharacterSystem.sol";
 import { State, SmartObjectData } from "../../src/systems/deployable/types.sol";
 import { EntityRecordData, EntityMetadata } from "../../src/systems/entity-record/types.sol";
-import { WorldPosition, Coord } from "../../src/systems/smart-storage-unit/types.sol";
+import { WorldPosition, Coord } from "../../src/systems/location/types.sol";
 import { InventoryItem } from "../../src/systems/inventory/types.sol";
 import { InventoryData, Inventory } from "../../src/codegen/tables/Inventory.sol";
 import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../src/codegen/tables/InventoryItem.sol";
@@ -88,14 +88,12 @@ contract SmartStorageUnitTest is MudTest {
 
   function testcreateAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) public {
     vm.assume(smartObjectId != 0);
-    vm.assume((keccak256(abi.encodePacked(smartAssemblyType)) != keccak256(abi.encodePacked(""))));
     vm.assume(storageCapacity > 0);
     vm.assume(ephemeralStorageCapacity > 0);
     vm.assume(fuelConsumptionIntervalInSeconds > 1);
@@ -106,7 +104,6 @@ contract SmartStorageUnitTest is MudTest {
         SmartStorageUnitSystem.createAndAnchorSmartStorageUnit,
         (
           smartObjectId,
-          smartAssemblyType,
           entityRecord,
           smartObjectData,
           worldPosition,
@@ -140,7 +137,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testCreateAndDepositItemsToInventory(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -151,7 +147,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testcreateAndAnchorSmartStorageUnit(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -182,7 +177,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testCreateAndDepositItemsToEphemeralInventory(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -193,7 +187,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testcreateAndAnchorSmartStorageUnit(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -228,7 +221,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testUnanchorAndreAnchor(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -249,7 +241,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testCreateAndDepositItemsToInventory(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -289,7 +280,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testcreateAndAnchorSmartStorageUnit(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -329,7 +319,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testUnanchorDepositRevert(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -354,7 +343,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testcreateAndAnchorSmartStorageUnit(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -407,7 +395,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testUnanchorWithdrawRevert(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -432,7 +419,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testcreateAndAnchorSmartStorageUnit(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -490,7 +476,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testDestroyAndRevertDepositItems(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -503,7 +488,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testCreateAndDepositItemsToInventory(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,
@@ -532,7 +516,6 @@ contract SmartStorageUnitTest is MudTest {
 
   function testDestroyAndRevertWithdrawItems(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 storageCapacity,
@@ -544,7 +527,6 @@ contract SmartStorageUnitTest is MudTest {
 
     testCreateAndDepositItemsToInventory(
       smartObjectId,
-      smartAssemblyType,
       fuelUnitVolume,
       fuelConsumptionIntervalInSeconds,
       storageCapacity,

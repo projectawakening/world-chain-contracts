@@ -330,5 +330,36 @@ export default defineWorld({
       },
       key: ["smartObjectId", "inventoryItemId"],
     },
+    /*************************
+    * SMART TURRET MODULE *
+    *************************/
+    SmartTurretConfig: {
+      schema: {
+        smartObjectId: "uint256",
+        systemId: "ResourceId",
+      },
+      key: ["smartObjectId"],
+    },
+
+    /*************************
+     * SMART GATE MODULE *
+     *************************/
+    SmartGateConfig: {
+      schema: {
+        smartObjectId: "uint256",
+        systemId: "ResourceId",
+        maxDistance: "uint256",
+      },
+      key: ["smartObjectId"],
+    },
+
+    SmartGateLink: {
+      schema: {
+        sourceGateId: "uint256",
+        destinationGateId: "uint256",
+        isLinked: "bool",
+      },
+      key: ["sourceGateId"],
+    },
   },
 });

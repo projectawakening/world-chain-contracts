@@ -29,3 +29,6 @@ import { EphemeralInvCapacity } from "./tables/EphemeralInvCapacity.sol";
 import { EphemeralInv, EphemeralInvData } from "./tables/EphemeralInv.sol";
 import { EphemeralInvItem, EphemeralInvItemData } from "./tables/EphemeralInvItem.sol";
 import { ItemTransferOffchain, ItemTransferOffchainData } from "./tables/ItemTransferOffchain.sol";
+import { SmartTurretConfig } from "./tables/SmartTurretConfig.sol";
+import { SmartGateConfig, SmartGateConfigData } from "./tables/SmartGateConfig.sol";
+import { SmartGateLink, SmartGateLinkData } from "./tables/SmartGateLink.sol";

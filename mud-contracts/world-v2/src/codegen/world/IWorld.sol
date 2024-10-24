@@ -15,7 +15,9 @@ import { IInventorySystem } from "./IInventorySystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
 import { ISmartAssemblySystem } from "./ISmartAssemblySystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
+import { ISmartGateSystem } from "./ISmartGateSystem.sol";
 import { ISmartStorageUnitSystem } from "./ISmartStorageUnitSystem.sol";
+import { ISmartTurretSystem } from "./ISmartTurretSystem.sol";
 import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
 /**
@@ -38,6 +40,8 @@ interface IWorld is
   ILocationSystem,
   ISmartAssemblySystem,
   ISmartCharacterSystem,
+  ISmartGateSystem,
   ISmartStorageUnitSystem,
+  ISmartTurretSystem,
   IStaticDataSystem
 {}

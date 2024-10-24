@@ -5,7 +5,7 @@ pragma solidity >=0.8.24;
 
 import { EntityRecordData } from "../../systems/entity-record/types.sol";
 import { SmartObjectData } from "../../systems/deployable/types.sol";
-import { WorldPosition } from "../../systems/smart-storage-unit/types.sol";
+import { WorldPosition } from "../../systems/location/types.sol";
 
 /**
  * @title ISmartStorageUnitSystem
@@ -15,7 +15,6 @@ import { WorldPosition } from "../../systems/smart-storage-unit/types.sol";
 interface ISmartStorageUnitSystem {
   function evefrontier__createAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,

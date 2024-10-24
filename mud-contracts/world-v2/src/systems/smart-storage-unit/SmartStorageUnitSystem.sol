@@ -13,7 +13,8 @@ import { FuelUtils } from "../fuel/FuelUtils.sol";
 import { InventoryUtils } from "../inventory/InventoryUtils.sol";
 import { EntityRecordData } from "../entity-record/types.sol";
 import { State, SmartObjectData } from "../deployable/types.sol";
-import { WorldPosition } from "./types.sol";
+import { WorldPosition } from "../location/types.sol";
+import { SMART_STORAGE_UNIT } from "../constants.sol";
 import { EveSystem } from "../EveSystem.sol";
 
 contract SmartStorageUnitSystem is EveSystem {
@@ -24,7 +25,6 @@ contract SmartStorageUnitSystem is EveSystem {
 
   function createAndAnchorSmartStorageUnit(
     uint256 smartObjectId,
-    string memory smartAssemblyType,
     EntityRecordData memory entityRecordData,
     SmartObjectData memory smartObjectData,
     WorldPosition memory worldPosition,
@@ -46,7 +46,7 @@ contract SmartStorageUnitSystem is EveSystem {
         DeployableSystem.createAndAnchorDeployable,
         (
           smartObjectId,
-          smartAssemblyType,
+          SMART_STORAGE_UNIT,
           entityRecordData,
           smartObjectData,
           fuelUnitVolume,
