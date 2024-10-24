@@ -11,9 +11,9 @@ import { DEPLOYMENT_NAMESPACE } from "./../constants.sol";
 /**
  * @title Utils to calculate systemId by namespace and system name
  */
-library Utils {
-  function staticDataSystemId() public pure returns (ResourceId systemId) {
+library SmartAssemblyUtils {
+  function smartAssemblySystemId() public pure returns (ResourceId systemId) {
     return
-      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "StaticDataSystem" });
+      WorldResourceIdLib.encode({ typeId: RESOURCE_SYSTEM, namespace: DEPLOYMENT_NAMESPACE, name: "SmartAssemblySys" });
   }
 }

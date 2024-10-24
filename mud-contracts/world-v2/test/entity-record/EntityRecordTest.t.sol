@@ -17,11 +17,13 @@ import { EntityRecord, EntityRecordData } from "../../src/codegen/tables/EntityR
 import { EntityRecordMetadata, EntityRecordMetadataData } from "../../src/codegen/tables/EntityRecordMetadata.sol";
 import { EntityRecordData as EntityRecordInput, EntityMetadata } from "../../src/systems/entity-record/types.sol";
 
-import { Utils as EntityRecordUtils } from "../../src/systems/entity-record/Utils.sol";
+import { EntityRecordUtils } from "../../src/systems/entity-record/EntityRecordUtils.sol";
 
 contract EntityRecordTest is MudTest {
   IBaseWorld world;
   using EntityRecordUtils for bytes14;
+
+  ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
 
   function setUp() public virtual override {
     super.setUp();
@@ -37,20 +39,13 @@ contract EntityRecordTest is MudTest {
     assertTrue(codeSize > 0);
   }
 
-  function testEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) public {
-    vm.assume(entityId != 0);
+  function testEntityRecord(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume) public {
+    vm.assume(smartObjectId != 0);
 
-    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
-    EntityRecordInput memory entityRecordInput = EntityRecordInput({
-      entityId: entityId,
-      typeId: typeId,
-      itemId: itemId,
-      volume: volume
-    });
+    EntityRecordInput memory entityRecordInput = EntityRecordInput({ typeId: typeId, itemId: itemId, volume: volume });
 
-    world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, (entityRecordInput)));
-
-    EntityRecordData memory entityRecord = EntityRecord.get(entityId);
+    world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecord, (smartObjectId, entityRecordInput)));
+    EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
 
     assertEq(itemId, entityRecord.itemId);
     assertEq(typeId, entityRecord.typeId);
@@ -58,34 +53,30 @@ contract EntityRecordTest is MudTest {
   }
 
   function testEntityRecordMetadata(
-    uint256 entityId,
+    uint256 smartObjectId,
     string memory name,
     string memory dappURL,
     string memory description
   ) public {
-    vm.assume(entityId != 0);
-    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
-    EntityMetadata memory entityMetadata = EntityMetadata({
-      entityId: entityId,
-      name: name,
-      dappURL: dappURL,
-      description: description
-    });
-    world.call(systemId, abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, (entityMetadata)));
+    vm.assume(smartObjectId != 0);
+    EntityMetadata memory entityMetadata = EntityMetadata({ name: name, dappURL: dappURL, description: description });
+    world.call(
+      systemId,
+      abi.encodeCall(EntityRecordSystem.createEntityRecordMetadata, (smartObjectId, entityMetadata))
+    );
 
-    EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(entityId);
+    EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
 
     assertEq(name, entityRecordMetaData.name);
     assertEq(dappURL, entityRecordMetaData.dappURL);
     assertEq(description, entityRecordMetaData.description);
   }
 
-  function testSetName(uint256 entityId, string memory name) public {
-    vm.assume(entityId != 0);
-    ResourceId systemId = EntityRecordUtils.entityRecordSystemId();
-    world.call(systemId, abi.encodeCall(EntityRecordSystem.setName, (entityId, name)));
+  function testSetName(uint256 smartObjectId, string memory name) public {
+    vm.assume(smartObjectId != 0);
+    world.call(systemId, abi.encodeCall(EntityRecordSystem.setName, (smartObjectId, name)));
 
-    EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(entityId);
+    EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
 
     assertEq(name, entityRecordMetaData.name);
   }

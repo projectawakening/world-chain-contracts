@@ -12,11 +12,11 @@ import { StaticData, StaticDataMetadata } from "../../codegen/index.sol";
 contract StaticDataSystem is System {
   /**
    * @dev updates the cid of the in-game object
-   * @param entityId entityId of the in-game object
+   * @param smartObjectId on-chain id of the in-game object
    * @param cid the content identifier of the static data
    */
-  function setCid(uint256 entityId, string memory cid) public {
-    StaticData.set(entityId, cid);
+  function setCid(uint256 smartObjectId, string memory cid) public {
+    StaticData.set(smartObjectId, cid);
   }
 
   /**

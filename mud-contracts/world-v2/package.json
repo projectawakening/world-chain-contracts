@@ -14,14 +14,17 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix",
-    "test": "tsc --noEmit && mud test "
+    "test": "tsc --noEmit && mud test --forgeOptions=-vvv"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.0.12",
-    "@latticexyz/schema-type": "2.0.12",
-    "@latticexyz/store": "2.0.12",
-    "@latticexyz/world": "2.0.12",
-    "@latticexyz/world-modules": "2.0.12"
+    "@latticexyz/cli": "2.2.9",
+    "@latticexyz/schema-type": "2.2.9",
+    "@latticexyz/store": "2.2.9",
+    "@latticexyz/world": "2.2.9",
+    "@latticexyz/world-modules": "2.2.9",
+    "@latticexyz/gas-report": "2.2.9",
+    "@eveworld/smart-object-framework": "link:../smart-object-framework",
+    "@eveworld/common-constants": "0.0.13"
   },
   "devDependencies": {
     "@latticexyz/gas-report": "2.0.12",
