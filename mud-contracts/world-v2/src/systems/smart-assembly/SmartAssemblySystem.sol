@@ -54,16 +54,14 @@ contract SmartAssemblySystem is EveSystem {
       revert SmartAssemblyTypeCannotBeEmpty(smartObjectId);
     }
 
-    if (
-      keccak256(abi.encodePacked(SmartAssembly.getSmartAssemblyType(smartObjectId))) != keccak256(abi.encodePacked(""))
-    ) {
-      revert SmartAssemblyTypeAlreadyExists(smartObjectId);
-    }
-
     uint256 smartAssemblyEnumId = SmartAssembly.getSmartAssemblyId(smartObjectId);
     smartAssemblyEnumId = smartAssemblyEnumId + 1;
 
-    SmartAssembly.set(smartObjectId, smartAssemblyEnumId, smartAssemblyType);
+    if (
+      keccak256(abi.encodePacked(SmartAssembly.getSmartAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))
+    ) {
+      SmartAssembly.set(smartObjectId, smartAssemblyEnumId, smartAssemblyType);
+    }
   }
 
   /**

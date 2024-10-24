@@ -25,6 +25,8 @@ interface IInventorySystem {
 
   function evefrontier__setInventoryCapacity(uint256 smartObjectId, uint256 capacity) external;
 
+  function evefrontier__createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
+
   function evefrontier__depositToInventory(uint256 smartObjectId, InventoryItem[] memory items) external;
 
   function evefrontier__withdrawFromInventory(uint256 smartObjectId, InventoryItem[] memory items) external;

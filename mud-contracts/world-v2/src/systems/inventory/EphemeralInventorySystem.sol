@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { InventorySystem } from "./InventorySystem.sol";
 import { GlobalDeployableState } from "../../codegen/tables/GlobalDeployableState.sol";
@@ -10,6 +12,9 @@ import { EphemeralInv } from "../../codegen/tables/EphemeralInv.sol";
 import { EphemeralInvCapacity } from "../../codegen/tables/EphemeralInvCapacity.sol";
 import { CharactersByAddress } from "../../codegen/tables/CharactersByAddress.sol";
 import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
+import { EntityRecordData as EntityRecordStruct } from "../entity-record/types.sol";
+import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
+import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
 
 import { InventoryItem } from "./types.sol";
 import { InventorySystem } from "./InventorySystem.sol";
@@ -27,6 +32,8 @@ contract EphemeralInventorySystem is EveSystem {
   error Ephemeral_Inventory_InvalidCapacity(string message);
   error Ephemeral_Inventory_InvalidItem(string message, uint256 inventoryItemId);
   error Ephemeral_Inventory_InvalidItemQuantity(string message, uint256 quantity, uint256 maxQuantity);
+
+  ResourceId entityRecordSystemId = EntityRecordUtils.entityRecordSystemId();
 
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
@@ -50,6 +57,34 @@ contract EphemeralInventorySystem is EveSystem {
       revert Ephemeral_Inventory_InvalidCapacity("EphemeralInventorySystem: storage capacity cannot be 0");
     }
     EphemeralInvCapacity.setCapacity(smartObjectId, ephemeralStorageCapacity);
+  }
+
+  /**
+   * @notice Create and deposit items to the ephemeral inventory
+   * @dev Create and deposit items to the ephemeral inventory by smart storage unit id
+   * //TODO only owner should be able to create and deposit items
+   * @param smartObjectId The smart storage unit id
+   * @param ephemeralInventoryOwner The owner of the ephemeral inventory
+   * @param items The items to deposit to the inventory
+   */
+  function createAndDepositItemsToEphemeralInventory(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) public {
+    for (uint256 i = 0; i < items.length; i++) {
+      EntityRecordStruct memory entityRecord = EntityRecordStruct({
+        typeId: items[i].typeId,
+        itemId: items[i].itemId,
+        volume: items[i].volume
+      });
+      world().call(
+        entityRecordSystemId,
+        abi.encodeCall(EntityRecordSystem.createEntityRecord, (items[i].inventoryItemId, entityRecord))
+      );
+    }
+
+    depositToEphemeralInventory(smartObjectId, ephemeralInventoryOwner, items);
   }
 
   /**

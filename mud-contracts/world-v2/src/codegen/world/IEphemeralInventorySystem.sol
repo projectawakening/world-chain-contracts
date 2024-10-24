@@ -19,6 +19,12 @@ interface IEphemeralInventorySystem {
 
   function evefrontier__setEphemeralInventoryCapacity(uint256 smartObjectId, uint256 ephemeralStorageCapacity) external;
 
+  function evefrontier__createAndDepositItemsToEphemeralInventory(
+    uint256 smartObjectId,
+    address ephemeralInventoryOwner,
+    InventoryItem[] memory items
+  ) external;
+
   function evefrontier__depositToEphemeralInventory(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,

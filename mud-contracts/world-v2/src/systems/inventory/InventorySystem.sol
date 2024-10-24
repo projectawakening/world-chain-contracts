@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { DeployableUtils } from "../deployable/DeployableUtils.sol";
 import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
@@ -9,6 +10,9 @@ import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../codegen/index.sol";
+import { EntityRecordUtils } from "../entity-record/EntityRecordUtils.sol";
+import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
+import { EntityRecordData as EntityRecordStruct } from "../entity-record/types.sol";
 
 import { InventoryItem } from "./types.sol";
 import { State, SmartObjectData } from "../deployable/types.sol";
@@ -32,6 +36,8 @@ contract InventorySystem is EveSystem {
   );
   error Inventory_InvalidDeployable(string message, uint256 deployableId);
 
+  ResourceId entityRecordUtils = EntityRecordUtils.entityRecordSystemId();
+
   /**
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
@@ -54,6 +60,27 @@ contract InventorySystem is EveSystem {
       revert Inventory_InvalidCapacity("InventorySystem: storage capacity cannot be 0");
     }
     Inventory.setCapacity(smartObjectId, capacity);
+  }
+
+  /**
+   * @notice Create and deposit items to the inventory
+   * @dev Create and deposit items to the inventory by smart object
+   * //TODO Only admin can use this function
+   */
+  function createAndDepositItemsToInventory(uint256 smartObjectId, InventoryItem[] memory items) public onlyActive {
+    for (uint256 i = 0; i < items.length; i++) {
+      EntityRecordStruct memory entityRecord = EntityRecordStruct({
+        typeId: items[i].typeId,
+        itemId: items[i].itemId,
+        volume: items[i].volume
+      });
+      world().call(
+        entityRecordUtils,
+        abi.encodeCall(EntityRecordSystem.createEntityRecord, (smartObjectId, entityRecord))
+      );
+    }
+
+    depositToInventory(smartObjectId, items);
   }
 
   /**
