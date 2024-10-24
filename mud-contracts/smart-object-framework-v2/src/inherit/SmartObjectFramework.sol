@@ -26,7 +26,6 @@ import { ITagSystem } from "../namespaces/evefrontier/interfaces/ITagSystem.sol"
  * @dev Provides execution context enforcement, entity-to-system scoping, and context parameter access for SOF systems
  */
 contract SmartObjectFramework is System {
-
   /// @notice Thrown when a system call is made outside proper context
   error SOF_InvalidCall();
 
@@ -84,7 +83,7 @@ contract SmartObjectFramework is System {
    * @return address The tracked msg.sender address
    */
   function _callMsgSender() internal view returns (address) {
-    (,, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
       IWorldWithContext(_world()).getWorldCallCount()
     );
     return msgSender;
@@ -97,7 +96,7 @@ contract SmartObjectFramework is System {
    * @return address The tracked msg.sender address for a world call
    */
   function _callMsgSender(uint256 callCount) internal view returns (address) {
-    (,, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     return msgSender;
   }
 
@@ -107,7 +106,7 @@ contract SmartObjectFramework is System {
    * @return uint256 The tracked msg.value amount
    */
   function _callMsgValue() internal view returns (uint256) {
-    (,,, uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(
+    (, , , uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(
       IWorldWithContext(_world()).getWorldCallCount()
     );
     return msgValue;
@@ -120,7 +119,7 @@ contract SmartObjectFramework is System {
    * @return uint256 The tracked msg.value amount for that call
    */
   function _callMsgValue(uint256 callCount) internal view returns (uint256) {
-    (,,, uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (, , , uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     return msgValue;
   }
 

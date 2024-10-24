@@ -474,7 +474,7 @@ contract WorldWithContext is StoreKernel, IWorldKernel {
    * @dev Reads system ID, function selector, msg.sender and msg.value from transient storage at specified call count
    * @param callCount The specific call count to retrieve execution context values for
    * @return ResourceId The system ID that was called
-   * @return bytes4 The function selector that was called  
+   * @return bytes4 The function selector that was called
    * @return address The msg.sender of the call
    * @return uint256 The msg.value of the call
    */
