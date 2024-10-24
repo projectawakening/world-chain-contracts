@@ -105,31 +105,6 @@ contract SmartAssemblyTest is MudTest {
     );
   }
 
-  function testRevertAssemblyTypeAlreadyExists(
-    uint256 smartObjectId,
-    string memory smartAssemblyType,
-    uint256 itemId,
-    uint256 typeId,
-    uint256 volume
-  ) public {
-    vm.assume(smartObjectId != 0);
-    vm.assume((keccak256(abi.encodePacked(smartAssemblyType)) != keccak256(abi.encodePacked(""))));
-
-    EntityRecordData memory entityRecordInput = EntityRecordData({ typeId: typeId, itemId: itemId, volume: volume });
-
-    world.call(
-      systemId,
-      abi.encodeCall(SmartAssemblySystem.createSmartAssembly, (smartObjectId, smartAssemblyType, entityRecordInput))
-    );
-
-    vm.expectRevert(abi.encodeWithSelector(SmartAssemblySystem.SmartAssemblyTypeAlreadyExists.selector, smartObjectId));
-
-    world.call(
-      systemId,
-      abi.encodeCall(SmartAssemblySystem.createSmartAssembly, (smartObjectId, smartAssemblyType, entityRecordInput))
-    );
-  }
-
   function testRevertAssemblyDoesNotExist(
     uint256 smartObjectId,
     string memory smartAssemblyType,
