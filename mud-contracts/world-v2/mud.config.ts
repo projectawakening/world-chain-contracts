@@ -331,8 +331,8 @@ export default defineWorld({
       key: ["smartObjectId", "inventoryItemId"],
     },
     /*************************
-    * SMART TURRET MODULE *
-    *************************/
+     * SMART TURRET MODULE *
+     *************************/
     SmartTurretConfig: {
       schema: {
         smartObjectId: "uint256",
