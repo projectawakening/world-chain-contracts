@@ -429,6 +429,10 @@ contract WorldWithContext is StoreKernel, IWorldKernel {
     revert World_DelegationNotFound(delegator, msg.sender);
   }
 
+  /**
+   * @notice Used in conjunction with the try/catch pattern to test if the current call is staticcall
+   * @dev Attempts to write to max uint256 slot in transient storage to verify if the current call is staticcall
+   */
   function staticCallCheck() external {
     uint256 maxSlot = type(uint256).max;
     assembly {
@@ -436,6 +440,14 @@ contract WorldWithContext is StoreKernel, IWorldKernel {
     }
   }
 
+  /**
+   * @notice Retrieves execution context details from the latest world call
+   * @dev Reads system ID, function selector, msg.sender and msg.value from transient storage
+   * @return ResourceId The system ID that was called
+   * @return bytes4 The function selector that was called
+   * @return address The tracked msg.sender of the call
+   * @return uint256 The tracked msg.value of the call
+   */
   function getWorldCallContext() public view returns (ResourceId, bytes4, address, uint256) {
     bytes32 trackedSystemId;
     bytes32 trackedFunctionSelector;
@@ -457,6 +469,15 @@ contract WorldWithContext is StoreKernel, IWorldKernel {
     return (systemId, functionSelector, msgSender, uint256(trackedMsgValue));
   }
 
+  /**
+   * @notice Retrieves execution context details for a specific world call
+   * @dev Reads system ID, function selector, msg.sender and msg.value from transient storage at specified call count
+   * @param callCount The specific call count to retrieve execution context values for
+   * @return ResourceId The system ID that was called
+   * @return bytes4 The function selector that was called  
+   * @return address The msg.sender of the call
+   * @return uint256 The msg.value of the call
+   */
   function getWorldCallContext(uint256 callCount) public view returns (ResourceId, bytes4, address, uint256) {
     bytes32 trackedSystemId;
     bytes32 trackedFunctionSelector;
@@ -477,6 +498,11 @@ contract WorldWithContext is StoreKernel, IWorldKernel {
     return (systemId, functionSelector, msgSender, uint256(trackedMsgValue));
   }
 
+  /**
+   * @notice Gets the current depth of the world execution call stack
+   * @dev Reads the call counter from slot 0 in transient storage
+   * @return uint256 The total number of world calls invoked/tracked in the current transaction
+   */
   function getWorldCallCount() public view returns (uint256) {
     uint256 callCount;
     assembly {

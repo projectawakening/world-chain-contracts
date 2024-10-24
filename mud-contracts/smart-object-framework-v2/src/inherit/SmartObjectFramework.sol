@@ -22,22 +22,49 @@ import { ITagSystem } from "../namespaces/evefrontier/interfaces/ITagSystem.sol"
 /**
  * @title SmartObjectFramework
  * @author CCP Games
- * @dev Extends the standard MUD System.sol with Smart Object Framework functionality
+ * @dev Base contract that extends MUD System with Smart Object Framework functionality
+ * @dev Provides execution context enforcement, entity-to-system scoping, and context parameter access for SOF systems
  */
 contract SmartObjectFramework is System {
+
+  /// @notice Thrown when a system call is made outside proper context
   error SOF_InvalidCall();
+
+  /**
+   * @notice Thrown when a system call is made outside the configured scope for an entity
+   * @param entityId The entity ID that was checked
+   * @param systemId The system ID that was called
+   */
   error SOF_UnscopedSystemCall(Id entityId, ResourceId systemId);
 
+  /// @notice Size of MUD context data appended to calls (address + uint256)
   uint256 constant MUD_CONTEXT_BYTES = 20 + 32;
 
   /**
-   * @dev A modifier to capture (and enforce) Execution Context for Smart Object Framework integrated Systems
+   * @notice Enforces proper execution context for system calls
+   * @dev Verifies the calling system and function selector match tracked context
    */
   modifier context() {
     ResourceId systemId = _contextGuard();
     _;
   }
 
+  /**
+   * @notice Enforces entity-based system accessibility scope
+   * @dev Checks if system can operate on given entity based on class tags
+   * @param entityId The entity ID to check scope fo
+   */
+  modifier scope(Id entityId) {
+    ResourceId systemId = SystemRegistry.get(address(this));
+    _scope(entityId, systemId);
+    _;
+  }
+
+  /**
+   * @notice Validates that the current execution context matches the expected system and function
+   * @dev Compares the current system ID and function selector against the tracked context
+   * @return systemId The ResourceId of the current system
+   */
   function _contextGuard() internal view returns (ResourceId) {
     ResourceId systemId = SystemRegistry.get(address(this));
     (ResourceId trackedSystemId, bytes4 trackedFunctionSelector, , ) = IWorldWithContext(_world()).getWorldCallContext(
@@ -51,43 +78,60 @@ contract SmartObjectFramework is System {
     return systemId;
   }
 
+  /**
+   * @notice Gets the tracked msg.sender from the current world call context
+   * @dev Retrieves msg.sender for the latest call in the world execution context stack
+   * @return address The tracked msg.sender address
+   */
   function _callMsgSender() internal view returns (address) {
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+    (,, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
       IWorldWithContext(_world()).getWorldCallCount()
     );
     return msgSender;
   }
 
+  /**
+   * @notice Gets the tracked msg.sender for a specific world call context
+   * @dev Retrieves msg.sender for the specified call count in the world execution context stack
+   * @param callCount The specific call count to get the call context for
+   * @return address The tracked msg.sender address for a world call
+   */
   function _callMsgSender(uint256 callCount) internal view returns (address) {
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (,, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     return msgSender;
   }
 
+  /**
+   * @notice Gets the tracked msg.value for the current world call context
+   * @dev Retrieves msg.value for the latest call in the world execution context stack
+   * @return uint256 The tracked msg.value amount
+   */
   function _callMsgValue() internal view returns (uint256) {
-    (, , , uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(
+    (,,, uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(
       IWorldWithContext(_world()).getWorldCallCount()
     );
-    return msgValue;
-  }
-
-  function _callMsgValue(uint256 callCount) internal view returns (uint256) {
-    (, , , uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     return msgValue;
   }
 
   /**
-   * @dev A modifier to enforce Entity based System accessibility scope
-   * @param entityId The Object (or Class) Entity to enforce System accessibility for
-   * Expected behaviour:
-   * if `entityId` is passed as a zero value - system scope enforcement is ignored
-   * if `entityId` is passed as an ENTITY_CLASS type ID - system scope enforcement for that Class is applied
-   * if `entityId` is passed as an ENTITY_OBJECT type ID - system scope enforcement for the Object's inherited Class is applied
-   * if `entityId` is passed as some other (non-Entity) type of ID - revert with an InvalidEntityType error
+   * @notice Gets the tracked msg.value for a specific world call context
+   * @dev Retrieves msg.value for the specified call count in the world execution context stack
+   * @param callCount The specific call count to get the context for
+   * @return uint256 The tracked msg.value amount for that call
    */
-  modifier scope(Id entityId) {
-    ResourceId systemId = SystemRegistry.get(address(this));
-    _scope(entityId, systemId);
-    _;
+  function _callMsgValue(uint256 callCount) internal view returns (uint256) {
+    (,,, uint256 msgValue) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    return msgValue;
+  }
+
+  /**
+   * @notice Removes the MUD context bytes from the end of calldata
+   * @dev Slices off the trailing context bytes (address + uint256) from the provided calldata
+   * @param callDataWithContext The original calldata including MUD context
+   * @return bytes The calldata with context bytes removed
+   */
+  function _callDataWithoutContext(bytes memory callDataWithContext) internal pure returns (bytes memory) {
+    return Bytes.slice(callDataWithContext, 0, callDataWithContext.length - MUD_CONTEXT_BYTES);
   }
 
   function _scope(Id entityId, ResourceId systemId) private view {
@@ -108,9 +152,5 @@ contract SmartObjectFramework is System {
         revert IEntitySystem.InvalidEntityType(entityId.getType());
       }
     }
-  }
-
-  function _callDataWithoutContext(bytes memory callDataWithContext) internal pure returns (bytes memory) {
-    return Bytes.slice(callDataWithContext, 0, callDataWithContext.length - MUD_CONTEXT_BYTES);
   }
 }
