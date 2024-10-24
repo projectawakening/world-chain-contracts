@@ -5,19 +5,20 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-import { Id, IdLib } from "../libs/Id.sol";
-import { ENTITY_CLASS } from "../types/entityTypes.sol";
-import { TAG_SYSTEM } from "../types/tagTypes.sol";
+import { Classes } from "../../codegen/tables/Classes.sol";
+import { ClassSystemTagMap, ClassSystemTagMapData } from "../../codegen/tables/ClassSystemTagMap.sol";
+import { SystemTags } from "../../codegen/tables/SystemTags.sol";
 
-import { Classes } from "../codegen/tables/Classes.sol";
-import { ClassSystemTagMap, ClassSystemTagMapData } from "../codegen/tables/ClassSystemTagMap.sol";
-import { SystemTags } from "../codegen/tables/SystemTags.sol";
+import { Id, IdLib } from "../../../../libs/Id.sol";
+import { ENTITY_CLASS } from "../../../../types/entityTypes.sol";
+import { TAG_SYSTEM } from "../../../../types/tagTypes.sol";
 
-import { IErrors } from "../interfaces/IErrors.sol";
+import { IEntitySystem } from "../../interfaces/IEntitySystem.sol";
+import { ITagSystem } from "../../interfaces/ITagSystem.sol";
 
-import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
+import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
-contract Tags is SmartObjectSystem {
+contract TagSystem is ITagSystem, SmartObjectFramework {
   /**
    * @notice set a SystemTag for a Class
    * @param classId An ENTITY_CLASS type Id referencing an existing Class to tag with `systemTagId`
@@ -61,21 +62,21 @@ contract Tags is SmartObjectSystem {
 
   function _setSystemTag(Id classId, Id tagId) private {
     if (!Classes.getExists(classId)) {
-      revert IErrors.ClassDoesNotExist(classId);
+      revert IEntitySystem.ClassDoesNotExist(classId);
     }
 
     if (Id.unwrap(tagId) == bytes32(0)) {
-      revert IErrors.InvalidTagId(tagId);
+      revert InvalidTagId(tagId);
     }
     if (tagId.getType() != TAG_SYSTEM) {
       bytes2[] memory expected = new bytes2[](1);
       expected[0] = TAG_SYSTEM;
-      revert IErrors.WrongTagType(tagId.getType(), expected);
+      revert WrongTagType(tagId.getType(), expected);
     }
 
     ResourceId systemId = ResourceId.wrap((Id.unwrap(tagId)));
     if (!(ResourceIds.getExists(systemId))) {
-      revert IErrors.SystemNotRegistered(systemId);
+      revert SystemNotRegistered(systemId);
     }
 
     if (!SystemTags.getExists(tagId)) {
@@ -87,17 +88,17 @@ contract Tags is SmartObjectSystem {
       Classes.pushSystemTags(classId, Id.unwrap(tagId));
       SystemTags.pushClasses(tagId, Id.unwrap(classId));
     } else {
-      revert IErrors.EntityAlreadyHasTag(classId, tagId);
+      revert EntityAlreadyHasTag(classId, tagId);
     }
   }
 
   function _removeSystemTag(Id classId, Id tagId) private {
     if (!Classes.getExists(classId)) {
-      revert IErrors.ClassDoesNotExist(classId);
+      revert IEntitySystem.ClassDoesNotExist(classId);
     }
 
     if (!SystemTags.getExists(tagId)) {
-      revert IErrors.TagDoesNotExist(tagId);
+      revert TagDoesNotExist(tagId);
     }
 
     ClassSystemTagMapData memory classTagMapData = ClassSystemTagMap.get(classId, tagId);
@@ -131,7 +132,7 @@ contract Tags is SmartObjectSystem {
       Classes.popSystemTags(classId);
       SystemTags.popClasses(tagId);
     } else {
-      revert IErrors.TagNotFound(classId, tagId);
+      revert TagNotFound(classId, tagId);
     }
   }
 }

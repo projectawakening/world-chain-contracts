@@ -14,35 +14,34 @@ import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/world
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 
-import { Entities } from "../src/systems/Entities.sol";
-import { Tags } from "../src/systems/Tags.sol";
-import { TaggedSystemMock } from "./mocks/TaggedSystemMock.sol";
-import { TaggedSystemMock2 } from "./mocks/TaggedSystemMock2.sol";
-import { UnTaggedSystemMock } from "./mocks/UnTaggedSystemMock.sol";
+import { DEPLOYMENT_NAMESPACE } from "../src/namespaces/evefrontier/constants.sol";
+import { EntitySystem } from "../src/namespaces/evefrontier/systems/entity-system/EntitySystem.sol";
+import { Utils as EntitySystemUtils } from "../src/namespaces/evefrontier/systems/entity-system/Utils.sol";
+import { TagSystem } from "../src/namespaces/evefrontier/systems/tag-system/TagSystem.sol";
+import { Utils as TagSystemUtils } from "../src/namespaces/evefrontier/systems/tag-system/Utils.sol";
+import { SystemMock } from "./mocks/SystemMock.sol";
 
-import "../src/codegen/index.sol";
+import "../src/namespaces/evefrontier/codegen/index.sol";
+
+import { IEntitySystem } from "../src/namespaces/evefrontier/interfaces/IEntitySystem.sol";
 
 import { Id, IdLib } from "../src/libs/Id.sol";
 import { ENTITY_CLASS, ENTITY_OBJECT } from "../src/types/entityTypes.sol";
 import { TAG_SYSTEM } from "../src/types/tagTypes.sol";
 
-import { IErrors } from "../src/interfaces/IErrors.sol";
-
-contract EntitiesTest is MudTest {
+contract EntitySystemTest is MudTest {
   IBaseWorld world;
-  Entities entities;
-  Tags tags;
-  TaggedSystemMock taggedSystemMock;
-  TaggedSystemMock2 taggedSystemMock2;
-  UnTaggedSystemMock unTaggedSystemMock;
+  EntitySystem entitySystem;
+  TagSystem tagSystem;
+  SystemMock taggedSystemMock;
+  SystemMock taggedSystemMock2;
+  SystemMock unTaggedSystemMock;
 
-  bytes14 constant NAMESPACE = bytes14("eveworld");
+  bytes14 constant NAMESPACE = DEPLOYMENT_NAMESPACE;
   ResourceId constant NAMESPACE_ID = ResourceId.wrap(bytes32(abi.encodePacked(RESOURCE_NAMESPACE, NAMESPACE)));
-  ResourceId constant ENTITIES_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Entities")))));
-  ResourceId constant TAGS_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("Tags")))));
-  ResourceId constant TAGGED_SYSTEM_ID =
+  ResourceId ENTITIES_SYSTEM_ID = EntitySystemUtils.entitySystemId();
+  ResourceId TAGS_SYSTEM_ID = TagSystemUtils.tagSystemId();
+  ResourceId TAGGED_SYSTEM_ID =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMock")))));
   ResourceId constant TAGGED_SYSTEM_ID_2 =
     ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, NAMESPACE, bytes16("TaggedSystemMoc2")))));
@@ -66,15 +65,15 @@ contract EntitiesTest is MudTest {
 
     // // START: deploy and register Mock Systems and functions
     vm.startPrank(deployer);
-    taggedSystemMock = new TaggedSystemMock();
+    taggedSystemMock = new SystemMock();
     world.registerSystem(TAGGED_SYSTEM_ID, System(taggedSystemMock), true);
-    world.registerFunctionSelector(TAGGED_SYSTEM_ID, "allowClassLevelScope(bytes32)");
-    world.registerFunctionSelector(TAGGED_SYSTEM_ID, "allowObjectLevelScope(bytes32)");
+    world.registerFunctionSelector(TAGGED_SYSTEM_ID, "classLevelScope(bytes32)");
+    world.registerFunctionSelector(TAGGED_SYSTEM_ID, "objectLevelScope(bytes32)");
 
-    taggedSystemMock2 = new TaggedSystemMock2();
+    taggedSystemMock2 = new SystemMock();
     world.registerSystem(TAGGED_SYSTEM_ID_2, System(taggedSystemMock2), true);
-    world.registerFunctionSelector(TAGGED_SYSTEM_ID_2, "allowClassLevelScope2(bytes32)");
-    world.registerFunctionSelector(TAGGED_SYSTEM_ID_2, "allowObjectLevelScope2(bytes32)");
+    world.registerFunctionSelector(TAGGED_SYSTEM_ID_2, "classLevelScope2(bytes32)");
+    world.registerFunctionSelector(TAGGED_SYSTEM_ID_2, "objectLevelScope2(bytes32)");
     vm.stopPrank();
   }
 
@@ -90,7 +89,7 @@ contract EntitiesTest is MudTest {
     assertEq(
       ResourceId.unwrap(
         FunctionSelectors.getSystemId(
-          bytes4(keccak256(bytes(string.concat(mockTaggedNamespaceString, "__", "allowClassLevelScope(bytes32)"))))
+          bytes4(keccak256(bytes(string.concat(mockTaggedNamespaceString, "__", "classLevelScope(bytes32)"))))
         )
       ),
       ResourceId.unwrap(TAGGED_SYSTEM_ID)
@@ -98,7 +97,7 @@ contract EntitiesTest is MudTest {
     assertEq(
       ResourceId.unwrap(
         FunctionSelectors.getSystemId(
-          bytes4(keccak256(bytes(string.concat(mockTaggedNamespaceString, "__", "allowObjectLevelScope(bytes32)"))))
+          bytes4(keccak256(bytes(string.concat(mockTaggedNamespaceString, "__", "objectLevelScope(bytes32)"))))
         )
       ),
       ResourceId.unwrap(TAGGED_SYSTEM_ID)
@@ -110,7 +109,7 @@ contract EntitiesTest is MudTest {
     assertEq(
       ResourceId.unwrap(
         FunctionSelectors.getSystemId(
-          bytes4(keccak256(bytes(string.concat(mockTagged2NamespaceString, "__", "allowClassLevelScope2(bytes32)"))))
+          bytes4(keccak256(bytes(string.concat(mockTagged2NamespaceString, "__", "classLevelScope2(bytes32)"))))
         )
       ),
       ResourceId.unwrap(TAGGED_SYSTEM_ID_2)
@@ -118,7 +117,7 @@ contract EntitiesTest is MudTest {
     assertEq(
       ResourceId.unwrap(
         FunctionSelectors.getSystemId(
-          bytes4(keccak256(bytes(string.concat(mockTagged2NamespaceString, "__", "allowObjectLevelScope2(bytes32)"))))
+          bytes4(keccak256(bytes(string.concat(mockTagged2NamespaceString, "__", "objectLevelScope2(bytes32)"))))
         )
       ),
       ResourceId.unwrap(TAGGED_SYSTEM_ID_2)
@@ -130,17 +129,17 @@ contract EntitiesTest is MudTest {
     tagIds[0] = taggedSystemTagId;
     tagIds[1] = taggedSystemTagId2;
     // reverts if classId is bytes32(0)
-    vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidEntityId.selector, Id.wrap(bytes32(0))));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (Id.wrap(bytes32(0)), tagIds)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.InvalidEntityId.selector, Id.wrap(bytes32(0))));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (Id.wrap(bytes32(0)), tagIds)));
 
     // reverts if classId is not a Class type
     bytes2[] memory expected = new bytes2[](1);
     expected[0] = ENTITY_CLASS;
-    vm.expectRevert(abi.encodeWithSelector(IErrors.WrongEntityType.selector, objectId.getType(), expected));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (objectId, tagIds)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.WrongEntityType.selector, objectId.getType(), expected));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (objectId, tagIds)));
 
     // succesful call
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, tagIds)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, tagIds)));
 
     // after
     assertEq(Classes.getExists(classId), true);
@@ -151,30 +150,30 @@ contract EntitiesTest is MudTest {
     assertEq(class1SystemTagsAfter[1], Id.unwrap(taggedSystemTagId2));
 
     // reverts if classId is already registered
-    vm.expectRevert(abi.encodeWithSelector(IErrors.ClassAlreadyExists.selector, classId));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, tagIds)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.ClassAlreadyExists.selector, classId));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, tagIds)));
   }
 
   function testInstantiateObject() public {
     // reverts if classId has NOT been registered
-    vm.expectRevert(abi.encodeWithSelector(IErrors.ClassDoesNotExist.selector, classId));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.ClassDoesNotExist.selector, classId));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
 
     // register classId
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, new Id[](0))));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, new Id[](0))));
 
     // reverts if objectId is bytes32(0)
-    vm.expectRevert(abi.encodeWithSelector(IErrors.InvalidEntityId.selector, Id.wrap(bytes32(0))));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, Id.wrap(bytes32(0)))));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.InvalidEntityId.selector, Id.wrap(bytes32(0))));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, Id.wrap(bytes32(0)))));
 
     // reverts if objectId is not an ENTITY_OBJECT type
     bytes2[] memory expected = new bytes2[](1);
     expected[0] = ENTITY_OBJECT;
-    vm.expectRevert(abi.encodeWithSelector(IErrors.WrongEntityType.selector, classId.getType(), expected));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, classId)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.WrongEntityType.selector, classId.getType(), expected));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, classId)));
 
     // successful call
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
     // after checks
     // creates an entry in the EntityIds table
     assertEq(Objects.getExists(objectId), true);
@@ -193,21 +192,21 @@ contract EntitiesTest is MudTest {
 
     // reverts if objectId is already instantiated
     Id instanceClass = Objects.getClass(objectId);
-    vm.expectRevert(abi.encodeWithSelector(IErrors.ObjectAlreadyExists.selector, objectId, instanceClass));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.ObjectAlreadyExists.selector, objectId, instanceClass));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
   }
 
   function testDeleteObject() public {
     // setup - register classId
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, new Id[](0))));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, new Id[](0))));
 
     // reverts if objectId doesn't exist (hasn't been instantiated)
-    vm.expectRevert(abi.encodeWithSelector(IErrors.ObjectDoesNotExist.selector, objectId));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteObject, (objectId)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.ObjectDoesNotExist.selector, objectId));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteObject, (objectId)));
 
     // check data state
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId2)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId2)));
     // before
     bytes32[] memory classObjectsBefore = Classes.getObjects(classId);
     assertEq(classObjectsBefore.length, 2);
@@ -224,7 +223,7 @@ contract EntitiesTest is MudTest {
 
     // successful call
 
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteObject, (objectId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteObject, (objectId)));
 
     // after
     // Classes.objects array correctly updated
@@ -248,9 +247,9 @@ contract EntitiesTest is MudTest {
 
   function testDeleteObjects() public {
     // correctly calls and executes deleteObject for multiple objectIds
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, new Id[](0))));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId2)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, new Id[](0))));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId2)));
 
     assertEq(Objects.getExists(objectId), true);
     assertEq(Id.unwrap(Objects.getClass(objectId)), Id.unwrap(classId));
@@ -261,7 +260,7 @@ contract EntitiesTest is MudTest {
     objectsToDelete[0] = objectId;
     objectsToDelete[1] = objectId2;
 
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteObjects, (objectsToDelete)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteObjects, (objectsToDelete)));
 
     assertEq(Objects.getExists(objectId), false);
     assertEq(Id.unwrap(Objects.getClass(objectId)), bytes32(0));
@@ -271,16 +270,16 @@ contract EntitiesTest is MudTest {
 
   function testDeleteClass() public {
     // reverts if classId doesn't exist (wasn't registered)
-    vm.expectRevert(abi.encodeWithSelector(IErrors.ClassDoesNotExist.selector, classId));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteClass, (classId)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.ClassDoesNotExist.selector, classId));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteClass, (classId)));
     Id[] memory tagIds = new Id[](1);
     tagIds[0] = taggedSystemTagId;
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, tagIds)));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.instantiate, (classId, objectId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, tagIds)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.instantiate, (classId, objectId)));
 
     // reverts if Class has Object(s) instantiated still
-    vm.expectRevert(abi.encodeWithSelector(IErrors.ClassHasObjects.selector, classId, 1));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteClass, (classId)));
+    vm.expectRevert(abi.encodeWithSelector(IEntitySystem.ClassHasObjects.selector, classId, 1));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteClass, (classId)));
 
     // check data state updates
     // before
@@ -291,8 +290,8 @@ contract EntitiesTest is MudTest {
     assertEq(Classes.getExists(classId), true);
 
     // successful call
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteObject, (objectId)));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteClass, (classId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteObject, (objectId)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteClass, (classId)));
     // after
     // removes all SystemTags
     bytes32[] memory class1SystemTagsAfter = Classes.getSystemTags(classId);
@@ -306,8 +305,8 @@ contract EntitiesTest is MudTest {
     // corectly calls and executes deleteClass for multiple classIds
     Id[] memory tagIds = new Id[](1);
     tagIds[0] = taggedSystemTagId;
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId, tagIds)));
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.registerClass, (classId2, tagIds)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId, tagIds)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.registerClass, (classId2, tagIds)));
 
     // check data state updates
     // before
@@ -324,7 +323,7 @@ contract EntitiesTest is MudTest {
     Id[] memory classIds = new Id[](2);
     classIds[0] = classId;
     classIds[1] = classId2;
-    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(Entities.deleteClasses, (classIds)));
+    world.call(ENTITIES_SYSTEM_ID, abi.encodeCall(EntitySystem.deleteClasses, (classIds)));
 
     // after
     bytes32[] memory class1SystemTagsAfter = Classes.getSystemTags(classId);

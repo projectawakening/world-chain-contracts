@@ -17,7 +17,7 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 // Import user types
-import { Id } from "./../../libs/Id.sol";
+import { Id } from "../../../../libs/Id.sol";
 
 struct ObjectsData {
   bool exists;
@@ -25,8 +25,8 @@ struct ObjectsData {
 }
 
 library Objects {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "eveworld", name: "Objects", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x7462657665776f726c640000000000004f626a65637473000000000000000000);
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "Objects", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004f626a65637473000000000000000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0021020001200000000000000000000000000000000000000000000000000000);

@@ -2,13 +2,20 @@
 pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { Id } from "../libs/Id.sol";
+import { Id } from "../../../libs/Id.sol";
 
 /**
- * @title IErros
- * @dev An interface for SOF custom errors
+ * @title IEntitySystem
+ * @dev An interface for the Entity System functionality
  */
-interface IErrors {
+interface IEntitySystem {
+  function registerClass(Id classId, Id[] memory systemTagIds) external;
+  function deleteClass(Id classId) external;
+  function deleteClasses(Id[] memory classIds) external;
+  function instantiate(Id classId, Id objectId) external;
+  function deleteObject(Id objectId) external;
+  function deleteObjects(Id[] memory objectIds) external;
+
   error InvalidEntityId(Id invalidId);
   error InvalidEntityType(bytes2 givenType);
   error WrongEntityType(bytes2 givenType, bytes2[] expectedTypes);
@@ -17,15 +24,4 @@ interface IErrors {
   error ClassHasObjects(Id classId, uint256 numberOfObjects);
   error ObjectAlreadyExists(Id objectId, Id instanceClass);
   error ObjectDoesNotExist(Id objectId);
-
-  error InvalidTagId(Id tagId);
-  error InvalidTagType(bytes2 givenType);
-  error TagAlreadyExists(Id tagId);
-  error TagDoesNotExist(Id tagId);
-  error TagNotFound(Id entityId, Id tagId);
-  error WrongTagType(bytes2 givenType, bytes2[] expectedTypes);
-  error SystemNotRegistered(ResourceId systemId);
-  error EntityAlreadyHasTag(Id entityId, Id tagId);
-
-  error InvalidSystemCall(Id entityId, ResourceId systemId);
 }

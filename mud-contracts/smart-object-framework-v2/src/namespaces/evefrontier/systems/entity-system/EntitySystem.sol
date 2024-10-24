@@ -5,27 +5,28 @@ import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-import { Classes, ClassesData } from "../codegen/tables/Classes.sol";
-import { ClassSystemTagMap } from "../codegen/tables/ClassSystemTagMap.sol";
-import { ClassObjectMap, ClassObjectMapData } from "../codegen/tables/ClassObjectMap.sol";
-import { Objects } from "../codegen/tables/Objects.sol";
-import { IWorld } from "../codegen/world/IWorld.sol";
+import { Classes, ClassesData } from "../../codegen/tables/Classes.sol";
+import { ClassSystemTagMap } from "../../codegen/tables/ClassSystemTagMap.sol";
+import { ClassObjectMap, ClassObjectMapData } from "../../codegen/tables/ClassObjectMap.sol";
+import { Objects } from "../../codegen/tables/Objects.sol";
 
-import { Id, IdLib } from "../libs/Id.sol";
-import { ENTITY_CLASS, ENTITY_OBJECT } from "../types/entityTypes.sol";
-import { TAG_SYSTEM } from "../types/tagTypes.sol";
+import { Id, IdLib } from "../../../../libs/Id.sol";
+import { ENTITY_CLASS, ENTITY_OBJECT } from "../../../../types/entityTypes.sol";
+import { TAG_SYSTEM } from "../../../../types/tagTypes.sol";
 
-import { ITags } from "../interfaces/ITags.sol";
-import { IErrors } from "../interfaces/IErrors.sol";
+import { ITagSystem } from "../../interfaces/ITagSystem.sol";
+import { IEntitySystem } from "../../interfaces/IEntitySystem.sol";
 
-import { SmartObjectSystem } from "./inherit/SmartObjectSystem.sol";
+import { Utils as TagSystemUtils } from "../tag-system/Utils.sol";
+
+import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
 /**
- * @title Entities
+ * @title EntitySystem
  * @author CCP Games
  * @dev Manage Class and Object creation/deletion through the use of reference Ids { see, `libs/Id.sol` and `types/entityTypes.sol`}
  */
-contract Entities is SmartObjectSystem {
+contract EntitySystem is IEntitySystem, SmartObjectFramework {
   /**
    * @notice register a Class Entity into the SOF with an initial set of assigned SystemTags
    * @param classId A unique ENTITY_CLASS type Id for referencing a newly registred Class Entity within SOF compatible Systems
@@ -33,20 +34,23 @@ contract Entities is SmartObjectSystem {
    */
   function registerClass(Id classId, Id[] memory systemTags) public {
     if (Id.unwrap(classId) == bytes32(0)) {
-      revert IErrors.InvalidEntityId(classId);
+      revert InvalidEntityId(classId);
     }
     if (classId.getType() != ENTITY_CLASS) {
       bytes2[] memory expected = new bytes2[](1);
       expected[0] = ENTITY_CLASS;
-      revert IErrors.WrongEntityType(classId.getType(), expected);
+      revert WrongEntityType(classId.getType(), expected);
     }
     if (Classes.getExists(classId)) {
-      revert IErrors.ClassAlreadyExists(classId);
+      revert ClassAlreadyExists(classId);
     }
 
     Classes.set(classId, true, new bytes32[](0), new bytes32[](0));
 
-    IWorld(_world()).eveworld__setSystemTags(classId, systemTags);
+    IWorldKernel(_world()).call(
+      TagSystemUtils.tagSystemId(),
+      abi.encodeCall(ITagSystem.setSystemTags, (classId, systemTags))
+    );
   }
 
   /**
@@ -56,12 +60,12 @@ contract Entities is SmartObjectSystem {
    */
   function deleteClass(Id classId) public {
     if (!Classes.getExists(classId)) {
-      revert IErrors.ClassDoesNotExist(classId);
+      revert ClassDoesNotExist(classId);
     }
 
     ClassesData memory class = Classes.get(classId);
     if (class.objects.length > 0) {
-      revert IErrors.ClassHasObjects(classId, class.objects.length);
+      revert ClassHasObjects(classId, class.objects.length);
     }
 
     Id[] memory systemTags = new Id[](class.systemTags.length);
@@ -69,7 +73,10 @@ contract Entities is SmartObjectSystem {
       systemTags[i] = Id.wrap(class.systemTags[i]);
     }
 
-    IWorld(_world()).eveworld__removeSystemTags(classId, systemTags);
+    IWorldKernel(_world()).call(
+      TagSystemUtils.tagSystemId(),
+      abi.encodeCall(ITagSystem.removeSystemTags, (classId, systemTags))
+    );
 
     Classes.deleteRecord(classId);
   }
@@ -91,20 +98,20 @@ contract Entities is SmartObjectSystem {
    */
   function instantiate(Id classId, Id objectId) public {
     if (!Classes.getExists(classId)) {
-      revert IErrors.ClassDoesNotExist(classId);
+      revert ClassDoesNotExist(classId);
     }
 
     if (Id.unwrap(objectId) == bytes32(0)) {
-      revert IErrors.InvalidEntityId(objectId);
+      revert InvalidEntityId(objectId);
     }
     if (objectId.getType() != ENTITY_OBJECT) {
       bytes2[] memory expected = new bytes2[](1);
       expected[0] = ENTITY_OBJECT;
-      revert IErrors.WrongEntityType(objectId.getType(), expected);
+      revert WrongEntityType(objectId.getType(), expected);
     }
     if (Objects.getExists(objectId)) {
       Id instanceClass = Objects.getClass(objectId);
-      revert IErrors.ObjectAlreadyExists(objectId, instanceClass);
+      revert ObjectAlreadyExists(objectId, instanceClass);
     }
 
     ClassObjectMap.set(classId, objectId, true, Classes.lengthObjects(classId));
@@ -119,7 +126,7 @@ contract Entities is SmartObjectSystem {
    */
   function deleteObject(Id objectId) public {
     if (!Objects.getExists(objectId)) {
-      revert IErrors.ObjectDoesNotExist(objectId);
+      revert ObjectDoesNotExist(objectId);
     }
 
     Id classId = Objects.getClass(objectId);
