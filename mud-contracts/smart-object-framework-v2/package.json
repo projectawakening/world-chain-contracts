@@ -18,11 +18,11 @@
     "test": "tsc --noEmit && mud test --forgeOptions=-vvv"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.0.12",
-    "@latticexyz/schema-type": "2.0.12",
-    "@latticexyz/store": "2.0.12",
-    "@latticexyz/world": "2.0.12",
-    "@latticexyz/world-modules": "2.0.12"
+    "@latticexyz/cli": "2.2.11",
+    "@latticexyz/schema-type": "2.2.11",
+    "@latticexyz/store": "2.2.11",
+    "@latticexyz/world": "2.2.11",
+    "@latticexyz/world-modules": "2.2.11"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",
@@ -33,8 +33,8 @@
     "prettier": "3.2.5",
     "prettier-plugin-solidity": "1.3.1",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "2.0.12",
-    "solhint-plugin-mud": "2.0.12",
+    "solhint-config-mud": "2.2.11",
+    "solhint-plugin-mud": "2.2.11",
     "typescript": "^5.4.5"
   }
 }
