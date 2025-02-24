@@ -21,7 +21,7 @@ export default defineWorld({
     evefrontier: {
       tables: {
         /**
-         * Class Id table 
+         * Class Id table
          */
         Initialize: {
           schema: {
