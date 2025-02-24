@@ -41,14 +41,15 @@ contract PostDeploy is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
+    // initialize smart object framework for the world
+    if (vm.envBool("INITIALIZE_SOF")) {
+      _initializeSmartObjectFramework();
+    }
+
+    // install all the necessary tokens
     _installPuppet(world);
-
-    // register new ERC20 EVE Token
     _createEVEToken(world);
-
-    // register new ERC721 puppets for SmartCharacter and SmartDeployable modules
     _createCharacterToken(world);
-
     _createDeployableToken(world);
 
     vm.stopBroadcast();
@@ -121,6 +122,27 @@ contract PostDeploy is Script {
 
     staticDataSystem.setBaseURI(baseURI);
     deployableSystem.registerDeployableToken(address(erc721SmartDeployableToken));
+  }
+
+  function _initializeSmartObjectFramework() internal {
+    eveSystem.registerSmartCharacterClass(vm.envUint("CHARACTER_TYPE_ID"));
+    eveSystem.registerSmartStorageUnitClass(vm.envUint("SSU_TYPE_ID"));
+    eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"));
+    eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"));
+
+    eveSystem.configureEntityRecordAccess();
+    eveSystem.configureStaticDataAccess();
+    eveSystem.configureFuelAccess();
+    eveSystem.configureLocationAccess();
+    eveSystem.configureDeployableAccess();
+    eveSystem.configureSmartAssemblyAccess();
+    eveSystem.configureInventoryAccess();
+    eveSystem.configureEphemeralInventoryAccess();
+    eveSystem.configureInventoryInteractAccess();
+    eveSystem.configureSmartCharacterAccess();
+    eveSystem.configureSmartStorageUnitAccess();
+    eveSystem.configureSmartTurretAccess();
+    eveSystem.configureSmartGateAccess();
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {
