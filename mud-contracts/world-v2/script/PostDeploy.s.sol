@@ -26,6 +26,8 @@ import { StaticDataSystemLib, staticDataSystem } from "../src/namespaces/evefron
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 
+import { EveSystemLib, eveSystem } from "../src/namespaces/evefrontier/codegen/systems/EveSystemLib.sol";
+
 contract PostDeploy is Script {
   function run(address worldAddress) external {
     StoreSwitch.setStoreAddress(worldAddress);
