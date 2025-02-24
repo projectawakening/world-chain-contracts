@@ -16,12 +16,18 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-library Balances {
+// Import user types
+import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+library Initialize {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "Initialize", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000496e697469616c697a65000000000000);
+
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0020010020000000000000000000000000000000000000000000000000000000);
 
-  // Hex-encoded key schema of (address)
-  Schema constant _keySchema = Schema.wrap(0x0014010061000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded key schema of (bytes32)
+  Schema constant _keySchema = Schema.wrap(0x002001005f000000000000000000000000000000000000000000000000000000);
   // Hex-encoded value schema of (uint256)
   Schema constant _valueSchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
 
@@ -31,7 +37,7 @@ library Balances {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "account";
+    keyNames[0] = "systemId";
   }
 
   /**
@@ -40,113 +46,113 @@ library Balances {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](1);
-    fieldNames[0] = "value";
+    fieldNames[0] = "classId";
   }
 
   /**
    * @notice Register the table with its config.
    */
-  function register(ResourceId _tableId) internal {
+  function register() internal {
     StoreSwitch.registerTable(_tableId, _fieldLayout, _keySchema, _valueSchema, getKeyNames(), getFieldNames());
   }
 
   /**
    * @notice Register the table with its config.
    */
-  function _register(ResourceId _tableId) internal {
+  function _register() internal {
     StoreCore.registerTable(_tableId, _fieldLayout, _keySchema, _valueSchema, getKeyNames(), getFieldNames());
   }
 
   /**
-   * @notice Get value.
+   * @notice Get classId.
    */
-  function getValue(ResourceId _tableId, address account) internal view returns (uint256 value) {
+  function getClassId(ResourceId systemId) internal view returns (uint256 classId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get value.
+   * @notice Get classId.
    */
-  function _getValue(ResourceId _tableId, address account) internal view returns (uint256 value) {
+  function _getClassId(ResourceId systemId) internal view returns (uint256 classId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get value.
+   * @notice Get classId.
    */
-  function get(ResourceId _tableId, address account) internal view returns (uint256 value) {
+  function get(ResourceId systemId) internal view returns (uint256 classId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get value.
+   * @notice Get classId.
    */
-  function _get(ResourceId _tableId, address account) internal view returns (uint256 value) {
+  function _get(ResourceId systemId) internal view returns (uint256 classId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set value.
+   * @notice Set classId.
    */
-  function setValue(ResourceId _tableId, address account, uint256 value) internal {
+  function setClassId(ResourceId systemId, uint256 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((classId)), _fieldLayout);
   }
 
   /**
-   * @notice Set value.
+   * @notice Set classId.
    */
-  function _setValue(ResourceId _tableId, address account, uint256 value) internal {
+  function _setClassId(ResourceId systemId, uint256 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((classId)), _fieldLayout);
   }
 
   /**
-   * @notice Set value.
+   * @notice Set classId.
    */
-  function set(ResourceId _tableId, address account, uint256 value) internal {
+  function set(ResourceId systemId, uint256 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((classId)), _fieldLayout);
   }
 
   /**
-   * @notice Set value.
+   * @notice Set classId.
    */
-  function _set(ResourceId _tableId, address account, uint256 value) internal {
+  function _set(ResourceId systemId, uint256 classId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((value)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((classId)), _fieldLayout);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(ResourceId _tableId, address account) internal {
+  function deleteRecord(ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -154,9 +160,9 @@ library Balances {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(ResourceId _tableId, address account) internal {
+  function _deleteRecord(ResourceId systemId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -165,8 +171,8 @@ library Balances {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 value) internal pure returns (bytes memory) {
-    return abi.encodePacked(value);
+  function encodeStatic(uint256 classId) internal pure returns (bytes memory) {
+    return abi.encodePacked(classId);
   }
 
   /**
@@ -175,8 +181,8 @@ library Balances {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(uint256 value) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(value);
+  function encode(uint256 classId) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(classId);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -187,9 +193,9 @@ library Balances {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(address account) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(ResourceId systemId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(account)));
+    _keyTuple[0] = ResourceId.unwrap(systemId);
 
     return _keyTuple;
   }

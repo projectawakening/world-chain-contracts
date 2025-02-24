@@ -40,7 +40,6 @@ contract InventoryTest is EveTest {
   InventoryItem item10;
   InventoryItem item11;
   InventoryItem item12;
-  InventoryItem item13;
 
   uint256 smartObjectId;
   uint256 characterId;
@@ -50,6 +49,7 @@ contract InventoryTest is EveTest {
   EntityRecordData ephCharEntityRecordData;
   EntityMetadata characterMetadata;
   string tokenCID;
+  uint256 inventoryItemClassId;
 
   function setUp() public virtual override {
     super.setUp();
@@ -73,22 +73,12 @@ contract InventoryTest is EveTest {
 
     item1 = InventoryItem(4235, alice, 4235, 12, 100, 1);
     item2 = InventoryItem(4236, alice, 4236, 12, 200, 1);
-    item3 = InventoryItem(4237, alice, 4237, 12, 150, 1);
-    item4 = InventoryItem(8235, alice, 8235, 12, 100, 1);
-    item5 = InventoryItem(8236, alice, 8236, 12, 200, 1);
-    item6 = InventoryItem(8237, alice, 8237, 12, 150, 1);
-    item7 = InventoryItem(5237, alice, 5237, 12, 150, 1);
-    item8 = InventoryItem(6237, alice, 6237, 12, 150, 1);
-    item9 = InventoryItem(7237, alice, 7237, 12, 150, 1);
-    item10 = InventoryItem(5238, alice, 5238, 12, 150, 1);
-    item11 = InventoryItem(5239, alice, 5239, 12, 150, 1);
-    item12 = InventoryItem(6238, alice, 6238, 12, 150, 1);
-    item13 = InventoryItem(6239, bob, 6239, 12, 150, 1);
+    item3 = InventoryItem(4237, alice, 4237, 12, 300, 1);
+    item4 = InventoryItem(4238, alice, 4238, 12, 400, 1);
 
-    uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
 
     //Mock Item creation
-
     EntityRecord.set(item1.inventoryItemId, item1.itemId, item1.typeId, item1.volume, true);
     entitySystem.instantiate(inventoryItemClassId, item1.inventoryItemId, alice);
     EntityRecord.set(item2.inventoryItemId, item2.itemId, item2.typeId, item2.volume, true);
@@ -97,24 +87,6 @@ contract InventoryTest is EveTest {
     entitySystem.instantiate(inventoryItemClassId, item3.inventoryItemId, alice);
     EntityRecord.set(item4.inventoryItemId, item4.itemId, item4.typeId, item4.volume, true);
     entitySystem.instantiate(inventoryItemClassId, item4.inventoryItemId, alice);
-    EntityRecord.set(item5.inventoryItemId, item5.itemId, item5.typeId, item5.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item5.inventoryItemId, alice);
-    EntityRecord.set(item6.inventoryItemId, item6.itemId, item6.typeId, item6.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item6.inventoryItemId, alice);
-    EntityRecord.set(item7.inventoryItemId, item7.itemId, item7.typeId, item7.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item7.inventoryItemId, alice);
-    EntityRecord.set(item8.inventoryItemId, item8.itemId, item8.typeId, item8.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item8.inventoryItemId, alice);
-    EntityRecord.set(item9.inventoryItemId, item9.itemId, item9.typeId, item9.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item9.inventoryItemId, alice);
-    EntityRecord.set(item10.inventoryItemId, item10.itemId, item10.typeId, item10.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item10.inventoryItemId, alice);
-    EntityRecord.set(item11.inventoryItemId, item11.itemId, item11.typeId, item11.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item11.inventoryItemId, alice);
-    EntityRecord.set(item12.inventoryItemId, item12.itemId, item12.typeId, item12.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item12.inventoryItemId, alice);
-    EntityRecord.set(item13.inventoryItemId, item13.itemId, item13.typeId, item13.volume, true);
-    entitySystem.instantiate(inventoryItemClassId, item13.inventoryItemId, bob);
 
     uint256 inventoryTestClassId = uint256(bytes32("INVENTORY_TEST"));
     ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
@@ -214,7 +186,6 @@ contract InventoryTest is EveTest {
 
     InventoryItemData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
     InventoryItemData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, items[1].inventoryItemId);
-
     InventoryItemData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, items[2].inventoryItemId);
 
     assertEq(inventoryItem1.quantity, items[0].quantity);
@@ -268,7 +239,7 @@ contract InventoryTest is EveTest {
   }
 
   function testDepositToExistingInventory(uint256 storageCapacity) public {
-    vm.assume(storageCapacity >= 1200 && storageCapacity <= 10000);
+    vm.assume(storageCapacity >= 4000 && storageCapacity <= 10000);
     testDepositToInventory(storageCapacity);
 
     InventoryItem[] memory items = new InventoryItem[](1);
@@ -340,7 +311,7 @@ contract InventoryTest is EveTest {
     uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
     uint256 itemVolume = 0;
 
-    assertEq(capacityBeforeWithdrawal, 1000);
+    assertEq(capacityBeforeWithdrawal, 1300);
 
     vm.startPrank(alice);
     inventorySystem.withdrawFromInventory(smartObjectId, items);
@@ -402,7 +373,7 @@ contract InventoryTest is EveTest {
     uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
     uint256 itemVolume = 0;
 
-    assertEq(capacityBeforeWithdrawal, 1000);
+    assertEq(capacityBeforeWithdrawal, 1300);
 
     vm.startPrank(alice);
     inventorySystem.withdrawFromInventory(smartObjectId, items);
@@ -447,7 +418,7 @@ contract InventoryTest is EveTest {
     uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
     uint256 itemVolume = 0;
 
-    assertEq(capacityBeforeWithdrawal, 1000);
+    assertEq(capacityBeforeWithdrawal, 1300);
 
     vm.startPrank(alice);
     inventorySystem.withdrawFromInventory(smartObjectId, items);
@@ -481,6 +452,34 @@ contract InventoryTest is EveTest {
     vm.assume(storageCapacity >= 11000 && storageCapacity <= 90000);
 
     testSetInventoryCapacity(storageCapacity);
+
+    vm.startPrank(deployer);
+    item5 = InventoryItem(4239, alice, 4239, 12, 400, 1);
+    item6 = InventoryItem(4240, alice, 4240, 12, 400, 1);
+    item7 = InventoryItem(4241, alice, 4241, 12, 400, 1);
+    item8 = InventoryItem(4242, alice, 4242, 12, 400, 1);
+    item9 = InventoryItem(4243, alice, 4243, 12, 400, 1);
+    item10 = InventoryItem(4244, alice, 4244, 12, 400, 1);
+    item11 = InventoryItem(4245, alice, 4245, 12, 400, 1);
+    item12 = InventoryItem(4246, alice, 4246, 12, 400, 1);
+
+    EntityRecord.set(item5.inventoryItemId, item5.itemId, item5.typeId, item5.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item5.inventoryItemId, alice);
+    EntityRecord.set(item6.inventoryItemId, item6.itemId, item6.typeId, item6.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item6.inventoryItemId, alice);
+    EntityRecord.set(item7.inventoryItemId, item7.itemId, item7.typeId, item7.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item7.inventoryItemId, alice);
+    EntityRecord.set(item8.inventoryItemId, item8.itemId, item8.typeId, item8.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item8.inventoryItemId, alice);
+    EntityRecord.set(item9.inventoryItemId, item9.itemId, item9.typeId, item9.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item9.inventoryItemId, alice);
+    EntityRecord.set(item10.inventoryItemId, item10.itemId, item10.typeId, item10.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item10.inventoryItemId, alice);
+    EntityRecord.set(item11.inventoryItemId, item11.itemId, item11.typeId, item11.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item11.inventoryItemId, alice);
+    EntityRecord.set(item12.inventoryItemId, item12.itemId, item12.typeId, item12.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item12.inventoryItemId, alice);
+    vm.stopPrank();
 
     InventoryItem[] memory items = new InventoryItem[](12);
     item1.quantity = 3;
@@ -563,17 +562,11 @@ contract InventoryTest is EveTest {
     inventorySystem.withdrawFromInventory(smartObjectId, items);
     vm.stopPrank();
 
-    uint256 itemId1 = uint256(4235);
     uint256 itemId3 = uint256(4237);
 
-    InventoryItemData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, itemId1);
-    InventoryItemData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, itemId3);
+    InventoryItemData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, itemId3);
 
-    assertEq(inventoryItem1.quantity, 2);
-    assertEq(inventoryItem2.quantity, 0);
-
-    assertEq(inventoryItem1.index, 0);
-    assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.quantity, 0);
 
     inventoryData = Inventory.get(smartObjectId);
     assertEq(inventoryData.items.length, 1);

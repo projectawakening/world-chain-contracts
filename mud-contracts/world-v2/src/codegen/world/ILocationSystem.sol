@@ -12,12 +12,4 @@ import { LocationData } from "../../namespaces/evefrontier/codegen/index.sol";
  */
 interface ILocationSystem {
   function evefrontier__saveLocation(uint256 smartObjectId, LocationData memory locationData) external;
-
-  function evefrontier__setSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) external;
-
-  function evefrontier__setX(uint256 smartObjectId, uint256 x) external;
-
-  function evefrontier__setY(uint256 smartObjectId, uint256 y) external;
-
-  function evefrontier__setZ(uint256 smartObjectId, uint256 z) external;
 }

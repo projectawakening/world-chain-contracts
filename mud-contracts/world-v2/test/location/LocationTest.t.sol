@@ -61,54 +61,10 @@ contract LocationTest is EveTest {
     assertEq(z, location.z);
   }
 
-  function testSetSolarSystemId(uint256 solarSystemId) public {
-    vm.assume(smartObjectId != 0);
-
-    vm.startPrank(deployer);
-    locationSystem.setSolarSystemId(smartObjectId, solarSystemId);
-    vm.stopPrank();
-
-    LocationData memory location = Location.get(smartObjectId);
-    assertEq(solarSystemId, location.solarSystemId);
-  }
-
-  function testSetX(uint256 x) public {
-    vm.assume(smartObjectId != 0);
-
-    vm.startPrank(deployer);
-    locationSystem.setX(smartObjectId, x);
-    vm.stopPrank();
-
-    LocationData memory location = Location.get(smartObjectId);
-    assertEq(x, location.x);
-  }
-
-  function testSetY(uint256 y) public {
-    vm.assume(smartObjectId != 0);
-
-    vm.startPrank(deployer);
-    locationSystem.setY(smartObjectId, y);
-    vm.stopPrank();
-
-    LocationData memory location = Location.get(smartObjectId);
-    assertEq(y, location.y);
-  }
-
-  function testSetZ(uint256 z) public {
-    vm.assume(smartObjectId != 0);
-
-    vm.startPrank(deployer);
-    locationSystem.setZ(smartObjectId, z);
-    vm.stopPrank();
-
-    LocationData memory location = Location.get(smartObjectId);
-    assertEq(z, location.z);
-  }
-
-  function testMustBeAdminToSetLocation() public {
+  function testMustBeAdminToSetLocation(uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
     vm.startPrank(alice);
     vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdmin.selector, alice));
-    locationSystem.setSolarSystemId(smartObjectId, 1);
+    locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }));
     vm.stopPrank();
   }
 }

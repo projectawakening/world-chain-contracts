@@ -10,8 +10,8 @@ import { SmartObjectData } from "../deployable/types.sol";
 import { WorldPosition } from "../location/types.sol";
 import { SMART_STORAGE_UNIT } from "../constants.sol";
 import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
-import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 contract SmartStorageUnitSystem is SmartObjectFramework {
   function createAndAnchorSmartStorageUnit(

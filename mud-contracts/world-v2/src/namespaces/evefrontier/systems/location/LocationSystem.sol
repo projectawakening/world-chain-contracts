@@ -21,44 +21,4 @@ contract LocationSystem is SmartObjectFramework {
   ) public context access(smartObjectId) scope(smartObjectId) {
     Location.set(smartObjectId, locationData);
   }
-
-  /**
-   * @dev updates the solar system id of the in-game object
-   * @param smartObjectId smartObjectId of the in-game object
-   * @param solarSystemId the solarSystemId of the location
-   */
-  function setSolarSystemId(
-    uint256 smartObjectId,
-    uint256 solarSystemId
-  ) public context access(smartObjectId) scope(smartObjectId) {
-    Location.setSolarSystemId(smartObjectId, solarSystemId);
-  }
-
-  /**
-   * @dev updates the x coordinate of the in-game object
-   * @param smartObjectId smartObjectId of the in-game object
-   * @param x x coordinate of the location
-   */
-  function setX(uint256 smartObjectId, uint256 x) public context access(smartObjectId) scope(smartObjectId) {
-    Location.setX(smartObjectId, x);
-  }
-
-  /**
-   * @dev updates the y coordinate of the in-game object
-   * @param smartObjectId smartObjectId of the in-game object
-   * @param y y coordinate of the location
-   */
-  function setY(uint256 smartObjectId, uint256 y) public context access(smartObjectId) scope(smartObjectId) {
-    Location.setY(smartObjectId, y);
-  }
-
-  /**
-   * @dev updates the z coordinate of the in-game object
-   * @param smartObjectId smartObjectId of the in-game object
-   * @param z z coordinate of the location
-   */
-
-  function setZ(uint256 smartObjectId, uint256 z) public context access(smartObjectId) scope(smartObjectId) {
-    Location.setZ(smartObjectId, z);
-  }
 }

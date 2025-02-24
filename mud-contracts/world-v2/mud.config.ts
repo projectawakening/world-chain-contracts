@@ -20,6 +20,16 @@ export default defineWorld({
   namespaces: {
     evefrontier: {
       tables: {
+        /**
+         * Class Id table 
+         */
+        Initialize: {
+          schema: {
+            systemId: "ResourceId",
+            classId: "uint256",
+          },
+          key: ["systemId"],
+        },
         /***************************
          * SMART ASSEMBLY *
          ***************************/

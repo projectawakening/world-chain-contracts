@@ -404,13 +404,7 @@ abstract contract EveTest is Test {
   }
 
   function configureLocationAccess() internal {
-    bytes4[5] memory onlyAdminSelectors = [
-      LocationSystem.saveLocation.selector,
-      LocationSystem.setSolarSystemId.selector,
-      LocationSystem.setX.selector,
-      LocationSystem.setY.selector,
-      LocationSystem.setZ.selector
-    ];
+    bytes4[1] memory onlyAdminSelectors = [LocationSystem.saveLocation.selector];
 
     for (uint256 i = 0; i < onlyAdminSelectors.length; i++) {
       accessConfigSystem.configureAccess(

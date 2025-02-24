@@ -18,3 +18,6 @@
 
 #no npm package-locks needed
 **/package-lock.json
+
+# Ignore all env files
+**/.env

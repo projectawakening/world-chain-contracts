@@ -41,22 +41,6 @@ library LocationSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).saveLocation(smartObjectId, locationData);
   }
 
-  function setSolarSystemId(LocationSystemType self, uint256 smartObjectId, uint256 solarSystemId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setSolarSystemId(smartObjectId, solarSystemId);
-  }
-
-  function setX(LocationSystemType self, uint256 smartObjectId, uint256 x) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setX(smartObjectId, x);
-  }
-
-  function setY(LocationSystemType self, uint256 smartObjectId, uint256 y) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setY(smartObjectId, y);
-  }
-
-  function setZ(LocationSystemType self, uint256 smartObjectId, uint256 z) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setZ(smartObjectId, z);
-  }
-
   function saveLocation(CallWrapper memory self, uint256 smartObjectId, LocationData memory locationData) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert LocationSystemLib_CallingFromRootSystem();
@@ -70,77 +54,11 @@ library LocationSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function setSolarSystemId(CallWrapper memory self, uint256 smartObjectId, uint256 solarSystemId) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert LocationSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _setSolarSystemId_uint256_uint256.setSolarSystemId,
-      (smartObjectId, solarSystemId)
-    );
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function setX(CallWrapper memory self, uint256 smartObjectId, uint256 x) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert LocationSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_setX_uint256_uint256.setX, (smartObjectId, x));
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function setY(CallWrapper memory self, uint256 smartObjectId, uint256 y) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert LocationSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_setY_uint256_uint256.setY, (smartObjectId, y));
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function setZ(CallWrapper memory self, uint256 smartObjectId, uint256 z) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert LocationSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_setZ_uint256_uint256.setZ, (smartObjectId, z));
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
   function saveLocation(RootCallWrapper memory self, uint256 smartObjectId, LocationData memory locationData) internal {
     bytes memory systemCall = abi.encodeCall(
       _saveLocation_uint256_LocationData.saveLocation,
       (smartObjectId, locationData)
     );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function setSolarSystemId(RootCallWrapper memory self, uint256 smartObjectId, uint256 solarSystemId) internal {
-    bytes memory systemCall = abi.encodeCall(
-      _setSolarSystemId_uint256_uint256.setSolarSystemId,
-      (smartObjectId, solarSystemId)
-    );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function setX(RootCallWrapper memory self, uint256 smartObjectId, uint256 x) internal {
-    bytes memory systemCall = abi.encodeCall(_setX_uint256_uint256.setX, (smartObjectId, x));
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function setY(RootCallWrapper memory self, uint256 smartObjectId, uint256 y) internal {
-    bytes memory systemCall = abi.encodeCall(_setY_uint256_uint256.setY, (smartObjectId, y));
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function setZ(RootCallWrapper memory self, uint256 smartObjectId, uint256 z) internal {
-    bytes memory systemCall = abi.encodeCall(_setZ_uint256_uint256.setZ, (smartObjectId, z));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -184,22 +102,6 @@ library LocationSystemLib {
 
 interface _saveLocation_uint256_LocationData {
   function saveLocation(uint256 smartObjectId, LocationData memory locationData) external;
-}
-
-interface _setSolarSystemId_uint256_uint256 {
-  function setSolarSystemId(uint256 smartObjectId, uint256 solarSystemId) external;
-}
-
-interface _setX_uint256_uint256 {
-  function setX(uint256 smartObjectId, uint256 x) external;
-}
-
-interface _setY_uint256_uint256 {
-  function setY(uint256 smartObjectId, uint256 y) external;
-}
-
-interface _setZ_uint256_uint256 {
-  function setZ(uint256 smartObjectId, uint256 z) external;
 }
 
 using LocationSystemLib for LocationSystemType global;
