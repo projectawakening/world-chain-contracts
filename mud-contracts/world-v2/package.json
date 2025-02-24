@@ -14,7 +14,7 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix --quiet",
-    "test": "tsc --noEmit && mud test --forgeOptions='--no-match-path=test/eve-erc721-puppet/ERC721.t.sol -vv'"
+    "test": "INITIALIZE_SOF=false mud test --forgeOptions='--no-match-path=test/eve-erc721-puppet/ERC721.t.sol -vv'"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
