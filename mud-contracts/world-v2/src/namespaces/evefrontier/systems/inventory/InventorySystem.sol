@@ -106,6 +106,7 @@ contract InventorySystem is SmartObjectFramework {
       });
       address erc721Address = DeployableToken.getErc721Address();
       address owner = IERC721(erc721Address).ownerOf(smartObjectId);
+      //TODO: classId should be auto generated
       entitySystem.instantiate(uint256(bytes32("INVENTORY_ITEM")), items[i].inventoryItemId, owner);
       entityRecordSystem.createEntityRecord(items[i].inventoryItemId, entityRecord);
     }

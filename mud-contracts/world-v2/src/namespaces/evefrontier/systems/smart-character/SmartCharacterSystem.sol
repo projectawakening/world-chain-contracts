@@ -13,8 +13,10 @@ import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
 import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
 
 import { EntityRecord } from "../../codegen/tables/EntityRecord.sol";
+import { Initialize } from "../../codegen/index.sol";
 import { EntityRecordSystemLib, entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
 
 contract SmartCharacterSystem is SmartObjectFramework {
   error SmartCharacter_ERC721AlreadyInitialized();
@@ -73,7 +75,7 @@ contract SmartCharacterSystem is SmartObjectFramework {
     Characters.setTribeId(characterId, tribeId);
   }
 
-  function getSmartCharacterClassId() public pure returns (uint256) {
-    return uint256(bytes32("SMART_CHARACTER"));
+  function getSmartCharacterClassId() public view returns (uint256) {
+    return Initialize.get(smartCharacterSystem.toResourceId());
   }
 }

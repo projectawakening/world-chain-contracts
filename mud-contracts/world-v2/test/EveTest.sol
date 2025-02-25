@@ -52,6 +52,8 @@ import { smartTurretSystem } from "../src/namespaces/evefrontier/codegen/systems
 import { SmartGateSystem } from "../src/namespaces/evefrontier/systems/smart-gate/SmartGateSystem.sol";
 import { smartGateSystem } from "../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 
+import { Initialize } from "../src/namespaces/evefrontier/codegen/index.sol";
+
 abstract contract EveTest is Test {
   address public worldAddress;
   IWorldWithContext world;
@@ -72,6 +74,7 @@ abstract contract EveTest is Test {
   function setUp() public virtual {
     vm.startPrank(deployer);
     worldSetup();
+    registerClasses();
     deploySmartObjectFramework();
     setupScopeAndAccess();
     vm.stopPrank();
@@ -104,6 +107,14 @@ abstract contract EveTest is Test {
     configureFuelAccess();
     configureSmartTurretAccess();
     configureSmartGateAccess();
+  }
+
+  function registerClasses() internal {
+    Initialize.set(smartCharacterSystem.toResourceId(), uint256(keccak256(abi.encodePacked(uint256(2222)))));
+    Initialize.set(smartStorageUnitSystem.toResourceId(), uint256(keccak256(abi.encodePacked(uint256(3333)))));
+    Initialize.set(smartTurretSystem.toResourceId(), uint256(keccak256(abi.encodePacked(uint256(4444)))));
+    Initialize.set(smartGateSystem.toResourceId(), uint256(keccak256(abi.encodePacked(uint256(5555)))));
+    Initialize.set(inventorySystem.toResourceId(), uint256(bytes32("INVENTORY_ITEM"))); //TODO : This pattern is only for test
   }
 
   function configureAdminRole() internal {
@@ -501,7 +512,7 @@ abstract contract EveTest is Test {
     systemIds[6] = smartAssemblySystem.toResourceId();
     systemIds[7] = fuelSystem.toResourceId();
     systemIds[8] = locationSystem.toResourceId();
-    entitySystem.registerClass(smartStorageUnitSystem.getClassId(), systemIds);
+    entitySystem.registerClass(Initialize.get(smartStorageUnitSystem.toResourceId()), systemIds);
   }
 
   function registerInventoryItemClass(bytes32 adminRole) internal {
@@ -510,7 +521,7 @@ abstract contract EveTest is Test {
     systemIds[0] = inventorySystem.toResourceId();
     systemIds[1] = entityRecordSystem.toResourceId();
     systemIds[2] = ephemeralInventorySystem.toResourceId();
-    entitySystem.registerClass(inventoryItemClassId, systemIds);
+    entitySystem.registerClass(Initialize.get(inventorySystem.toResourceId()), systemIds);
   }
 
   function registerSmartCharacterClass(bytes32 adminRole) internal {
@@ -518,7 +529,7 @@ abstract contract EveTest is Test {
     ResourceId[] memory systemIds = new ResourceId[](2);
     systemIds[0] = entityRecordSystem.toResourceId();
     systemIds[1] = smartCharacterSystem.toResourceId();
-    entitySystem.registerClass(smartCharacterClassId, systemIds);
+    entitySystem.registerClass(Initialize.get(smartCharacterSystem.toResourceId()), systemIds);
   }
 
   function registerSmartTurretClass(bytes32 adminRole) internal {
@@ -529,7 +540,7 @@ abstract contract EveTest is Test {
     smartTurretSystemIds[3] = locationSystem.toResourceId();
     smartTurretSystemIds[4] = deployableSystem.toResourceId();
     smartTurretSystemIds[5] = smartAssemblySystem.toResourceId();
-    entitySystem.registerClass(uint256(bytes32("SMART_TURRET")), smartTurretSystemIds);
+    entitySystem.registerClass(Initialize.get(smartTurretSystem.toResourceId()), smartTurretSystemIds);
   }
 
   function registerSmartGateClass(bytes32 adminRole) internal {
@@ -540,7 +551,7 @@ abstract contract EveTest is Test {
     smartGateSystemIds[3] = locationSystem.toResourceId();
     smartGateSystemIds[4] = deployableSystem.toResourceId();
     smartGateSystemIds[5] = smartAssemblySystem.toResourceId();
-    entitySystem.registerClass(uint256(bytes32("SMART_GATE")), smartGateSystemIds);
+    entitySystem.registerClass(Initialize.get(smartGateSystem.toResourceId()), smartGateSystemIds);
   }
 
   function configureSmartGateAccess() internal {

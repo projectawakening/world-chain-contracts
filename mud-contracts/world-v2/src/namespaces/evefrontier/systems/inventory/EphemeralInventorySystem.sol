@@ -81,6 +81,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
         itemId: items[i].itemId,
         volume: items[i].volume
       });
+      //TODO: classId should be auto generated
       entitySystem.instantiate(uint256(bytes32("INVENTORY_ITEM")), items[i].inventoryItemId, ephemeralInventoryOwner);
       entityRecordSystem.createEntityRecord(items[i].inventoryItemId, entityRecord);
     }

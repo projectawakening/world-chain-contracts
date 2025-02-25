@@ -66,6 +66,7 @@ contract InventoryInteractTest is EveTest {
     // Running full EveTest setup was running out of gas.
     // So we do a subset of the setup here.
     worldSetup();
+    registerClasses();
     deploySmartObjectFramework();
     configureAdminRole();
     registerInventoryItemClass(adminRole);

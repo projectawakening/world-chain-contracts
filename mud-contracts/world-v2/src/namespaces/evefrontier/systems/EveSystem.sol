@@ -439,7 +439,7 @@ contract EveSystem is SmartObjectFramework {
    * @param systemIds The system ids that belong to the class
    */
   function initialize(uint256 typeId, ResourceId[] memory systemIds) internal returns (uint256) {
-    if (typeId == 0) revert("Invalid");
+    if (typeId == 0) revert("Invalid typeId");
     uint256 classId = uint256(keccak256(abi.encodePacked(typeId)));
     entitySystem.registerClass(classId, systemIds);
 

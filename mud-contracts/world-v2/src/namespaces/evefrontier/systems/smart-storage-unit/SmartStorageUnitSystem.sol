@@ -12,6 +12,8 @@ import { SMART_STORAGE_UNIT } from "../constants.sol";
 import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { Initialize } from "../../codegen/index.sol";
+import { smartStorageUnitSystem } from "../../codegen/systems/SmartStorageUnitSystemLib.sol";
 
 contract SmartStorageUnitSystem is SmartObjectFramework {
   function createAndAnchorSmartStorageUnit(
@@ -29,7 +31,7 @@ contract SmartStorageUnitSystem is SmartObjectFramework {
     ephemeralInventorySystem.setEphemeralInventoryCapacity(params.smartObjectId, ephemeralStorageCapacity);
   }
 
-  function getClassId() public pure returns (uint256) {
-    return uint256(bytes32("SSU"));
+  function getClassId() public view returns (uint256) {
+    return Initialize.get(smartStorageUnitSystem.toResourceId());
   }
 }

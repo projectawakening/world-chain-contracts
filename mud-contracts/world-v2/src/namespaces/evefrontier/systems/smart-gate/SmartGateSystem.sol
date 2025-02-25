@@ -18,6 +18,8 @@ import { SMART_GATE } from "../constants.sol";
 import { DeployableSystemLib, deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
+import { Initialize } from "../../codegen/index.sol";
 
 contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_UndefinedClassId();
@@ -171,7 +173,7 @@ contract SmartGateSystem is SmartObjectFramework {
   }
 
   function getSmartGateClassId() public view returns (uint256) {
-    return uint256(bytes32("SMART_GATE"));
+    return Initialize.get(smartGateSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {

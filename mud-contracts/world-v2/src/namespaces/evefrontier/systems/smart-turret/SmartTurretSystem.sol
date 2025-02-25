@@ -20,6 +20,8 @@ import { TargetPriority, Turret, SmartTurretTarget } from "./types.sol";
 import { SMART_TURRET } from "../constants.sol";
 import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
 import { AggressionParams } from "./types.sol";
+import { Initialize } from "../../codegen/index.sol";
+import { smartTurretSystem } from "../../codegen/systems/SmartTurretSystemLib.sol";
 
 contract SmartTurretSystem is SmartObjectFramework {
   error SmartTurret_NotConfigured(uint256 smartObjectId);
@@ -140,8 +142,8 @@ contract SmartTurretSystem is SmartObjectFramework {
     return updatedPriorityQueue;
   }
 
-  function getSmartTurretClassId() public pure returns (uint256) {
-    return uint256(bytes32("SMART_TURRET"));
+  function getSmartTurretClassId() public view returns (uint256) {
+    return Initialize.get(smartTurretSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {
