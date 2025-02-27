@@ -39,7 +39,7 @@ contract SmartGateSystem is SmartObjectFramework {
   ) public context access(params.smartObjectId) scope(getSmartGateClassId()) {
     params.smartAssemblyType = SMART_GATE;
 
-    entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.smartObjectData.owner);
+    entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.owner);
 
     deployableSystem.createAndAnchorDeployable(params);
 

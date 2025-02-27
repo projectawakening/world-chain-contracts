@@ -17,10 +17,11 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct EntityRecordData {
+  bool exists;
   uint256 itemId;
   uint256 typeId;
   uint256 volume;
-  bool recordExists;
+  string tenantId;
 }
 
 library EntityRecord {
@@ -28,12 +29,12 @@ library EntityRecord {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000456e746974795265636f726400000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0061040020202001000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0061040101202020000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256, uint256, bool)
-  Schema constant _valueSchema = Schema.wrap(0x006104001f1f1f60000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool, uint256, uint256, uint256, string)
+  Schema constant _valueSchema = Schema.wrap(0x00610401601f1f1fc50000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -49,11 +50,12 @@ library EntityRecord {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](4);
-    fieldNames[0] = "itemId";
-    fieldNames[1] = "typeId";
-    fieldNames[2] = "volume";
-    fieldNames[3] = "recordExists";
+    fieldNames = new string[](5);
+    fieldNames[0] = "exists";
+    fieldNames[1] = "itemId";
+    fieldNames[2] = "typeId";
+    fieldNames[3] = "volume";
+    fieldNames[4] = "tenantId";
   }
 
   /**
@@ -71,13 +73,55 @@ library EntityRecord {
   }
 
   /**
+   * @notice Get exists.
+   */
+  function getExists(uint256 smartObjectId) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Get exists.
+   */
+  function _getExists(uint256 smartObjectId) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function setExists(uint256 smartObjectId, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function _setExists(uint256 smartObjectId, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
    * @notice Get itemId.
    */
   function getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -88,7 +132,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -99,7 +143,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((itemId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((itemId)), _fieldLayout);
   }
 
   /**
@@ -109,7 +153,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((itemId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((itemId)), _fieldLayout);
   }
 
   /**
@@ -119,7 +163,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -130,7 +174,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -141,7 +185,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((typeId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((typeId)), _fieldLayout);
   }
 
   /**
@@ -151,7 +195,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((typeId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((typeId)), _fieldLayout);
   }
 
   /**
@@ -161,7 +205,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -172,7 +216,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -183,7 +227,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((volume)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((volume)), _fieldLayout);
   }
 
   /**
@@ -193,49 +237,169 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((volume)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((volume)), _fieldLayout);
   }
 
   /**
-   * @notice Get recordExists.
+   * @notice Get tenantId.
    */
-  function getRecordExists(uint256 smartObjectId) internal view returns (bool recordExists) {
+  function getTenantId(uint256 smartObjectId) internal view returns (string memory tenantId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
-    return (_toBool(uint8(bytes1(_blob))));
+    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
+    return (string(_blob));
   }
 
   /**
-   * @notice Get recordExists.
+   * @notice Get tenantId.
    */
-  function _getRecordExists(uint256 smartObjectId) internal view returns (bool recordExists) {
+  function _getTenantId(uint256 smartObjectId) internal view returns (string memory tenantId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
-    return (_toBool(uint8(bytes1(_blob))));
+    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
+    return (string(_blob));
   }
 
   /**
-   * @notice Set recordExists.
+   * @notice Set tenantId.
    */
-  function setRecordExists(uint256 smartObjectId, bool recordExists) internal {
+  function setTenantId(uint256 smartObjectId, string memory tenantId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((recordExists)), _fieldLayout);
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((tenantId)));
   }
 
   /**
-   * @notice Set recordExists.
+   * @notice Set tenantId.
    */
-  function _setRecordExists(uint256 smartObjectId, bool recordExists) internal {
+  function _setTenantId(uint256 smartObjectId, string memory tenantId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((recordExists)), _fieldLayout);
+    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((tenantId)));
+  }
+
+  /**
+   * @notice Get the length of tenantId.
+   */
+  function lengthTenantId(uint256 smartObjectId) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
+    unchecked {
+      return _byteLength / 1;
+    }
+  }
+
+  /**
+   * @notice Get the length of tenantId.
+   */
+  function _lengthTenantId(uint256 smartObjectId) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
+    unchecked {
+      return _byteLength / 1;
+    }
+  }
+
+  /**
+   * @notice Get an item of tenantId.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function getItemTenantId(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
+      return (string(_blob));
+    }
+  }
+
+  /**
+   * @notice Get an item of tenantId.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function _getItemTenantId(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
+      return (string(_blob));
+    }
+  }
+
+  /**
+   * @notice Push a slice to tenantId.
+   */
+  function pushTenantId(uint256 smartObjectId, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
+  }
+
+  /**
+   * @notice Push a slice to tenantId.
+   */
+  function _pushTenantId(uint256 smartObjectId, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
+  }
+
+  /**
+   * @notice Pop a slice from tenantId.
+   */
+  function popTenantId(uint256 smartObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
+  }
+
+  /**
+   * @notice Pop a slice from tenantId.
+   */
+  function _popTenantId(uint256 smartObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
+  }
+
+  /**
+   * @notice Update a slice of tenantId at `_index`.
+   */
+  function updateTenantId(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _encoded = bytes((_slice));
+      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
+    }
+  }
+
+  /**
+   * @notice Update a slice of tenantId at `_index`.
+   */
+  function _updateTenantId(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _encoded = bytes((_slice));
+      StoreCore.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
+    }
   }
 
   /**
@@ -271,11 +435,18 @@ library EntityRecord {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
-    bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
+  function set(
+    uint256 smartObjectId,
+    bool exists,
+    uint256 itemId,
+    uint256 typeId,
+    uint256 volume,
+    string memory tenantId
+  ) internal {
+    bytes memory _staticData = encodeStatic(exists, itemId, typeId, volume);
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(tenantId);
+    bytes memory _dynamicData = encodeDynamic(tenantId);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -286,11 +457,18 @@ library EntityRecord {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 smartObjectId, uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) internal {
-    bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
+  function _set(
+    uint256 smartObjectId,
+    bool exists,
+    uint256 itemId,
+    uint256 typeId,
+    uint256 volume,
+    string memory tenantId
+  ) internal {
+    bytes memory _staticData = encodeStatic(exists, itemId, typeId, volume);
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(tenantId);
+    bytes memory _dynamicData = encodeDynamic(tenantId);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -302,10 +480,10 @@ library EntityRecord {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 smartObjectId, EntityRecordData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.itemId, _table.typeId, _table.volume, _table.recordExists);
+    bytes memory _staticData = encodeStatic(_table.exists, _table.itemId, _table.typeId, _table.volume);
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(_table.tenantId);
+    bytes memory _dynamicData = encodeDynamic(_table.tenantId);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -317,10 +495,10 @@ library EntityRecord {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 smartObjectId, EntityRecordData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.itemId, _table.typeId, _table.volume, _table.recordExists);
+    bytes memory _staticData = encodeStatic(_table.exists, _table.itemId, _table.typeId, _table.volume);
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(_table.tenantId);
+    bytes memory _dynamicData = encodeDynamic(_table.tenantId);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -333,28 +511,45 @@ library EntityRecord {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (uint256 itemId, uint256 typeId, uint256 volume, bool recordExists) {
-    itemId = (uint256(Bytes.getBytes32(_blob, 0)));
+  ) internal pure returns (bool exists, uint256 itemId, uint256 typeId, uint256 volume) {
+    exists = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
 
-    typeId = (uint256(Bytes.getBytes32(_blob, 32)));
+    itemId = (uint256(Bytes.getBytes32(_blob, 1)));
 
-    volume = (uint256(Bytes.getBytes32(_blob, 64)));
+    typeId = (uint256(Bytes.getBytes32(_blob, 33)));
 
-    recordExists = (_toBool(uint8(Bytes.getBytes1(_blob, 96))));
+    volume = (uint256(Bytes.getBytes32(_blob, 65)));
+  }
+
+  /**
+   * @notice Decode the tightly packed blob of dynamic data using the encoded lengths.
+   */
+  function decodeDynamic(
+    EncodedLengths _encodedLengths,
+    bytes memory _blob
+  ) internal pure returns (string memory tenantId) {
+    uint256 _start;
+    uint256 _end;
+    unchecked {
+      _end = _encodedLengths.atIndex(0);
+    }
+    tenantId = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
   }
 
   /**
    * @notice Decode the tightly packed blobs using this table's field layout.
    * @param _staticData Tightly packed static fields.
-   *
-   *
+   * @param _encodedLengths Encoded lengths of dynamic fields.
+   * @param _dynamicData Tightly packed dynamic fields.
    */
   function decode(
     bytes memory _staticData,
-    EncodedLengths,
-    bytes memory
+    EncodedLengths _encodedLengths,
+    bytes memory _dynamicData
   ) internal pure returns (EntityRecordData memory _table) {
-    (_table.itemId, _table.typeId, _table.volume, _table.recordExists) = decodeStatic(_staticData);
+    (_table.exists, _table.itemId, _table.typeId, _table.volume) = decodeStatic(_staticData);
+
+    (_table.tenantId) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
@@ -382,12 +577,31 @@ library EntityRecord {
    * @return The static data, encoded into a sequence of bytes.
    */
   function encodeStatic(
+    bool exists,
     uint256 itemId,
     uint256 typeId,
-    uint256 volume,
-    bool recordExists
+    uint256 volume
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(itemId, typeId, volume, recordExists);
+    return abi.encodePacked(exists, itemId, typeId, volume);
+  }
+
+  /**
+   * @notice Tightly pack dynamic data lengths using this table's schema.
+   * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
+   */
+  function encodeLengths(string memory tenantId) internal pure returns (EncodedLengths _encodedLengths) {
+    // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
+    unchecked {
+      _encodedLengths = EncodedLengthsLib.pack(bytes(tenantId).length);
+    }
+  }
+
+  /**
+   * @notice Tightly pack dynamic (variable length) data using this table's schema.
+   * @return The dynamic data, encoded into a sequence of bytes.
+   */
+  function encodeDynamic(string memory tenantId) internal pure returns (bytes memory) {
+    return abi.encodePacked(bytes((tenantId)));
   }
 
   /**
@@ -397,15 +611,16 @@ library EntityRecord {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
+    bool exists,
     uint256 itemId,
     uint256 typeId,
     uint256 volume,
-    bool recordExists
+    string memory tenantId
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(itemId, typeId, volume, recordExists);
+    bytes memory _staticData = encodeStatic(exists, itemId, typeId, volume);
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(tenantId);
+    bytes memory _dynamicData = encodeDynamic(tenantId);
 
     return (_staticData, _encodedLengths, _dynamicData);
   }

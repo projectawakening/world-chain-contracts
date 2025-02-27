@@ -7,7 +7,6 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { IAccessSystem } from "./IAccessSystem.sol";
 import { IDeployableSystem } from "./IDeployableSystem.sol";
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
-import { IERC721System } from "./IERC721System.sol";
 import { IFuelSystem } from "./IFuelSystem.sol";
 import { IEphemeralInventorySystem } from "./IEphemeralInventorySystem.sol";
 import { IInventoryInteractSystem } from "./IInventoryInteractSystem.sol";
@@ -32,7 +31,6 @@ interface IWorld is
   IAccessSystem,
   IDeployableSystem,
   IEntityRecordSystem,
-  IERC721System,
   IFuelSystem,
   IEphemeralInventorySystem,
   IInventoryInteractSystem,

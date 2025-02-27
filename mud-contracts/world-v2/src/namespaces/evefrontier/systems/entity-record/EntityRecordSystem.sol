@@ -3,7 +3,7 @@ pragma solidity >=0.8.24;
 
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { EntityRecord, EntityRecordMetadata, EntityRecordMetadataData } from "../../codegen/index.sol";
-import { EntityRecordData, EntityMetadata } from "./types.sol";
+import { EntityRecordParams, EntityMetadata } from "./types.sol";
 
 /**
  * @title EntityRecordSystem
@@ -18,9 +18,9 @@ contract EntityRecordSystem is SmartObjectFramework {
    */
   function createEntityRecord(
     uint256 smartObjectId,
-    EntityRecordData memory entityRecord
+    EntityRecordParams memory entityRecordParams
   ) public context access(smartObjectId) scope(smartObjectId) {
-    EntityRecord.set(smartObjectId, entityRecord.itemId, entityRecord.typeId, entityRecord.volume, true);
+    EntityRecord.set(smartObjectId, entityRecordParams.itemId, entityRecordParams.typeId, entityRecordParams.volume, entityRecordParams.tenantId);
   }
 
   /**

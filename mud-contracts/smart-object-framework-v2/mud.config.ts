@@ -63,6 +63,7 @@ export default defineWorld({
           schema: {
             role: "bytes32",
             exists: "bool",
+            isSingleton: "bool",
             admin: "bytes32",
             members: "address[]",
           },

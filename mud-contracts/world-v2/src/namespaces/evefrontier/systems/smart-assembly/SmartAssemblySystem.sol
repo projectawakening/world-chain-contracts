@@ -26,7 +26,6 @@ contract SmartAssemblySystem is SmartObjectFramework {
    * @param smartObjectId The ID of the smart assembly
    * @param smartAssemblyType The type of the smart assembly
    * @param entityRecord The entity record data
-   * //TODO : only owner can create smart assembly
    */
   function createSmartAssembly(
     uint256 smartObjectId,

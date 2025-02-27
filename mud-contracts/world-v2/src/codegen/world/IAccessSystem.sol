@@ -10,33 +10,36 @@ pragma solidity >=0.8.24;
  */
 interface IAccessSystem {
   error Access_NotAdmin(address caller);
-  error Access_NotDeployableOwner(address caller, uint256 objectId);
-  error Access_NotAdminOrOwner(address caller, uint256 objectId);
-  error Access_NotOwnerOrCanWithdrawFromInventory(address caller, uint256 objectId);
-  error Access_NotOwnerOrCanDepositToInventory(address caller, uint256 objectId);
-  error Access_NotDeployableOwnerOrInventoryInteractSystem(address caller, uint256 objectId);
+  error Access_NotDeployableOwner(address caller, uint256 smartObjectId);
+  error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCanWithdrawFromInventory(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCanDepositToInventory(address caller, uint256 smartObjectId);
+  error Access_NotDeployableOwnerOrInventoryInteractSystem(address caller, uint256 smartObjectId);
   error Access_NotInventoryAdmin(address caller, uint256 smartObjectId);
-  error Access_NotAdminOrDeployableSystem(address caller, uint256 objectId);
+  error Access_NotAdminOrDeployableSystem(address caller, uint256 smartObjectId);
 
-  function evefrontier__onlyOwnerOrCanWithdrawFromInventory(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyOwnerOrCanWithdrawFromInventory(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyOwnerOrCanDepositToInventory(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyOwnerOrCanDepositToInventory(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDeployableOwner(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyDeployableOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdmin(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyAdmin(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminOrDeployableOwner(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyAdminOrDeployableOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDeployableOwnerOrInventoryInteractSystem(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyDeployableOwnerOrInventoryInteractSystem(
+    uint256 smartObjectId,
+    bytes memory data
+  ) external view;
 
   function evefrontier__onlyInventoryAdmin(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminOrDeployableSystem(uint256 objectId, bytes memory data) external view;
+  function evefrontier__onlyAdminOrDeployableSystem(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__isAdmin(address caller) external view returns (bool);
 
-  function evefrontier__isOwner(address caller, uint256 objectId) external view returns (bool);
+  function evefrontier__isOwner(uint256 smartObjectId, address caller) external view returns (bool);
 
   function evefrontier__canWithdrawFromInventory(uint256 smartObjectId, address caller) external view returns (bool);
 

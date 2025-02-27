@@ -6,8 +6,6 @@ import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/in
 
 import { InventorySystem } from "./InventorySystem.sol";
 import { EphemeralInventorySystem } from "./EphemeralInventorySystem.sol";
-import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
-import { DeployableToken } from "../../codegen/index.sol";
 import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
 import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../codegen/index.sol";
 import { ItemTransferOffchain } from "../../codegen/index.sol";

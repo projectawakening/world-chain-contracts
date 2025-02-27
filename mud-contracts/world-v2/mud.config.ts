@@ -21,10 +21,10 @@ export default defineWorld({
     evefrontier: {
       tables: {
         /***************************
-         * SMART ASSEMBLY *
+         * SMART ASSEMBLY TABLE *
          ***************************/
         /**
-         * Used to store the assembly of a smart object
+         * Used to store the assembly typeof a smart object
          */
         SmartAssembly: {
           schema: {
@@ -36,20 +36,21 @@ export default defineWorld({
         },
 
         /**********************
-         * ENTITY RECORD MODULE *
+         * ENTITY RECORD TABLES *
          **********************/
         /**
-         * Used to create a record for an game entity onchain
-         * Singleton smartObjectId is calculated as `uint256(keccak256("item:<placeholder_tenantID>-<game-itemID>"))`
-         * Non Singleton smartObjectId is calculated as `id = uint256(keccak256("item:<placeholder_tenantID>-<game-typeID>"))`
+         * Used to create a record which holds important game related data for an entity onchain
+         * Singleton entities are treated as objects, OBJECT smartObjectIds are calculated as `objectId = uint256(keccak256(abi.encodePacked(<game-tenantID-as-utf8-string>, <game-itemID-as-uint256>)))`
+         * Non-singleton entities are treated as a class, CLASS smartObjectIds as calculated as `classId = uint256(keccak256(abi.encodePacked(<game-typeID-as-uint256>)))`
          */
         EntityRecord: {
           schema: {
             smartObjectId: "uint256",
+            exists: "bool",
             itemId: "uint256",
             typeId: "uint256",
             volume: "uint256",
-            recordExists: "bool",
+            tenantId: "string",
           },
           key: ["smartObjectId"],
         },
@@ -62,132 +63,26 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        /**********************
-         * STATIC DATA MODULE *
-         **********************/
-        /**
-         * Used to store the IPFS CID of a smart object
-         */
-        StaticData: {
-          schema: {
-            smartObjectId: "uint256",
-            cid: "string",
-          },
-          key: ["smartObjectId"],
-        },
-        /**
-         * Used to store the DNS which servers the IPFS gateway
-         */
-        StaticDataMetadata: {
-          schema: {
-            baseURI: "string",
-          },
-          key: [],
-        },
         /*************************
-         * SMART CHARACTER MODULE *
+         * SMART CHARACTER TABLE *
          *************************/
         Characters: {
           schema: {
-            characterId: "uint256",
-            characterAddress: "address",
+            smartObjectId: "uint256",
             tribeId: "uint256",
             createdAt: "uint256",
           },
-          key: ["characterId"],
+          key: ["smartObjectId"],
         },
-        CharacterToken: {
-          schema: {
-            erc721Address: "address",
-          },
-          key: [],
-        },
-
-        CharactersByAddress: {
-          schema: {
-            characterAddress: "address",
-            characterId: "uint256",
-          },
-          key: ["characterAddress"],
-        },
-
-        /*************************
-         * ERC721 PUPPET MODULE *
-         ************************/
-        Balances: {
+        CharactersByAccount: {
           schema: {
             account: "address",
-            value: "uint256",
+            smartObjectId: "uint256",
           },
           key: ["account"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        ERC721Metadata: {
-          schema: {
-            name: "string",
-            symbol: "string",
-            baseURI: "string",
-          },
-          key: [],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        TokenURI: {
-          schema: {
-            tokenId: "uint256",
-            tokenURI: "string",
-          },
-          key: ["tokenId"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        Owners: {
-          schema: {
-            tokenId: "uint256",
-            owner: "address",
-          },
-          key: ["tokenId"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        TokenApproval: {
-          schema: {
-            tokenId: "uint256",
-            account: "address",
-          },
-          key: ["tokenId"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        OperatorApproval: {
-          schema: {
-            owner: "address",
-            operator: "address",
-            approved: "bool",
-          },
-          key: ["owner", "operator"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        ERC721Registry: {
-          schema: {
-            namespaceId: "ResourceId",
-            tokenAddress: "address",
-          },
-          key: ["namespaceId"],
-          codegen: {
-            tableIdArgument: true,
-          },
         },
         /*******************
-         * LOCATION MODULE *
+         * LOCATION TABLE *
          *******************/
 
         /**
@@ -205,7 +100,7 @@ export default defineWorld({
         },
 
         /***************************
-         * DEPLOYABLE MODULE *
+         * DEPLOYABLE TABLES *
          ***************************/
         /**
          * Used to store the Global state of the Deployable
@@ -235,17 +130,8 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        /**
-         * Used to store the deployable details of a in-game entity
-         */
-        DeployableToken: {
-          schema: {
-            erc721Address: "address",
-          },
-          key: [],
-        },
         /*******************
-         * FUEL MODULE *
+         * FUEL TABLES *
          *******************/
 
         /**
@@ -264,7 +150,7 @@ export default defineWorld({
         },
 
         /*******************
-         * INVENTORY MODULE *
+         * INVENTORY TABLES *
          *******************/
         Inventory: {
           schema: {
@@ -341,7 +227,7 @@ export default defineWorld({
           key: ["smartObjectId", "inventoryItemId"],
         },
         /*************************
-         * SMART TURRET MODULE *
+         * SMART TURRET TABLES *
          *************************/
         SmartTurretConfig: {
           schema: {
@@ -352,7 +238,7 @@ export default defineWorld({
         },
 
         /*************************
-         * SMART GATE MODULE *
+         * SMART GATE TABLES *
          *************************/
         SmartGateConfig: {
           schema: {

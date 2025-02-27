@@ -2,7 +2,8 @@
 pragma solidity >=0.8.21;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { InventorySystem } from "./InventorySystem.sol";
@@ -17,10 +18,12 @@ import { EntityRecordData as EntityRecordStruct } from "../entity-record/types.s
 import { EntityRecordSystemLib, entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
 
-import { InventoryItem } from "./types.sol";
+import { InventoryItemParams } from "./types.sol";
 import { InventorySystem } from "./InventorySystem.sol";
 import { State, SmartObjectData } from "../deployable/types.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 /**
  * @title EphemeralInventorySystem
@@ -64,24 +67,54 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   /**
    * @notice Create and deposit items to the ephemeral inventory
    * @dev Create and deposit items to the ephemeral inventory by smart storage unit id
-   * //TODO only owner should be able to create and deposit items
    * @param smartObjectId The smart storage unit id
    * @param ephemeralInventoryOwner The owner of the ephemeral inventory
    * @param items The items to deposit to the inventory
-   * NOTE: This function assumes that the user is assigned as the _callMsgSender(1)
+   * NOTE: This function assumes that the owner is assigned as the _callMsgSender(1)
    */
   function createAndDepositItemsToEphemeralInventory(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) public context access(smartObjectId) scope(smartObjectId) {
     for (uint256 i = 0; i < items.length; i++) {
-      EntityRecordStruct memory entityRecord = EntityRecordStruct({
+      // item sanity checks
+      if (!EntityRecordTenant.getExists(items[i].tenantId)) {
+        revert EphemeralInventory_InvalidTenantId(items[i].inventoryItemId, items[i].tenantId);
+      }
+      if (items[i].itemId != 0) { // singleton item case
+        if (items[i].inventoryItemId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].itemId)))) {
+          revert EphemeralInventory_InvalidInventoryItemId(items[i].inventoryItemId);
+        } 
+        if (items[i].quantity != 1) {
+          revert EphemeralInventory_InvalidItemQuantity(items[i].inventoryItemId, items[i].quantity);
+        }
+      } else { // non-singleton item case
+        if (items[i].inventoryItemId != uint256(keccak256(abi.encodePacked(items[i].typeId)))) {
+          revert EphemeralInventory_InvalidInventoryItemId(items[i].inventoryItemId);
+        }
+        if (items[i].quantity == 0) {
+          revert EphemeralInventory_InvalidItemQuantity(items[i].inventoryItemId, 0);
+        }
+      }
+
+      EntityRecordParams memory entityRecordParams = EntityRecordParams({
         typeId: items[i].typeId,
         itemId: items[i].itemId,
-        volume: items[i].volume
+        volume: items[i].volume,
+        tenantId: items[i].tenantId
       });
-      entitySystem.instantiate(uint256(bytes32("INVENTORY_ITEM")), items[i].inventoryItemId, ephemeralInventoryOwner);
+
+      uint256 classId = uint256(uint256(keccak256(abi.encodePacked(items[i].typeId))));
+      if (!Entity.getExists(classId)) {
+        // TODO: ater data validation implementation, consider using the CCP Games data signer instead of the namespace owner
+        // alternatively, we could block this call with a revert unless classId is already registered, and thereby requiring all classes to be pre-configured
+        entitySystem.scopedRegisterClass(classId, NamespaceOwner.getOwner(SystemRegistry.get(address(this)).getNamespaceId()), new ResourceId[](0));
+      }
+      if (items[i].itemId != 0) {
+        entitySystem.instantiate(classId, items[i].inventoryItemId, ephemeralInventoryOwner);
+      }
+
       entityRecordSystem.createEntityRecord(items[i].inventoryItemId, entityRecord);
     }
 
@@ -99,7 +132,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function depositToEphemeralInventory(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) public context access(smartObjectId) scope(smartObjectId) {
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
@@ -107,7 +140,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
         revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
       }
     }
-    // ephemeralInventoryOwner MUST be an existing character
+    // ephemeralInventoryOwner must be an existing character
     if (CharactersByAddress.get(ephemeralInventoryOwner) == 0) {
       revert InvalidEphemeralInventoryOwner(
         "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
@@ -131,7 +164,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function withdrawFromEphemeralInventory(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) public context access(smartObjectId) scope(smartObjectId) {
     State currentState = DeployableState.getCurrentState(smartObjectId);
     if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
@@ -140,6 +173,14 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
     for (uint256 i = 0; i < items.length; i++) {
       usedCapacity = _processItemWithdrawal(smartObjectId, ephemeralInventoryOwner, items[i], usedCapacity);
+
+      // if the item is a singleton and the call is direct, delete the item from the chain
+      uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+      if (callCount == 1 && EntityRecord.getItemId(items[i].inventoryItemId) != 0) {
+        bytes32 itemOwnerRole = keccak256(abi.encodePacked("OWNER_ROLE", items[i].inventoryItemId));
+        roleManagementSystem.scopedRevokeAll(items[i].inventoryItemId, itemOwnerRole);
+        entitySystem.deleteObject(items[i].inventoryItemId);
+      }
     }
     EphemeralInv.setUsedCapacity(smartObjectId, ephemeralInventoryOwner, usedCapacity);
   }
@@ -147,7 +188,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _processAndReturnTotalUsedCapacity(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) internal returns (uint256) {
     uint256 usedCapacity = EphemeralInv.getUsedCapacity(smartObjectId, ephemeralInventoryOwner);
     uint256 totalUsedCapacity = usedCapacity;
@@ -156,14 +197,19 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 existingItemsLength = EphemeralInv.getItems(smartObjectId, ephemeralInventoryOwner).length;
 
     for (uint256 i = 0; i < items.length; i++) {
-      //Revert if the items to deposit is not created on-chain
+      // Revert if the items to deposit do not have a recorded objectId
+      if (!Entity.getExists(items[i].inventoryItemId)) {
+        revert Inventory_InvalidItem("EphemeralInventorySystem: item is not created on-chain", items[i].inventoryItemId);
+      }
+      // Revert if the items to deposit do not have an entity record
       EntityRecordData memory entityRecord = EntityRecord.get(items[i].inventoryItemId);
       if (entityRecord.recordExists == false) {
         revert Ephemeral_Inventory_InvalidItem(
-          "EphemeralInventorySystem: item is not created on-chain",
+          "EphemeralInventorySystem: item does not have an on-chain record",
           items[i].typeId
         );
       }
+
       uint256 itemIndex = existingItemsLength + i;
       totalUsedCapacity = _processItemDeposit(
         smartObjectId,
@@ -173,6 +219,12 @@ contract EphemeralInventorySystem is SmartObjectFramework {
         maxCapacity,
         itemIndex
       );
+      bytes32 itemOwnerRole = keccak256(abi.encodePacked("OWNER_ROLE", items[i].inventoryItemId));
+
+      // remove all old item owner information
+      roleManagementSystem.scopedRevokeAll(items[i].inventoryItemId, itemOwnerRole);
+      // assign the ephemeralinventory owner as the item owner
+      roleManagementSystem.scopedGrantRole(items[i].inventoryItemId, itemOwnerRole, ephemeralInventoryOwner);
     }
 
     return totalUsedCapacity;
@@ -181,7 +233,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _processItemDeposit(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 usedCapacity,
     uint256 maxCapacity,
     uint256 index
@@ -202,7 +254,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _updateEphemeralInvAfterDeposit(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 itemIndex
   ) internal {
     EphemeralInvItemData memory itemData = EphemeralInvItem.get(
@@ -226,7 +278,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _increaseItemQuantity(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 index
   ) internal {
     uint256 quantity = EphemeralInvItem.getQuantity(smartObjectId, item.inventoryItemId, ephemeralInventoryOwner);
@@ -244,7 +296,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _depositNewItem(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 index
   ) internal {
     EphemeralInv.pushItems(smartObjectId, ephemeralInventoryOwner, item.inventoryItemId);
@@ -261,7 +313,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _processItemWithdrawal(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
     EphemeralInvItemData memory itemData = EphemeralInvItem.get(
@@ -276,7 +328,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function _validateWithdrawal(InventoryItem memory item, EphemeralInvItemData memory itemData) internal pure {
+  function _validateWithdrawal(InventoryItemParams memory item, EphemeralInvItemData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert Ephemeral_Inventory_InvalidItemQuantity(
         "EphemeralInventorySystem: invalid quantity",
@@ -289,7 +341,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _updateInventoryAfterWithdrawal(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     EphemeralInvItemData memory itemData
   ) internal {
     DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
@@ -314,7 +366,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _removeItemCompletely(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     EphemeralInvItemData memory itemData
   ) internal {
     uint256[] memory inventoryItems = EphemeralInv.getItems(smartObjectId, ephemeralInventoryOwner);
@@ -330,7 +382,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   function _reduceItemQuantity(
     uint256 smartObjectId,
     address ephemeralInventoryOwner,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     EphemeralInvItemData memory itemData
   ) internal {
     EphemeralInvItem.set(

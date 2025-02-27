@@ -3,6 +3,7 @@ pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
+
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
@@ -31,7 +32,7 @@ contract SmartTurretSystem is SmartObjectFramework {
   function createAndAnchorSmartTurret(
     CreateAndAnchorDeployableParams memory params
   ) public context access(params.smartObjectId) scope(getSmartTurretClassId()) {
-    entitySystem.instantiate(getSmartTurretClassId(), params.smartObjectId, params.smartObjectData.owner);
+    entitySystem.instantiate(getSmartTurretClassId(), params.smartObjectId, params.owner);
 
     params.smartAssemblyType = SMART_TURRET;
     deployableSystem.createAndAnchorDeployable(params);

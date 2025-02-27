@@ -2,26 +2,26 @@
 pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
+import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
+
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { Inventory } from "../../codegen/index.sol";
 import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
-import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../codegen/index.sol";
+import { InventoryItemData, InventoryItem } from "../../codegen/index.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
-import { EntityRecordData as EntityRecordStruct } from "../entity-record/types.sol";
+import { EntityRecordParams } from "../entity-record/types.sol";
 import { EntityRecordSystemLib, entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 
-import { InventoryItem } from "./types.sol";
+import { InventoryItemParams } from "./types.sol";
 import { State } from "../deployable/types.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
 import { Role } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { InventoryUtils } from "./InventoryUtils.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
-
-import { DeployableToken } from "../../codegen/index.sol";
-import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
 
 /**
  * @title InventorySystem
@@ -92,21 +92,52 @@ contract InventorySystem is SmartObjectFramework {
    * @notice Create and deposit items to the inventory
    * @dev Create and deposit items to the inventory by smart object
    * @param smartObjectId on-chain id of the in-game object
-   * @param items array of InventoryItem structs
+   * @param items array of InventoryItemParams structs
    */
   function createAndDepositItemsToInventory(
     uint256 smartObjectId,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) public onlyActive access(smartObjectId) scope(smartObjectId) {
+    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId));
+    address inventoryOwner = Role.getMembers(ownerRole)[0];
     for (uint256 i = 0; i < items.length; i++) {
-      EntityRecordStruct memory entityRecord = EntityRecordStruct({
+      // item sanity checks
+      if (!Tenants.getExists(items[i].tenantId)) {
+        revert Inventory_InvalidTenantId(items[i].inventoryItemId, items[i].tenantId);
+      }
+      if (items[i].itemId != 0) { // singleton item case
+        if (items[i].inventoryItemId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].itemId)))) {
+          revert Inventory_InvalidInventoryItemId(items[i].inventoryItemId);
+        } 
+        if (items[i].quantity != 1) {
+          revert Inventory_InvalidItemInputQuantity(items[i].inventoryItemId, items[i].quantity);
+        }
+      } else { // non-singleton item case
+        if (items[i].inventoryItemId != uint256(keccak256(abi.encodePacked(items[i].typeId)))) {
+          revert Inventory_InvalidInventoryItemId(items[i].inventoryItemId);
+        }
+        if (items[i].quantity == 0) {
+          revert Inventory_InvalidItemInputQuantity(items[i].inventoryItemId, 0);
+        }
+      }
+
+      EntityRecordParams memory entityRecordParams = EntityRecordParams({
         typeId: items[i].typeId,
         itemId: items[i].itemId,
-        volume: items[i].volume
+        volume: items[i].volume,
+        tenantId: items[i].tenantId
       });
-      address erc721Address = DeployableToken.getErc721Address();
-      address owner = IERC721(erc721Address).ownerOf(smartObjectId);
-      entitySystem.instantiate(uint256(bytes32("INVENTORY_ITEM")), items[i].inventoryItemId, owner);
+
+      uint256 classId = uint256(uint256(keccak256(abi.encodePacked(items[i].typeId))));
+      if (!Entity.getExists(classId)) {
+        // TODO: ater data validation implementation, consider using the CCP Games data signer instead of the namespace owner
+        // alternatively, we could block this call with a revert unless classId is already registered, and thereby requiring all classes to be pre-configured
+        entitySystem.scopedRegisterClass(classId, NamespaceOwner.getOwner(SystemRegistry.get(address(this)).getNamespaceId()), new ResourceId[](0));
+      }
+      if (items[i].itemId != 0) {
+        entitySystem.instantiate(classId, items[i].inventoryItemId, inventoryOwner);
+      }
+
       entityRecordSystem.createEntityRecord(items[i].inventoryItemId, entityRecord);
     }
 
@@ -121,7 +152,7 @@ contract InventorySystem is SmartObjectFramework {
    */
   function depositToInventory(
     uint256 smartObjectId,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
@@ -129,7 +160,7 @@ contract InventorySystem is SmartObjectFramework {
         revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
       }
     }
-
+    
     uint256 totalUsedCapacity = _processAndReturnUsedCapacity(smartObjectId, items);
 
     Inventory.setUsedCapacity(smartObjectId, totalUsedCapacity);
@@ -143,7 +174,7 @@ contract InventorySystem is SmartObjectFramework {
    */
   function withdrawFromInventory(
     uint256 smartObjectId,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
@@ -156,6 +187,14 @@ contract InventorySystem is SmartObjectFramework {
 
     for (uint256 i = 0; i < items.length; i++) {
       usedCapacity = _processItemWithdrawal(smartObjectId, items[i], usedCapacity);
+
+      // if the item is a singleton and the call is direct, delete the item from the chain
+      uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+      if (callCount == 1 && EntityRecord.getItemId(items[i].smartObjectId) != 0) {
+        bytes32 itemOwnerRole = keccak256(abi.encodePacked("OWNER_ROLE", items[i].ismartObjectId));
+        roleManagementSystem.scopedRevokeAll(items[i].smartObjectId, itemOwnerRole);
+        entitySystem.deleteObject(items[i].smartObjectId);
+      }
     }
 
     Inventory.setUsedCapacity(smartObjectId, usedCapacity);
@@ -166,29 +205,44 @@ contract InventorySystem is SmartObjectFramework {
    */
   function _processAndReturnUsedCapacity(
     uint256 smartObjectId,
-    InventoryItem[] memory items
+    InventoryItemParams[] memory items
   ) internal returns (uint256) {
     uint256 totalUsedCapacity = Inventory.getUsedCapacity(smartObjectId);
     uint256 maxCapacity = Inventory.getCapacity(smartObjectId);
 
     uint256 existingItemsLength = Inventory.getItems(smartObjectId).length;
 
+    bytes32 inventoryOwnerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId));
+    address inventoryOwner = Role.getMembers(inventoryOwnerRole)[0];
+
     for (uint256 i = 0; i < items.length; i++) {
-      //Revert if the items to deposit is not created on-chain
-      EntityRecordData memory entityRecord = EntityRecord.get(items[i].inventoryItemId);
-      if (entityRecord.recordExists == false) {
+      // Revert if the items to deposit do not have a recorded objectId
+      if (!Entity.getExists(items[i].inventoryItemId)) {
         revert Inventory_InvalidItem("InventorySystem: item is not created on-chain", items[i].inventoryItemId);
       }
-      //If there are inventory items exists for the smartObjectId, then the itemIndex is the length of the inventoryItems + i
+      // Revert if the items to deposit do not have an entity record
+      EntityRecordData memory entityRecord = EntityRecord.get(items[i].inventoryItemId);
+      if (entityRecord.recordExists == false) {
+        revert Inventory_InvalidRecord("InventorySystem: item does not have an on-chain record", items[i].inventoryItemId);
+      }
+
+      //If there are inventory items that already exist for the smartObjectId, then the itemIndex is the length of the inventoryItems + i
       uint256 itemIndex = existingItemsLength + i;
       totalUsedCapacity = _processItemDeposit(smartObjectId, items[i], totalUsedCapacity, maxCapacity, itemIndex);
+
+      bytes32 itemOwnerRole = keccak256(abi.encodePacked("OWNER_ROLE", items[i].inventoryItemId));
+
+      // remove all old item owner information
+      roleManagementSystem.scopedRevokeAll(items[i].inventoryItemId, itemOwnerRole);
+      // assign the inventory owner as the item owner
+      roleManagementSystem.scopedGrantRole(items[i].inventoryItemId, itemOwnerRole, inventoryOwner);
     }
     return totalUsedCapacity;
   }
 
   function _processItemDeposit(
     uint256 smartObjectId,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 usedCapacity,
     uint256 maxCapacity,
     uint256 itemIndex
@@ -206,8 +260,8 @@ contract InventorySystem is SmartObjectFramework {
     return usedCapacity + reqCapacity;
   }
 
-  function _updateInventoryAfterDeposit(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
-    InventoryItemData memory itemData = InventoryItemTable.get(smartObjectId, item.inventoryItemId);
+  function _updateInventoryAfterDeposit(uint256 smartObjectId, InventoryItemParams memory item, uint256 itemIndex) internal {
+    InventoryItemData memory itemData = InventoryItem.get(smartObjectId, item.inventoryItemId);
 
     DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
 
@@ -227,22 +281,22 @@ contract InventorySystem is SmartObjectFramework {
    * @param smartObjectId The smart storage unit id
    * @param item The item to increase the quantity
    */
-  function _increaseItemQuantity(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
-    uint256 quantity = InventoryItemTable.getQuantity(smartObjectId, item.inventoryItemId);
-    InventoryItemTable.set(smartObjectId, item.inventoryItemId, quantity + item.quantity, itemIndex, block.timestamp);
+  function _increaseItemQuantity(uint256 smartObjectId, InventoryItemParams memory item, uint256 itemIndex) internal {
+    uint256 quantity = InventoryItem.getQuantity(smartObjectId, item.inventoryItemId);
+    InventoryItem.set(smartObjectId, item.inventoryItemId, quantity + item.quantity, itemIndex, block.timestamp);
   }
 
-  function _depositNewItem(uint256 smartObjectId, InventoryItem memory item, uint256 itemIndex) internal {
+  function _depositNewItem(uint256 smartObjectId, InventoryItemParams memory item, uint256 itemIndex) internal {
     Inventory.pushItems(smartObjectId, item.inventoryItemId);
-    InventoryItemTable.set(smartObjectId, item.inventoryItemId, item.quantity, itemIndex, block.timestamp);
+    InventoryItem.set(smartObjectId, item.inventoryItemId, item.quantity, itemIndex, block.timestamp);
   }
 
   function _processItemWithdrawal(
     uint256 smartObjectId,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     uint256 usedCapacity
   ) internal returns (uint256) {
-    InventoryItemData memory itemData = InventoryItemTable.get(smartObjectId, item.inventoryItemId);
+    InventoryItemData memory itemData = InventoryItem.get(smartObjectId, item.inventoryItemId);
     _validateWithdrawal(item, itemData);
 
     _updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
@@ -250,7 +304,7 @@ contract InventorySystem is SmartObjectFramework {
     return usedCapacity - (item.volume * item.quantity);
   }
 
-  function _validateWithdrawal(InventoryItem memory item, InventoryItemData memory itemData) internal pure {
+  function _validateWithdrawal(InventoryItemParams memory item, InventoryItemData memory itemData) internal pure {
     if (item.quantity > itemData.quantity) {
       revert Inventory_InvalidItemQuantity("InventorySystem: invalid quantity", itemData.quantity, item.quantity);
     }
@@ -258,7 +312,7 @@ contract InventorySystem is SmartObjectFramework {
 
   function _updateInventoryAfterWithdrawal(
     uint256 smartObjectId,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     InventoryItemData memory itemData
   ) internal {
     DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
@@ -278,7 +332,7 @@ contract InventorySystem is SmartObjectFramework {
 
   function _removeItemCompletely(
     uint256 smartObjectId,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     InventoryItemData memory itemData
   ) internal {
     uint256[] memory inventoryItems = Inventory.getItems(smartObjectId);
@@ -286,17 +340,17 @@ contract InventorySystem is SmartObjectFramework {
     Inventory.updateItems(smartObjectId, itemData.index, lastElement);
     Inventory.popItems(smartObjectId);
 
-    //when a last element is swapped, change the index of the last element in the InventoryItemTable
-    InventoryItemTable.setIndex(smartObjectId, lastElement, itemData.index);
-    InventoryItemTable.deleteRecord(smartObjectId, item.inventoryItemId);
+    //when a last element is swapped, change the index of the last element in the InventoryItem Table
+    InventoryItem.setIndex(smartObjectId, lastElement, itemData.index);
+    InventoryItem.deleteRecord(smartObjectId, item.inventoryItemId);
   }
 
   function _reduceItemQuantity(
     uint256 smartObjectId,
-    InventoryItem memory item,
+    InventoryItemParams memory item,
     InventoryItemData memory itemData
   ) internal {
-    InventoryItemTable.set(
+    InventoryItem.set(
       smartObjectId,
       item.inventoryItemId,
       itemData.quantity - item.quantity,

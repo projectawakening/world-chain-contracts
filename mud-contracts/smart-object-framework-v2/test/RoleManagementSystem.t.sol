@@ -39,13 +39,13 @@ contract RoleManagementSystemTest is MudTest {
     vm.startPrank(deployer);
     // revert, if role or admin is bytes32(0)
     vm.expectRevert(abi.encodeWithSelector(IRoleManagementSystem.RoleManagement_InvalidRole.selector));
-    roleManagementSystem.createRole(bytes32(0), adminRole);
+    roleManagementSystem.createRole(bytes32(0), adminRole, false);
 
     vm.expectRevert(abi.encodeWithSelector(IRoleManagementSystem.RoleManagement_InvalidRole.selector));
-    roleManagementSystem.createRole(testRole, bytes32(0));
+    roleManagementSystem.createRole(testRole, bytes32(0), false);
 
     // create a role which is admin for itself
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
 
     // check created role values
     RoleData memory adminRoleData = Role.get(adminRole);
@@ -61,10 +61,10 @@ contract RoleManagementSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(IRoleManagementSystem.RoleManagement_RoleAlreadyCreated.selector, adminRole)
     );
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
 
     // create a role which has another role as admin
-    roleManagementSystem.createRole(testRole, adminRole);
+    roleManagementSystem.createRole(testRole, adminRole, false);
 
     vm.stopPrank();
   }
@@ -72,9 +72,9 @@ contract RoleManagementSystemTest is MudTest {
   function test_transferRoleAdmin() public {
     // create two roles which have themselves as admin
     vm.prank(deployer);
-    roleManagementSystem.createRole(testRole, testRole);
+    roleManagementSystem.createRole(testRole, testRole, false);
     vm.prank(deployer);
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
 
     // revert if the intial caller is not a member of admin
     vm.expectRevert(
@@ -119,7 +119,7 @@ contract RoleManagementSystemTest is MudTest {
   function test_grantRole() public {
     // create a role
     vm.prank(deployer);
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
 
     // revert if the intial caller is not a member of admin
     vm.expectRevert(
@@ -156,7 +156,17 @@ contract RoleManagementSystemTest is MudTest {
     assertEq(afterNewHasRole, true);
     assertEq(afterNewMembers.length, beforeNewMembers.length + 1);
     assertEq(afterNewMembers[afterNewMembers.length - 1], alice);
+    
+    // create a new singleton role
+    roleManagementSystem.createRole(testRole, adminRole, true);
+
+    // revert if the role is singleton and already has a member
+    vm.expectRevert(
+      abi.encodeWithSelector(IRoleManagementSystem.RoleManagement_SingletonRoleAlreadyHasMember.selector, testRole)
+    );
+    roleManagementSystem.grantRole(testRole, alice);
     vm.stopPrank();
+
 
     // revert, if caller is not an admin role member
     vm.expectRevert(
@@ -172,7 +182,7 @@ contract RoleManagementSystemTest is MudTest {
   function test_revokeRole() public {
     // create a role
     vm.prank(deployer);
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
 
     // revert if the intial caller is not a member of admin
     vm.expectRevert(
@@ -232,7 +242,7 @@ contract RoleManagementSystemTest is MudTest {
   function test_renounceRole() public {
     // create a role
     vm.prank(deployer);
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
 
     // grant alice the role
     vm.prank(deployer);
@@ -271,7 +281,7 @@ contract RoleManagementSystemTest is MudTest {
   function test_revokeAll() public {
     // create a role and grant an additional account to the role
     vm.prank(deployer);
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole, false);
     vm.prank(deployer);
     roleManagementSystem.grantRole(adminRole, alice);
 

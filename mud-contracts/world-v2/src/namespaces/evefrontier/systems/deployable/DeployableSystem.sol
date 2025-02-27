@@ -13,16 +13,13 @@ import { Fuel, FuelData } from "../../codegen/index.sol";
 import { LocationSystem } from "../location/LocationSystem.sol";
 import { LocationData } from "../../codegen/tables/Location.sol";
 import { Location, LocationData } from "../../codegen/index.sol";
-import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
-import { StaticDataSystem } from "../static-data/StaticDataSystem.sol";
 import { SmartAssemblySystem } from "../smart-assembly/SmartAssemblySystem.sol";
 import { LocationSystemLib, locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
-import { StaticDataSystemLib, staticDataSystem } from "../../codegen/systems/StaticDataSystemLib.sol";
 import { SmartAssemblySystemLib, smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLib.sol";
 import { FuelSystemLib, fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 import { EntityRecordData } from "../entity-record/types.sol";
 
-import { State, SmartObjectData, CreateAndAnchorDeployableParams } from "./types.sol";
+import { State, CreateAndAnchorDeployableParams } from "./types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
 
 /**
@@ -36,7 +33,6 @@ contract DeployableSystem is SmartObjectFramework {
   error Deployable_NoFuel(uint256 smartObjectId);
   error Deployable_StateTransitionPaused();
   error Deployable_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
-  error DeployableERC721AlreadyInitialized();
   error Deployable_InvalidFuelConsumptionInterval(uint256 smartObjectId);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
@@ -57,11 +53,28 @@ contract DeployableSystem is SmartObjectFramework {
   function createAndAnchorDeployable(
     CreateAndAnchorDeployableParams memory params
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
-    smartAssemblySystem.createSmartAssembly(params.smartObjectId, params.smartAssemblyType, params.entityRecordData);
+    smartAssemblySystem.createSmartAssembly(params.smartObjectId, params.smartAssemblyType, params.entityRecordParams);
+
+    // get this deployable's classId
+    EntityRelationValue memory entityRelationValue = abi.decode(
+      EntityTagMap.getValue(params.smartObjectId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(params.smartObjectId)))),
+      (EntityRelationValue)
+    );
+
+    // sanity checks
+    if (!Tenants.getExists(params.entityRecordParams.tenantId)) {
+      revert Deployable_InvalidTenantId(params.smartObjectId, params.entityRecordParams.tenantId);
+    }
+    if (keccak256(abi.encodePacked(params.entityRecordParams.typeId)) != entityRelationValue.relatedEntityId) {
+      revert Deployable_InvalidTypeId(params.smartObjectId, params.entityRecordParams.typeId);
+    }
+    if (params.smartObjectId!= uint256(keccak256(abi.encodePacked(params.entityRecordParams.tenantId, params.entityRecordParams.itemId)))) {
+      revert Deployable_InvalidSmartObjectId(params.smartObjectId);
+    }
 
     registerDeployable(
       params.smartObjectId,
-      params.smartObjectData,
+      params.owner,
       params.fuelUnitVolume,
       params.fuelConsumptionIntervalInSeconds,
       params.fuelMaxCapacity
@@ -70,28 +83,17 @@ contract DeployableSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev sets the ERC721 address for a deployable token
-   * @param erc721Address the address of the ERC721 contract
-   */
-  function registerDeployableToken(address erc721Address) public context access(0) scope(0) {
-    if (DeployableToken.getErc721Address() != address(0)) {
-      revert DeployableERC721AlreadyInitialized();
-    }
-    DeployableToken.set(erc721Address);
-  }
-
-  /**
    * TODO: restrict this to smartObjectIds that exist
    * @dev registers a new smart deployable (must be "NULL" state)
    * @param smartObjectId on-chain id of the in-game deployable
-   * @param smartObjectData the data of the smart object
+   * @param owner the owner of the smart object
    * @param fuelUnitVolume the fuel unit volume in wei
    * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
    * @param fuelMaxCapacity the fuel max capacity in wei
    */
   function registerDeployable(
     uint256 smartObjectId,
-    SmartObjectData memory smartObjectData,
+    address owner,
     uint256 fuelUnitVolume,
     uint256 fuelConsumptionIntervalInSeconds,
     uint256 fuelMaxCapacity
@@ -106,19 +108,58 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     // revert if the given smart object owner is not a valid character
-    if (CharactersByAddress.get(smartObjectData.owner) == 0) {
+    if (CharactersByAddress.get(owner) == 0) {
       revert Deployable_InvalidObjectOwner(
         "SmartDeployableSystem: Smart Object owner is not a valid Smart Character",
-        smartObjectData.owner,
+        owner,
         smartObjectId
       );
     }
 
-    if (previousState == State.NULL) {
-      address erc721Address = DeployableToken.getErc721Address();
-      IERC721Mintable(erc721Address).mint(smartObjectData.owner, smartObjectId);
+    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId)); // OWNER_ROLE tracks/manages object ownership
+    
+    // get this deployable's classId
+    EntityRelationValue memory entityRelationValue = abi.decode(
+      EntityTagMap.getValue(smartObjectId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(smartObjectId)))),
+      (EntityRelationValue)
+    );
 
-      staticDataSystem.setCid(smartObjectId, smartObjectData.tokenURI);
+    if(!Role.getExists(ownerRole)) { // ownerRole has not been created, create it
+      roleManagementSystem.scopedCreateRole(
+        entityRelationValue.relatedEntityId,
+        ownerRole,
+        ownerRole,
+        owner,
+        true
+      );
+    } else if(Role.lengthMembers(ownerRole) == 0) { // ownerRole has already been created, but has no members
+      if(Role.getAdmin(ownerRole) != ownerRole) { // ownerRole MUST be self-administered to start with
+        roleManagementSystem.scopedTransferRoleAdmin(
+          entityRelationValue.relatedEntityId,
+          ownerRole,
+          ownerRole
+        );
+      }
+      roleManagementSystem.scopedGrantRole(
+        entityRelationValue.relatedEntityId,
+        ownerRole,
+        owner
+      );
+    } else { // previously created ownerRole has members, start fresh
+      if(Role.getAdmin(ownerRole) != ownerRole) {
+        roleManagementSystem.scopedTransferRoleAdmin(
+          entityRelationValue.relatedEntityId,
+          ownerRole,
+          ownerRole
+        );
+      }
+
+      roleManagementSystem.scopedRevokeAll(getSmartCharacterClassId(), ownerRole);
+      roleManagementSystem.scopedGrantRole(
+        entityRelationValue.relatedEntityId,
+        ownerRole,
+        owner
+      );
     }
 
     DeployableState.set(
@@ -152,6 +193,16 @@ contract DeployableSystem is SmartObjectFramework {
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
+    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId));
+
+    // get this deployable's classId
+    EntityRelationValue memory entityRelationValue = abi.decode(
+      EntityTagMap.getValue(smartObjectId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(smartObjectId)))),
+      (EntityRelationValue)
+    );
+
+    roleManagementSystem.scopedRevokeAll(entityRelationValue.relatedEntityId, ownerRole);
+
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
   }

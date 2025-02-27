@@ -34,7 +34,7 @@ library CharactersByAddress {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "characterAddress";
+    keyNames[0] = "address";
   }
 
   /**
@@ -43,7 +43,7 @@ library CharactersByAddress {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](1);
-    fieldNames[0] = "characterId";
+    fieldNames[0] = "smartObjectId";
   }
 
   /**
@@ -61,95 +61,95 @@ library CharactersByAddress {
   }
 
   /**
-   * @notice Get characterId.
+   * @notice Get smartObjectId.
    */
-  function getCharacterId(address characterAddress) internal view returns (uint256 characterId) {
+  function getSmartObjectId(address address) internal view returns (uint256 smartObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get characterId.
+   * @notice Get smartObjectId.
    */
-  function _getCharacterId(address characterAddress) internal view returns (uint256 characterId) {
+  function _getSmartObjectId(address address) internal view returns (uint256 smartObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get characterId.
+   * @notice Get smartObjectId.
    */
-  function get(address characterAddress) internal view returns (uint256 characterId) {
+  function get(address address) internal view returns (uint256 smartObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get characterId.
+   * @notice Get smartObjectId.
    */
-  function _get(address characterAddress) internal view returns (uint256 characterId) {
+  function _get(address address) internal view returns (uint256 smartObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set characterId.
+   * @notice Set smartObjectId.
    */
-  function setCharacterId(address characterAddress, uint256 characterId) internal {
+  function setSmartObjectId(address address, uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((characterId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((smartObjectId)), _fieldLayout);
   }
 
   /**
-   * @notice Set characterId.
+   * @notice Set smartObjectId.
    */
-  function _setCharacterId(address characterAddress, uint256 characterId) internal {
+  function _setSmartObjectId(address address, uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((characterId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((smartObjectId)), _fieldLayout);
   }
 
   /**
-   * @notice Set characterId.
+   * @notice Set smartObjectId.
    */
-  function set(address characterAddress, uint256 characterId) internal {
+  function set(address address, uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((characterId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((smartObjectId)), _fieldLayout);
   }
 
   /**
-   * @notice Set characterId.
+   * @notice Set smartObjectId.
    */
-  function _set(address characterAddress, uint256 characterId) internal {
+  function _set(address address, uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((characterId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((smartObjectId)), _fieldLayout);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(address characterAddress) internal {
+  function deleteRecord(address address) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -157,9 +157,9 @@ library CharactersByAddress {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(address characterAddress) internal {
+  function _deleteRecord(address address) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -168,8 +168,8 @@ library CharactersByAddress {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 characterId) internal pure returns (bytes memory) {
-    return abi.encodePacked(characterId);
+  function encodeStatic(uint256 smartObjectId) internal pure returns (bytes memory) {
+    return abi.encodePacked(smartObjectId);
   }
 
   /**
@@ -178,8 +178,8 @@ library CharactersByAddress {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(uint256 characterId) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(characterId);
+  function encode(uint256 smartObjectId) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(smartObjectId);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -190,9 +190,9 @@ library CharactersByAddress {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(address characterAddress) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(address address) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(uint160(characterAddress)));
+    _keyTuple[0] = bytes32(uint256(uint160(address)));
 
     return _keyTuple;
   }
