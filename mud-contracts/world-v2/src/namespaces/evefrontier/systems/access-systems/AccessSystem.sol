@@ -1,11 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// External imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+// Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
-import { DeployableToken } from "../../codegen/index.sol";
+
+// Project imports - types and interfaces
+import { State } from "../../../../codegen/common.sol";
 import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
+
+// Project imports - tables
+import { DeployableState } from "../../codegen/index.sol";
+import { DeployableToken } from "../../codegen/index.sol";
+
+// Project imports - utilities and systems
 import { InventoryUtils } from "../inventory/InventoryUtils.sol";
 import { inventoryInteractSystem } from "../../codegen/systems/InventoryInteractSystemLib.sol";
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
@@ -110,6 +121,11 @@ contract AccessSystem is SmartObjectFramework {
   }
 
   function isOwner(address caller, uint256 objectId) public view returns (bool) {
+    bool isDeployable = DeployableState.getCreatedAt(objectId) != 0;
+    if (!isDeployable) {
+      return true;
+    }
+
     address erc721Address = DeployableToken.getErc721Address();
     address owner = IERC721(erc721Address).ownerOf(objectId);
     return owner == caller;

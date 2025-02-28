@@ -33,3 +33,6 @@ import { ItemTransferOffchain, ItemTransferOffchainData } from "./tables/ItemTra
 import { SmartTurretConfig } from "./tables/SmartTurretConfig.sol";
 import { SmartGateConfig, SmartGateConfigData } from "./tables/SmartGateConfig.sol";
 import { SmartGateLink, SmartGateLinkData } from "./tables/SmartGateLink.sol";
+import { CrudeLift, CrudeLiftData } from "./tables/CrudeLift.sol";
+import { Lens, LensData } from "./tables/Lens.sol";
+import { Rift, RiftData } from "./tables/Rift.sol";

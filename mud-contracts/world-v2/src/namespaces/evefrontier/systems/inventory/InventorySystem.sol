@@ -1,27 +1,34 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// External libraries
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
+
+// Smart Object Framework
+import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { Role, Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+// Project imports - Tables
 import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 import { Inventory } from "../../codegen/index.sol";
 import { EntityRecord, EntityRecordData } from "../../codegen/index.sol";
 import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
-import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../codegen/index.sol";
+import { DeployableToken } from "../../codegen/index.sol";
+
+// Project imports - Systems
+import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
-import { EntityRecordData as EntityRecordStruct } from "../entity-record/types.sol";
 import { EntityRecordSystemLib, entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 
+// Local imports
 import { InventoryItem } from "./types.sol";
 import { State } from "../deployable/types.sol";
-import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
-import { Role } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { EntityRecordData as EntityRecordStruct } from "../entity-record/types.sol";
 import { InventoryUtils } from "./InventoryUtils.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
-
-import { DeployableToken } from "../../codegen/index.sol";
-import { IERC721 } from "../eve-erc721-puppet/IERC721.sol";
 
 /**
  * @title InventorySystem
@@ -104,10 +111,19 @@ contract InventorySystem is SmartObjectFramework {
         itemId: items[i].itemId,
         volume: items[i].volume
       });
-      address erc721Address = DeployableToken.getErc721Address();
-      address owner = IERC721(erc721Address).ownerOf(smartObjectId);
-      //TODO: classId should be auto generated
-      entitySystem.instantiate(uint256(bytes32("INVENTORY_ITEM")), items[i].inventoryItemId, owner);
+
+      bool isDeployable = DeployableState.getCreatedAt(smartObjectId) != 0;
+      address owner;
+      if (isDeployable) {
+        address erc721Address = DeployableToken.getErc721Address();
+        owner = IERC721(erc721Address).ownerOf(smartObjectId);
+      } else {
+        owner = _callMsgSender(1);
+      }
+
+      if (!Entity.getExists(items[i].inventoryItemId)) {
+        entitySystem.instantiate(uint256(bytes32("INVENTORY_ITEM")), items[i].inventoryItemId, owner);
+      }
       entityRecordSystem.createEntityRecord(items[i].inventoryItemId, entityRecord);
     }
 
@@ -125,9 +141,13 @@ contract InventorySystem is SmartObjectFramework {
     InventoryItem[] memory items
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     {
-      State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (currentState != State.ONLINE) {
-        revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
+      bool isDeployable = DeployableState.getCreatedAt(smartObjectId) != 0;
+
+      if (isDeployable) {
+        State currentState = DeployableState.getCurrentState(smartObjectId);
+        if (currentState != State.ONLINE) {
+          revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
+        }
       }
     }
 
@@ -147,9 +167,13 @@ contract InventorySystem is SmartObjectFramework {
     InventoryItem[] memory items
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     {
-      State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
-        revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
+      bool isDeployable = DeployableState.getCreatedAt(smartObjectId) != 0;
+
+      if (isDeployable) {
+        State currentState = DeployableState.getCurrentState(smartObjectId);
+        if (!(currentState == State.ANCHORED || currentState == State.ONLINE)) {
+          revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
+        }
       }
     }
 
