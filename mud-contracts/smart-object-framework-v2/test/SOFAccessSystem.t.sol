@@ -22,8 +22,8 @@ import { ISOFAccessSystem } from "../src/namespaces/sofaccess/interfaces/ISOFAcc
 import { sOFAccessSystem } from "../src/namespaces/sofaccess/codegen/systems/SOFAccessSystemLib.sol";
 
 // import { eveSystem } from "../src/namespaces/evefrontier/world-system-libs/EveSystemLib.sol";
-import { inventorySystem } from "../src/namespaces/evefrontier/world-system-libs/InventorySystemLib.sol";
-import { ephemeralInventorySystem } from "../src/namespaces/evefrontier/world-system-libs/EphemeralInventorySystemLib.sol";
+// import { inventorySystem } from "../src/namespaces/evefrontier/world-system-libs/InventorySystemLib.sol";
+// import { ephemeralInventorySystem } from "../src/namespaces/evefrontier/world-system-libs/EphemeralInventorySystemLib.sol";
 
 import { CallAccess } from "../src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
@@ -814,39 +814,39 @@ contract SOFAccessSystemTest is MudTest {
 
     // EntitySystem.sol
     // CallAccess.set(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, eveSystem.getAddress(), true);
-    CallAccess.set(
-      entitySystem.toResourceId(),
-      IEntitySystem.scopedRegisterClass.selector,
-      inventorySystem.getAddress(),
-      true
-    );
-    CallAccess.set(
-      entitySystem.toResourceId(),
-      IEntitySystem.scopedRegisterClass.selector,
-      ephemeralInventorySystem.getAddress(),
-      true
-    );
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.scopedRegisterClass.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.scopedRegisterClass.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
 
-    CallAccess.set(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, inventorySystem.getAddress(), true);
-    CallAccess.set(
-      entitySystem.toResourceId(),
-      IEntitySystem.instantiate.selector,
-      ephemeralInventorySystem.getAddress(),
-      true
-    );
+    // CallAccess.set(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, inventorySystem.getAddress(), true);
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.instantiate.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
 
-    CallAccess.set(
-      entitySystem.toResourceId(),
-      IEntitySystem.deleteObject.selector,
-      inventorySystem.getAddress(),
-      true
-    );
-    CallAccess.set(
-      entitySystem.toResourceId(),
-      IEntitySystem.deleteObject.selector,
-      ephemeralInventorySystem.getAddress(),
-      true
-    );
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.deleteObject.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.deleteObject.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
 
     // RoleManagementSystem.sol
     CallAccess.set(
@@ -855,31 +855,31 @@ contract SOFAccessSystemTest is MudTest {
       entitySystem.getAddress(),
       true
     );
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedCreateRole.selector,
-      inventorySystem.getAddress(),
-      true
-    );
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedCreateRole.selector,
-      ephemeralInventorySystem.getAddress(),
-      true
-    );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedCreateRole.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedCreateRole.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
 
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedGrantRole.selector,
-      inventorySystem.getAddress(),
-      true
-    );
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedGrantRole.selector,
-      ephemeralInventorySystem.getAddress(),
-      true
-    );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedGrantRole.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedGrantRole.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
 
     CallAccess.set(
       roleManagementSystem.toResourceId(),
@@ -887,18 +887,18 @@ contract SOFAccessSystemTest is MudTest {
       entitySystem.getAddress(),
       true
     );
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedRevokeAll.selector,
-      inventorySystem.getAddress(),
-      true
-    );
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedRevokeAll.selector,
-      ephemeralInventorySystem.getAddress(),
-      true
-    );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedRevokeAll.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedRevokeAll.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
   }
 
   function _configureEntitySystemAccess() internal {
