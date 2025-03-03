@@ -48,14 +48,6 @@ import { IEveSystem } from "../interfaces/IEveSystem.sol";
  * @dev Consider combining this with the SmartObjectSystem which is extended by all systems.
  */
 contract EveSystem is IEveSystem, SmartObjectFramework {
-  /**
-   * @notice Get the world instance
-   * @return The IWorld instance
-   */
-  function world() internal view returns (IWorldWithContext) {
-    return IWorldWithContext(_world());
-  }
-
   function registerSmartCharacterClass(uint256 typeId) public {
     ResourceId[] memory systemIds = new ResourceId[](2);
     systemIds[0] = entityRecordSystem.toResourceId();
