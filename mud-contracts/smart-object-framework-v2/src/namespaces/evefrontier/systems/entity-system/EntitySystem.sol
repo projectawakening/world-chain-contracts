@@ -54,7 +54,7 @@ contract EntitySystem is IEntitySystem, SmartObjectFramework {
    * @param accessRoleMember An address to assign as member of the created access role for this new class {see, RoleManagementSystem.sol}, if this is a direct call we ignore this parameter and assign the caller as the member
    * @param scopedSystemIds An array of ResourceIds (of World registered Systems) to associate with this class via COMPOSITION Resource Relation Tags
    * @dev Validates entity ID (non-zero and non-existence) before registration
-   * @dev Requires caller to be a member of the specified `accessRole`
+   * @dev Assigns accessRoleMember as a member of the new access role for this class {see, RoleManagementSystem.sol}
    * @dev access configuration - only callable by specifically defined system classes(see InventorySystem, EphemeralInventorySystem, SmartStorageUnitSystem, SmartCharacterSystem, SmartTurretSystem, SmartGateSystem, SOFAccessSystem.allowDefinedSystems)
    */
   function scopedRegisterClass(
@@ -97,7 +97,7 @@ contract EntitySystem is IEntitySystem, SmartObjectFramework {
    * @dev Warning: Dependent data in relationally tagged entities and resources should be handled before deletion!
    * @dev access configuration - only callable directly by a member of the Class access role (see SOFAccessSystem.allowDirectAccessRole)
    */
-  function deleteClass(uint256 classId) public context enforceCallCount(1) access(classId) {
+  function deleteClass(uint256 classId) public context access(classId) {
     if (!Entity.getExists(classId)) {
       revert Entity_EntityDoesNotExist(classId);
     }
@@ -115,6 +115,12 @@ contract EntitySystem is IEntitySystem, SmartObjectFramework {
       revert Entity_EntityRelationsFound(classId, numberOfDependentEntities);
     }
 
+    // delete the class access role data
+    bytes32 classAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", classId));
+    roleManagementSystem.scopedRevokeAll(classId, classAccessRole);
+    Role.deleteRecord(classAccessRole);
+
+    // remove all tags attached to this class
     TagId[] memory propertyTagIds = new TagId[](class.propertyTags.length);
     for (uint i = 0; i < class.propertyTags.length; i++) {
       propertyTagIds[i] = TagId.wrap(class.propertyTags[i]);
@@ -131,13 +137,7 @@ contract EntitySystem is IEntitySystem, SmartObjectFramework {
       tagSystem.removeTags(classId, resourceRelationTagIds);
     }
 
-    // delete the class access role data
-    bytes32 classAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", classId));
-
-    roleManagementSystem.scopedRevokeAll(classId, classAccessRole);
-
-    Role.deleteRecord(classAccessRole);
-
+    // delete the class entity
     Entity.deleteRecord(classId);
   }
 
@@ -180,7 +180,7 @@ contract EntitySystem is IEntitySystem, SmartObjectFramework {
 
     bytes32 objectAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", objectId));
 
-    roleManagementSystem.scopedCreateRole(0, objectAccessRole, objectAccessRole, accessRoleMember);
+    roleManagementSystem.scopedCreateRole(classId, objectAccessRole, objectAccessRole, accessRoleMember);
 
     Entity.set(objectId, true, objectAccessRole, TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
 
@@ -306,7 +306,7 @@ contract EntitySystem is IEntitySystem, SmartObjectFramework {
 
     bytes32 classAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", classId));
 
-    roleManagementSystem.scopedCreateRole(classId, classAccessRole, classAccessRole, accessRoleMember);
+    roleManagementSystem.scopedCreateRole(0, classAccessRole, classAccessRole, accessRoleMember);
 
     Entity.set(classId, true, classAccessRole, TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
 

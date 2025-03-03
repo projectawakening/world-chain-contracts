@@ -44,6 +44,15 @@ export default defineWorld({
         },
       },
       tables: {
+        CallAccess: {
+          schema: {
+            systemId: "ResourceId",
+            functionId: "bytes4",
+            caller: "address",
+            hasAccess: "bool",
+          },
+          key: ["systemId", "functionId", "caller"],
+        },
         /*******************
          * ACCESS CONFIG, ROLE, AND ROLE MEMBERSHIP DATA *
          *******************/

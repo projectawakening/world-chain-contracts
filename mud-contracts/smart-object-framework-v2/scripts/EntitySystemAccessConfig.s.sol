@@ -5,18 +5,13 @@ import { Script } from "forge-std/Script.sol";
 
 import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceAccess } from "@latticexyz/world/src/codegen/tables/ResourceAccess.sol";
-import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as WORLD_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { accessConfigSystem } from "../src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
+import { entitySystem } from "../src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { sOFAccessSystem } from "../src/namespaces/sofaccess/codegen/systems/SOFAccessSystemLib.sol";
 
-import { Utils as AccessConfigUtils } from "../src/namespaces/evefrontier/systems/access-config-system/Utils.sol";
-import { Utils as EntitySystemUtils } from "../src/namespaces/evefrontier/systems/entity-system/Utils.sol";
-import { Utils as SOFAccessSystemUtils } from "../src/namespaces/sofaccess/systems/sof-access-system/Utils.sol";
-
-import { IAccessConfigSystem } from "../src/namespaces/evefrontier/interfaces/IAccessConfigSystem.sol";
 import { IEntitySystem } from "../src/namespaces/evefrontier/interfaces/IEntitySystem.sol";
-import { ISOFAccessSystem } from "../src/namespaces/sofaccesscntrl/interfaces/ISOFAccessSystem.sol";
+import { ISOFAccessSystem } from "../src/namespaces/sofaccess/interfaces/ISOFAccessSystem.sol";
 
 contract EntitySystemAccessConfig is Script {
 
@@ -30,25 +25,28 @@ contract EntitySystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
     
-    // Entity System access configurations
+    // EntitySystem.sol access configurations
     // set allowClassScopedSystemOrDirectClassAccessRole for setClassAccessRole
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (EntitySystemUtils.entitySystemId(), IEntitySystem.setClassAccessRole.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector)));
-    // set allowClassAccessRole for deleteClass
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (EntitySystemUtils.entitySystemId(), IEntitySystem.deleteClass.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowClassAccessRole.selector)));
-    // set allowClassScopedSystemOrDirectClassAccessRole for instantiate
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (EntitySystemUtils.entitySystemId(), IEntitySystem.instantiate.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector)));
-    // set allowClassScopedSystemOrDirectObjectAccessRole for setObjectAccessRole
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (EntitySystemUtils.entitySystemId(), IEntitySystem.setObjectAccessRole.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowClassScopedSystemOrDirectObjectAccessRole.selector)));
-    // set allowScopedSystemOrDirectClassAccessRole for deleteObject
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (EntitySystemUtils.entitySystemId(), IEntitySystem.deleteObject.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector)));
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
+    // set allowDirectClassAccessRoleOnly for deleteClass
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowDirectClassAccessRoleOnly.selector);
+    // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for instantiate
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrClassScopedSystemOrDirectClassAccessRole.selector);
+    // set allowClassScopedSystemOrDirectAccessRole for setObjectAccessRole
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector);
+    // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for deleteObject
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrClassScopedSystemOrDirectClassAccessRole.selector);
+    // set allowCallAccessOnly for scopedRegisterClass
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOnly.selector);
 
     // EntitySystem.sol toggle access enforcement on
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (EntitySystemUtils.entitySystemId(), IEntitySystem.setClassAccessRole.selector, true)));
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (EntitySystemUtils.entitySystemId(), IEntitySystem.deleteClass.selector, true)));
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (EntitySystemUtils.entitySystemId(), IEntitySystem.instantiate.selector, true)));
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (EntitySystemUtils.entitySystemId(), IEntitySystem.setObjectAccessRole.selector, true)));
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (EntitySystemUtils.entitySystemId(), IEntitySystem.deleteObject.selector, true)));
-
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, true);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, true);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, true);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, true);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, true);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, true);
+    
     vm.stopBroadcast();
   }
 }

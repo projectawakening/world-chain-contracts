@@ -21,6 +21,12 @@ import { accessConfigSystem } from "../src/namespaces/evefrontier/codegen/system
 import { ISOFAccessSystem } from "../src/namespaces/sofaccess/interfaces/ISOFAccessSystem.sol";
 import { sOFAccessSystem } from "../src/namespaces/sofaccess/codegen/systems/SOFAccessSystemLib.sol";
 
+// import { eveSystem } from "../src/namespaces/evefrontier/world-system-libs/EveSystemLib.sol";
+// import { inventorySystem } from "../src/namespaces/evefrontier/world-system-libs/InventorySystemLib.sol";
+// import { ephemeralInventorySystem } from "../src/namespaces/evefrontier/world-system-libs/EphemeralInventorySystemLib.sol";
+
+import { CallAccess } from "../src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
+
 import "../src/namespaces/evefrontier/codegen/index.sol";
 
 import { TagId, TagIdLib } from "../src/libs/TagId.sol";
@@ -64,6 +70,8 @@ contract SOFAccessSystemTest is MudTest {
   address deployer = vm.addr(deployerPK);
   uint256 alicePK = vm.deriveKey(mnemonic, 1);
   address alice = vm.addr(alicePK);
+  uint256 bobPK = vm.deriveKey(mnemonic, 2);
+  address bob = vm.addr(bobPK);
 
   function setUp() public override {
     // DEPLOY AND REGISTER A MUD WORLD
@@ -72,6 +80,7 @@ contract SOFAccessSystemTest is MudTest {
     StoreSwitch.setStoreAddress(worldAddress);
 
     vm.startPrank(deployer);
+
     // DEPLOY AND REGISTER THE CLASS SCOPED SYSTEM AND THE UNSCOPED SYSTEM
     classScopedSystem = new ClassScopedMock();
     world.registerSystem(CLASS_SCOPED_SYSTEM_ID, System(classScopedSystem), true);
@@ -79,137 +88,12 @@ contract SOFAccessSystemTest is MudTest {
     unscopedSystem = new UnscopedMock();
     world.registerSystem(UNSCOPED_SYSTEM_ID, System(unscopedSystem), true);
 
-    // CONFIGURE ROLES, ACCESS, AND ENFORCEMENT FOR THE ENTITY AND TAG SYSTEMS
+    // CONFIGURE ROLES, ACCESS, AND ENFORCEMENT FOR THE ENTITY, TAG and ROLE MANAGEMENT SYSTEMS
+    _configureSOFCallAccess();
+    _configureEntitySystemAccess();
+    _configureTagSystemAccess();
+    _configureRoleManagementSystemAccess();
 
-    // TagSystem.sol access config and enforcement
-    accessConfigSystem.configureAccess(
-      TAG_SYSTEM_ID,
-      ITagSystem.setTag.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowEntitySystemOrDirectAccessRole.selector
-    );
-    accessConfigSystem.configureAccess(
-      TAG_SYSTEM_ID,
-      ITagSystem.removeTag.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowEntitySystemOrDirectAccessRole.selector
-    );
-
-    accessConfigSystem.setAccessEnforcement(TAG_SYSTEM_ID, ITagSystem.setTag.selector, true);
-    accessConfigSystem.setAccessEnforcement(TAG_SYSTEM_ID, ITagSystem.removeTag.selector, true);
-
-    // EntitySystem.sol access config and enforcement
-    accessConfigSystem.configureAccess(
-      ENTITY_SYSTEM_ID,
-      IEntitySystem.scopedRegisterClass.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowDefinedSystems.selector
-    );
-    accessConfigSystem.configureAccess(
-      ENTITY_SYSTEM_ID,
-      IEntitySystem.setClassAccessRole.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector
-    );
-    accessConfigSystem.configureAccess(
-      ENTITY_SYSTEM_ID,
-      IEntitySystem.deleteClass.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowDirectAccessRole.selector
-    );
-    accessConfigSystem.configureAccess(
-      ENTITY_SYSTEM_ID,
-      IEntitySystem.setObjectAccessRole.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector
-    );
-    accessConfigSystem.configureAccess(
-      ENTITY_SYSTEM_ID,
-      IEntitySystem.instantiate.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector
-    );
-    accessConfigSystem.configureAccess(
-      ENTITY_SYSTEM_ID,
-      IEntitySystem.deleteObject.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector
-    );
-
-    accessConfigSystem.setAccessEnforcement(ENTITY_SYSTEM_ID, IEntitySystem.scopedRegisterClass.selector, true);
-    accessConfigSystem.setAccessEnforcement(ENTITY_SYSTEM_ID, IEntitySystem.setClassAccessRole.selector, true);
-    accessConfigSystem.setAccessEnforcement(ENTITY_SYSTEM_ID, IEntitySystem.deleteClass.selector, true);
-    accessConfigSystem.setAccessEnforcement(ENTITY_SYSTEM_ID, IEntitySystem.setObjectAccessRole.selector, true);
-    accessConfigSystem.setAccessEnforcement(ENTITY_SYSTEM_ID, IEntitySystem.instantiate.selector, true);
-    accessConfigSystem.setAccessEnforcement(ENTITY_SYSTEM_ID, IEntitySystem.deleteObject.selector, true);
-
-    // RoleManagementSystem.sol access config and enforcement
-    accessConfigSystem.configureAccess(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedCreateRole.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowEntitySystemOrClassScopedSystem.selector
-    );
-    accessConfigSystem.configureAccess(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedTransferRoleAdmin.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystem.selector
-    );
-    accessConfigSystem.configureAccess(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedGrantRole.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystem.selector
-    );
-    accessConfigSystem.configureAccess(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedRevokeRole.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystem.selector
-    );
-    accessConfigSystem.configureAccess(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedRenounceRole.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowClassScopedSystem.selector
-    );
-    accessConfigSystem.configureAccess(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedRevokeAll.selector,
-      SOF_ACCESS_SYSTEM_ID,
-      ISOFAccessSystem.allowEntitySystemOrClassScopedSystem.selector
-    );
-    accessConfigSystem.setAccessEnforcement(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedCreateRole.selector,
-      true
-    );
-    accessConfigSystem.setAccessEnforcement(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedTransferRoleAdmin.selector,
-      true
-    );
-    accessConfigSystem.setAccessEnforcement(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedGrantRole.selector,
-      true
-    );
-    accessConfigSystem.setAccessEnforcement(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedRevokeRole.selector,
-      true
-    );
-    accessConfigSystem.setAccessEnforcement(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedRenounceRole.selector,
-      true
-    );
-    accessConfigSystem.setAccessEnforcement(
-      ROLE_MANAGEMENT_SYSTEM_ID,
-      IRoleManagementSystem.scopedRevokeAll.selector,
-      true
-    );
     vm.stopPrank();
   }
 
@@ -387,7 +271,7 @@ contract SOFAccessSystemTest is MudTest {
 
     // revert, if calling system is not scoped
     vm.expectRevert(
-      abi.encodeWithSelector(SmartObjectFramework.SOF_UnscopedSystemCall.selector, classId, UNSCOPED_SYSTEM_ID)
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
     world.call(
       UNSCOPED_SYSTEM_ID,
@@ -403,7 +287,7 @@ contract SOFAccessSystemTest is MudTest {
       )
     );
 
-    // revert, even if the System is in scope but is not explicitly an EntitySystem caller
+    // revert, even if the System is in scope but is not explicitly a CallAccess defined caller
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(classScopedSystem))
     );
@@ -442,7 +326,7 @@ contract SOFAccessSystemTest is MudTest {
     );
   }
 
-  function test_TagSystem_removeSystemTag() public {
+  function test_TagSystem_removeTag() public {
     // removeSystemTag - allowEntitySystemOrDirectAccessRole (class/object)
     // register Class (with the class scoped system tag)
     ResourceId[] memory scopedSystemIds = new ResourceId[](1);
@@ -452,7 +336,7 @@ contract SOFAccessSystemTest is MudTest {
 
     // revert, if calling system is not scoped
     vm.expectRevert(
-      abi.encodeWithSelector(SmartObjectFramework.SOF_UnscopedSystemCall.selector, classId, UNSCOPED_SYSTEM_ID)
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callRemoveTag, (classId, CLASS_SCOPED_SYSTEM_TAG)));
 
@@ -466,11 +350,8 @@ contract SOFAccessSystemTest is MudTest {
 
     // set object level tag (unscopedSystem)
     world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callInstantiate, (classId, objectId, alice)));
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callSetObjectAccessRole, (objectId, classAccessRole))
-    );
-    vm.prank(deployer);
+
+    vm.prank(alice);
     tagSystem.setTag(
       objectId,
       TagParams(
@@ -501,7 +382,7 @@ contract SOFAccessSystemTest is MudTest {
     tagSystem.removeTag(objectId, UNSCOPED_SYSTEM_TAG);
 
     // success, direct caller is a object access role member (object)
-    vm.prank(deployer);
+    vm.prank(alice);
     tagSystem.removeTag(objectId, UNSCOPED_SYSTEM_TAG);
   }
 
@@ -509,7 +390,7 @@ contract SOFAccessSystemTest is MudTest {
   function test_EntitySystem_registerClass() public {}
 
   function test_EntitySystem_setClassAccessRole() public {
-    // setClassAccessRole - allowClassScopedSystemOrDirectClassAccessRole (class)
+    // setClassAccessRole - allowClassScopedSystemOrDirectAccessRole (class)
 
     // register Class (with the class scoped system tag)
     ResourceId[] memory scopedSystemIds = new ResourceId[](1);
@@ -517,25 +398,9 @@ contract SOFAccessSystemTest is MudTest {
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
 
-    // set object level tag (unscopedSystem)
-    world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callInstantiate, (classId, objectId, alice)));
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callSetObjectAccessRole, (objectId, classAccessRole))
-    );
-
-    vm.prank(deployer);
-    tagSystem.setTag(
-      objectId,
-      TagParams(
-        UNSCOPED_SYSTEM_TAG,
-        abi.encode(ResourceRelationValue("COMPOSITION", RESOURCE_SYSTEM, UNSCOPED_SYSTEM_ID.getResourceName()))
-      )
-    );
-
     // revert, if calling system is not class scoped
     vm.expectRevert(
-      abi.encodeWithSelector(SmartObjectFramework.SOF_UnscopedSystemCall.selector, classId, UNSCOPED_SYSTEM_ID)
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callSetClassAccessRole, (classId, classAccessRole)));
 
@@ -567,9 +432,9 @@ contract SOFAccessSystemTest is MudTest {
     vm.prank(deployer);
     entitySystem.instantiate(classId, objectId, alice);
 
-    // revert, if calling system is not scoped for this object (nor its class)
+    // revert, if calling system is not scoped for this object
     vm.expectRevert(
-      abi.encodeWithSelector(SmartObjectFramework.SOF_UnscopedSystemCall.selector, objectId, UNSCOPED_SYSTEM_ID)
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callSetObjectAccessRole, (objectId, classAccessRole)));
 
@@ -585,7 +450,7 @@ contract SOFAccessSystemTest is MudTest {
 
     // success, direct caller is a object access role member
     vm.prank(deployer);
-    entitySystem.setObjectAccessRole(objectId, classAccessRole);
+    entitySystem.setObjectAccessRole(objectId, objectAccessRole);
   }
 
   function test_EntitySystem_instantiate() public {
@@ -599,12 +464,23 @@ contract SOFAccessSystemTest is MudTest {
 
     // revert, if calling system is not class scoped
     vm.expectRevert(
-      abi.encodeWithSelector(SmartObjectFramework.SOF_UnscopedSystemCall.selector, classId, UNSCOPED_SYSTEM_ID)
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callInstantiate, (classId, objectId, alice)));
 
     // success, via the class scoped system call
     world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callInstantiate, (classId, objectId, alice)));
+
+    // add UNSCOPED_SYSTEM_ID to the CallAccess table for the instantiate function
+    vm.prank(deployer);
+    CallAccess.set(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, address(unscopedSystem), true);
+
+    // delete object (so we can successfully instantiate again)
+    vm.prank(deployer);
+    entitySystem.deleteObject(objectId);
+
+    // success, via UNSCOPED, the newly CallAccess defined caller
+    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callInstantiate, (classId, objectId, alice)));
 
     // delete object (so we can successfully instantiate again)
     vm.prank(deployer);
@@ -633,13 +509,23 @@ contract SOFAccessSystemTest is MudTest {
 
     // revert, if calling system is not class scoped
     vm.expectRevert(
-      abi.encodeWithSelector(SmartObjectFramework.SOF_UnscopedSystemCall.selector, objectId, UNSCOPED_SYSTEM_ID)
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteObject, (objectId)));
 
-    // success, via the class scoped system call (with a member of the object access role as the caller)
-    vm.prank(alice);
+    // success, via the class scoped system call
     world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callDeleteObject, (objectId)));
+
+    // re-instantiate object (so we can successfully delete it again)
+    vm.prank(deployer);
+    entitySystem.instantiate(classId, objectId, alice);
+
+    // add UNSCOPED_SYSTEM_ID to the CallAccess table for the deleteObject function
+    vm.prank(deployer);
+    CallAccess.set(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, address(unscopedSystem), true);
+
+    // success, via UNSCOPED, the newly CallAccess defined caller
+    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteObject, (objectId)));
 
     // re-instantiate object (so we can successfully delete it again)
     vm.prank(deployer);
@@ -658,14 +544,16 @@ contract SOFAccessSystemTest is MudTest {
     // deleteClass - allowDirectAccessRole
 
     // register Class (with the class scoped system tag)
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
 
-    // revert, if any system is calling (only direct calls allowed)
-    vm.expectRevert(abi.encodeWithSelector(SmartObjectFramework.SOF_CallTooDeep.selector, 2));
+    // revert if calling from a system (even a scoped one). We only allow direct calls to this function
+    vm.expectRevert(
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(classScopedSystem))
+    );
     world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callDeleteClass, (classId)));
 
     // revert, if direct caller is not a class access role member
@@ -679,9 +567,9 @@ contract SOFAccessSystemTest is MudTest {
 
   function test_RoleManagermentSystem_scopedCreateRole() public {
     // scopedCreateRole - allowEntitySystemOrClassScopedSystem
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     // setup class and object to test against, success case for scopedCreateRole via EntitySystem
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
@@ -701,6 +589,21 @@ contract SOFAccessSystemTest is MudTest {
       abi.encodeCall(UnscopedMock.callScopedCreateRole, (objectId, adminRole, adminRole, deployer))
     );
 
+    // add UNSCOPED_SYSTEM_ID to the CallAccess table for the scopedCreateRole function
+    vm.prank(deployer);
+    CallAccess.set(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedCreateRole.selector,
+      address(unscopedSystem),
+      true
+    );
+
+    // success, via UNSCOPED, the newly CallAccess defined caller
+    world.call(
+      UNSCOPED_SYSTEM_ID,
+      abi.encodeCall(UnscopedMock.callScopedCreateRole, (objectId, testRole, testRole, deployer))
+    );
+
     // success, via the class scoped system call
     world.call(
       CLASS_SCOPED_SYSTEM_ID,
@@ -709,9 +612,9 @@ contract SOFAccessSystemTest is MudTest {
   }
 
   function test_RoleManagermentSystem_scopedTransferRoleAdmin() public {
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     // setup class and object to test against
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
@@ -746,9 +649,9 @@ contract SOFAccessSystemTest is MudTest {
   }
 
   function test_RoleManagermentSystem_scopedGrantRole() public {
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     // setup class and object to test against, success case for scopedGrantRole via EntitySystem
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
@@ -768,6 +671,18 @@ contract SOFAccessSystemTest is MudTest {
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedGrantRole, (objectId, adminRole, alice)));
 
+    // add UNSCOPED_SYSTEM_ID to the CallAccess table for the scopedGrantRole function
+    vm.prank(deployer);
+    CallAccess.set(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedGrantRole.selector,
+      address(unscopedSystem),
+      true
+    );
+
+    // success, via UNSCOPED, the newly CallAccess defined caller
+    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedGrantRole, (objectId, adminRole, bob)));
+
     // success, via the class scoped system call
     vm.prank(deployer);
     world.call(
@@ -777,9 +692,9 @@ contract SOFAccessSystemTest is MudTest {
   }
 
   function test_RoleManagermentSystem_scopedRevokeRole() public {
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     // setup class and object to test against
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
@@ -810,9 +725,9 @@ contract SOFAccessSystemTest is MudTest {
   }
 
   function test_RoleManagermentSystem_scopedRenounceRole() public {
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     // setup class and object to test against
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
@@ -845,9 +760,9 @@ contract SOFAccessSystemTest is MudTest {
 
   function test_RoleManagermentSystem_scopedRevokeAll() public {
     // allowEntitySystemOrClassScopedSystem
-    ResourceId[] memory scopedSystemIds = new ResourceId[](2);
+    ResourceId[] memory scopedSystemIds = new ResourceId[](1);
     scopedSystemIds[0] = CLASS_SCOPED_SYSTEM_ID;
-    scopedSystemIds[1] = ROLE_MANAGEMENT_SYSTEM_ID;
+
     // setup class and object to test against
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
@@ -869,10 +784,279 @@ contract SOFAccessSystemTest is MudTest {
     );
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedRevokeAll, (objectId, adminRole)));
 
+    // add UNSCOPED_SYSTEM_ID to the CallAccess table for the scopedRevokeAll function
+    vm.prank(deployer);
+    CallAccess.set(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRevokeAll.selector,
+      address(unscopedSystem),
+      true
+    );
+
+    // success, via UNSCOPED, the newly CallAccess defined caller
+    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedRevokeAll, (objectId, adminRole)));
+
     // success, via the class scoped system call
     vm.prank(deployer);
     world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callScopedRevokeAll, (objectId, adminRole)));
 
     // EntitySystemm calling case success proven in EntitySystem.deleteClass and EntitySystem.deleteObject tests above
+  }
+
+  function _configureSOFCallAccess() internal {
+    // AccessConfigSystem.sol
+    // CallAccess.set(accessConfigSystem.toResourceId(), IAccessConfigSystem.configureAccess.selector, eveSystem.getAddress), true);
+    // CallAccess.set(accessConfigSystem.toResourceId(), IAccessConfigSystem.setAccessEnforcement.selector, eveSystem.getAddress(), true);
+
+    // TagSystem.sol
+    CallAccess.set(tagSystem.toResourceId(), ITagSystem.setTag.selector, entitySystem.getAddress(), true);
+    CallAccess.set(tagSystem.toResourceId(), ITagSystem.removeTag.selector, entitySystem.getAddress(), true);
+
+    // EntitySystem.sol
+    // CallAccess.set(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, eveSystem.getAddress(), true);
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.scopedRegisterClass.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.scopedRegisterClass.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
+
+    // CallAccess.set(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, inventorySystem.getAddress(), true);
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.instantiate.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
+
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.deleteObject.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   entitySystem.toResourceId(),
+    //   IEntitySystem.deleteObject.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
+
+    // RoleManagementSystem.sol
+    CallAccess.set(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedCreateRole.selector,
+      entitySystem.getAddress(),
+      true
+    );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedCreateRole.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedCreateRole.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
+
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedGrantRole.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedGrantRole.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
+
+    CallAccess.set(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRevokeAll.selector,
+      entitySystem.getAddress(),
+      true
+    );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedRevokeAll.selector,
+    //   inventorySystem.getAddress(),
+    //   true
+    // );
+    // CallAccess.set(
+    //   roleManagementSystem.toResourceId(),
+    //   IRoleManagementSystem.scopedRevokeAll.selector,
+    //   ephemeralInventorySystem.getAddress(),
+    //   true
+    // );
+  }
+
+  function _configureEntitySystemAccess() internal {
+    // EntitySystem.sol access configurations
+    // set allowClassScopedSystemOrDirectClassAccessRole for setClassAccessRole
+    accessConfigSystem.configureAccess(
+      entitySystem.toResourceId(),
+      IEntitySystem.setClassAccessRole.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector
+    );
+    // set allowDirectClassAccessRoleOnly for deleteClass
+    accessConfigSystem.configureAccess(
+      entitySystem.toResourceId(),
+      IEntitySystem.deleteClass.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowDirectClassAccessRoleOnly.selector
+    );
+    // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for instantiate
+    accessConfigSystem.configureAccess(
+      entitySystem.toResourceId(),
+      IEntitySystem.instantiate.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrClassScopedSystemOrDirectClassAccessRole.selector
+    );
+    // set allowClassScopedSystemOrDirectAccessRole for setObjectAccessRole
+    accessConfigSystem.configureAccess(
+      entitySystem.toResourceId(),
+      IEntitySystem.setObjectAccessRole.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector
+    );
+    // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for deleteObject
+    accessConfigSystem.configureAccess(
+      entitySystem.toResourceId(),
+      IEntitySystem.deleteObject.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrClassScopedSystemOrDirectClassAccessRole.selector
+    );
+    // set allowCallAccessOnly for scopedRegisterClass
+    accessConfigSystem.configureAccess(
+      entitySystem.toResourceId(),
+      IEntitySystem.scopedRegisterClass.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOnly.selector
+    );
+
+    // EntitySystem.sol toggle access enforcement on
+    accessConfigSystem.setAccessEnforcement(
+      entitySystem.toResourceId(),
+      IEntitySystem.setClassAccessRole.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, true);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, true);
+    accessConfigSystem.setAccessEnforcement(
+      entitySystem.toResourceId(),
+      IEntitySystem.setObjectAccessRole.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, true);
+    accessConfigSystem.setAccessEnforcement(
+      entitySystem.toResourceId(),
+      IEntitySystem.scopedRegisterClass.selector,
+      true
+    );
+  }
+
+  function _configureTagSystemAccess() internal {
+    // Tag System access configurations
+    // set allowCallAccessOrDirectAccessRole for setTag
+    accessConfigSystem.configureAccess(
+      tagSystem.toResourceId(),
+      ITagSystem.setTag.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector
+    );
+    // set allowCallAccessOrDirectAccessRole for removeTag
+    accessConfigSystem.configureAccess(
+      tagSystem.toResourceId(),
+      ITagSystem.removeTag.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector
+    );
+
+    // TagSystem.sol toggle access enforcement on
+    accessConfigSystem.setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.setTag.selector, true);
+    accessConfigSystem.setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.removeTag.selector, true);
+  }
+
+  function _configureRoleManagementSystemAccess() internal {
+    // RoleManagementSystem.sol access config and enforcement
+    accessConfigSystem.configureAccess(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedCreateRole.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrClassScopedSystem.selector
+    );
+    accessConfigSystem.configureAccess(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedTransferRoleAdmin.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowClassScopedSystemOnly.selector
+    );
+    accessConfigSystem.configureAccess(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedGrantRole.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrClassScopedSystem.selector
+    );
+    accessConfigSystem.configureAccess(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRevokeRole.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowClassScopedSystemOnly.selector
+    );
+    accessConfigSystem.configureAccess(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRenounceRole.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowClassScopedSystemOnly.selector
+    );
+    accessConfigSystem.configureAccess(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRevokeAll.selector,
+      sOFAccessSystem.toResourceId(),
+      ISOFAccessSystem.allowCallAccessOrClassScopedSystem.selector
+    );
+
+    accessConfigSystem.setAccessEnforcement(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedCreateRole.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedTransferRoleAdmin.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedGrantRole.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRevokeRole.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRenounceRole.selector,
+      true
+    );
+    accessConfigSystem.setAccessEnforcement(
+      roleManagementSystem.toResourceId(),
+      IRoleManagementSystem.scopedRevokeAll.selector,
+      true
+    );
   }
 }

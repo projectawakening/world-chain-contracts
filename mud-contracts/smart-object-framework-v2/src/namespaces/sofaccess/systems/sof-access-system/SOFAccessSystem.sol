@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 import { ResourceId, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 
 import { Entity } from "../../../evefrontier/codegen/tables/Entity.sol";
@@ -10,6 +9,7 @@ import { EntityTagMap } from "../../../evefrontier/codegen/tables/EntityTagMap.s
 
 import { Role } from "../../../evefrontier/codegen/tables/Role.sol";
 import { HasRole } from "../../../evefrontier/codegen/tables/HasRole.sol";
+import { CallAccess } from "../../../evefrontier/codegen/tables/CallAccess.sol";
 
 import { TagId, TagIdLib } from "../../../../libs/TagId.sol";
 
@@ -20,12 +20,6 @@ import { IWorldWithContext } from "../../../../IWorldWithContext.sol";
 
 import { IEntitySystem } from "../../../evefrontier/interfaces/IEntitySystem.sol";
 import { entitySystem } from "../../../evefrontier/codegen/systems/EntitySystemLib.sol";
-import { inventorySystem } from "../../../evefrontier/world-system-libs/InventorySystemLib.sol";
-import { ephemeralInventorySystem } from "../../../evefrontier/world-system-libs/EphemeralInventorySystemLib.sol";
-import { smartStorageUnitSystem } from "../../../evefrontier/world-system-libs/SmartStorageUnitSystemLib.sol";
-import { smartCharacterSystem } from "../../../evefrontier/world-system-libs/SmartCharacterSystemLib.sol";
-import { smartGateSystem } from "../../../evefrontier/world-system-libs/SmartGateSystemLib.sol";
-import { smartTurretSystem } from "../../../evefrontier/world-system-libs/SmartTurretSystemLib.sol";
 
 import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
@@ -43,7 +37,7 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
    * @param targetCallData The calldata of the target function
    * @dev Reverts if caller doesn't have the required role
    */
-  function allowDirectAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+  function allowDirectAccessRoleOnly(uint256 entityId, bytes memory targetCallData) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     if (callCount == 1 && _checkAccessRole(entityId, _callMsgSender(1))) {
       return;
@@ -58,12 +52,12 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
    * @param targetCallData The calldata of the target function
    * @dev Reverts if caller doesn't have the required class access role, if this is a system-to-system call, or if somone called this access logic directly
    */
-  function allowDirectClassAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+  function allowDirectClassAccessRoleOnly(uint256 entityId, bytes memory targetCallData) public view {
     uint256 classId = _getClassId(entityId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext();
 
-    if (callCount == 1 && _checkAccessRole(classId, _callMsgSender(1))) {
+    if (callCount == 1 && _checkAccessRole(classId, msgSender)) {
       return;
     }
 
@@ -75,7 +69,7 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
    * @param entityId The ID of the entity (class or object) to check
    * @param targetCallData The calldata of the target function
    */
-  function allowClassScopedSystem(uint256 entityId, bytes memory targetCallData) public view {
+  function allowClassScopedSystemOnly(uint256 entityId, bytes memory targetCallData) public view {
     uint256 classId = _getClassId(entityId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
@@ -94,17 +88,109 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
    * @param targetCallData The calldata of the target function
    * @dev Handles both direct calls (call depth 1) and class system-scoped calls (call depth > 1)
    */
-  function allowClassScopedSystemOrDirectClassAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+  function allowClassScopedSystemOrDirectAccessRole(uint256 entityId, bytes memory targetCallData) public view {
     uint256 classId = _getClassId(entityId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
 
     if (callCount > 1 && _checkClassScopedSystem(classId, callingSystemId)) {
       // system-to-system call case
       return;
-    } else if (callCount == 1 && _checkAccessRole(classId, _callMsgSender(1))) {
+    } else if (callCount == 1 && _checkAccessRole(entityId, msgSender)) {
       // entry point direct call case
+      return;
+    }
+
+    revert SOFAccess_AccessDenied(entityId, msgSender);
+  }
+
+  /**
+   * @notice Validates access for class-scoped systems or direct access role membership
+   * @param entityId The ID of the entity (class or object) to check
+   * @param targetCallData The calldata of the target function
+   * @dev Handles both direct calls (call depth 1) and class system-scoped calls (call depth > 1)
+   */
+  function allowClassScopedSystemOrDirectClassAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+    uint256 classId = _getClassId(entityId);
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+
+    if (callCount > 1 && _checkClassScopedSystem(classId, callingSystemId)) {
+      // system-to-system call case
+      return;
+    } else if (callCount == 1 && _checkAccessRole(classId, msgSender)) {
+      // entry point direct call case
+      return;
+    }
+
+    revert SOFAccess_AccessDenied(entityId, msgSender);
+  }
+
+  /**
+   * @notice Validates CallAccess only
+   * @param entityId The ID of the entity to check access for (object or class)
+   * @param targetCallData The calldata of the target function
+   * @dev Currently handles access control for EntitySystem.scopedRegisterClass, allowing calls from EveSystem, InventorySystem, and EphemeralInventorySystem
+   */
+  function allowCallAccessOnly(uint256 entityId, bytes memory targetCallData) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
+
+    if (callCount > 1 && CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    }
+
+    revert SOFAccess_AccessDenied(entityId, msgSender);
+  }
+
+  /**
+   * @notice Validates access for EntitySystem or direct role access
+   * @param entityId The ID of the entity to check access for (object or class)
+   * @param targetCallData The calldata of the target function
+   * @dev Handles access control for explictly set CallAccess System calls or directly via a role member)
+   * @dev TODO: Add HookSystem.sol access to this when implemented
+   */
+  function allowCallAccessOrDirectAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
+
+    if (CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    } else if (callCount == 1 && _checkAccessRole(entityId, msgSender)) {
+      return;
+    }
+
+    revert SOFAccess_AccessDenied(entityId, msgSender);
+  }
+
+  /**
+   * @notice Validates access for EntitySystem or class-scoped system
+   * @param entityId The ID of the entity to check access for (object or class)
+   * @param targetCallData The calldata of the target function
+   * @dev Currently handles access control for RoleManagementSystem.sol scoped functions, allowing for flexible class scoped System call and CallAccess defined calls
+   */
+  function allowCallAccessOrClassScopedSystem(uint256 entityId, bytes memory targetCallData) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+
+    uint256 classId = _getClassId(entityId);
+
+    if (CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    } else if (callCount > 1 && _checkClassScopedSystem(classId, callingSystemId)) {
       return;
     }
 
@@ -117,16 +203,23 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
    * @param targetCallData The calldata of the target function
    * @dev Handles both direct calls (call depth 1) and class system-scoped calls (call depth > 1)
    */
-  function allowClassScopedSystemOrDirectAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+  function allowCallAccessOrClassScopedSystemOrDirectAccessRole(
+    uint256 entityId,
+    bytes memory targetCallData
+  ) public view {
     uint256 classId = _getClassId(entityId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
 
-    if (callCount > 1 && _checkClassScopedSystem(classId, callingSystemId)) {
+    if (CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    } else if (_checkClassScopedSystem(classId, callingSystemId)) {
       // system-to-system call case
       return;
-    } else if (callCount == 1 && _checkAccessRole(entityId, _callMsgSender(callCount))) {
+    } else if (callCount == 1 && _checkAccessRole(entityId, msgSender)) {
       // entry point direct call case
       return;
     }
@@ -135,72 +228,30 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
   }
 
   /**
-   * @notice Validates access for EntitySystem or direct role access
-   * @param entityId The ID of the entity to check access for (object or class)
+   * @notice Validates access for class-scoped systems or direct class access role membership (for a class if a classId is passed, or the object's class if an objectId is passed)
+   * @param entityId The ID of the entity (class or object) to check
    * @param targetCallData The calldata of the target function
-   * @dev Handles access control for TagSystem.sol functionality (only callable from EntitySystem.sol or directly via a role member)
-   * @dev TODO: Add HookSystem.sol access to this when implemented
+   * @dev Handles both direct calls (call depth 1) and class system-scoped calls (call depth > 1) and CallAccess defined calls
    */
-  function allowEntitySystemOrDirectAccessRole(uint256 entityId, bytes memory targetCallData) public view {
+  function allowCallAccessOrClassScopedSystemOrDirectClassAccessRole(
+    uint256 entityId,
+    bytes memory targetCallData
+  ) public view {
+    uint256 classId = _getClassId(entityId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
 
-    if (callCount > 1 && (callingSystemId.unwrap() == entitySystem.toResourceId().unwrap())) {
+    if (CallAccess.get(systemId, functionId, msgSender)) {
       return;
-    } else if (callCount == 1 && _checkAccessRole(entityId, _callMsgSender(1))) {
-      return;
-    }
-
-    revert SOFAccess_AccessDenied(entityId, msgSender);
-  }
-
-  /**
-   * @notice Validates access for EntitySystem or class-scoped system
-   * @param entityId The ID of the entity to check access for (object or class)
-   * @param targetCallData The calldata of the target function
-   * @dev Handles access control for RoleManagementSystem.sol, particulalry, scopedCreateRole and sopedRevokeAll as these are called by EntitySystem during class/object creation and deletion
-   */
-  function allowEntitySystemOrClassScopedSystem(uint256 entityId, bytes memory targetCallData) public view {
-    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
-    ResourceId callingSystemId = SystemRegistry.get(msgSender);
-
-    if (callCount > 1 && callingSystemId.unwrap() != entitySystem.toResourceId().unwrap()) {
-      uint256 classId = _getClassId(entityId);
-      if (_checkClassScopedSystem(classId, callingSystemId)) {
-        return;
-      }
-    } else if (callCount > 1 && callingSystemId.unwrap() == entitySystem.toResourceId().unwrap()) {
-      // EntitySystem.registerClass, EntitySyste.scopedRegisterClass, EntitySystem.initialize, EntitySystem.deleteClass, EntitySystem.deleteObject
-      return;
-    }
-
-    revert SOFAccess_AccessDenied(entityId, msgSender);
-  }
-
-  /**
-   * @notice Validates access for defined systems
-   * @param entityId The ID of the entity to check access for (object or class)
-   * @param targetCallData The calldata of the target function
-   * @dev Handles access control for EntitySystem.scopedRegisterClass, as it is called from SSU, SmartCharacter, SmartTurret, SmartGate, InventorySystem, and EphemeralInventorySystem
-   */
-  function allowDefinedSystems(uint256 entityId, bytes memory targetCallData) public view {
-    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
-    if (callCount > 1) {
+    } else if (callCount > 1 && _checkClassScopedSystem(classId, callingSystemId)) {
       // system-to-system call case
-      ResourceId callingSystemId = SystemRegistry.get(msgSender);
-      if (
-        callingSystemId.unwrap() == inventorySystem.toResourceId().unwrap() ||
-        callingSystemId.unwrap() == ephemeralInventorySystem.toResourceId().unwrap() ||
-        callingSystemId.unwrap() == smartStorageUnitSystem.toResourceId().unwrap() ||
-        callingSystemId.unwrap() == smartCharacterSystem.toResourceId().unwrap() ||
-        callingSystemId.unwrap() == smartTurretSystem.toResourceId().unwrap() ||
-        callingSystemId.unwrap() == smartGateSystem.toResourceId().unwrap()
-      ) {
-        return;
-      }
+      return;
+    } else if (callCount == 1 && _checkAccessRole(classId, msgSender)) {
+      // entry point direct call case
+      return;
     }
 
     revert SOFAccess_AccessDenied(entityId, msgSender);
@@ -208,14 +259,17 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
 
   function _getClassId(uint256 entityId) private view returns (uint256) {
     uint256 classId;
-    if (EntityTagMap.getHasTag(entityId, TagIdLib.encode(TAG_TYPE_PROPERTY, TAG_IDENTIFIER_CLASS))) {
-      classId = entityId;
-    } else {
-      EntityRelationValue memory entityRelationValue = abi.decode(
-        EntityTagMap.getValue(entityId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(entityId)))),
-        (EntityRelationValue)
-      );
-      classId = entityRelationValue.relatedEntityId;
+    if (entityId != 0) {
+      // entityRelationValue requires an entry in EntityTagMap and entityId 0 cannot have an entry
+      if (EntityTagMap.getHasTag(entityId, TagIdLib.encode(TAG_TYPE_PROPERTY, TAG_IDENTIFIER_CLASS))) {
+        classId = entityId;
+      } else {
+        EntityRelationValue memory entityRelationValue = abi.decode(
+          EntityTagMap.getValue(entityId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(entityId)))),
+          (EntityRelationValue)
+        );
+        classId = entityRelationValue.relatedEntityId;
+      }
     }
     return classId;
   }

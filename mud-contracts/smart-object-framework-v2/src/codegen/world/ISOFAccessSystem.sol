@@ -9,25 +9,35 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISOFAccessSystem {
-  function sofaccess__allowDirectAccessRole(uint256 entityId, bytes memory targetCallData) external view;
+  function sofaccess__allowDirectAccessRoleOnly(uint256 entityId, bytes memory targetCallData) external view;
 
-  function sofaccess__allowDirectClassAccessRole(uint256 entityId, bytes memory targetCallData) external view;
+  function sofaccess__allowDirectClassAccessRoleOnly(uint256 entityId, bytes memory targetCallData) external view;
 
-  function sofaccess__allowClassScopedSystem(uint256 entityId, bytes memory targetCallData) external view;
-
-  function sofaccess__allowClassScopedSystemOrDirectClassAccessRole(
-    uint256 entityId,
-    bytes memory targetCallData
-  ) external view;
+  function sofaccess__allowClassScopedSystemOnly(uint256 entityId, bytes memory targetCallData) external view;
 
   function sofaccess__allowClassScopedSystemOrDirectAccessRole(
     uint256 entityId,
     bytes memory targetCallData
   ) external view;
 
-  function sofaccess__allowEntitySystemOrDirectAccessRole(uint256 entityId, bytes memory targetCallData) external view;
+  function sofaccess__allowClassScopedSystemOrDirectClassAccessRole(
+    uint256 entityId,
+    bytes memory targetCallData
+  ) external view;
 
-  function sofaccess__allowEntitySystemOrClassScopedSystem(uint256 entityId, bytes memory targetCallData) external view;
+  function sofaccess__allowCallAccessOnly(uint256 entityId, bytes memory targetCallData) external view;
 
-  function sofaccess__allowDefinedSystems(uint256 entityId, bytes memory targetCallData) external view;
+  function sofaccess__allowCallAccessOrDirectAccessRole(uint256 entityId, bytes memory targetCallData) external view;
+
+  function sofaccess__allowCallAccessOrClassScopedSystem(uint256 entityId, bytes memory targetCallData) external view;
+
+  function sofaccess__allowCallAccessOrClassScopedSystemOrDirectAccessRole(
+    uint256 entityId,
+    bytes memory targetCallData
+  ) external view;
+
+  function sofaccess__allowCallAccessOrClassScopedSystemOrDirectClassAccessRole(
+    uint256 entityId,
+    bytes memory targetCallData
+  ) external view;
 }

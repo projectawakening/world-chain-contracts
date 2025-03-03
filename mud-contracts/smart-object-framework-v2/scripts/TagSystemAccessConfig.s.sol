@@ -5,18 +5,13 @@ import { Script } from "forge-std/Script.sol";
 
 import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceAccess } from "@latticexyz/world/src/codegen/tables/ResourceAccess.sol";
-import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 
-import { FRONTIER_WORLD_DEPLOYMENT_NAMESPACE as WORLD_NAMESPACE } from "@eveworld/common-constants/src/constants.sol";
+import { accessConfigSystem } from "../src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
+import { tagSystem } from "../src/namespaces/evefrontier/codegen/systems/TagSystemLib.sol";
+import { sOFAccessSystem } from "../src/namespaces/sofaccess/codegen/systems/SOFAccessSystemLib.sol";
 
-import { Utils as AccessConfigUtils } from "../src/namespaces/evefrontier/systems/access-config-system/Utils.sol";
-import { Utils as TagSystemUtils } from "../src/namespaces/evefrontier/systems/tag-system/Utils.sol";
-import { Utils as SOFAccessSystemUtils } from "../src/namespaces/sofaccess/systems/sof-access-system/Utils.sol";
-
-import { IAccessConfigSystem } from "../src/namespaces/evefrontier/interfaces/IAccessConfigSystem.sol";
 import { ITagSystem } from "../src/namespaces/evefrontier/interfaces/ITagSystem.sol";
-import { ISOFAccessSystem } from "../src/namespaces/sofaccesscntrl/interfaces/ISOFAccessSystem.sol";
+import { ISOFAccessSystem } from "../src/namespaces/sofaccess/interfaces/ISOFAccessSystem.sol";
 
 contract TagSystemAccessConfig is Script {
 
@@ -31,14 +26,14 @@ contract TagSystemAccessConfig is Script {
     vm.startBroadcast(deployerPrivateKey);
     
     // Tag System access configurations
-    // set allowEntitySystemOrDirectAccessRole for setSystemTag
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (TagSystemUtils.tagSystemId(), ITagSystem.setSystemTag.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowEntitySystemOrDirectAccessRole.selector)));
-    // set allowEntitySystemOrDirectAccessRole for removeSystemTag
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.configureAccess, (TagSystemUtils.tagSystemId(), ITagSystem.removeSystemTag.selector, SOFAccessControlSystemUtils.sofAccessSystemId(), ISOFAccessSystem.allowEntitySystemOrDirectAccessRole.selector)));
+    // set allowCallAccessOrDirectAccessRole for setTag
+    accessConfigSystem.configureAccess(tagSystem.toResourceId(), ITagSystem.setTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);
+    // set allowCallAccessOrDirectAccessRole for removeTag
+    accessConfigSystem.configureAccess(tagSystem.toResourceId(), ITagSystem.removeTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);
 
     // TagSystem.sol toggle access enforcement on
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (TagSystemUtils.tagSystemId(), ITagSystem.setSystemTag.selector, true)));
-    world.call(AccessConfigUtils.accessConfigSystemId(), abi.encodeCall(IAccessConfigSystem.setAccessEnforcement, (TagSystemUtils.tagSystemId(), ITagSystem.removeSystemTag.selector, true)));
+    accessConfigSystem.setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.setTag.selector, true);
+    accessConfigSystem.setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.removeTag.selector, true);
 
     vm.stopBroadcast();
   }
