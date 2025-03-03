@@ -25,13 +25,13 @@ runs:
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
 
     - name: Restore Nx cache directory
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.nx
         key: ${{ runner.os }}-nx-${{ hashFiles('**/nx.json') }}
 
     - name: Restore cached codegen directory
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ./**/src/codegen
         key: ${{ runner.os }}-codegen-${{ hashFiles('./**/**/src/codegen/**') }}
