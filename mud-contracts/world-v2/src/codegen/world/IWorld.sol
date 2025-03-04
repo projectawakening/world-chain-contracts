@@ -6,6 +6,7 @@ pragma solidity >=0.8.24;
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { IEveSystem } from "./IEveSystem.sol";
 import { IAccessSystem } from "./IAccessSystem.sol";
+import { IAnchorSystem } from "./IAnchorSystem.sol";
 import { ICrudeLiftSystem } from "./ICrudeLiftSystem.sol";
 import { IDeployableSystem } from "./IDeployableSystem.sol";
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
@@ -34,6 +35,7 @@ interface IWorld is
   IBaseWorld,
   IEveSystem,
   IAccessSystem,
+  IAnchorSystem,
   ICrudeLiftSystem,
   IDeployableSystem,
   IEntityRecordSystem,

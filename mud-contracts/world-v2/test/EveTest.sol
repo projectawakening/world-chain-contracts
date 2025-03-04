@@ -142,12 +142,13 @@ abstract contract EveTest is Test {
     world.registerSystem(roleManagementSystem.toResourceId(), new RoleManagementSystem(), true);
 
     // Register all function selectors from IRoleManagementSystem interface
-    string[5] memory signatures = [
+    string[6] memory signatures = [
       "createRole(bytes32,bytes32)",
       "transferRoleAdmin(bytes32,bytes32)",
       "grantRole(bytes32,address)",
       "revokeRole(bytes32,address)",
-      "renounceRole(bytes32,address)"
+      "renounceRole(bytes32,address)",
+      "scopedCreateRole(uint256,bytes32,bytes32,address)"
     ];
 
     for (uint256 i = 0; i < signatures.length; i++) {

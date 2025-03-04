@@ -52,6 +52,18 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).registerSmartGateClass(typeId);
   }
 
+  function registerCrudeLiftClass(EveSystemType self, uint256 typeId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerCrudeLiftClass(typeId);
+  }
+
+  function registerAnchorClass(EveSystemType self, uint256 typeId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerAnchorClass(typeId);
+  }
+
+  function registerRiftClass(EveSystemType self, uint256 typeId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerRiftClass(typeId);
+  }
+
   function configureEntityRecordAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureEntityRecordAccess();
   }
@@ -104,6 +116,18 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureSmartGateAccess();
   }
 
+  function configureCrudeLiftAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureCrudeLiftAccess();
+  }
+
+  function configureAnchorAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureAnchorAccess();
+  }
+
+  function configureRiftAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureRiftAccess();
+  }
+
   function registerSmartCharacterClass(CallWrapper memory self, uint256 typeId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
@@ -145,6 +169,36 @@ library EveSystemLib {
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_registerSmartGateClass_uint256.registerSmartGateClass, (typeId));
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function registerCrudeLiftClass(CallWrapper memory self, uint256 typeId) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_registerCrudeLiftClass_uint256.registerCrudeLiftClass, (typeId));
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function registerAnchorClass(CallWrapper memory self, uint256 typeId) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_registerAnchorClass_uint256.registerAnchorClass, (typeId));
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function registerRiftClass(CallWrapper memory self, uint256 typeId) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_registerRiftClass_uint256.registerRiftClass, (typeId));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -280,6 +334,36 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function configureCrudeLiftAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureCrudeLiftAccess.configureCrudeLiftAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureAnchorAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureAnchorAccess.configureAnchorAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureRiftAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureRiftAccess.configureRiftAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function registerSmartCharacterClass(RootCallWrapper memory self, uint256 typeId) internal {
     bytes memory systemCall = abi.encodeCall(
       _registerSmartCharacterClass_uint256.registerSmartCharacterClass,
@@ -303,6 +387,21 @@ library EveSystemLib {
 
   function registerSmartGateClass(RootCallWrapper memory self, uint256 typeId) internal {
     bytes memory systemCall = abi.encodeCall(_registerSmartGateClass_uint256.registerSmartGateClass, (typeId));
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function registerCrudeLiftClass(RootCallWrapper memory self, uint256 typeId) internal {
+    bytes memory systemCall = abi.encodeCall(_registerCrudeLiftClass_uint256.registerCrudeLiftClass, (typeId));
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function registerAnchorClass(RootCallWrapper memory self, uint256 typeId) internal {
+    bytes memory systemCall = abi.encodeCall(_registerAnchorClass_uint256.registerAnchorClass, (typeId));
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function registerRiftClass(RootCallWrapper memory self, uint256 typeId) internal {
+    bytes memory systemCall = abi.encodeCall(_registerRiftClass_uint256.registerRiftClass, (typeId));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -371,6 +470,21 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function configureCrudeLiftAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureCrudeLiftAccess.configureCrudeLiftAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function configureAnchorAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureAnchorAccess.configureAnchorAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function configureRiftAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureRiftAccess.configureRiftAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function callFrom(EveSystemType self, address from) internal pure returns (CallWrapper memory) {
     return CallWrapper(self.toResourceId(), from);
   }
@@ -425,6 +539,18 @@ interface _registerSmartGateClass_uint256 {
   function registerSmartGateClass(uint256 typeId) external;
 }
 
+interface _registerCrudeLiftClass_uint256 {
+  function registerCrudeLiftClass(uint256 typeId) external;
+}
+
+interface _registerAnchorClass_uint256 {
+  function registerAnchorClass(uint256 typeId) external;
+}
+
+interface _registerRiftClass_uint256 {
+  function registerRiftClass(uint256 typeId) external;
+}
+
 interface _configureEntityRecordAccess {
   function configureEntityRecordAccess() external;
 }
@@ -475,6 +601,18 @@ interface _configureSmartTurretAccess {
 
 interface _configureSmartGateAccess {
   function configureSmartGateAccess() external;
+}
+
+interface _configureCrudeLiftAccess {
+  function configureCrudeLiftAccess() external;
+}
+
+interface _configureAnchorAccess {
+  function configureAnchorAccess() external;
+}
+
+interface _configureRiftAccess {
+  function configureRiftAccess() external;
 }
 
 using EveSystemLib for EveSystemType global;

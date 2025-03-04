@@ -39,6 +39,12 @@ import { smartTurretSystem } from "../codegen/systems/SmartTurretSystemLib.sol";
 import { SmartGateSystem } from "../systems/smart-gate/SmartGateSystem.sol";
 import { smartGateSystem } from "../codegen/systems/SmartGateSystemLib.sol";
 import { Initialize } from "../codegen/index.sol";
+import { CrudeLiftSystem } from "../systems/crude-lift/CrudeLiftSystem.sol";
+import { crudeLiftSystem } from "../codegen/systems/CrudeLiftSystemLib.sol";
+import { RiftSystem } from "../systems/rift/RiftSystem.sol";
+import { riftSystem } from "../codegen/systems/RiftSystemLib.sol";
+import { AnchorSystem } from "../systems/anchor/AnchorSystem.sol";
+import { anchorSystem } from "../codegen/systems/AnchorSystemLib.sol";
 
 /**
  * @title EveSystem
@@ -108,6 +114,50 @@ contract EveSystem is SmartObjectFramework {
 
     ResourceId smartGateSystemId = smartGateSystem.toResourceId();
     Initialize.set(smartGateSystemId, classId);
+  }
+
+  function registerCrudeLiftClass(uint256 typeId) public {
+    ResourceId[] memory systemIds = new ResourceId[](10);
+    systemIds[0] = deployableSystem.toResourceId();
+    systemIds[1] = inventorySystem.toResourceId();
+    systemIds[2] = ephemeralInventorySystem.toResourceId();
+    systemIds[3] = inventoryInteractSystem.toResourceId();
+    systemIds[4] = entityRecordSystem.toResourceId();
+    systemIds[5] = fuelSystem.toResourceId();
+    systemIds[6] = locationSystem.toResourceId();
+    systemIds[7] = smartAssemblySystem.toResourceId();
+    systemIds[8] = crudeLiftSystem.toResourceId();
+    systemIds[9] = riftSystem.toResourceId();
+    uint256 classId = initialize(typeId, systemIds);
+
+    ResourceId crudeLiftSystemId = crudeLiftSystem.toResourceId();
+    Initialize.set(crudeLiftSystemId, classId);
+  }
+
+  function registerAnchorClass(uint256 typeId) public {
+    ResourceId[] memory systemIds = new ResourceId[](5);
+    systemIds[0] = deployableSystem.toResourceId();
+    systemIds[1] = entityRecordSystem.toResourceId();
+    systemIds[2] = fuelSystem.toResourceId();
+    systemIds[3] = locationSystem.toResourceId();
+    systemIds[4] = anchorSystem.toResourceId();
+    uint256 classId = initialize(typeId, systemIds);
+
+    ResourceId anchorSystemId = anchorSystem.toResourceId();
+    Initialize.set(anchorSystemId, classId);
+  }
+
+  function registerRiftClass(uint256 typeId) public {
+    ResourceId[] memory systemIds = new ResourceId[](5);
+    systemIds[0] = smartAssemblySystem.toResourceId();
+    systemIds[1] = riftSystem.toResourceId();
+    systemIds[2] = inventorySystem.toResourceId();
+    systemIds[3] = crudeLiftSystem.toResourceId();
+    systemIds[4] = entityRecordSystem.toResourceId();
+    uint256 classId = initialize(typeId, systemIds);
+
+    ResourceId riftSystemId = riftSystem.toResourceId();
+    Initialize.set(riftSystemId, classId);
   }
 
   // Configure access for all systems
@@ -433,6 +483,56 @@ contract EveSystem is SmartObjectFramework {
     }
   }
 
+  // Configure access for CrudeLiftSystem
+  function configureCrudeLiftAccess() public {
+    bytes4[8] memory onlyAdminSelectors = [
+      CrudeLiftSystem.createAndAnchorCrudeLift.selector,
+      CrudeLiftSystem.insertLens.selector,
+      CrudeLiftSystem.startMining.selector,
+      CrudeLiftSystem.stopMining.selector,
+      CrudeLiftSystem.removeLens.selector,
+      CrudeLiftSystem.addCrude.selector,
+      CrudeLiftSystem.removeCrude.selector,
+      CrudeLiftSystem.clearCrude.selector
+    ];
+
+    for (uint256 i = 0; i < onlyAdminSelectors.length; i++) {
+      accessConfigSystem.configureAccess(
+        crudeLiftSystem.toResourceId(),
+        onlyAdminSelectors[i],
+        accessSystem.toResourceId(),
+        AccessSystem.onlyAdmin.selector
+      );
+      accessConfigSystem.setAccessEnforcement(crudeLiftSystem.toResourceId(), onlyAdminSelectors[i], true);
+    }
+  }
+
+  // Configure access for AnchorSystem
+  function configureAnchorAccess() public {
+    accessConfigSystem.configureAccess(
+      anchorSystem.toResourceId(),
+      AnchorSystem.createAnchor.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyAdmin.selector
+    );
+    accessConfigSystem.setAccessEnforcement(anchorSystem.toResourceId(), AnchorSystem.createAnchor.selector, true);
+  }
+
+  // Configure access for RiftSystem
+  function configureRiftAccess() public {
+    bytes4[2] memory onlyAdminSelectors = [RiftSystem.createRift.selector, RiftSystem.destroyRift.selector];
+
+    for (uint256 i = 0; i < onlyAdminSelectors.length; i++) {
+      accessConfigSystem.configureAccess(
+        riftSystem.toResourceId(),
+        onlyAdminSelectors[i],
+        accessSystem.toResourceId(),
+        AccessSystem.onlyAdmin.selector
+      );
+      accessConfigSystem.setAccessEnforcement(riftSystem.toResourceId(), onlyAdminSelectors[i], true);
+    }
+  }
+
   /**
    * @notice Initialize a class by registering creating a class id and registering the systems that belong to it
    * @param typeId The type id of the system
@@ -440,12 +540,12 @@ contract EveSystem is SmartObjectFramework {
    */
   function initialize(uint256 typeId, ResourceId[] memory systemIds) internal returns (uint256) {
     if (typeId == 0) revert("Invalid typeId");
-    uint256 classId = uint256(keccak256(abi.encodePacked(typeId)));
-    entitySystem.registerClass(classId, systemIds);
 
-    //Create access role for this class and add the _callMsgSender(1) as a memeber by calling RoleManagementSystem.scopedCreateRole()
-    bytes32 adminRole = bytes32("ADMIN_ROLE");
-    roleManagementSystem.scopedCreateRole(classId, adminRole, adminRole, _callMsgSender(1));
+    uint256 classId = uint256(keccak256(abi.encodePacked(typeId)));
+    bytes32 classAccessRole = bytes32(classId);
+
+    entitySystem.scopedRegisterClass(classId, _callMsgSender(1), systemIds);
+    roleManagementSystem.scopedCreateRole(classId, classAccessRole, classAccessRole, _callMsgSender(1));
 
     return classId;
   }

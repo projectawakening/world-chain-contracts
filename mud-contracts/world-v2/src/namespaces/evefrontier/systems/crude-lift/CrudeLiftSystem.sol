@@ -34,6 +34,7 @@ import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLi
 import { crudeLiftSystem } from "../../codegen/systems/CrudeLiftSystemLib.sol";
 import { locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
 import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
+import { anchorSystem } from "../../codegen/systems/AnchorSystemLib.sol";
 
 // Local system imports
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -59,9 +60,10 @@ contract CrudeLiftSystem is SmartObjectFramework {
     CreateAndAnchorDeployableParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public context access(params.smartObjectId) scope(getCrudeLiftClassId()) {
+  ) public context access(params.smartObjectId) {
     entitySystem.instantiate(getCrudeLiftClassId(), params.smartObjectId, params.smartObjectData.owner);
 
+    anchorSystem.createAnchor(params.smartObjectId);
     deployableSystem.createAndAnchorDeployable(params);
     inventorySystem.setInventoryCapacity(params.smartObjectId, storageCapacity);
     ephemeralInventorySystem.setEphemeralInventoryCapacity(params.smartObjectId, ephemeralStorageCapacity);

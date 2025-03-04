@@ -17,6 +17,12 @@ interface IEveSystem {
 
   function evefrontier__registerSmartGateClass(uint256 typeId) external;
 
+  function evefrontier__registerCrudeLiftClass(uint256 typeId) external;
+
+  function evefrontier__registerAnchorClass(uint256 typeId) external;
+
+  function evefrontier__registerRiftClass(uint256 typeId) external;
+
   function evefrontier__configureEntityRecordAccess() external;
 
   function evefrontier__configureStaticDataAccess() external;
@@ -42,4 +48,10 @@ interface IEveSystem {
   function evefrontier__configureSmartTurretAccess() external;
 
   function evefrontier__configureSmartGateAccess() external;
+
+  function evefrontier__configureCrudeLiftAccess() external;
+
+  function evefrontier__configureAnchorAccess() external;
+
+  function evefrontier__configureRiftAccess() external;
 }
