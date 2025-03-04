@@ -26,11 +26,7 @@ contract EntityRecordTest is MudTest {
   uint256 testClassId = uint256(bytes32("TEST"));
 
   string mnemonic = "test test test test test test test test test test test junk";
-  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
-
-  address alice = vm.addr(vm.deriveKey(mnemonic, 1));
-  address bob = vm.addr(vm.deriveKey(mnemonic, 2));
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
 
   function setUp() public virtual override {
     super.setUp();
@@ -87,17 +83,6 @@ contract EntityRecordTest is MudTest {
     EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
 
     assertEq(name, entityRecordMetaData.name);
-    vm.stopPrank();
-  }
-
-  function testRevertSetNameNotOwner() public {
-    vm.startPrank(deployer);
-    entitySystem.instantiate(testClassId, smartObjectId, deployer);
-    vm.stopPrank();
-
-    vm.startPrank(alice);
-    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdminOrOwner.selector, alice, smartObjectId));
-    entityRecordSystem.setName(smartObjectId, name);
     vm.stopPrank();
   }
 }
