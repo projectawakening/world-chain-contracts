@@ -369,6 +369,65 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   // Configure access for InventoryInteractSystem
   function configureInventoryInteractAccess() public {
     //TODO after checking with the team
+    accessConfigSystem.configureAccess(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.ephemeralToInventoryTransfer.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyOwnerOrCanDepositToInventory.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.ephemeralToInventoryTransfer.selector,
+      true
+    );
+
+    accessConfigSystem.configureAccess(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.inventoryToEphemeralTransfer.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyOwnerOrCanWithdrawFromInventory.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.inventoryToEphemeralTransfer.selector,
+      true
+    );
+
+    accessConfigSystem.configureAccess(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.setEphemeralToInventoryTransferAccess.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyInventoryAdmin.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.setEphemeralToInventoryTransferAccess.selector,
+      true
+    );
+
+    accessConfigSystem.configureAccess(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.setInventoryToEphemeralTransferAccess.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyInventoryAdmin.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.setInventoryToEphemeralTransferAccess.selector,
+      true
+    );
+
+    accessConfigSystem.configureAccess(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.setInventoryAdminAccess.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyInventoryAdmin.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.setInventoryAdminAccess.selector,
+      true
+    );
   }
 
   // Configure access for SmartStorageUnitSystem

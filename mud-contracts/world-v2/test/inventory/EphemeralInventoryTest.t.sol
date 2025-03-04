@@ -3,8 +3,9 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
 import { EphemeralInvCapacity } from "../../src/namespaces/evefrontier/codegen/tables/EphemeralInvCapacity.sol";
@@ -12,7 +13,6 @@ import { EphemeralInv, EphemeralInvData } from "../../src/namespaces/evefrontier
 import { State } from "../../src/codegen/common.sol";
 import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/tables/EphemeralInvItem.sol";
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
 
 import { InventoryUtils } from "../../src/namespaces/evefrontier/systems/inventory/InventoryUtils.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
@@ -25,7 +25,6 @@ import { InventoryItem } from "../../src/namespaces/evefrontier/systems/inventor
 import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
@@ -37,14 +36,9 @@ contract EphemeralInventoryTest is MudTest {
 
   string mnemonic = "test test test test test test test test test test test junk";
 
-  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
-
-  uint256 ownerPK = vm.deriveKey(mnemonic, 2);
-  uint256 diffOwnerPK = vm.deriveKey(mnemonic, 3);
-
-  address owner = vm.addr(ownerPK); // Ephemeral Owner smart character account
-  address differentOwner = vm.addr(diffOwnerPK); // another different Ephemeral Owner
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address owner = vm.addr(vm.deriveKey(mnemonic, 2)); // Ephemeral Owner smart character account
+  address differentOwner = vm.addr(vm.deriveKey(mnemonic, 3)); // another different Ephemeral Owner
 
   uint256 smartObjectId = 1234;
   uint256 characterId = 1111;
@@ -75,6 +69,12 @@ contract EphemeralInventoryTest is MudTest {
     );
 
     uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
+    inventoryTestSystemIds[0] = deployableSystem.toResourceId();
+    inventoryTestSystemIds[1] = fuelSystem.toResourceId();
+    inventoryTestSystemIds[2] = ephemeralInventorySystem.toResourceId();
+    entitySystem.registerClass(inventoryItemClassId, inventoryTestSystemIds);
+
     //Mock Item creation
     // Note: this only works because deployer currently owns `ENTITY_RECORD` namespace so direct calls to its tables are allowed
     EntityRecord.set(4235, 4235, 12, 100, true);
@@ -91,10 +91,7 @@ contract EphemeralInventoryTest is MudTest {
     entitySystem.instantiate(inventoryItemClassId, 8237, owner);
 
     uint256 inventoryTestClassId = uint256(bytes32("INVENTORY_TEST"));
-    ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
-    inventoryTestSystemIds[0] = deployableSystem.toResourceId();
-    inventoryTestSystemIds[1] = fuelSystem.toResourceId();
-    inventoryTestSystemIds[2] = ephemeralInventorySystem.toResourceId();
+
     entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
     entitySystem.instantiate(inventoryTestClassId, smartObjectId, owner);
 
@@ -260,16 +257,16 @@ contract EphemeralInventoryTest is MudTest {
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
 
-    owner = address(9); // set owner as non-character address
+    address non_chcaracter = address(9); // set owner as non-character address
     vm.expectRevert(
       abi.encodeWithSelector(
         EphemeralInventorySystem.InvalidEphemeralInventoryOwner.selector,
         "EphemeralInventorySystem: provided ephemeralInventoryOwner is not a valid address",
-        address(9)
+        non_chcaracter
       )
     );
     vm.startPrank(owner);
-    ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
+    ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, non_chcaracter, items);
     vm.stopPrank();
   }
 

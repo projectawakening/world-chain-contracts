@@ -16,8 +16,7 @@ contract StaticDataTest is MudTest {
   uint256 smartObjectId = 1234;
 
   string mnemonic = "test test test test test test test test test test test junk";
-  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
 
   function setUp() public virtual override {
     super.setUp();

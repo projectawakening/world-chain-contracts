@@ -25,7 +25,6 @@ import { InventorySystem } from "../../src/namespaces/evefrontier/systems/invent
 import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
 import { InventoryInteractSystem } from "../../src/namespaces/evefrontier/systems/inventory/InventoryInteractSystem.sol";
 import { TransferItem } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
-import { VendingMachineMock } from "./VendingMachineMock.sol";
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
@@ -33,19 +32,11 @@ import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../src
 import { InventoryInteractSystemLib, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
 import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+import { VendingMachineMock } from "./VendingMachineMock.sol";
+import { EntityRecordSystemLib, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 
 contract InventoryInteractTest is MudTest {
   IWorldWithContext world;
-  VendingMachineMock vendingMachineMock;
-  bytes16 constant SYSTEM_NAME = bytes16("VendingMachineMo");
-  ResourceId constant VENDING_MACHINE_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, DEPLOYMENT_NAMESPACE, SYSTEM_NAME))));
-
-  VendingMachineMock notAllowedMock;
-  ResourceId constant NOT_ALLOWED_SYSTEM_ID =
-    ResourceId.wrap((bytes32(abi.encodePacked(RESOURCE_SYSTEM, bytes14("not-allowed"), SYSTEM_NAME))));
-
-  uint256 vendingMachineClassId = uint256(bytes32("VENDING_MACHINE"));
 
   uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
   uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
@@ -54,23 +45,22 @@ contract InventoryInteractTest is MudTest {
   uint256 ephemeralStorageCapacity = 100000;
 
   // Smart Character variables
-  uint256 characterId;
-  uint256 ephCharacterId;
-  uint256 tribeId;
-  EntityRecordData charEntityRecordData;
-  EntityRecordData ephCharEntityRecordData;
-  EntityMetadata characterMetadata;
-  string tokenCID;
+  uint256 characterId = 1111;
+  uint256 ephCharacterId = 2222;
+  uint256 tribeId = 1122;
+  EntityRecordData charEntityRecordData = EntityRecordData({ typeId: 2345, itemId: 1234, volume: 0 });
+  EntityRecordData ephCharEntityRecordData = EntityRecordData({ typeId: 2345, itemId: 1234, volume: 0 });
+  EntityMetadata characterMetadata =
+    EntityMetadata({
+      name: "Albus Demunster",
+      dappURL: "https://www.my-tribe-website.com",
+      description: "The top hunter-seeker in the Frontier."
+    });
 
   string mnemonic = "test test test test test test test test test test test junk";
-  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
-
-  uint256 alicePK = vm.deriveKey(mnemonic, 2);
-  address alice = vm.addr(alicePK);
-
-  uint256 bobPK = vm.deriveKey(mnemonic, 3);
-  address bob = vm.addr(bobPK);
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  address bob = vm.addr(vm.deriveKey(mnemonic, 3));
 
   function setUp() public override {
     super.setUp();
@@ -78,35 +68,15 @@ contract InventoryInteractTest is MudTest {
     world = IWorldWithContext(worldAddress);
     vm.startPrank(deployer);
 
-    // Vending Machine deploy & registration
-    vendingMachineMock = new VendingMachineMock();
-    world.registerSystem(VENDING_MACHINE_SYSTEM_ID, vendingMachineMock, true);
-    world.registerFunctionSelector(VENDING_MACHINE_SYSTEM_ID, "interactCall(uint256, address, uint256)");
-
-    // Not Allowed deploy & registration
-    notAllowedMock = new VendingMachineMock();
-    world.registerNamespace(WorldResourceIdLib.encodeNamespace(bytes14("not-allowed")));
-    world.registerSystem(NOT_ALLOWED_SYSTEM_ID, notAllowedMock, true);
-    world.registerFunctionSelector(NOT_ALLOWED_SYSTEM_ID, "interactCall(uint256, address, uint256)");
-
-    characterId = 1111;
-    ephCharacterId = 2222;
-    tribeId = 1122;
-    charEntityRecordData = EntityRecordData({ typeId: 2345, itemId: 1234, volume: 0 });
-    ephCharEntityRecordData = EntityRecordData({ typeId: 2345, itemId: 1234, volume: 0 });
-    characterMetadata = EntityMetadata({
-      name: "Albus Demunster",
-      dappURL: "https://www.my-tribe-website.com",
-      description: "The top hunter-seeker in the Frontier."
-    });
-    tokenCID = "Qm1234abcdxxxx";
-
     deployableSystem.globalResume();
 
     // create SSU Inventory Owner character
     smartCharacterSystem.createCharacter(characterId, alice, tribeId, charEntityRecordData, characterMetadata);
     // create ephemeral Inventory Owner character
     smartCharacterSystem.createCharacter(ephCharacterId, bob, tribeId, charEntityRecordData, characterMetadata);
+
+    registerClass();
+    setupDeployable();
 
     // Inventory variables
     EntityRecord.set(itemObjectId1, itemObjectId1, 1, 50, true);
@@ -116,21 +86,22 @@ contract InventoryInteractTest is MudTest {
     InventoryItem[] memory ephInvItems = new InventoryItem[](1);
     invItems[0] = InventoryItem(itemObjectId1, alice, 45, 1, 50, 10);
     ephInvItems[0] = InventoryItem(itemObjectId2, bob, 46, 2, 70, 10);
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
 
+    inventorySystem.setInventoryCapacity(smartObjectId, storageCapacity);
+    ephemeralInventorySystem.setEphemeralInventoryCapacity(smartObjectId, ephemeralStorageCapacity);
+    vm.stopPrank();
+
+    vm.startPrank(alice);
+    inventorySystem.depositToInventory(smartObjectId, invItems);
+    ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, bob, ephInvItems);
+    vm.stopPrank();
+  }
+
+  function setupDeployable() internal {
     uint256 fuelUnitVolume = 1;
     uint256 fuelConsumptionIntervalInSeconds = 1;
     uint256 fuelMaxCapacity = 10000;
-
-    ResourceId[] memory systemIds = new ResourceId[](5);
-    systemIds[0] = inventorySystem.toResourceId();
-    systemIds[1] = deployableSystem.toResourceId();
-    systemIds[2] = ephemeralInventorySystem.toResourceId();
-    systemIds[3] = inventoryInteractSystem.toResourceId();
-    systemIds[4] = fuelSystem.toResourceId();
-    entitySystem.registerClass(vendingMachineClassId, systemIds);
-
-    entitySystem.instantiate(vendingMachineClassId, smartObjectId, alice);
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
 
     deployableSystem.registerDeployable(
       smartObjectId,
@@ -151,15 +122,21 @@ contract InventoryInteractTest is MudTest {
         updatedBlockTime: block.timestamp
       })
     );
-    inventorySystem.setInventoryCapacity(smartObjectId, storageCapacity);
-    ephemeralInventorySystem.setEphemeralInventoryCapacity(smartObjectId, ephemeralStorageCapacity);
-    vm.stopPrank();
+  }
 
-    vm.startPrank(alice);
-    inventorySystem.depositToInventory(smartObjectId, invItems);
-    ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, bob, ephInvItems);
-    // ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, alice, ephInvItems);
-    vm.stopPrank();
+  function registerClass() internal {
+    uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    ResourceId[] memory systemIds = new ResourceId[](6);
+    systemIds[0] = inventorySystem.toResourceId();
+    systemIds[1] = deployableSystem.toResourceId();
+    systemIds[2] = ephemeralInventorySystem.toResourceId();
+    systemIds[3] = inventoryInteractSystem.toResourceId();
+    systemIds[4] = fuelSystem.toResourceId();
+    systemIds[5] = entityRecordSystem.toResourceId();
+    entitySystem.registerClass(inventoryItemClassId, systemIds);
+    entitySystem.instantiate(inventoryItemClassId, smartObjectId, alice);
+    entitySystem.instantiate(inventoryItemClassId, itemObjectId1, alice);
+    entitySystem.instantiate(inventoryItemClassId, itemObjectId2, bob);
   }
 
   function testEphemeralToInventoryTransfer() public {

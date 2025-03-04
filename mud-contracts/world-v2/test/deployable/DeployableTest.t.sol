@@ -37,14 +37,9 @@ contract DeployableTest is MudTest {
   SmartObjectData smartObjectData;
 
   string mnemonic = "test test test test test test test test test test test junk";
-  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
-
-  uint256 alicePK = vm.deriveKey(mnemonic, 2);
-  address alice = vm.addr(alicePK);
-
-  uint256 bobPK = vm.deriveKey(mnemonic, 3);
-  address bob = vm.addr(bobPK);
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  address bob = vm.addr(vm.deriveKey(mnemonic, 3));
 
   function setUp() public virtual override {
     super.setUp();

@@ -3,27 +3,29 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
 import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
-import { State } from "../../src/codegen/common.sol";
 import { Inventory, InventoryData } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
 import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
+import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
 
 import { EntityRecordData, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
 import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
 import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
 import { InventoryItem } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
-import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
+
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+
+import { State } from "../../src/codegen/common.sol";
+import { Initialize } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 contract InventoryTest is MudTest {
   // Inventory variables
@@ -51,14 +53,9 @@ contract InventoryTest is MudTest {
   uint256 inventoryItemClassId;
 
   string mnemonic = "test test test test test test test test test test test junk";
-  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
-  address deployer = vm.addr(deployerPK);
-
-  uint256 alicePK = vm.deriveKey(mnemonic, 2);
-  address alice = vm.addr(alicePK);
-
-  uint256 bobPK = vm.deriveKey(mnemonic, 3);
-  address bob = vm.addr(bobPK);
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  address bob = vm.addr(vm.deriveKey(mnemonic, 3));
 
   function setUp() public virtual override {
     super.setUp();
@@ -86,6 +83,12 @@ contract InventoryTest is MudTest {
     item4 = InventoryItem(4238, alice, 4238, 12, 400, 1);
 
     inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
+    inventoryTestSystemIds[0] = inventorySystem.toResourceId();
+    inventoryTestSystemIds[1] = deployableSystem.toResourceId();
+    inventoryTestSystemIds[2] = fuelSystem.toResourceId();
+
+    entitySystem.registerClass(inventoryItemClassId, inventoryTestSystemIds);
 
     //Mock Item creation
     EntityRecord.set(item1.inventoryItemId, item1.itemId, item1.typeId, item1.volume, true);
@@ -98,12 +101,8 @@ contract InventoryTest is MudTest {
     entitySystem.instantiate(inventoryItemClassId, item4.inventoryItemId, alice);
 
     uint256 inventoryTestClassId = uint256(bytes32("INVENTORY_TEST"));
-    ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
-    inventoryTestSystemIds[0] = inventorySystem.toResourceId();
-    inventoryTestSystemIds[1] = deployableSystem.toResourceId();
-    inventoryTestSystemIds[2] = fuelSystem.toResourceId();
-    entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
 
+    entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
     entitySystem.instantiate(inventoryTestClassId, smartObjectId, alice);
 
     SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });

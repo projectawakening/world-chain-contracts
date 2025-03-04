@@ -2,7 +2,9 @@
 pragma solidity >=0.8.24;
 
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
 
 import { InventorySystem } from "./InventorySystem.sol";
 import { EphemeralInventorySystem } from "./EphemeralInventorySystem.sol";
@@ -17,7 +19,6 @@ import { TransferItem, InventoryItem } from "./types.sol";
 
 import { InventorySystemLib, inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../codegen/systems/EphemeralInventorySystemLib.sol";
-import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
 
 /**
  * @title InventoryInteractSystem
