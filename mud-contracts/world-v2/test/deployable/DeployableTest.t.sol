@@ -3,14 +3,11 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { State } from "../../src/codegen/common.sol";
 import { GlobalDeployableState, DeployableState, DeployableToken } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
