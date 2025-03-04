@@ -14,11 +14,14 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { StaticData } from "../../src/namespaces/evefrontier/codegen/tables/StaticData.sol";
 import { StaticDataMetadata } from "../../src/namespaces/evefrontier/codegen/tables/StaticDataMetadata.sol";
 import { StaticDataSystemLib, staticDataSystem } from "../../src/namespaces/evefrontier/codegen/systems/StaticDataSystemLib.sol";
-import { EveTest } from "../EveTest.sol";
 
-contract StaticDataTest is EveTest {
+contract StaticDataTest is MudTest {
   uint256 testClassId = uint256(bytes32("TEST"));
   uint256 smartObjectId = 1234;
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
 
   function setUp() public virtual override {
     super.setUp();

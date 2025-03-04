@@ -6,8 +6,10 @@ import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { State } from "../../src/codegen/common.sol";
 import { GlobalDeployableState, DeployableState, DeployableToken } from "../../src/namespaces/evefrontier/codegen/index.sol";
@@ -23,23 +25,29 @@ import { EntityRecordData, EntityMetadata } from "../../src/namespaces/evefronti
 import { CreateAndAnchorDeployableParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
 import { ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
-
-import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
-import { EveTest } from "../EveTest.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { smartAssemblySystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
 
-contract DeployableTest is EveTest {
+contract DeployableTest is MudTest {
   uint256 smartObjectId = 999;
   uint256 characterId = 123;
   uint256 testClassId = uint256(bytes32("TEST"));
   uint256 itemId = 234;
   uint256 tribeId = 100;
   SmartObjectData smartObjectData;
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
+
+  uint256 alicePK = vm.deriveKey(mnemonic, 2);
+  address alice = vm.addr(alicePK);
+
+  uint256 bobPK = vm.deriveKey(mnemonic, 3);
+  address bob = vm.addr(bobPK);
 
   function setUp() public virtual override {
     super.setUp();

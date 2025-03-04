@@ -102,7 +102,6 @@ contract FuelSystem is SmartObjectFramework {
    * @dev deposit an amount of fuel for a Deployable
    * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelAmount of fuel in full units
-   * TODO: make this function admin only
    */
   function depositFuel(
     uint256 smartObjectId,
@@ -130,7 +129,6 @@ contract FuelSystem is SmartObjectFramework {
    * @dev withdraw an amount of fuel for a Deployable
    * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelAmount of fuel in full units
-   * TODO: make this function admin only
    */
   function withdrawFuel(
     uint256 smartObjectId,

@@ -26,9 +26,15 @@ import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/sys
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 
 import "forge-std/console.sol";
-import { EveTest } from "../EveTest.sol";
 
-contract SmartCharacterTest is EveTest {
+contract SmartCharacterTest is MudTest {
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
+
+  uint256 alicePK = vm.deriveKey(mnemonic, 2);
+  address alice = vm.addr(alicePK);
+
   uint256 testClassId = uint256(bytes32("characterClassId"));
 
   function setUp() public virtual override {

@@ -25,18 +25,20 @@ import { InventoryItem } from "../../src/namespaces/evefrontier/systems/inventor
 import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
-import { EveTest } from "../EveTest.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
-contract EphemeralInventoryTest is EveTest {
+contract EphemeralInventoryTest is MudTest {
   EntityRecordData charEntityRecordData;
   EntityRecordData ephCharEntityRecordData;
   EntityMetadata characterMetadata;
   string tokenCID;
 
-  uint256 smartObjectId = 1234;
+  string mnemonic = "test test test test test test test test test test test junk";
+
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
 
   uint256 ownerPK = vm.deriveKey(mnemonic, 2);
   uint256 diffOwnerPK = vm.deriveKey(mnemonic, 3);
@@ -44,6 +46,7 @@ contract EphemeralInventoryTest is EveTest {
   address owner = vm.addr(ownerPK); // Ephemeral Owner smart character account
   address differentOwner = vm.addr(diffOwnerPK); // another different Ephemeral Owner
 
+  uint256 smartObjectId = 1234;
   uint256 characterId = 1111;
   uint256 diffCharacterId = 9999;
   uint256 tribeId = 1122;
@@ -95,7 +98,7 @@ contract EphemeralInventoryTest is EveTest {
     entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
     entitySystem.instantiate(inventoryTestClassId, smartObjectId, owner);
 
-    SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
+    SmartObjectData memory smartObjectData = SmartObjectData({ owner: owner, tokenURI: "test" });
     uint256 fuelUnitVolume = 1;
     uint256 fuelConsumptionIntervalInSeconds = 1;
     uint256 fuelMaxCapacity = 10000;
@@ -162,7 +165,7 @@ contract EphemeralInventoryTest is EveTest {
     uint256 capacityBeforeDeposit = inventoryData.usedCapacity;
     uint256 capacityAfterDeposit = 0;
 
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
 
@@ -206,7 +209,7 @@ contract EphemeralInventoryTest is EveTest {
 
     testSetEphemeralInventoryCapacity(storageCapacity);
 
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
     //check the increase in quantity
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
@@ -253,7 +256,7 @@ contract EphemeralInventoryTest is EveTest {
         items[0].volume * items[0].quantity
       )
     );
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
 
@@ -265,7 +268,7 @@ contract EphemeralInventoryTest is EveTest {
         address(9)
       )
     );
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
   }
@@ -277,7 +280,7 @@ contract EphemeralInventoryTest is EveTest {
     InventoryItem[] memory items = new InventoryItem[](1);
     items[0] = InventoryItem(8235, owner, 8235, 0, 1, 3);
 
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
 
@@ -296,7 +299,7 @@ contract EphemeralInventoryTest is EveTest {
 
     items[0] = InventoryItem(8235, differentOwner, 8235, 0, 1, 3);
 
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, differentOwner, items);
     vm.stopPrank();
 
@@ -323,7 +326,7 @@ contract EphemeralInventoryTest is EveTest {
     uint256 capacityAfterWithdrawal = 0;
     assertEq(capacityBeforeWithdrawal, 1000);
 
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.withdrawFromEphemeralInventory(smartObjectId, owner, items);
     for (uint256 i = 0; i < items.length; i++) {
       uint256 itemVolume = items[i].volume * items[i].quantity;
@@ -380,7 +383,7 @@ contract EphemeralInventoryTest is EveTest {
     uint256 capacityAfterWithdrawal = 0;
     assertEq(capacityBeforeWithdrawal, 1000);
 
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.withdrawFromEphemeralInventory(smartObjectId, owner, items);
     for (uint256 i = 0; i < items.length; i++) {
       uint256 itemVolume = items[i].volume * items[i].quantity;
@@ -426,7 +429,7 @@ contract EphemeralInventoryTest is EveTest {
     items[0] = InventoryItem(4237, owner, 4237, 0, 200, 1);
 
     // Try withdraw again
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.withdrawFromEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
 
@@ -462,7 +465,7 @@ contract EphemeralInventoryTest is EveTest {
         items[0].quantity
       )
     );
-    vm.startPrank(alice);
+    vm.startPrank(owner);
     ephemeralInventorySystem.withdrawFromEphemeralInventory(smartObjectId, owner, items);
     vm.stopPrank();
   }

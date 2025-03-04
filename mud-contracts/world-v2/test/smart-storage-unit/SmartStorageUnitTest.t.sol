@@ -30,10 +30,19 @@ import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../src
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { CreateAndAnchorDeployableParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { SMART_STORAGE_UNIT } from "../../src/namespaces/evefrontier/systems/constants.sol";
-import { EveTest } from "../EveTest.sol";
 
-contract SmartStorageUnitTest is EveTest {
-  uint256 smartObjectId = 6666666;
+contract SmartStorageUnitTest is MudTest {
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
+
+  uint256 alicePK = vm.deriveKey(mnemonic, 2);
+  address alice = vm.addr(alicePK);
+
+  uint256 bobPK = vm.deriveKey(mnemonic, 3);
+  address bob = vm.addr(bobPK);
+
+  uint256 smartObjectId = 1234;
   uint256 characterId = 123;
   uint256 diffCharacterId = 9999;
   uint256 tribeId = 100;

@@ -35,7 +35,7 @@ contract ConfigSof is Script {
 
     _initializeSofAccessConfig();
     _initializeClassRegistry();
-    _initializeWorldAccess();
+    _initializeWorldAccess(deployer);
 
     vm.stopBroadcast();
   }
@@ -162,10 +162,11 @@ contract ConfigSof is Script {
     eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"));
   }
 
-  function _initializeWorldAccess() internal {
+  function _initializeWorldAccess(address deployer) internal {
     bytes32 adminRole = bytes32("admin");
     roleManagementSystem.createRole(adminRole, adminRole);
-    
+    roleManagementSystem.grantRole(adminRole, deployer);
+
     eveSystem.configureEntityRecordAccess();
     eveSystem.configureStaticDataAccess();
     eveSystem.configureFuelAccess();

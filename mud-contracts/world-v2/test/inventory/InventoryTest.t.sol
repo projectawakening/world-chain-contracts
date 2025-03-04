@@ -21,12 +21,11 @@ import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { EveTest } from "../EveTest.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
-contract InventoryTest is EveTest {
+contract InventoryTest is MudTest {
   // Inventory variables
   InventoryItem item1;
   InventoryItem item2;
@@ -50,6 +49,16 @@ contract InventoryTest is EveTest {
   EntityMetadata characterMetadata;
   string tokenCID;
   uint256 inventoryItemClassId;
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
+
+  uint256 alicePK = vm.deriveKey(mnemonic, 2);
+  address alice = vm.addr(alicePK);
+
+  uint256 bobPK = vm.deriveKey(mnemonic, 3);
+  address bob = vm.addr(bobPK);
 
   function setUp() public virtual override {
     super.setUp();

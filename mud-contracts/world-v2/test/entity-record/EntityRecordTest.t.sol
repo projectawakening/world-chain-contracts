@@ -11,20 +11,26 @@ import { getKeysWithValue } from "@latticexyz/world-modules/src/modules/keyswith
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
+import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
 import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { EntityRecordSystemLib, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { EntityRecord, EntityRecordData } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
 import { EntityRecordMetadata, EntityRecordMetadataData } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecordMetadata.sol";
 import { EntityRecordData as EntityRecordInput, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { EveTest } from "../EveTest.sol";
 
-contract EntityRecordTest is EveTest {
+contract EntityRecordTest is MudTest {
   uint256 smartObjectId = 1234;
   string name = "name";
   string dappURL = "dappURL";
   string description = "description";
   uint256 testClassId = uint256(bytes32("TEST"));
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
+
+  address alice = vm.addr(vm.deriveKey(mnemonic, 1));
+  address bob = vm.addr(vm.deriveKey(mnemonic, 2));
 
   function setUp() public virtual override {
     super.setUp();
@@ -81,6 +87,17 @@ contract EntityRecordTest is EveTest {
     EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
 
     assertEq(name, entityRecordMetaData.name);
+    vm.stopPrank();
+  }
+
+  function testRevertSetNameNotOwner() public {
+    vm.startPrank(deployer);
+    entitySystem.instantiate(testClassId, smartObjectId, deployer);
+    vm.stopPrank();
+
+    vm.startPrank(alice);
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdminOrOwner.selector, alice, smartObjectId));
+    entityRecordSystem.setName(smartObjectId, name);
     vm.stopPrank();
   }
 }

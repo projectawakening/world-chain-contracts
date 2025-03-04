@@ -16,12 +16,14 @@ import { SmartAssembly } from "../../src/namespaces/evefrontier/codegen/tables/S
 import { EntityRecordData } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { SmartAssemblySystemLib, smartAssemblySystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
 
-import { EveTest } from "../EveTest.sol";
-
-contract SmartAssemblyTest is EveTest {
+contract SmartAssemblyTest is MudTest {
   uint256 testClassId = uint256(bytes32("TEST"));
   uint256 smartObjectId = 1234;
   string smartAssemblyType = "SSU";
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  uint256 deployerPK = vm.deriveKey(mnemonic, 0);
+  address deployer = vm.addr(deployerPK);
 
   function setUp() public virtual override {
     super.setUp();
