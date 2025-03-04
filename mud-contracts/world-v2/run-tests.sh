@@ -16,7 +16,7 @@ export RPC_URL=http://127.0.0.1:8545
 
 pnpm run deploy --worldAddress $WORLD_ADDRESS
 pnpm run config-sof
-pnpm run test
+pnpm run test:world
 
 # Kill anvil process
 kill $ANVIL_PID 
