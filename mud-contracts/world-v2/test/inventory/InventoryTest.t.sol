@@ -11,7 +11,7 @@ import { State } from "../../src/codegen/common.sol";
 import { Inventory, InventoryData } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
 import { InventoryItemData, InventoryItem } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
 
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
 import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
 import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";

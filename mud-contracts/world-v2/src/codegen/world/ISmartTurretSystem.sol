@@ -15,9 +15,9 @@ import { TargetPriority, Turret, SmartTurretTarget, AggressionParams } from "../
 interface ISmartTurretSystem {
   error SmartTurret_NotConfigured(uint256 smartObjectId);
 
-  function evefrontier__createAndAnchorSmartTurret(CreateAndAnchorParams memory params) external;
+  function evefrontier__createAndAnchorTurret(CreateAndAnchorParams memory params) external;
 
-  function evefrontier__configureSmartTurret(uint256 smartObjectId, ResourceId systemId) external;
+  function evefrontier__configureTurret(uint256 smartObjectId, ResourceId systemId) external;
 
   function evefrontier__inProximity(
     uint256 smartObjectId,

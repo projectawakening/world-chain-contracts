@@ -43,24 +43,24 @@ library SmartGateSystemLib {
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
 
-  function createAndAnchorSmartGate(
+  function createAndAnchorGate(
     SmartGateSystemType self,
     CreateAndAnchorParams memory params,
     uint256 maxDistance
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorSmartGate(params, maxDistance);
+    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorGate(params, maxDistance);
   }
 
-  function linkSmartGates(SmartGateSystemType self, uint256 sourceGateId, uint256 destinationGateId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).linkSmartGates(sourceGateId, destinationGateId);
+  function linkGates(SmartGateSystemType self, uint256 sourceGateId, uint256 destinationGateId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).linkGates(sourceGateId, destinationGateId);
   }
 
-  function unlinkSmartGates(SmartGateSystemType self, uint256 sourceGateId, uint256 destinationGateId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).unlinkSmartGates(sourceGateId, destinationGateId);
+  function unlinkGates(SmartGateSystemType self, uint256 sourceGateId, uint256 destinationGateId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).unlinkGates(sourceGateId, destinationGateId);
   }
 
-  function configureSmartGate(SmartGateSystemType self, uint256 smartObjectId, ResourceId systemId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).configureSmartGate(smartObjectId, systemId);
+  function configureGate(SmartGateSystemType self, uint256 smartObjectId, ResourceId systemId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureGate(smartObjectId, systemId);
   }
 
   function canJump(
@@ -92,7 +92,7 @@ library SmartGateSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).getSmartGateClassId();
   }
 
-  function createAndAnchorSmartGate(
+  function createAndAnchorGate(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
     uint256 maxDistance
@@ -101,7 +101,7 @@ library SmartGateSystemLib {
     if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorSmartGate_CreateAndAnchorParams_uint256.createAndAnchorSmartGate,
+      _createAndAnchorGate_CreateAndAnchorParams_uint256.createAndAnchorGate,
       (params, maxDistance)
     );
     self.from == address(0)
@@ -109,12 +109,22 @@ library SmartGateSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function linkSmartGates(CallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
+  function linkGates(CallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_linkGates_uint256_uint256.linkGates, (sourceGateId, destinationGateId));
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function unlinkGates(CallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _linkSmartGates_uint256_uint256.linkSmartGates,
+      _unlinkGates_uint256_uint256.unlinkGates,
       (sourceGateId, destinationGateId)
     );
     self.from == address(0)
@@ -122,25 +132,12 @@ library SmartGateSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function unlinkSmartGates(CallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
+  function configureGate(CallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _unlinkSmartGates_uint256_uint256.unlinkSmartGates,
-      (sourceGateId, destinationGateId)
-    );
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function configureSmartGate(CallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _configureSmartGate_uint256_ResourceId.configureSmartGate,
+      _configureGate_uint256_ResourceId.configureGate,
       (smartObjectId, systemId)
     );
     self.from == address(0)
@@ -227,37 +224,34 @@ library SmartGateSystemLib {
     return abi.decode(result, (uint256));
   }
 
-  function createAndAnchorSmartGate(
+  function createAndAnchorGate(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
     uint256 maxDistance
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorSmartGate_CreateAndAnchorParams_uint256.createAndAnchorSmartGate,
+      _createAndAnchorGate_CreateAndAnchorParams_uint256.createAndAnchorGate,
       (params, maxDistance)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function linkSmartGates(RootCallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
+  function linkGates(RootCallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
+    bytes memory systemCall = abi.encodeCall(_linkGates_uint256_uint256.linkGates, (sourceGateId, destinationGateId));
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function unlinkGates(RootCallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
     bytes memory systemCall = abi.encodeCall(
-      _linkSmartGates_uint256_uint256.linkSmartGates,
+      _unlinkGates_uint256_uint256.unlinkGates,
       (sourceGateId, destinationGateId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function unlinkSmartGates(RootCallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal {
+  function configureGate(RootCallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
     bytes memory systemCall = abi.encodeCall(
-      _unlinkSmartGates_uint256_uint256.unlinkSmartGates,
-      (sourceGateId, destinationGateId)
-    );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function configureSmartGate(RootCallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
-    bytes memory systemCall = abi.encodeCall(
-      _configureSmartGate_uint256_ResourceId.configureSmartGate,
+      _configureGate_uint256_ResourceId.configureGate,
       (smartObjectId, systemId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -351,20 +345,20 @@ library SmartGateSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchorSmartGate_CreateAndAnchorParams_uint256 {
-  function createAndAnchorSmartGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
+interface _createAndAnchorGate_CreateAndAnchorParams_uint256 {
+  function createAndAnchorGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
 }
 
-interface _linkSmartGates_uint256_uint256 {
-  function linkSmartGates(uint256 sourceGateId, uint256 destinationGateId) external;
+interface _linkGates_uint256_uint256 {
+  function linkGates(uint256 sourceGateId, uint256 destinationGateId) external;
 }
 
-interface _unlinkSmartGates_uint256_uint256 {
-  function unlinkSmartGates(uint256 sourceGateId, uint256 destinationGateId) external;
+interface _unlinkGates_uint256_uint256 {
+  function unlinkGates(uint256 sourceGateId, uint256 destinationGateId) external;
 }
 
-interface _configureSmartGate_uint256_ResourceId {
-  function configureSmartGate(uint256 smartObjectId, ResourceId systemId) external;
+interface _configureGate_uint256_ResourceId {
+  function configureGate(uint256 smartObjectId, ResourceId systemId) external;
 }
 
 interface _canJump_uint256_uint256_uint256 {

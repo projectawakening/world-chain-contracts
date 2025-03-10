@@ -37,7 +37,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     address inventoryOwner = ownershipSystem.owner(smartObjectId);
 
     // withdraw the items from the designated ephemeral inventory
-    ephemeralInventorySystem.withdraw(smartObjectId, ephemeralOwner, items);
+    ephemeralInventorySystem.withdrawEphemeral(smartObjectId, ephemeralOwner, items);
     // deposit the items to the designated inventory
     inventorySystem.deposit(smartObjectId, items);
 
@@ -64,7 +64,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     // withdraw the items from the designated inventory
     inventorySystem.withdraw(smartObjectId, items);
     // deposit the items to the designated ephemeral inventory
-    ephemeralInventorySystem.deposit(smartObjectId, ephemeralOwner, items);
+    ephemeralInventorySystem.depositEphemeral(smartObjectId, ephemeralOwner, items);
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {

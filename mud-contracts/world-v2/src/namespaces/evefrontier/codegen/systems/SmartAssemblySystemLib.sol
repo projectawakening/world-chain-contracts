@@ -42,24 +42,28 @@ library SmartAssemblySystemLib {
   error SmartAssembly_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
   error SmartAssembly_InvalidObjectId(uint256 smartObjectId);
 
-  function create(
+  function createAssembly(
     SmartAssemblySystemType self,
     uint256 smartObjectId,
     string memory assemblyType,
     EntityRecordParams memory entityRecordParams
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).create(smartObjectId, assemblyType, entityRecordParams);
+    return CallWrapper(self.toResourceId(), address(0)).createAssembly(smartObjectId, assemblyType, entityRecordParams);
   }
 
-  function setType(SmartAssemblySystemType self, uint256 smartObjectId, string memory assemblyType) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setType(smartObjectId, assemblyType);
+  function setAssemblyType(SmartAssemblySystemType self, uint256 smartObjectId, string memory assemblyType) internal {
+    return CallWrapper(self.toResourceId(), address(0)).setAssemblyType(smartObjectId, assemblyType);
   }
 
-  function updateType(SmartAssemblySystemType self, uint256 smartObjectId, string memory assemblyType) internal {
-    return CallWrapper(self.toResourceId(), address(0)).updateType(smartObjectId, assemblyType);
+  function updateAssemblyType(
+    SmartAssemblySystemType self,
+    uint256 smartObjectId,
+    string memory assemblyType
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).updateAssemblyType(smartObjectId, assemblyType);
   }
 
-  function create(
+  function createAssembly(
     CallWrapper memory self,
     uint256 smartObjectId,
     string memory assemblyType,
@@ -69,7 +73,7 @@ library SmartAssemblySystemLib {
     if (address(_world()) == address(this)) revert SmartAssemblySystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _create_uint256_string_EntityRecordParams.create,
+      _createAssembly_uint256_string_EntityRecordParams.createAssembly,
       (smartObjectId, assemblyType, entityRecordParams)
     );
     self.from == address(0)
@@ -77,46 +81,58 @@ library SmartAssemblySystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function setType(CallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
+  function setAssemblyType(CallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartAssemblySystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_setType_uint256_string.setType, (smartObjectId, assemblyType));
+    bytes memory systemCall = abi.encodeCall(
+      _setAssemblyType_uint256_string.setAssemblyType,
+      (smartObjectId, assemblyType)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function updateType(CallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
+  function updateAssemblyType(CallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartAssemblySystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_updateType_uint256_string.updateType, (smartObjectId, assemblyType));
+    bytes memory systemCall = abi.encodeCall(
+      _updateAssemblyType_uint256_string.updateAssemblyType,
+      (smartObjectId, assemblyType)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function create(
+  function createAssembly(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     string memory assemblyType,
     EntityRecordParams memory entityRecordParams
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _create_uint256_string_EntityRecordParams.create,
+      _createAssembly_uint256_string_EntityRecordParams.createAssembly,
       (smartObjectId, assemblyType, entityRecordParams)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function setType(RootCallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
-    bytes memory systemCall = abi.encodeCall(_setType_uint256_string.setType, (smartObjectId, assemblyType));
+  function setAssemblyType(RootCallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _setAssemblyType_uint256_string.setAssemblyType,
+      (smartObjectId, assemblyType)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function updateType(RootCallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
-    bytes memory systemCall = abi.encodeCall(_updateType_uint256_string.updateType, (smartObjectId, assemblyType));
+  function updateAssemblyType(RootCallWrapper memory self, uint256 smartObjectId, string memory assemblyType) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _updateAssemblyType_uint256_string.updateAssemblyType,
+      (smartObjectId, assemblyType)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -158,20 +174,20 @@ library SmartAssemblySystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _create_uint256_string_EntityRecordParams {
-  function create(
+interface _createAssembly_uint256_string_EntityRecordParams {
+  function createAssembly(
     uint256 smartObjectId,
     string memory assemblyType,
     EntityRecordParams memory entityRecordParams
   ) external;
 }
 
-interface _setType_uint256_string {
-  function setType(uint256 smartObjectId, string memory assemblyType) external;
+interface _setAssemblyType_uint256_string {
+  function setAssemblyType(uint256 smartObjectId, string memory assemblyType) external;
 }
 
-interface _updateType_uint256_string {
-  function updateType(uint256 smartObjectId, string memory assemblyType) external;
+interface _updateAssemblyType_uint256_string {
+  function updateAssemblyType(uint256 smartObjectId, string memory assemblyType) external;
 }
 
 using SmartAssemblySystemLib for SmartAssemblySystemType global;

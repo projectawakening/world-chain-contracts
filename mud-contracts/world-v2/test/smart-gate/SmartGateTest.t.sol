@@ -12,7 +12,7 @@ import { DeployableState } from "../../src/namespaces/evefrontier/codegen/tables
 import { SmartAssembly } from "../../src/namespaces/evefrontier/codegen/tables/SmartAssembly.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { SmartGateCustomMock } from "./SmartGateCustomMock.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { WorldPosition, Coord } from "../../src/namespaces/evefrontier/systems/location/types.sol";
 
 import { SmartGateSystem } from "../../src/namespaces/evefrontier/systems/smart-gate/SmartGateSystem.sol";

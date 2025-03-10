@@ -11,7 +11,7 @@ import { CreateAndAnchorParams } from "../../namespaces/evefrontier/systems/depl
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISmartStorageUnitSystem {
-  function evefrontier__createAndAnchorSmartStorageUnit(
+  function evefrontier__createAndAnchorStorageUnit(
     CreateAndAnchorParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity

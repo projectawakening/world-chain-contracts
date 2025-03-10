@@ -24,7 +24,7 @@ import { EveTest } from "../EveTest.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-system/AccessSystem.sol";
 import { OwnershipSystem } from "../../src/namespaces/evefrontier/systems/ownership/OwnershipSystem.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 
 contract OwnershipTest is EveTest {

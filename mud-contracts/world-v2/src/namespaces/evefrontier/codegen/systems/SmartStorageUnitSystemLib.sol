@@ -37,14 +37,14 @@ struct RootCallWrapper {
 library SmartStorageUnitSystemLib {
   error SmartStorageUnitSystemLib_CallingFromRootSystem();
 
-  function createAndAnchorSmartStorageUnit(
+  function createAndAnchorStorageUnit(
     SmartStorageUnitSystemType self,
     CreateAndAnchorParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) internal {
     return
-      CallWrapper(self.toResourceId(), address(0)).createAndAnchorSmartStorageUnit(
+      CallWrapper(self.toResourceId(), address(0)).createAndAnchorStorageUnit(
         params,
         storageCapacity,
         ephemeralStorageCapacity
@@ -55,7 +55,7 @@ library SmartStorageUnitSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).getSmartStorageUnitClassId();
   }
 
-  function createAndAnchorSmartStorageUnit(
+  function createAndAnchorStorageUnit(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
     uint256 storageCapacity,
@@ -65,7 +65,7 @@ library SmartStorageUnitSystemLib {
     if (address(_world()) == address(this)) revert SmartStorageUnitSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorSmartStorageUnit_CreateAndAnchorParams_uint256_uint256.createAndAnchorSmartStorageUnit,
+      _createAndAnchorStorageUnit_CreateAndAnchorParams_uint256_uint256.createAndAnchorStorageUnit,
       (params, storageCapacity, ephemeralStorageCapacity)
     );
     self.from == address(0)
@@ -88,14 +88,14 @@ library SmartStorageUnitSystemLib {
     return abi.decode(result, (uint256));
   }
 
-  function createAndAnchorSmartStorageUnit(
+  function createAndAnchorStorageUnit(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorSmartStorageUnit_CreateAndAnchorParams_uint256_uint256.createAndAnchorSmartStorageUnit,
+      _createAndAnchorStorageUnit_CreateAndAnchorParams_uint256_uint256.createAndAnchorStorageUnit,
       (params, storageCapacity, ephemeralStorageCapacity)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -149,8 +149,8 @@ library SmartStorageUnitSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchorSmartStorageUnit_CreateAndAnchorParams_uint256_uint256 {
-  function createAndAnchorSmartStorageUnit(
+interface _createAndAnchorStorageUnit_CreateAndAnchorParams_uint256_uint256 {
+  function createAndAnchorStorageUnit(
     CreateAndAnchorParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity

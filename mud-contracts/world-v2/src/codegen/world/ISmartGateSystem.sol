@@ -19,13 +19,13 @@ interface ISmartGateSystem {
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
 
-  function evefrontier__createAndAnchorSmartGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
+  function evefrontier__createAndAnchorGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
 
-  function evefrontier__linkSmartGates(uint256 sourceGateId, uint256 destinationGateId) external;
+  function evefrontier__linkGates(uint256 sourceGateId, uint256 destinationGateId) external;
 
-  function evefrontier__unlinkSmartGates(uint256 sourceGateId, uint256 destinationGateId) external;
+  function evefrontier__unlinkGates(uint256 sourceGateId, uint256 destinationGateId) external;
 
-  function evefrontier__configureSmartGate(uint256 smartObjectId, ResourceId systemId) external;
+  function evefrontier__configureGate(uint256 smartObjectId, ResourceId systemId) external;
 
   function evefrontier__canJump(
     uint256 characterId,

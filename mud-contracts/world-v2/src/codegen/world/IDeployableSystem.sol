@@ -21,7 +21,7 @@ interface IDeployableSystem {
 
   function evefrontier__createAndAnchor(CreateAndAnchorParams memory params) external;
 
-  function evefrontier__registerDeployable(
+  function evefrontier__createDeployable(
     uint256 smartObjectId,
     address owner,
     uint256 fuelUnitVolume,

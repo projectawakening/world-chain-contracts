@@ -7,7 +7,7 @@ import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { WorldPosition, Coord } from "../../src/namespaces/evefrontier/systems/location/types.sol";
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { InventoryData, Inventory } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";

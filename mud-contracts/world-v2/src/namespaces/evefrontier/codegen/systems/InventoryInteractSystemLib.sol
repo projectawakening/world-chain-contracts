@@ -46,13 +46,18 @@ library InventoryInteractSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).transferToInventory(smartObjectId, toObjectId, items);
   }
 
-  function setTransferToAccess(
+  function setTransferToInventoryAccess(
     InventoryInteractSystemType self,
     uint256 smartObjectId,
     address accessAddress,
     bool isAllowed
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setTransferToAccess(smartObjectId, accessAddress, isAllowed);
+    return
+      CallWrapper(self.toResourceId(), address(0)).setTransferToInventoryAccess(
+        smartObjectId,
+        accessAddress,
+        isAllowed
+      );
   }
 
   function transferToInventory(
@@ -73,7 +78,7 @@ library InventoryInteractSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function setTransferToAccess(
+  function setTransferToInventoryAccess(
     CallWrapper memory self,
     uint256 smartObjectId,
     address accessAddress,
@@ -83,7 +88,7 @@ library InventoryInteractSystemLib {
     if (address(_world()) == address(this)) revert InventoryInteractSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _setTransferToAccess_uint256_address_bool.setTransferToAccess,
+      _setTransferToInventoryAccess_uint256_address_bool.setTransferToInventoryAccess,
       (smartObjectId, accessAddress, isAllowed)
     );
     self.from == address(0)
@@ -104,14 +109,14 @@ library InventoryInteractSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function setTransferToAccess(
+  function setTransferToInventoryAccess(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     address accessAddress,
     bool isAllowed
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _setTransferToAccess_uint256_address_bool.setTransferToAccess,
+      _setTransferToInventoryAccess_uint256_address_bool.setTransferToInventoryAccess,
       (smartObjectId, accessAddress, isAllowed)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -162,8 +167,8 @@ interface _transferToInventory_uint256_uint256_InventoryItemParamsArray {
   function transferToInventory(uint256 smartObjectId, uint256 toObjectId, InventoryItemParams[] memory items) external;
 }
 
-interface _setTransferToAccess_uint256_address_bool {
-  function setTransferToAccess(uint256 smartObjectId, address accessAddress, bool isAllowed) external;
+interface _setTransferToInventoryAccess_uint256_address_bool {
+  function setTransferToInventoryAccess(uint256 smartObjectId, address accessAddress, bool isAllowed) external;
 }
 
 using InventoryInteractSystemLib for InventoryInteractSystemType global;

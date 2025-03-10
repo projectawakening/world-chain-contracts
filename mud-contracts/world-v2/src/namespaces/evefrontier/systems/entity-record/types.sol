@@ -15,12 +15,12 @@ struct EntityRecordParams {
 }
 
 /**
- * EntityMetadata system stores the metadata of an in game entity record on chain.
+ * EntityMetadataParams system stores the metadata of an in game entity record on chain.
  * @param name the name of the entity
  * @param dappURL stores the URL where the dapp for an entity is hosted
  * @param description the description of the entity
  */
-struct EntityMetadata {
+struct EntityMetadataParams {
   string name;
   string dappURL;
   string description;

@@ -12,7 +12,7 @@ import { DeployableState, DeployableStateData } from "../../src/namespaces/evefr
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { InventoryItemData, InventoryItem  } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { DEPLOYMENT_NAMESPACE } from "../../src/namespaces/evefrontier/systems/constants.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";

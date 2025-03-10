@@ -17,5 +17,9 @@ interface IInventoryInteractSystem {
     InventoryItemParams[] memory items
   ) external;
 
-  function evefrontier__setTransferToAccess(uint256 smartObjectId, address accessAddress, bool isAllowed) external;
+  function evefrontier__setTransferToInventoryAccess(
+    uint256 smartObjectId,
+    address accessAddress,
+    bool isAllowed
+  ) external;
 }

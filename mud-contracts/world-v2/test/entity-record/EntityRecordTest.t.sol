@@ -16,7 +16,7 @@ import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol
 import { EntityRecordSystemLib, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { EntityRecord, EntityRecordData } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
 import { EntityRecordMetadata, EntityRecordMetadataData } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecordMetadata.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { EveTest } from "../EveTest.sol";
 
 contract EntityRecordTest is EveTest {

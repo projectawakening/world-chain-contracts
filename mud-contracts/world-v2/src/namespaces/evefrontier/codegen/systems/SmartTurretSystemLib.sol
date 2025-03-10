@@ -39,12 +39,12 @@ library SmartTurretSystemLib {
   error SmartTurretSystemLib_CallingFromRootSystem();
   error SmartTurret_NotConfigured(uint256 smartObjectId);
 
-  function createAndAnchorSmartTurret(SmartTurretSystemType self, CreateAndAnchorParams memory params) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorSmartTurret(params);
+  function createAndAnchorTurret(SmartTurretSystemType self, CreateAndAnchorParams memory params) internal {
+    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorTurret(params);
   }
 
-  function configureSmartTurret(SmartTurretSystemType self, uint256 smartObjectId, ResourceId systemId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).configureSmartTurret(smartObjectId, systemId);
+  function configureTurret(SmartTurretSystemType self, uint256 smartObjectId, ResourceId systemId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureTurret(smartObjectId, systemId);
   }
 
   function inProximity(
@@ -76,12 +76,12 @@ library SmartTurretSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).getSmartTurretClassId();
   }
 
-  function createAndAnchorSmartTurret(CallWrapper memory self, CreateAndAnchorParams memory params) internal {
+  function createAndAnchorTurret(CallWrapper memory self, CreateAndAnchorParams memory params) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartTurretSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorSmartTurret_CreateAndAnchorParams.createAndAnchorSmartTurret,
+      _createAndAnchorTurret_CreateAndAnchorParams.createAndAnchorTurret,
       (params)
     );
     self.from == address(0)
@@ -89,12 +89,12 @@ library SmartTurretSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function configureSmartTurret(CallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
+  function configureTurret(CallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartTurretSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _configureSmartTurret_uint256_ResourceId.configureSmartTurret,
+      _configureTurret_uint256_ResourceId.configureTurret,
       (smartObjectId, systemId)
     );
     self.from == address(0)
@@ -154,17 +154,17 @@ library SmartTurretSystemLib {
     return abi.decode(result, (uint256));
   }
 
-  function createAndAnchorSmartTurret(RootCallWrapper memory self, CreateAndAnchorParams memory params) internal {
+  function createAndAnchorTurret(RootCallWrapper memory self, CreateAndAnchorParams memory params) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorSmartTurret_CreateAndAnchorParams.createAndAnchorSmartTurret,
+      _createAndAnchorTurret_CreateAndAnchorParams.createAndAnchorTurret,
       (params)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function configureSmartTurret(RootCallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
+  function configureTurret(RootCallWrapper memory self, uint256 smartObjectId, ResourceId systemId) internal {
     bytes memory systemCall = abi.encodeCall(
-      _configureSmartTurret_uint256_ResourceId.configureSmartTurret,
+      _configureTurret_uint256_ResourceId.configureTurret,
       (smartObjectId, systemId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -242,12 +242,12 @@ library SmartTurretSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchorSmartTurret_CreateAndAnchorParams {
-  function createAndAnchorSmartTurret(CreateAndAnchorParams memory params) external;
+interface _createAndAnchorTurret_CreateAndAnchorParams {
+  function createAndAnchorTurret(CreateAndAnchorParams memory params) external;
 }
 
-interface _configureSmartTurret_uint256_ResourceId {
-  function configureSmartTurret(uint256 smartObjectId, ResourceId systemId) external;
+interface _configureTurret_uint256_ResourceId {
+  function configureTurret(uint256 smartObjectId, ResourceId systemId) external;
 }
 
 interface _inProximity_uint256_uint256_TargetPriorityArray_Turret_SmartTurretTarget {

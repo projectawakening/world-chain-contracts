@@ -17,13 +17,13 @@ interface ISmartAssemblySystem {
   error SmartAssembly_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
   error SmartAssembly_InvalidObjectId(uint256 smartObjectId);
 
-  function evefrontier__create(
+  function evefrontier__createAssembly(
     uint256 smartObjectId,
     string memory assemblyType,
     EntityRecordParams memory entityRecordParams
   ) external;
 
-  function evefrontier__setType(uint256 smartObjectId, string memory assemblyType) external;
+  function evefrontier__setAssemblyType(uint256 smartObjectId, string memory assemblyType) external;
 
-  function evefrontier__updateType(uint256 smartObjectId, string memory assemblyType) external;
+  function evefrontier__updateAssemblyType(uint256 smartObjectId, string memory assemblyType) external;
 }

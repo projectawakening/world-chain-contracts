@@ -48,7 +48,7 @@ library DeployableSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).createAndAnchor(params);
   }
 
-  function registerDeployable(
+  function createDeployable(
     DeployableSystemType self,
     uint256 smartObjectId,
     address owner,
@@ -57,7 +57,7 @@ library DeployableSystemLib {
     uint256 fuelMaxCapacity
   ) internal {
     return
-      CallWrapper(self.toResourceId(), address(0)).registerDeployable(
+      CallWrapper(self.toResourceId(), address(0)).createDeployable(
         smartObjectId,
         owner,
         fuelUnitVolume,
@@ -104,7 +104,7 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerDeployable(
+  function createDeployable(
     CallWrapper memory self,
     uint256 smartObjectId,
     address owner,
@@ -116,7 +116,7 @@ library DeployableSystemLib {
     if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _registerDeployable_uint256_address_uint256_uint256_uint256.registerDeployable,
+      _createDeployable_uint256_address_uint256_uint256_uint256.createDeployable,
       (smartObjectId, owner, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity)
     );
     self.from == address(0)
@@ -199,7 +199,7 @@ library DeployableSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function registerDeployable(
+  function createDeployable(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     address owner,
@@ -208,7 +208,7 @@ library DeployableSystemLib {
     uint256 fuelMaxCapacity
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _registerDeployable_uint256_address_uint256_uint256_uint256.registerDeployable,
+      _createDeployable_uint256_address_uint256_uint256_uint256.createDeployable,
       (smartObjectId, owner, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -291,8 +291,8 @@ interface _createAndAnchor_CreateAndAnchorParams {
   function createAndAnchor(CreateAndAnchorParams memory params) external;
 }
 
-interface _registerDeployable_uint256_address_uint256_uint256_uint256 {
-  function registerDeployable(
+interface _createDeployable_uint256_address_uint256_uint256_uint256 {
+  function createDeployable(
     uint256 smartObjectId,
     address owner,
     uint256 fuelUnitVolume,

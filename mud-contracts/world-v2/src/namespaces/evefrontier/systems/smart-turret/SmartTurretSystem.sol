@@ -29,7 +29,7 @@ contract SmartTurretSystem is SmartObjectFramework {
    * @notice Create and anchor a Smart Turret
    * @param params CreateAndAnchorDeployableParams
    */
-  function createAndAnchorSmartTurret(
+  function createAndAnchorTurret(
     CreateAndAnchorParams memory params
   ) public context access(params.smartObjectId) scope(getSmartTurretClassId()) {
     entitySystem.instantiate(getSmartTurretClassId(), params.smartObjectId, params.owner);
@@ -44,7 +44,7 @@ contract SmartTurretSystem is SmartObjectFramework {
    * @param systemId is the system id of the Smart Turret logic
    * // TODO make it configurable only by owner of the smart turret
    */
-  function configureSmartTurret(
+  function configureTurret(
     uint256 smartObjectId,
     ResourceId systemId
   ) public context access(smartObjectId) scope(smartObjectId) {

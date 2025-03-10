@@ -14,7 +14,7 @@ import { CreateAndAnchorParams } from "../deployable/types.sol";
 import { SMART_STORAGE_UNIT } from "../constants.sol";
 
 contract SmartStorageUnitSystem is SmartObjectFramework {
-  function createAndAnchorSmartStorageUnit(
+  function createAndAnchorStorageUnit(
     CreateAndAnchorParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity

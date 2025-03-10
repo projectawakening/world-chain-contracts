@@ -15,7 +15,7 @@ import { IWorld } from "../../src/codegen/world/IWorld.sol";
 import { Characters, CharactersData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
 import { EntityRecord, EntityRecordData } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { Characters } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";

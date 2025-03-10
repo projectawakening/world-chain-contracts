@@ -8,7 +8,7 @@ import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/in
 import { EntityRecord, EntityRecordMetadata } from "../../codegen/index.sol";
 
 // Types and parameters
-import { EntityRecordParams, EntityMetadata } from "./types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "./types.sol";
 
 /**
  * @title EntityRecordSystem
@@ -21,7 +21,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param entityRecordParams is the EnityRecordParams struct with all the data needed to create a new entity record
    */
-  function create(
+  function createRecord(
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
   ) public context access(smartObjectId) scope(smartObjectId) {
@@ -35,7 +35,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    */
   function createMetadata(
     uint256 smartObjectId,
-    EntityMetadata memory entityRecordMetadata
+    EntityMetadataParams memory entityRecordMetadata
   ) public context access(smartObjectId) scope(smartObjectId) {
     EntityRecordMetadata.set(
       smartObjectId,

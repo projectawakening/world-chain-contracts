@@ -345,7 +345,7 @@ contract InventorySystem is SmartObjectFramework {
             }
             // Create an EntityRecord for the classId if it doesn't exist
             if (!EntityRecord.getExists(classId)) {
-              entityRecordSystem.create(classId, EntityRecordParams({
+              entityRecordSystem.createRecord(classId, EntityRecordParams({
                 tenantId: 0,
                 typeId: items[i].typeId,
                 itemId: 0,
@@ -362,7 +362,7 @@ contract InventorySystem is SmartObjectFramework {
           }
         }
 
-        entityRecordSystem.create(items[i].smartObjectId, EntityRecordParams({
+        entityRecordSystem.createRecord(items[i].smartObjectId, EntityRecordParams({
           tenantId: items[i].tenantId,
           typeId: items[i].typeId,
           itemId: items[i].itemId,

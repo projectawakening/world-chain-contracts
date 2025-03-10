@@ -47,7 +47,7 @@ contract InventoryInteractSystem is SmartObjectFramework {
     }
   }
 
-  function setTransferToAccess(
+  function setTransferToInventoryAccess(
     uint256 smartObjectId,
     address accessAddress,
     bool isAllowed

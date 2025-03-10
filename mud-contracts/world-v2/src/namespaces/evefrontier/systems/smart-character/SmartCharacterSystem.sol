@@ -20,7 +20,7 @@ import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 
 // Types and parameters
-import { EntityRecordParams, EntityMetadata } from "../entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../entity-record/types.sol";
 
 contract SmartCharacterSystem is SmartObjectFramework {
   error SmartCharacter_AlreadyCreated(address account, uint256 smartObjectId);
@@ -41,7 +41,7 @@ contract SmartCharacterSystem is SmartObjectFramework {
     address owner,
     uint256 tribeId,
     EntityRecordParams memory entityRecordParams,
-    EntityMetadata memory entityRecordMetadata
+    EntityMetadataParams memory entityRecordMetadata
   ) public context access(smartObjectId) scope(getSmartCharacterClassId()) {
     uint256 createdAt = block.timestamp;
 
@@ -65,7 +65,7 @@ contract SmartCharacterSystem is SmartObjectFramework {
     // Instantiate the character object
     entitySystem.instantiate(getSmartCharacterClassId(), smartObjectId, owner);
     // Save the entity record in EntityRecord Table
-    entityRecordSystem.create(smartObjectId, entityRecordParams);
+    entityRecordSystem.createRecord(smartObjectId, entityRecordParams);
     entityRecordSystem.createMetadata(smartObjectId, entityRecordMetadata);
     // Save the character data in Characters Table
     Characters.set(smartObjectId, true, tribeId, createdAt);

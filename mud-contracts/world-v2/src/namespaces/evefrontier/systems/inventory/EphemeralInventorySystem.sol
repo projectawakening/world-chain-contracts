@@ -80,7 +80,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
    * @param ephemeralOwner The owner of the ephemeral inventory object
    * @param items The items to create records for and deposit to the ephemeral inventory
    */
-  function createAndDeposit(
+  function createAndDepositEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     CreateInventoryItemParams[] memory items
@@ -89,7 +89,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     InventoryItemParams[] memory inventoryItems = _createEntityRecords(items);
     
     // Deposit the items
-    deposit(smartObjectId, ephemeralOwner, inventoryItems);
+    depositEphemeral(smartObjectId, ephemeralOwner, inventoryItems);
   }
 
   /**
@@ -98,7 +98,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
    * @param ephemeralOwner The owner of the ephemeral inventory object
    * @param items The items to deposit to ephemeral inventory
    */
-  function deposit(
+  function depositEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
@@ -166,7 +166,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
    * @param ephemeralOwner The owner of the ephemeral inventory
    * @param items The items to withdraw from ephemeral inventory
    */
-  function withdraw(
+  function withdrawEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
@@ -353,7 +353,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
             }
             // Create an EntityRecord for the classId if it doesn't exist
             if (!EntityRecord.getExists(classId)) {
-              entityRecordSystem.create(classId, EntityRecordParams({
+              entityRecordSystem.createRecord(classId, EntityRecordParams({
                 tenantId: 0,
                 typeId: items[i].typeId,
                 itemId: 0,
@@ -370,7 +370,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
           }
         }
 
-        entityRecordSystem.create(items[i].smartObjectId, EntityRecordParams({
+        entityRecordSystem.createRecord(items[i].smartObjectId, EntityRecordParams({
           tenantId: items[i].tenantId,
           typeId: items[i].typeId,
           itemId: items[i].itemId,

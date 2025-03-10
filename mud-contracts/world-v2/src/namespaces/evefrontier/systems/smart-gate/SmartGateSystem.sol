@@ -36,9 +36,8 @@ contract SmartGateSystem is SmartObjectFramework {
    * @notice Create and anchor a Smart Gate
    * @param params CreateAndAnchorDeployableParams
    * @param maxDistance is the maximum distance between two gates
-   * TODO: make it accessible only by admin
    */
-  function createAndAnchorSmartGate(
+  function createAndAnchorGate(
     CreateAndAnchorParams memory params,
     uint256 maxDistance
   ) public context access(params.smartObjectId) scope(getSmartGateClassId()) {
@@ -55,9 +54,8 @@ contract SmartGateSystem is SmartObjectFramework {
    * @notice Link Smart Gates
    * @param sourceGateId is the smartObjectId of the source gate
    * @param destinationGateId is the smartObjectId of the destination gate
-   * //TODO make it configurable only by owner of the smart gate
    */
-  function linkSmartGates(
+  function linkGates(
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
@@ -83,9 +81,8 @@ contract SmartGateSystem is SmartObjectFramework {
    * @notice Unlink Smart Gates
    * @param sourceGateId is the id of the source gate
    * @param destinationGateId is the id of the destination gate
-   * //TODO make it configurable only by owner of the smart gate
    */
-  function unlinkSmartGates(
+  function unlinkGates(
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
@@ -102,7 +99,7 @@ contract SmartGateSystem is SmartObjectFramework {
    * @param smartObjectId is smartObjectId of the Smart Gate
    * @param systemId is the system id of the Smart Gate logic
    */
-  function configureSmartGate(
+  function configureGate(
     uint256 smartObjectId,
     ResourceId systemId
   ) public context access(smartObjectId) scope(smartObjectId) {

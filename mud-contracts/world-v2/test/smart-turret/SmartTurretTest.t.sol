@@ -10,7 +10,7 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { SmartAssembly } from "../../src/namespaces/evefrontier/codegen/tables/SmartAssembly.sol";
 import { SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/tables/SmartTurretConfig.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { EntityRecordParams, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { WorldPosition, Coord } from "../../src/namespaces/evefrontier/systems/location/types.sol";
 import { SMART_TURRET } from "../../src/namespaces/evefrontier/systems/constants.sol";
 import { TargetPriority, Turret, SmartTurretTarget } from "../../src/namespaces/evefrontier/systems/smart-turret/types.sol";

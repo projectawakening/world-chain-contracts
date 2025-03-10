@@ -56,31 +56,31 @@ library EphemeralInventorySystemLib {
     return CallWrapper(self.toResourceId(), address(0)).getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
   }
 
-  function createAndDeposit(
+  function createAndDepositEphemeral(
     EphemeralInventorySystemType self,
     uint256 smartObjectId,
     address ephemeralOwner,
     CreateInventoryItemParams[] memory items
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndDeposit(smartObjectId, ephemeralOwner, items);
+    return CallWrapper(self.toResourceId(), address(0)).createAndDepositEphemeral(smartObjectId, ephemeralOwner, items);
   }
 
-  function deposit(
+  function depositEphemeral(
     EphemeralInventorySystemType self,
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).deposit(smartObjectId, ephemeralOwner, items);
+    return CallWrapper(self.toResourceId(), address(0)).depositEphemeral(smartObjectId, ephemeralOwner, items);
   }
 
-  function withdraw(
+  function withdrawEphemeral(
     EphemeralInventorySystemType self,
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).withdraw(smartObjectId, ephemeralOwner, items);
+    return CallWrapper(self.toResourceId(), address(0)).withdrawEphemeral(smartObjectId, ephemeralOwner, items);
   }
 
   function getEphemeralSmartObjectId(
@@ -105,7 +105,7 @@ library EphemeralInventorySystemLib {
     return abi.decode(result, (uint256));
   }
 
-  function createAndDeposit(
+  function createAndDepositEphemeral(
     CallWrapper memory self,
     uint256 smartObjectId,
     address ephemeralOwner,
@@ -115,7 +115,7 @@ library EphemeralInventorySystemLib {
     if (address(_world()) == address(this)) revert EphemeralInventorySystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndDeposit_uint256_address_CreateInventoryItemParamsArray.createAndDeposit,
+      _createAndDepositEphemeral_uint256_address_CreateInventoryItemParamsArray.createAndDepositEphemeral,
       (smartObjectId, ephemeralOwner, items)
     );
     self.from == address(0)
@@ -123,7 +123,7 @@ library EphemeralInventorySystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function deposit(
+  function depositEphemeral(
     CallWrapper memory self,
     uint256 smartObjectId,
     address ephemeralOwner,
@@ -133,7 +133,7 @@ library EphemeralInventorySystemLib {
     if (address(_world()) == address(this)) revert EphemeralInventorySystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _deposit_uint256_address_InventoryItemParamsArray.deposit,
+      _depositEphemeral_uint256_address_InventoryItemParamsArray.depositEphemeral,
       (smartObjectId, ephemeralOwner, items)
     );
     self.from == address(0)
@@ -141,7 +141,7 @@ library EphemeralInventorySystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function withdraw(
+  function withdrawEphemeral(
     CallWrapper memory self,
     uint256 smartObjectId,
     address ephemeralOwner,
@@ -151,7 +151,7 @@ library EphemeralInventorySystemLib {
     if (address(_world()) == address(this)) revert EphemeralInventorySystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _withdraw_uint256_address_InventoryItemParamsArray.withdraw,
+      _withdrawEphemeral_uint256_address_InventoryItemParamsArray.withdrawEphemeral,
       (smartObjectId, ephemeralOwner, items)
     );
     self.from == address(0)
@@ -173,40 +173,40 @@ library EphemeralInventorySystemLib {
     return abi.decode(result, (uint256));
   }
 
-  function createAndDeposit(
+  function createAndDepositEphemeral(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     address ephemeralOwner,
     CreateInventoryItemParams[] memory items
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndDeposit_uint256_address_CreateInventoryItemParamsArray.createAndDeposit,
+      _createAndDepositEphemeral_uint256_address_CreateInventoryItemParamsArray.createAndDepositEphemeral,
       (smartObjectId, ephemeralOwner, items)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function deposit(
+  function depositEphemeral(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _deposit_uint256_address_InventoryItemParamsArray.deposit,
+      _depositEphemeral_uint256_address_InventoryItemParamsArray.depositEphemeral,
       (smartObjectId, ephemeralOwner, items)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function withdraw(
+  function withdrawEphemeral(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _withdraw_uint256_address_InventoryItemParamsArray.withdraw,
+      _withdrawEphemeral_uint256_address_InventoryItemParamsArray.withdrawEphemeral,
       (smartObjectId, ephemeralOwner, items)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -257,20 +257,24 @@ interface _getEphemeralSmartObjectId_uint256_address {
   function getEphemeralSmartObjectId(uint256 smartObjectId, address ephemeralOwner) external;
 }
 
-interface _createAndDeposit_uint256_address_CreateInventoryItemParamsArray {
-  function createAndDeposit(
+interface _createAndDepositEphemeral_uint256_address_CreateInventoryItemParamsArray {
+  function createAndDepositEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     CreateInventoryItemParams[] memory items
   ) external;
 }
 
-interface _deposit_uint256_address_InventoryItemParamsArray {
-  function deposit(uint256 smartObjectId, address ephemeralOwner, InventoryItemParams[] memory items) external;
+interface _depositEphemeral_uint256_address_InventoryItemParamsArray {
+  function depositEphemeral(uint256 smartObjectId, address ephemeralOwner, InventoryItemParams[] memory items) external;
 }
 
-interface _withdraw_uint256_address_InventoryItemParamsArray {
-  function withdraw(uint256 smartObjectId, address ephemeralOwner, InventoryItemParams[] memory items) external;
+interface _withdrawEphemeral_uint256_address_InventoryItemParamsArray {
+  function withdrawEphemeral(
+    uint256 smartObjectId,
+    address ephemeralOwner,
+    InventoryItemParams[] memory items
+  ) external;
 }
 
 using EphemeralInventorySystemLib for EphemeralInventorySystemType global;

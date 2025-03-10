@@ -28,19 +28,19 @@ interface IEphemeralInventorySystem {
     address ephemeralOwner
   ) external pure returns (uint256);
 
-  function evefrontier__createAndDeposit(
+  function evefrontier__createAndDepositEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     CreateInventoryItemParams[] memory items
   ) external;
 
-  function evefrontier__deposit(
+  function evefrontier__depositEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) external;
 
-  function evefrontier__withdraw(
+  function evefrontier__withdrawEphemeral(
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items

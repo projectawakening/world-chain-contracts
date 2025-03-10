@@ -64,9 +64,9 @@ contract DeployableSystem is SmartObjectFramework {
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
 
     // Create the smart assembly object
-    smartAssemblySystem.create(params.smartObjectId, params.assemblyType, params.entityRecordParams);
+    smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
-    registerDeployable(
+    createDeployable(
       params.smartObjectId,
       params.owner,
       params.fuelUnitVolume,
@@ -78,14 +78,14 @@ contract DeployableSystem is SmartObjectFramework {
 
   /**
    * TODO: restrict this to smartObjectIds that exist
-   * @dev registers a new smart deployable (must be "NULL" state)
+   * @dev creates a new smart deployable
    * @param smartObjectId on-chain id of the in-game deployable
    * @param owner the owner of the smart object
    * @param fuelUnitVolume the fuel unit volume in wei
    * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
    * @param fuelMaxCapacity the fuel max capacity in wei
    */
-  function registerDeployable(
+  function createDeployable(
     uint256 smartObjectId,
     address owner,
     uint256 fuelUnitVolume,

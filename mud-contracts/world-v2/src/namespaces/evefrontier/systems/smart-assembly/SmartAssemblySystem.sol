@@ -38,7 +38,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
    * @param assemblyType The type of the smart assembly
    * @param entityRecordParams The entity record data
    */
-  function create(
+  function createAssembly(
     uint256 smartObjectId,
     string memory assemblyType,
     EntityRecordParams memory entityRecordParams
@@ -58,8 +58,8 @@ contract SmartAssemblySystem is SmartObjectFramework {
     if (smartObjectId!= uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
       revert SmartAssembly_InvalidObjectId(smartObjectId);
     }
-    entityRecordSystem.create(smartObjectId, entityRecordParams);
-    setType(smartObjectId, assemblyType);
+    entityRecordSystem.createRecord(smartObjectId, entityRecordParams);
+    setAssemblyType(smartObjectId, assemblyType);
   }
 
   /**
@@ -68,7 +68,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
    * @param assemblyType The type of the smart assembly
    * //TODO : only owner can set smart assembly type
    */
-  function setType(
+  function setAssemblyType(
     uint256 smartObjectId,
     string memory assemblyType
   ) public context access(smartObjectId) scope(smartObjectId) {
@@ -92,7 +92,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
    * @param assemblyType The type of the smart assembly
    * //TODO : only owner can update smart assembly type
    */
-  function updateType(
+  function updateAssemblyType(
     uint256 smartObjectId,
     string memory assemblyType
   ) public context access(smartObjectId) scope(smartObjectId) {
