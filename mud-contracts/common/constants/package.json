@@ -4,7 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "@latticexyz/cli": "2.2.14",
-    "@latticexyz/schema-type": "2.2.8",
+    "@latticexyz/schema-type": "2.2.20",
     "@latticexyz/store": "2.2.8",
     "@latticexyz/world": "2.2.8",
     "@latticexyz/world-modules": "2.2.8"
