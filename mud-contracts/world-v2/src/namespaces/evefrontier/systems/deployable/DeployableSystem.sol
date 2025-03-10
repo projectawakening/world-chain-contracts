@@ -1,25 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
-import { GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
-import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
-import { CharactersByAddress } from "../../codegen/index.sol";
-import { DeployableToken } from "../../codegen/index.sol";
-import { FuelSystem } from "../fuel/FuelSystem.sol";
-import { Fuel, FuelData } from "../../codegen/index.sol";
-import { LocationSystem } from "../location/LocationSystem.sol";
-import { LocationData } from "../../codegen/tables/Location.sol";
-import { Location, LocationData } from "../../codegen/index.sol";
-import { SmartAssemblySystem } from "../smart-assembly/SmartAssemblySystem.sol";
-import { LocationSystemLib, locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
-import { SmartAssemblySystemLib, smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLib.sol";
-import { FuelSystemLib, fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
-import { EntityRecordData } from "../entity-record/types.sol";
+// Local namespace tables
+import { 
+  GlobalDeployableState,
+  GlobalDeployableStateData,
+  DeployableState, 
+  DeployableStateData,
+  CharactersByAccount,
+  Fuel, 
+  FuelData,
+  Location, 
+  LocationData
+} from "../../codegen/index.sol";
 
-import { State, CreateAndAnchorDeployableParams } from "./types.sol";
+// Local namespace systems
+import { FuelSystem } from "../fuel/FuelSystem.sol";
+import { LocationSystem } from "../location/LocationSystem.sol";
+import { locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
+import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLib.sol";
+import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
+import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+
+// Types and parameters
+import { State, CreateAndAnchorParams } from "./types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
 
 /**
@@ -27,7 +37,6 @@ import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
  * @author CCP Games
  * DeployableSystem stores the deployable state of a smart object on-chain
  */
-
 contract DeployableSystem is SmartObjectFramework {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
   error Deployable_NoFuel(uint256 smartObjectId);
@@ -50,27 +59,12 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev creates and anchors a deployable
    * @param params struct containing all parameters for creating and anchoring a deployable
    */
-  function createAndAnchorDeployable(
-    CreateAndAnchorDeployableParams memory params
+  function createAndAnchor(
+    CreateAndAnchorParams memory params
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
-    smartAssemblySystem.createSmartAssembly(params.smartObjectId, params.smartAssemblyType, params.entityRecordParams);
 
-    // get this deployable's classId
-    EntityRelationValue memory entityRelationValue = abi.decode(
-      EntityTagMap.getValue(params.smartObjectId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(params.smartObjectId)))),
-      (EntityRelationValue)
-    );
-
-    // sanity checks
-    if (!Tenants.getExists(params.entityRecordParams.tenantId)) {
-      revert Deployable_InvalidTenantId(params.smartObjectId, params.entityRecordParams.tenantId);
-    }
-    if (keccak256(abi.encodePacked(params.entityRecordParams.typeId)) != entityRelationValue.relatedEntityId) {
-      revert Deployable_InvalidTypeId(params.smartObjectId, params.entityRecordParams.typeId);
-    }
-    if (params.smartObjectId!= uint256(keccak256(abi.encodePacked(params.entityRecordParams.tenantId, params.entityRecordParams.itemId)))) {
-      revert Deployable_InvalidSmartObjectId(params.smartObjectId);
-    }
+    // Create the smart assembly object
+    smartAssemblySystem.create(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
     registerDeployable(
       params.smartObjectId,
@@ -108,7 +102,7 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     // revert if the given smart object owner is not a valid character
-    if (CharactersByAddress.get(owner) == 0) {
+    if (CharactersByAccount.get(owner) == 0) {
       revert Deployable_InvalidObjectOwner(
         "SmartDeployableSystem: Smart Object owner is not a valid Smart Character",
         owner,
@@ -116,51 +110,8 @@ contract DeployableSystem is SmartObjectFramework {
       );
     }
 
-    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId)); // OWNER_ROLE tracks/manages object ownership
-    
-    // get this deployable's classId
-    EntityRelationValue memory entityRelationValue = abi.decode(
-      EntityTagMap.getValue(smartObjectId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(smartObjectId)))),
-      (EntityRelationValue)
-    );
-
-    if(!Role.getExists(ownerRole)) { // ownerRole has not been created, create it
-      roleManagementSystem.scopedCreateRole(
-        entityRelationValue.relatedEntityId,
-        ownerRole,
-        ownerRole,
-        owner,
-        true
-      );
-    } else if(Role.lengthMembers(ownerRole) == 0) { // ownerRole has already been created, but has no members
-      if(Role.getAdmin(ownerRole) != ownerRole) { // ownerRole MUST be self-administered to start with
-        roleManagementSystem.scopedTransferRoleAdmin(
-          entityRelationValue.relatedEntityId,
-          ownerRole,
-          ownerRole
-        );
-      }
-      roleManagementSystem.scopedGrantRole(
-        entityRelationValue.relatedEntityId,
-        ownerRole,
-        owner
-      );
-    } else { // previously created ownerRole has members, start fresh
-      if(Role.getAdmin(ownerRole) != ownerRole) {
-        roleManagementSystem.scopedTransferRoleAdmin(
-          entityRelationValue.relatedEntityId,
-          ownerRole,
-          ownerRole
-        );
-      }
-
-      roleManagementSystem.scopedRevokeAll(getSmartCharacterClassId(), ownerRole);
-      roleManagementSystem.scopedGrantRole(
-        entityRelationValue.relatedEntityId,
-        ownerRole,
-        owner
-      );
-    }
+    // Use OwnershipSystem to track ownership
+    ownershipSystem.ascribeToAccount(smartObjectId, owner);
 
     DeployableState.set(
       smartObjectId,
@@ -193,16 +144,13 @@ contract DeployableSystem is SmartObjectFramework {
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
-    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId));
-
-    // get this deployable's classId
-    EntityRelationValue memory entityRelationValue = abi.decode(
-      EntityTagMap.getValue(smartObjectId, TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(smartObjectId)))),
-      (EntityRelationValue)
-    );
-
-    roleManagementSystem.scopedRevokeAll(entityRelationValue.relatedEntityId, ownerRole);
-
+    
+    // Get the current owner
+    address owner = ownershipSystem.owner(smartObjectId);
+    
+    // Remove ownership through OwnershipSystem
+    ownershipSystem.annulFromAccount(smartObjectId, owner);
+    
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
   }

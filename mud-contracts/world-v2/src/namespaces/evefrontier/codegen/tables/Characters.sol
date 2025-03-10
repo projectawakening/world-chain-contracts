@@ -17,6 +17,7 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct CharactersData {
+  bool exists;
   uint256 tribeId;
   uint256 createdAt;
 }
@@ -26,12 +27,12 @@ library Characters {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e7469657200000043686172616374657273000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0040020020200000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0041030001202000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x004002001f1f0000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x00410300601f1f00000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,9 +48,10 @@ library Characters {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
-    fieldNames[0] = "tribeId";
-    fieldNames[1] = "createdAt";
+    fieldNames = new string[](3);
+    fieldNames[0] = "exists";
+    fieldNames[1] = "tribeId";
+    fieldNames[2] = "createdAt";
   }
 
   /**
@@ -67,13 +69,55 @@ library Characters {
   }
 
   /**
+   * @notice Get exists.
+   */
+  function getExists(uint256 smartObjectId) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Get exists.
+   */
+  function _getExists(uint256 smartObjectId) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function setExists(uint256 smartObjectId, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function _setExists(uint256 smartObjectId, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
    * @notice Get tribeId.
    */
   function getTribeId(uint256 smartObjectId) internal view returns (uint256 tribeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -84,7 +128,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -95,7 +139,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((tribeId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((tribeId)), _fieldLayout);
   }
 
   /**
@@ -105,7 +149,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((tribeId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((tribeId)), _fieldLayout);
   }
 
   /**
@@ -115,7 +159,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -126,7 +170,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -137,7 +181,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((createdAt)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((createdAt)), _fieldLayout);
   }
 
   /**
@@ -147,7 +191,7 @@ library Characters {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((createdAt)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((createdAt)), _fieldLayout);
   }
 
   /**
@@ -183,8 +227,8 @@ library Characters {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 smartObjectId, uint256 tribeId, uint256 createdAt) internal {
-    bytes memory _staticData = encodeStatic(tribeId, createdAt);
+  function set(uint256 smartObjectId, bool exists, uint256 tribeId, uint256 createdAt) internal {
+    bytes memory _staticData = encodeStatic(exists, tribeId, createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -198,8 +242,8 @@ library Characters {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 smartObjectId, uint256 tribeId, uint256 createdAt) internal {
-    bytes memory _staticData = encodeStatic(tribeId, createdAt);
+  function _set(uint256 smartObjectId, bool exists, uint256 tribeId, uint256 createdAt) internal {
+    bytes memory _staticData = encodeStatic(exists, tribeId, createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -214,7 +258,7 @@ library Characters {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 smartObjectId, CharactersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.tribeId, _table.createdAt);
+    bytes memory _staticData = encodeStatic(_table.exists, _table.tribeId, _table.createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -229,7 +273,7 @@ library Characters {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 smartObjectId, CharactersData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.tribeId, _table.createdAt);
+    bytes memory _staticData = encodeStatic(_table.exists, _table.tribeId, _table.createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -243,10 +287,12 @@ library Characters {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint256 tribeId, uint256 createdAt) {
-    tribeId = (uint256(Bytes.getBytes32(_blob, 0)));
+  function decodeStatic(bytes memory _blob) internal pure returns (bool exists, uint256 tribeId, uint256 createdAt) {
+    exists = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
 
-    createdAt = (uint256(Bytes.getBytes32(_blob, 32)));
+    tribeId = (uint256(Bytes.getBytes32(_blob, 1)));
+
+    createdAt = (uint256(Bytes.getBytes32(_blob, 33)));
   }
 
   /**
@@ -260,7 +306,7 @@ library Characters {
     EncodedLengths,
     bytes memory
   ) internal pure returns (CharactersData memory _table) {
-    (_table.tribeId, _table.createdAt) = decodeStatic(_staticData);
+    (_table.exists, _table.tribeId, _table.createdAt) = decodeStatic(_staticData);
   }
 
   /**
@@ -287,8 +333,8 @@ library Characters {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 tribeId, uint256 createdAt) internal pure returns (bytes memory) {
-    return abi.encodePacked(tribeId, createdAt);
+  function encodeStatic(bool exists, uint256 tribeId, uint256 createdAt) internal pure returns (bytes memory) {
+    return abi.encodePacked(exists, tribeId, createdAt);
   }
 
   /**
@@ -298,10 +344,11 @@ library Characters {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
+    bool exists,
     uint256 tribeId,
     uint256 createdAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(tribeId, createdAt);
+    bytes memory _staticData = encodeStatic(exists, tribeId, createdAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -317,5 +364,17 @@ library Characters {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
+  }
+}
+
+/**
+ * @notice Cast a value to a bool.
+ * @dev Boolean values are encoded as uint8 (1 = true, 0 = false), but Solidity doesn't allow casting between uint8 and bool.
+ * @param value The uint8 value to convert.
+ * @return result The boolean value.
+ */
+function _toBool(uint8 value) pure returns (bool result) {
+  assembly {
+    result := value
   }
 }

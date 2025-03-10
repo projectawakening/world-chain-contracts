@@ -1,26 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { EntityRecord, EntityRecordMetadata, EntityRecordMetadataData } from "../../codegen/index.sol";
+
+// Local namespace tables
+import { EntityRecord, EntityRecordMetadata } from "../../codegen/index.sol";
+
+// Types and parameters
 import { EntityRecordParams, EntityMetadata } from "./types.sol";
 
 /**
  * @title EntityRecordSystem
  * @author CCP Games
- * EntityRecordSystem stores an in game entity record on chain.
+ * EntityRecordSystem stores in game entity records on chain.
  */
 contract EntityRecordSystem is SmartObjectFramework {
   /**
    * @dev creates a new entity record
    * @param smartObjectId the id of a in game entity referred as smart object id
-   * @param entityRecord is the EnityRecordData struct with all the data needed to create a new entity record
+   * @param entityRecordParams is the EnityRecordParams struct with all the data needed to create a new entity record
    */
-  function createEntityRecord(
+  function create(
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
   ) public context access(smartObjectId) scope(smartObjectId) {
-    EntityRecord.set(smartObjectId, entityRecordParams.itemId, entityRecordParams.typeId, entityRecordParams.volume, entityRecordParams.tenantId);
+    EntityRecord.set(smartObjectId, true, entityRecordParams.tenantId, entityRecordParams.itemId, entityRecordParams.typeId, entityRecordParams.volume);
   }
 
   /**
@@ -28,7 +33,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param entityRecordMetadata is the EntityMetadata struct with all the data needed to create a new entity record metadata
    */
-  function createEntityRecordMetadata(
+  function createMetadata(
     uint256 smartObjectId,
     EntityMetadata memory entityRecordMetadata
   ) public context access(smartObjectId) scope(smartObjectId) {

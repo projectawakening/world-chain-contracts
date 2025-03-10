@@ -11,8 +11,11 @@ import { EntityRecordParams, EntityMetadata } from "../../namespaces/evefrontier
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISmartCharacterSystem {
-  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
-  error SmartCharacterDoesNotExist(uint256 characterId);
+  error SmartCharacter_AlreadyCreated(address account, uint256 smartObjectId);
+  error SmartCharacterDoesNotExist(uint256 smartObjectId);
+  error SmartCharacter_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
+  error SmartCharacter_InvalidTypeId(uint256 smartObjectId, uint256 typeId);
+  error SmartCharacter_InvalidObjectId(uint256 smartObjectId);
 
   function evefrontier__createCharacter(
     uint256 smartObjectId,

@@ -1,12 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { Fuel, FuelData } from "../../codegen/index.sol";
-import { DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 
+// Local namespace tables
+import { 
+  Fuel, 
+  FuelData,
+  DeployableState, 
+  GlobalDeployableState, 
+  GlobalDeployableStateData 
+} from "../../codegen/index.sol";
+
+// Types and parameters
 import { State } from "../../../../codegen/common.sol";
-import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
+import { ONE_UNIT_IN_WEI } from "./../constants.sol";
 
 /**
  * @title FuelSystem

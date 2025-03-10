@@ -2,21 +2,21 @@
 pragma solidity >=0.8.24;
 
 /**
- * @dev InventoryItemParams structure
+ * @dev CreateInventoryItemParams structure
  */
-struct InventoryItemParams {
+struct CreateInventoryItemParams {
   uint256 smartObjectId;
+  bytes32 tenantId;
   uint256 itemId;
   uint256 typeId;
   uint256 volume;
-  string tenantId;
   uint256 quantity;
 }
 
 /**
- * @dev TransferItemParams is a subset of InventoryItemParams for easier interfacing
+ * @dev inventoryItemParams structure
  */
-struct TransferItemParams {
+struct InventoryItemParams {
   uint256 smartObjectId;
   uint256 quantity;
 }

@@ -8,11 +8,11 @@ import { State } from "../../../../codegen/common.sol";
 import { LocationData } from "../../codegen/tables/Location.sol";
 import { EntityRecordParams } from "../entity-record/types.sol";
 
-struct CreateAndAnchorDeployableParams {
+struct CreateAndAnchorParams {
   uint256 smartObjectId;
-  string smartAssemblyType;
+  string assemblyType;
   EntityRecordParams entityRecordParams;
-  SmartObjectData smartObjectData;
+  address owner;
   uint256 fuelUnitVolume;
   uint256 fuelConsumptionIntervalInSeconds;
   uint256 fuelMaxCapacity;

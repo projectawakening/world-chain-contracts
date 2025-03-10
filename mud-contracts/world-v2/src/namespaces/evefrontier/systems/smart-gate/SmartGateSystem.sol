@@ -1,23 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
+// Local namespace tables
 import { SmartGateConfig } from "../../codegen/tables/SmartGateConfig.sol";
 import { SmartGateLink, SmartGateLinkData } from "../../codegen/tables/SmartGateLink.sol";
-import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
-import { State, SmartObjectData } from "../deployable/types.sol";
-import { DeployableSystem } from "../deployable/DeployableSystem.sol";
-import { EntityRecordData } from "../entity-record/types.sol";
-import { WorldPosition } from "../location/types.sol";
+import { DeployableState } from "../../codegen/index.sol";
 import { LocationData, Location } from "../../codegen/tables/Location.sol";
-import { SMART_GATE } from "../constants.sol";
+
+// Local namespace systems
+import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { DeployableSystemLib, deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
-import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+// Types and parameters
+import { State, CreateAndAnchorParams } from "../deployable/types.sol";
+import { SMART_GATE } from "../constants.sol";
 
 contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_UndefinedClassId();
@@ -34,14 +39,14 @@ contract SmartGateSystem is SmartObjectFramework {
    * TODO: make it accessible only by admin
    */
   function createAndAnchorSmartGate(
-    CreateAndAnchorDeployableParams memory params,
+    CreateAndAnchorParams memory params,
     uint256 maxDistance
   ) public context access(params.smartObjectId) scope(getSmartGateClassId()) {
-    params.smartAssemblyType = SMART_GATE;
+    params.assemblyType = SMART_GATE;
 
     entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.owner);
 
-    deployableSystem.createAndAnchorDeployable(params);
+    deployableSystem.createAndAnchor(params);
 
     SmartGateConfig.setMaxDistance(params.smartObjectId, maxDistance);
   }

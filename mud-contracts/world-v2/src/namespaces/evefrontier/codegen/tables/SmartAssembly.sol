@@ -17,8 +17,8 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct SmartAssemblyData {
-  uint256 smartAssemblyId;
-  string smartAssemblyType;
+  uint256 assemblyId;
+  string assemblyType;
 }
 
 library SmartAssembly {
@@ -48,8 +48,8 @@ library SmartAssembly {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](2);
-    fieldNames[0] = "smartAssemblyId";
-    fieldNames[1] = "smartAssemblyType";
+    fieldNames[0] = "assemblyId";
+    fieldNames[1] = "assemblyType";
   }
 
   /**
@@ -67,9 +67,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get smartAssemblyId.
+   * @notice Get assemblyId.
    */
-  function getSmartAssemblyId(uint256 smartObjectId) internal view returns (uint256 smartAssemblyId) {
+  function getAssemblyId(uint256 smartObjectId) internal view returns (uint256 assemblyId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -78,9 +78,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get smartAssemblyId.
+   * @notice Get assemblyId.
    */
-  function _getSmartAssemblyId(uint256 smartObjectId) internal view returns (uint256 smartAssemblyId) {
+  function _getAssemblyId(uint256 smartObjectId) internal view returns (uint256 assemblyId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -89,29 +89,29 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Set smartAssemblyId.
+   * @notice Set assemblyId.
    */
-  function setSmartAssemblyId(uint256 smartObjectId, uint256 smartAssemblyId) internal {
+  function setAssemblyId(uint256 smartObjectId, uint256 assemblyId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((smartAssemblyId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((assemblyId)), _fieldLayout);
   }
 
   /**
-   * @notice Set smartAssemblyId.
+   * @notice Set assemblyId.
    */
-  function _setSmartAssemblyId(uint256 smartObjectId, uint256 smartAssemblyId) internal {
+  function _setAssemblyId(uint256 smartObjectId, uint256 assemblyId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((smartAssemblyId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((assemblyId)), _fieldLayout);
   }
 
   /**
-   * @notice Get smartAssemblyType.
+   * @notice Get assemblyType.
    */
-  function getSmartAssemblyType(uint256 smartObjectId) internal view returns (string memory smartAssemblyType) {
+  function getAssemblyType(uint256 smartObjectId) internal view returns (string memory assemblyType) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -120,9 +120,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get smartAssemblyType.
+   * @notice Get assemblyType.
    */
-  function _getSmartAssemblyType(uint256 smartObjectId) internal view returns (string memory smartAssemblyType) {
+  function _getAssemblyType(uint256 smartObjectId) internal view returns (string memory assemblyType) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -131,29 +131,29 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Set smartAssemblyType.
+   * @notice Set assemblyType.
    */
-  function setSmartAssemblyType(uint256 smartObjectId, string memory smartAssemblyType) internal {
+  function setAssemblyType(uint256 smartObjectId, string memory assemblyType) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((smartAssemblyType)));
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((assemblyType)));
   }
 
   /**
-   * @notice Set smartAssemblyType.
+   * @notice Set assemblyType.
    */
-  function _setSmartAssemblyType(uint256 smartObjectId, string memory smartAssemblyType) internal {
+  function _setAssemblyType(uint256 smartObjectId, string memory assemblyType) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((smartAssemblyType)));
+    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((assemblyType)));
   }
 
   /**
-   * @notice Get the length of smartAssemblyType.
+   * @notice Get the length of assemblyType.
    */
-  function lengthSmartAssemblyType(uint256 smartObjectId) internal view returns (uint256) {
+  function lengthAssemblyType(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -164,9 +164,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get the length of smartAssemblyType.
+   * @notice Get the length of assemblyType.
    */
-  function _lengthSmartAssemblyType(uint256 smartObjectId) internal view returns (uint256) {
+  function _lengthAssemblyType(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -177,10 +177,10 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get an item of smartAssemblyType.
+   * @notice Get an item of assemblyType.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemSmartAssemblyType(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
+  function getItemAssemblyType(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -191,10 +191,10 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get an item of smartAssemblyType.
+   * @notice Get an item of assemblyType.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemSmartAssemblyType(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
+  function _getItemAssemblyType(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -205,9 +205,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Push a slice to smartAssemblyType.
+   * @notice Push a slice to assemblyType.
    */
-  function pushSmartAssemblyType(uint256 smartObjectId, string memory _slice) internal {
+  function pushAssemblyType(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -215,9 +215,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Push a slice to smartAssemblyType.
+   * @notice Push a slice to assemblyType.
    */
-  function _pushSmartAssemblyType(uint256 smartObjectId, string memory _slice) internal {
+  function _pushAssemblyType(uint256 smartObjectId, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -225,9 +225,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Pop a slice from smartAssemblyType.
+   * @notice Pop a slice from assemblyType.
    */
-  function popSmartAssemblyType(uint256 smartObjectId) internal {
+  function popAssemblyType(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -235,9 +235,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Pop a slice from smartAssemblyType.
+   * @notice Pop a slice from assemblyType.
    */
-  function _popSmartAssemblyType(uint256 smartObjectId) internal {
+  function _popAssemblyType(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -245,9 +245,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Update a slice of smartAssemblyType at `_index`.
+   * @notice Update a slice of assemblyType at `_index`.
    */
-  function updateSmartAssemblyType(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
+  function updateAssemblyType(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -258,9 +258,9 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Update a slice of smartAssemblyType at `_index`.
+   * @notice Update a slice of assemblyType at `_index`.
    */
-  function _updateSmartAssemblyType(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
+  function _updateAssemblyType(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -303,11 +303,11 @@ library SmartAssembly {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 smartObjectId, uint256 smartAssemblyId, string memory smartAssemblyType) internal {
-    bytes memory _staticData = encodeStatic(smartAssemblyId);
+  function set(uint256 smartObjectId, uint256 assemblyId, string memory assemblyType) internal {
+    bytes memory _staticData = encodeStatic(assemblyId);
 
-    EncodedLengths _encodedLengths = encodeLengths(smartAssemblyType);
-    bytes memory _dynamicData = encodeDynamic(smartAssemblyType);
+    EncodedLengths _encodedLengths = encodeLengths(assemblyType);
+    bytes memory _dynamicData = encodeDynamic(assemblyType);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -318,11 +318,11 @@ library SmartAssembly {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 smartObjectId, uint256 smartAssemblyId, string memory smartAssemblyType) internal {
-    bytes memory _staticData = encodeStatic(smartAssemblyId);
+  function _set(uint256 smartObjectId, uint256 assemblyId, string memory assemblyType) internal {
+    bytes memory _staticData = encodeStatic(assemblyId);
 
-    EncodedLengths _encodedLengths = encodeLengths(smartAssemblyType);
-    bytes memory _dynamicData = encodeDynamic(smartAssemblyType);
+    EncodedLengths _encodedLengths = encodeLengths(assemblyType);
+    bytes memory _dynamicData = encodeDynamic(assemblyType);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -334,10 +334,10 @@ library SmartAssembly {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 smartObjectId, SmartAssemblyData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.smartAssemblyId);
+    bytes memory _staticData = encodeStatic(_table.assemblyId);
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.smartAssemblyType);
-    bytes memory _dynamicData = encodeDynamic(_table.smartAssemblyType);
+    EncodedLengths _encodedLengths = encodeLengths(_table.assemblyType);
+    bytes memory _dynamicData = encodeDynamic(_table.assemblyType);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -349,10 +349,10 @@ library SmartAssembly {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 smartObjectId, SmartAssemblyData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.smartAssemblyId);
+    bytes memory _staticData = encodeStatic(_table.assemblyId);
 
-    EncodedLengths _encodedLengths = encodeLengths(_table.smartAssemblyType);
-    bytes memory _dynamicData = encodeDynamic(_table.smartAssemblyType);
+    EncodedLengths _encodedLengths = encodeLengths(_table.assemblyType);
+    bytes memory _dynamicData = encodeDynamic(_table.assemblyType);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -363,8 +363,8 @@ library SmartAssembly {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint256 smartAssemblyId) {
-    smartAssemblyId = (uint256(Bytes.getBytes32(_blob, 0)));
+  function decodeStatic(bytes memory _blob) internal pure returns (uint256 assemblyId) {
+    assemblyId = (uint256(Bytes.getBytes32(_blob, 0)));
   }
 
   /**
@@ -373,13 +373,13 @@ library SmartAssembly {
   function decodeDynamic(
     EncodedLengths _encodedLengths,
     bytes memory _blob
-  ) internal pure returns (string memory smartAssemblyType) {
+  ) internal pure returns (string memory assemblyType) {
     uint256 _start;
     uint256 _end;
     unchecked {
       _end = _encodedLengths.atIndex(0);
     }
-    smartAssemblyType = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
+    assemblyType = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
   }
 
   /**
@@ -393,9 +393,9 @@ library SmartAssembly {
     EncodedLengths _encodedLengths,
     bytes memory _dynamicData
   ) internal pure returns (SmartAssemblyData memory _table) {
-    (_table.smartAssemblyId) = decodeStatic(_staticData);
+    (_table.assemblyId) = decodeStatic(_staticData);
 
-    (_table.smartAssemblyType) = decodeDynamic(_encodedLengths, _dynamicData);
+    (_table.assemblyType) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
@@ -422,18 +422,18 @@ library SmartAssembly {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 smartAssemblyId) internal pure returns (bytes memory) {
-    return abi.encodePacked(smartAssemblyId);
+  function encodeStatic(uint256 assemblyId) internal pure returns (bytes memory) {
+    return abi.encodePacked(assemblyId);
   }
 
   /**
    * @notice Tightly pack dynamic data lengths using this table's schema.
    * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
    */
-  function encodeLengths(string memory smartAssemblyType) internal pure returns (EncodedLengths _encodedLengths) {
+  function encodeLengths(string memory assemblyType) internal pure returns (EncodedLengths _encodedLengths) {
     // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
     unchecked {
-      _encodedLengths = EncodedLengthsLib.pack(bytes(smartAssemblyType).length);
+      _encodedLengths = EncodedLengthsLib.pack(bytes(assemblyType).length);
     }
   }
 
@@ -441,8 +441,8 @@ library SmartAssembly {
    * @notice Tightly pack dynamic (variable length) data using this table's schema.
    * @return The dynamic data, encoded into a sequence of bytes.
    */
-  function encodeDynamic(string memory smartAssemblyType) internal pure returns (bytes memory) {
-    return abi.encodePacked(bytes((smartAssemblyType)));
+  function encodeDynamic(string memory assemblyType) internal pure returns (bytes memory) {
+    return abi.encodePacked(bytes((assemblyType)));
   }
 
   /**
@@ -452,13 +452,13 @@ library SmartAssembly {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
-    uint256 smartAssemblyId,
-    string memory smartAssemblyType
+    uint256 assemblyId,
+    string memory assemblyType
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(smartAssemblyId);
+    bytes memory _staticData = encodeStatic(assemblyId);
 
-    EncodedLengths _encodedLengths = encodeLengths(smartAssemblyType);
-    bytes memory _dynamicData = encodeDynamic(smartAssemblyType);
+    EncodedLengths _encodedLengths = encodeLengths(assemblyType);
+    bytes memory _dynamicData = encodeDynamic(assemblyType);
 
     return (_staticData, _encodedLengths, _dynamicData);
   }

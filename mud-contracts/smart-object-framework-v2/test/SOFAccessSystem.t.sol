@@ -560,8 +560,9 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(this)));
     entitySystem.deleteClass(classId);
 
-    // success, direct caller is a class access role member
+    // revert, even if direct caller is a class access role member
     vm.prank(deployer);
+    vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, deployer));
     entitySystem.deleteClass(classId);
   }
 
@@ -910,12 +911,12 @@ contract SOFAccessSystemTest is MudTest {
       sOFAccessSystem.toResourceId(),
       ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector
     );
-    // set allowDirectClassAccessRoleOnly for deleteClass
+    // set noAllowances for deleteClass
     accessConfigSystem.configureAccess(
       entitySystem.toResourceId(),
       IEntitySystem.deleteClass.selector,
       sOFAccessSystem.toResourceId(),
-      ISOFAccessSystem.allowDirectClassAccessRoleOnly.selector
+      ISOFAccessSystem.noAllowances.selector
     );
     // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for instantiate
     accessConfigSystem.configureAccess(

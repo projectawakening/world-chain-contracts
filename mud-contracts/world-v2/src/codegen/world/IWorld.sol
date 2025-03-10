@@ -8,16 +8,17 @@ import { IAccessSystem } from "./IAccessSystem.sol";
 import { IDeployableSystem } from "./IDeployableSystem.sol";
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
 import { IFuelSystem } from "./IFuelSystem.sol";
+import { IEphemeralInteractSystem } from "./IEphemeralInteractSystem.sol";
 import { IEphemeralInventorySystem } from "./IEphemeralInventorySystem.sol";
 import { IInventoryInteractSystem } from "./IInventoryInteractSystem.sol";
 import { IInventorySystem } from "./IInventorySystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
+import { IOwnershipSystem } from "./IOwnershipSystem.sol";
 import { ISmartAssemblySystem } from "./ISmartAssemblySystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
 import { ISmartGateSystem } from "./ISmartGateSystem.sol";
 import { ISmartStorageUnitSystem } from "./ISmartStorageUnitSystem.sol";
 import { ISmartTurretSystem } from "./ISmartTurretSystem.sol";
-import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
 /**
  * @title IWorld
@@ -32,14 +33,15 @@ interface IWorld is
   IDeployableSystem,
   IEntityRecordSystem,
   IFuelSystem,
+  IEphemeralInteractSystem,
   IEphemeralInventorySystem,
   IInventoryInteractSystem,
   IInventorySystem,
   ILocationSystem,
+  IOwnershipSystem,
   ISmartAssemblySystem,
   ISmartCharacterSystem,
   ISmartGateSystem,
   ISmartStorageUnitSystem,
-  ISmartTurretSystem,
-  IStaticDataSystem
+  ISmartTurretSystem
 {}

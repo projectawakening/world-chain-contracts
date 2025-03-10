@@ -1,45 +1,48 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
-import { InventoryUtils } from "../inventory/InventoryUtils.sol";
+
+// Local namespace system imports
 import { inventoryInteractSystem } from "../../codegen/systems/InventoryInteractSystemLib.sol";
+import { ephemeralInteractSystem } from "../../codegen/systems/EphemeralInteractSystemLib.sol";
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 
 contract AccessSystem is SmartObjectFramework {
   error Access_NotAdmin(address caller);
   error Access_NotDeployableOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanWithdrawFromInventory(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanDepositToInventory(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCanTransferFromEphemeral(address caller, uint256 smartObjectId);
   error Access_NotDeployableOwnerOrInventoryInteractSystem(address caller, uint256 smartObjectId);
   error Access_NotInventoryAdmin(address caller, uint256 smartObjectId);
   error Access_NotAdminOrDeployableSystem(address caller, uint256 smartObjectId);
 
-  function onlyOwnerOrCanWithdrawFromInventory(uint256 smartObjectId, bytes memory data) public view {
-    if (isOwner(smartObjectId, _callMsgSender(1))) {
+  function onlyOwnerOrCanTransferToEphemeral(uint256 smartObjectId, bytes memory data) public view {
+    if (isOwner(smartObjectId, _callMsgSender())) {
       return;
     }
 
-    if (canWithdrawFromInventory(smartObjectId, _callMsgSender(1))) {
+    if (canTransferToEphemeral(smartObjectId, _callMsgSender())) {
       return;
     }
 
-    revert Access_NotOwnerOrCanWithdrawFromInventory(_callMsgSender(1), smartObjectId);
+    revert Access_NotOwnerOrCanTransferToEphemeral(_callMsgSender(), smartObjectId);
   }
 
-  function onlyOwnerOrCanDepositToInventory(uint256 smartObjectId, bytes memory data) public view {
-    if (isOwner(smartObjectId, _callMsgSender(1))) {
+  function onlyOwnerOrCanTransferFromEphemeral(uint256 smartObjectId, bytes memory data) public view {
+    if (isOwner(smartObjectId, _callMsgSender())) {
       return;
     }
 
-    if (canDepositToInventory(smartObjectId, _callMsgSender(1))) {
+    if (canTransferFromEphemeral(smartObjectId, _callMsgSender())) {
       return;
     }
 
-    revert Access_NotOwnerOrCanDepositToInventory(_callMsgSender(1), smartObjectId);
+    revert Access_NotOwnerOrCanTransferFromEphemeral(_callMsgSender(), smartObjectId);
   }
 
   function onlyDeployableOwner(uint256 smartObjectId, bytes memory data) public view {
@@ -82,14 +85,6 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotDeployableOwnerOrInventoryInteractSystem(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyInventoryAdmin(uint256 smartObjectId, bytes memory data) public view {
-    if (isInventoryAdmin(smartObjectId, _callMsgSender(1))) {
-      return;
-    }
-
-    revert Access_NotInventoryAdmin(_callMsgSender(1), smartObjectId);
-  }
-
   function onlyAdminOrDeployableSystem(uint256 smartObjectId, bytes memory data) public view {
     if (isAdmin(_callMsgSender(1))) {
       return;
@@ -108,17 +103,22 @@ contract AccessSystem is SmartObjectFramework {
   }
 
   function isOwner(uint256 smartObjectId, address caller) public view returns (bool) {
-    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId));
-    return HasRole.getIsMember(ownerRole, caller);
+    address owner = ownershipSystem.owner(smartObjectId);
+    return caller == owner;
   }
 
-  function canWithdrawFromInventory(uint256 smartObjectId, address caller) public view returns (bool) {
-    bytes32 accessRole = InventoryUtils.getInventoryToEphemeralTransferAccessRole(smartObjectId);
+  function canTransferFromEphemeral(uint256 smartObjectId, address caller) public view returns (bool) {
+    bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_FROM_EPHEMERAL_ROLE", smartObjectId));
     return HasRole.getIsMember(accessRole, caller);
   }
 
-  function canDepositToInventory(uint256 smartObjectId, address caller) public view returns (bool) {
-    bytes32 accessRole = InventoryUtils.getEphemeralToInventoryTransferAccessRole(smartObjectId);
+  function canTransferToEphemeral(uint256 smartObjectId, address caller) public view returns (bool) {
+    bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_TO_EPHEMERAL_ROLE", smartObjectId));
+    return HasRole.getIsMember(accessRole, caller);
+  }
+
+  function canTransferToInventory(uint256 smartObjectId, address caller) public view returns (bool) {
+    bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_TO_INVENTORY_ROLE", smartObjectId));
     return HasRole.getIsMember(accessRole, caller);
   }
 
@@ -126,9 +126,8 @@ contract AccessSystem is SmartObjectFramework {
     return caller == inventoryInteractSystem.getAddress();
   }
 
-  function isInventoryAdmin(uint256 smartObjectId, address caller) public view returns (bool) {
-    bytes32 adminAccessRole = InventoryUtils.getAdminAccessRole(smartObjectId);
-    return HasRole.getIsMember(adminAccessRole, caller);
+  function isEphemeralInteractSystem(address caller) public view returns (bool) {
+    return caller == ephemeralInteractSystem.getAddress();
   }
 
   function isDeployableSystem(address caller) public view returns (bool) {

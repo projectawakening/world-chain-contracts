@@ -16,16 +16,16 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct ItemTransferOffchainData {
+struct ItemTransferData {
   address previousOwner;
   address currentOwner;
   uint256 quantity;
   uint256 updatedAt;
 }
 
-library ItemTransferOffchain {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "ItemTransferOffc", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004974656d5472616e736665724f666663);
+library ItemTransfer {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "ItemTransfer", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004974656d5472616e7366657200000000);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0068040014142020000000000000000000000000000000000000000000000000);
@@ -42,7 +42,7 @@ library ItemTransferOffchain {
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](2);
     keyNames[0] = "smartObjectId";
-    keyNames[1] = "inventoryItemId";
+    keyNames[1] = "itemObjectId";
   }
 
   /**
@@ -74,13 +74,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get previousOwner.
    */
-  function getPreviousOwner(
-    uint256 smartObjectId,
-    uint256 inventoryItemId
-  ) internal view returns (address previousOwner) {
+  function getPreviousOwner(uint256 smartObjectId, uint256 itemObjectId) internal view returns (address previousOwner) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -91,11 +88,11 @@ library ItemTransferOffchain {
    */
   function _getPreviousOwner(
     uint256 smartObjectId,
-    uint256 inventoryItemId
+    uint256 itemObjectId
   ) internal view returns (address previousOwner) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -104,10 +101,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set previousOwner.
    */
-  function setPreviousOwner(uint256 smartObjectId, uint256 inventoryItemId, address previousOwner) internal {
+  function setPreviousOwner(uint256 smartObjectId, uint256 itemObjectId, address previousOwner) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((previousOwner)), _fieldLayout);
   }
@@ -115,10 +112,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set previousOwner.
    */
-  function _setPreviousOwner(uint256 smartObjectId, uint256 inventoryItemId, address previousOwner) internal {
+  function _setPreviousOwner(uint256 smartObjectId, uint256 itemObjectId, address previousOwner) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((previousOwner)), _fieldLayout);
   }
@@ -126,13 +123,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get currentOwner.
    */
-  function getCurrentOwner(
-    uint256 smartObjectId,
-    uint256 inventoryItemId
-  ) internal view returns (address currentOwner) {
+  function getCurrentOwner(uint256 smartObjectId, uint256 itemObjectId) internal view returns (address currentOwner) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -141,13 +135,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get currentOwner.
    */
-  function _getCurrentOwner(
-    uint256 smartObjectId,
-    uint256 inventoryItemId
-  ) internal view returns (address currentOwner) {
+  function _getCurrentOwner(uint256 smartObjectId, uint256 itemObjectId) internal view returns (address currentOwner) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (address(bytes20(_blob)));
@@ -156,10 +147,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set currentOwner.
    */
-  function setCurrentOwner(uint256 smartObjectId, uint256 inventoryItemId, address currentOwner) internal {
+  function setCurrentOwner(uint256 smartObjectId, uint256 itemObjectId, address currentOwner) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((currentOwner)), _fieldLayout);
   }
@@ -167,10 +158,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set currentOwner.
    */
-  function _setCurrentOwner(uint256 smartObjectId, uint256 inventoryItemId, address currentOwner) internal {
+  function _setCurrentOwner(uint256 smartObjectId, uint256 itemObjectId, address currentOwner) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((currentOwner)), _fieldLayout);
   }
@@ -178,10 +169,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get quantity.
    */
-  function getQuantity(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 quantity) {
+  function getQuantity(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 quantity) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -190,10 +181,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get quantity.
    */
-  function _getQuantity(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 quantity) {
+  function _getQuantity(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 quantity) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -202,10 +193,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set quantity.
    */
-  function setQuantity(uint256 smartObjectId, uint256 inventoryItemId, uint256 quantity) internal {
+  function setQuantity(uint256 smartObjectId, uint256 itemObjectId, uint256 quantity) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((quantity)), _fieldLayout);
   }
@@ -213,10 +204,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set quantity.
    */
-  function _setQuantity(uint256 smartObjectId, uint256 inventoryItemId, uint256 quantity) internal {
+  function _setQuantity(uint256 smartObjectId, uint256 itemObjectId, uint256 quantity) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((quantity)), _fieldLayout);
   }
@@ -224,10 +215,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get updatedAt.
    */
-  function getUpdatedAt(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 updatedAt) {
+  function getUpdatedAt(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 updatedAt) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -236,10 +227,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get updatedAt.
    */
-  function _getUpdatedAt(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 updatedAt) {
+  function _getUpdatedAt(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 updatedAt) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -248,10 +239,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set updatedAt.
    */
-  function setUpdatedAt(uint256 smartObjectId, uint256 inventoryItemId, uint256 updatedAt) internal {
+  function setUpdatedAt(uint256 smartObjectId, uint256 itemObjectId, uint256 updatedAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((updatedAt)), _fieldLayout);
   }
@@ -259,10 +250,10 @@ library ItemTransferOffchain {
   /**
    * @notice Set updatedAt.
    */
-  function _setUpdatedAt(uint256 smartObjectId, uint256 inventoryItemId, uint256 updatedAt) internal {
+  function _setUpdatedAt(uint256 smartObjectId, uint256 itemObjectId, uint256 updatedAt) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((updatedAt)), _fieldLayout);
   }
@@ -270,13 +261,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get the full data.
    */
-  function get(
-    uint256 smartObjectId,
-    uint256 inventoryItemId
-  ) internal view returns (ItemTransferOffchainData memory _table) {
+  function get(uint256 smartObjectId, uint256 itemObjectId) internal view returns (ItemTransferData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -289,13 +277,10 @@ library ItemTransferOffchain {
   /**
    * @notice Get the full data.
    */
-  function _get(
-    uint256 smartObjectId,
-    uint256 inventoryItemId
-  ) internal view returns (ItemTransferOffchainData memory _table) {
+  function _get(uint256 smartObjectId, uint256 itemObjectId) internal view returns (ItemTransferData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -310,7 +295,7 @@ library ItemTransferOffchain {
    */
   function set(
     uint256 smartObjectId,
-    uint256 inventoryItemId,
+    uint256 itemObjectId,
     address previousOwner,
     address currentOwner,
     uint256 quantity,
@@ -323,7 +308,7 @@ library ItemTransferOffchain {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -333,7 +318,7 @@ library ItemTransferOffchain {
    */
   function _set(
     uint256 smartObjectId,
-    uint256 inventoryItemId,
+    uint256 itemObjectId,
     address previousOwner,
     address currentOwner,
     uint256 quantity,
@@ -346,7 +331,7 @@ library ItemTransferOffchain {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -354,7 +339,7 @@ library ItemTransferOffchain {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, uint256 inventoryItemId, ItemTransferOffchainData memory _table) internal {
+  function set(uint256 smartObjectId, uint256 itemObjectId, ItemTransferData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.previousOwner,
       _table.currentOwner,
@@ -367,7 +352,7 @@ library ItemTransferOffchain {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -375,7 +360,7 @@ library ItemTransferOffchain {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, uint256 inventoryItemId, ItemTransferOffchainData memory _table) internal {
+  function _set(uint256 smartObjectId, uint256 itemObjectId, ItemTransferData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.previousOwner,
       _table.currentOwner,
@@ -388,7 +373,7 @@ library ItemTransferOffchain {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -418,17 +403,17 @@ library ItemTransferOffchain {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (ItemTransferOffchainData memory _table) {
+  ) internal pure returns (ItemTransferData memory _table) {
     (_table.previousOwner, _table.currentOwner, _table.quantity, _table.updatedAt) = decodeStatic(_staticData);
   }
 
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 smartObjectId, uint256 inventoryItemId) internal {
+  function deleteRecord(uint256 smartObjectId, uint256 itemObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -436,10 +421,10 @@ library ItemTransferOffchain {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 smartObjectId, uint256 inventoryItemId) internal {
+  function _deleteRecord(uint256 smartObjectId, uint256 itemObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -480,10 +465,10 @@ library ItemTransferOffchain {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 smartObjectId, uint256 inventoryItemId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId, uint256 itemObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     return _keyTuple;
   }

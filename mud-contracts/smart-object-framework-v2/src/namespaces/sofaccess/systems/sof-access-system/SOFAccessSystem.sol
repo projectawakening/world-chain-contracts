@@ -257,6 +257,21 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
     revert SOFAccess_AccessDenied(entityId, msgSender);
   }
 
+    /**
+   * @notice Blocks all calls
+   * @param entityId The ID of the entity (class or object) to check
+   * @param targetCallData The calldata of the target function
+   * @dev Handles calls to EntitySystem.deleteClass, currently there are too many un-resolved data dependencies to allow for any access to this function
+   */
+  function noAllowances(uint256 entityId, bytes memory targetCallData) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (,, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
+
+    revert SOFAccess_AccessDenied(entityId, msgSender);
+  }
+
   function _getClassId(uint256 entityId) private view returns (uint256) {
     uint256 classId;
     if (entityId != 0) {

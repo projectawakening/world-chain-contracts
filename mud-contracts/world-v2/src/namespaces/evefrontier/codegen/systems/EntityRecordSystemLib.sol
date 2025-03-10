@@ -37,20 +37,20 @@ struct RootCallWrapper {
 library EntityRecordSystemLib {
   error EntityRecordSystemLib_CallingFromRootSystem();
 
-  function createEntityRecord(
+  function create(
     EntityRecordSystemType self,
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createEntityRecord(smartObjectId, entityRecordParams);
+    return CallWrapper(self.toResourceId(), address(0)).create(smartObjectId, entityRecordParams);
   }
 
-  function createEntityRecordMetadata(
+  function createMetadata(
     EntityRecordSystemType self,
     uint256 smartObjectId,
     EntityMetadata memory entityRecordMetadata
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createEntityRecordMetadata(smartObjectId, entityRecordMetadata);
+    return CallWrapper(self.toResourceId(), address(0)).createMetadata(smartObjectId, entityRecordMetadata);
   }
 
   function setName(EntityRecordSystemType self, uint256 smartObjectId, string memory name) internal {
@@ -65,7 +65,7 @@ library EntityRecordSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).setDescription(smartObjectId, description);
   }
 
-  function createEntityRecord(
+  function create(
     CallWrapper memory self,
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
@@ -74,7 +74,7 @@ library EntityRecordSystemLib {
     if (address(_world()) == address(this)) revert EntityRecordSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createEntityRecord_uint256_EntityRecordParams.createEntityRecord,
+      _create_uint256_EntityRecordParams.create,
       (smartObjectId, entityRecordParams)
     );
     self.from == address(0)
@@ -82,7 +82,7 @@ library EntityRecordSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function createEntityRecordMetadata(
+  function createMetadata(
     CallWrapper memory self,
     uint256 smartObjectId,
     EntityMetadata memory entityRecordMetadata
@@ -91,7 +91,7 @@ library EntityRecordSystemLib {
     if (address(_world()) == address(this)) revert EntityRecordSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createEntityRecordMetadata_uint256_EntityMetadata.createEntityRecordMetadata,
+      _createMetadata_uint256_EntityMetadata.createMetadata,
       (smartObjectId, entityRecordMetadata)
     );
     self.from == address(0)
@@ -132,25 +132,25 @@ library EntityRecordSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function createEntityRecord(
+  function create(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createEntityRecord_uint256_EntityRecordParams.createEntityRecord,
+      _create_uint256_EntityRecordParams.create,
       (smartObjectId, entityRecordParams)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function createEntityRecordMetadata(
+  function createMetadata(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     EntityMetadata memory entityRecordMetadata
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createEntityRecordMetadata_uint256_EntityMetadata.createEntityRecordMetadata,
+      _createMetadata_uint256_EntityMetadata.createMetadata,
       (smartObjectId, entityRecordMetadata)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -212,12 +212,12 @@ library EntityRecordSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createEntityRecord_uint256_EntityRecordParams {
-  function createEntityRecord(uint256 smartObjectId, EntityRecordParams memory entityRecordParams) external;
+interface _create_uint256_EntityRecordParams {
+  function create(uint256 smartObjectId, EntityRecordParams memory entityRecordParams) external;
 }
 
-interface _createEntityRecordMetadata_uint256_EntityMetadata {
-  function createEntityRecordMetadata(uint256 smartObjectId, EntityMetadata memory entityRecordMetadata) external;
+interface _createMetadata_uint256_EntityMetadata {
+  function createMetadata(uint256 smartObjectId, EntityMetadata memory entityRecordMetadata) external;
 }
 
 interface _setName_uint256_string {

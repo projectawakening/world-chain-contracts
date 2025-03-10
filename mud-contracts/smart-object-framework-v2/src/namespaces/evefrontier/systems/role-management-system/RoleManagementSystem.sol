@@ -35,9 +35,8 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
    *   flag under the `role` key. NOTE: If `role` and `admin` are identical, then creates self-administered role
    * @param role The identifier for the new role
    * @param admin The identifier for the admin role
-   * @param singleton The singleton flag for the role, identifies if the role should enforce single account membership
    */
-  function createRole(bytes32 role, bytes32 admin, bool singleton) external context {
+  function createRole(bytes32 role, bytes32 admin) external context {
     if (role == bytes32(0) || admin == bytes32(0)) {
       revert RoleManagement_InvalidRole();
     }
@@ -47,11 +46,11 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
     }
 
     if (role == admin) {
-      _createRole(role, admin, singleton);
+      _createRole(role, admin);
       _grantRole(role, _callMsgSender(1));
     } else {
       _checkRole(admin, _callMsgSender(1));
-      _createRole(role, admin, singleton);
+      _createRole(role, admin);
     }
   }
 
@@ -136,15 +135,13 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
    * @param role The identifier for the new role
    * @param admin The identifier for the admin role
    * @param roleMember The address of the role member to grant membership to
-   * @param singleton The singleton flag for the role, identifies if the role should enforce single account membership
    * @dev access configuration - only callable by EntitySystem or a Class scoped System of `entityId` (see EntitySyste.registerClass, EntitySystem.scopedRegisterClass, SOFAccessSystem.allowEntitySystemOrClassScoped)
    */
   function scopedCreateRole(
     uint256 entityId,
     bytes32 role,
     bytes32 admin,
-    address roleMember,
-    bool singleton
+    address roleMember
   ) external context access(entityId) {
     if (role == bytes32(0) || admin == bytes32(0)) {
       revert RoleManagement_InvalidRole();
@@ -158,11 +155,11 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
       if (roleMember == address(0)) {
         revert RoleManagement_InvalidRoleMember();
       }
-      _createRole(role, admin, singleton);
+      _createRole(role, admin);
       _grantRole(role, roleMember);
     } else {
       _checkRole(admin, _callMsgSender(1));
-      _createRole(role, admin, singleton);
+      _createRole(role, admin);
     }
   }
 
@@ -254,10 +251,9 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
    * @dev Internal role creation logic
    * @param role Role to create
    * @param admin Admin role to assign
-   * @param singleton The singleton flag for the role, identifies if the role should enforce single account membership
    */
-  function _createRole(bytes32 role, bytes32 admin, bool singleton) internal virtual {
-    Role.set(role, true, singleton, bytes32(0), new address[](0));
+  function _createRole(bytes32 role, bytes32 admin) internal virtual {
+    Role.set(role, true, bytes32(0), new address[](0));
 
     _setRoleAdmin(role, admin);
   }
@@ -290,10 +286,6 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
    */
   function _grantRole(bytes32 role, address account) internal virtual {
     uint256 lengthMembers = Role.lengthMembers(role);
-
-    if (Role.getIsSingleton(role) && lengthMembers != 0) {
-      revert RoleManagement_SingletonRoleAlreadyHasMember(role);
-    }
     
     if (!HasRole.getIsMember(role, account)) {
       HasRole.set(role, account, true, lengthMembers);

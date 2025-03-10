@@ -8,10 +8,10 @@ pragma solidity >=0.8.24;
  * @param volume the volume of the in-game entity
  */
 struct EntityRecordParams {
+  bytes32 tenantId;
   uint256 typeId;
   uint256 itemId;
   uint256 volume;
-  string tenantId;
 }
 
 /**

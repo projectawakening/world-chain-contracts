@@ -1,26 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
 
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { DeployableState } from "../../codegen/index.sol";
-import { SmartTurretConfig } from "../../codegen/index.sol";
-import { Characters } from "../../codegen/index.sol";
-import { State, SmartObjectData } from "../deployable/types.sol";
+// Local namespace tables
+import { DeployableState, SmartTurretConfig, Characters } from "../../codegen/index.sol";
+
+// Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
-import { DeployableSystemLib, deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
-import { EntityRecordData } from "../entity-record/types.sol";
-import { WorldPosition } from "../location/types.sol";
-import { LocationData } from "../../codegen/tables/Location.sol";
-import { TargetPriority, Turret, SmartTurretTarget } from "./types.sol";
+import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+
+// Types and parameters
+import { State, CreateAndAnchorParams } from "../deployable/types.sol";
+import { TargetPriority, Turret, SmartTurretTarget, AggressionParams } from "./types.sol";
 import { SMART_TURRET } from "../constants.sol";
-import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
-import { AggressionParams } from "./types.sol";
 
 contract SmartTurretSystem is SmartObjectFramework {
   error SmartTurret_NotConfigured(uint256 smartObjectId);
@@ -30,12 +30,12 @@ contract SmartTurretSystem is SmartObjectFramework {
    * @param params CreateAndAnchorDeployableParams
    */
   function createAndAnchorSmartTurret(
-    CreateAndAnchorDeployableParams memory params
+    CreateAndAnchorParams memory params
   ) public context access(params.smartObjectId) scope(getSmartTurretClassId()) {
     entitySystem.instantiate(getSmartTurretClassId(), params.smartObjectId, params.owner);
 
-    params.smartAssemblyType = SMART_TURRET;
-    deployableSystem.createAndAnchorDeployable(params);
+    params.assemblyType = SMART_TURRET;
+    deployableSystem.createAndAnchor(params);
   }
 
   /**

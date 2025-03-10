@@ -2,23 +2,32 @@
 
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
-
-import { Characters, CharacterToken } from "../../codegen/index.sol";
-import { CharactersByAddress } from "../../codegen/tables/CharactersByAddress.sol";
-import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
-import { EntityRecordParams, EntityMetadata } from "../entity-record/types.sol";
-
-import { EntityRecord } from "../../codegen/tables/EntityRecord.sol";
-import { EntityRecordSystemLib, entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
+import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
+import { EntityRelationValue, TAG_TYPE_ENTITY_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
+import { EntityTagMap, Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-contract SmartCharacterSystem is SmartObjectFramework {
-  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
-  error SmartCharacterDoesNotExist(uint256 characterId);
+// Local namespace tables
+import { Characters, CharactersByAccount, EntityRecord, Tenant } from "../../codegen/index.sol";
 
+// Local namespace systems
+import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
+import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+
+// Types and parameters
+import { EntityRecordParams, EntityMetadata } from "../entity-record/types.sol";
+
+contract SmartCharacterSystem is SmartObjectFramework {
+  error SmartCharacter_AlreadyCreated(address account, uint256 smartObjectId);
+  error SmartCharacterDoesNotExist(uint256 smartObjectId);
+  error SmartCharacter_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
+  error SmartCharacter_InvalidTypeId(uint256 smartObjectId, uint256 typeId);
+  error SmartCharacter_InvalidObjectId(uint256 smartObjectId);
   /**
    * @notice Create a new character
    * @param smartObjectId The ID of the character smart object
@@ -38,69 +47,32 @@ contract SmartCharacterSystem is SmartObjectFramework {
 
     // enforce one-to-one mapping between an account and a character
     // TODO: move this logic to character class hook enforcement
-    if (CharactersByAddress.getSmartObjectId(owner) != 0) {
+    if (CharactersByAccount.getSmartObjectId(owner) != 0) {
       revert SmartCharacter_AlreadyCreated(owner, smartObjectId);
     }
 
     // sanity checks
-    if (!Tenants.getExists(entityRecordParams.tenantId)) {
-      revert SmartCharacter_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
-    }
-    if (keccak256(abi.encodePacked(entityRecordParams.typeId)) != getSmartCharacterClassId()) {
+    if (uint256(keccak256(abi.encodePacked(entityRecordParams.typeId))) != getSmartCharacterClassId()) {
       revert SmartCharacter_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
     }
+    if (Tenant.get() != entityRecordParams.tenantId) {
+      revert SmartCharacter_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
+    }
     if (smartObjectId!= uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
-      revert SmartCharacter_InvalidSmartObjectId(smartObjectId);
+      revert SmartCharacter_InvalidObjectId(smartObjectId);
     }
 
+    // Instantiate the character object
     entitySystem.instantiate(getSmartCharacterClassId(), smartObjectId, owner);
-
-    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId)); // OWNER_ROLE tracks/manages object ownership
-    
-    if(!Role.getExists(ownerRole)) { // ownerRole has not been created, create it
-      roleManagementSystem.scopedCreateRole(
-        getSmartCharacterClassId(),
-        ownerRole,
-        ownerRole,
-        owner,
-        true
-      );
-    } else if(Role.lengthMembers(ownerRole) == 0) { // ownerRole has already been created, but has no members
-      if(Role.getAdmin(ownerRole) != ownerRole) { // ownerRole MUST be self-administered to start with
-        roleManagementSystem.scopedTransferRoleAdmin(
-          getSmartCharacterClassId(),
-          ownerRole,
-          ownerRole
-        );
-      }
-      roleManagementSystem.scopedGrantRole(
-        getSmartCharacterClassId(),
-        ownerRole,
-        owner
-      );
-    } else { // previously created ownerRole has members, start fresh
-      if(Role.getAdmin(ownerRole) != ownerRole) {
-        roleManagementSystem.scopedTransferRoleAdmin(
-          getSmartCharacterClassId(),
-          ownerRole,
-          ownerRole
-        );
-      }
-
-      roleManagementSystem.scopedRevokeAll(getSmartCharacterClassId(), ownerRole);
-      roleManagementSystem.scopedGrantRole(
-        getSmartCharacterClassId(),
-        ownerRole,
-        owner
-      );
-    }
-
-    Characters.set(smartObjectId, true,tribeId, createdAt);
-    CharactersByAddress.set(owner, smartObjectId);
-
-    //Save the entity record in EntityRecord Module
-    entityRecordSystem.createEntityRecord(smartObjectId, entityRecordParams);
-    entityRecordSystem.createEntityRecordMetadata(smartObjectId, entityRecordMetadata);
+    // Save the entity record in EntityRecord Table
+    entityRecordSystem.create(smartObjectId, entityRecordParams);
+    entityRecordSystem.createMetadata(smartObjectId, entityRecordMetadata);
+    // Save the character data in Characters Table
+    Characters.set(smartObjectId, true, tribeId, createdAt);
+    // Ascribe the character ownership data - using the singleton version
+    ownershipSystem.ascribeToAccount(smartObjectId, owner);
+    // Save the character reverse lookup in the CharactersByAccount Table
+    CharactersByAccount.set(owner, smartObjectId);
   }
 
   function updateTribeId(uint256 smartObjectId, uint256 tribeId) public context access(smartObjectId) scope(smartObjectId) {
@@ -111,17 +83,23 @@ contract SmartCharacterSystem is SmartObjectFramework {
   }
 
   function removeCharacter(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
-    if (Characters.getExists(smartObjectId) == false) {
+    if (!Characters.getExists(smartObjectId)) {
       revert SmartCharacterDoesNotExist(smartObjectId);
     }
-    bytes32 ownerRole = keccak256(abi.encodePacked("OWNER_ROLE", smartObjectId));
-    address owner = Role.getMembers(ownerRole)[0];
-
-    roleManagementSystem.scopedRevokeAll(getSmartCharacterClassId(), ownerRole);
-
+    
+    // Get the current owner before we delete records
+    address owner = ownershipSystem.owner(smartObjectId);
+    
+    // Delete the character reverse lookup in the CharactersByAccount Table
+    CharactersByAccount.deleteRecord(owner);
+    
+    // Annul the character ownership data using the singleton version
+    ownershipSystem.annulFromAccount(smartObjectId, owner);
+    
+    // Delete the character data in Characters Table
     Characters.deleteRecord(smartObjectId);
-    CharactersByAddress.deleteRecord(owner);
-
+    
+    // Delete the character object
     entitySystem.deleteObject(smartObjectId);
   }
 

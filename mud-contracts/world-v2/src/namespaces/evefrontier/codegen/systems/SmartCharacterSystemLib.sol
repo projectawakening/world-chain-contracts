@@ -36,8 +36,11 @@ struct RootCallWrapper {
  */
 library SmartCharacterSystemLib {
   error SmartCharacterSystemLib_CallingFromRootSystem();
-  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
-  error SmartCharacterDoesNotExist(uint256 characterId);
+  error SmartCharacter_AlreadyCreated(address account, uint256 smartObjectId);
+  error SmartCharacterDoesNotExist(uint256 smartObjectId);
+  error SmartCharacter_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
+  error SmartCharacter_InvalidTypeId(uint256 smartObjectId, uint256 typeId);
+  error SmartCharacter_InvalidObjectId(uint256 smartObjectId);
 
   function createCharacter(
     SmartCharacterSystemType self,

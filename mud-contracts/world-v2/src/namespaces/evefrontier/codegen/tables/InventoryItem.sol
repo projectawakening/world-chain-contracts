@@ -41,7 +41,7 @@ library InventoryItem {
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](2);
     keyNames[0] = "smartObjectId";
-    keyNames[1] = "inventoryItemId";
+    keyNames[1] = "itemObjectId";
   }
 
   /**
@@ -72,10 +72,10 @@ library InventoryItem {
   /**
    * @notice Get quantity.
    */
-  function getQuantity(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 quantity) {
+  function getQuantity(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 quantity) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -84,10 +84,10 @@ library InventoryItem {
   /**
    * @notice Get quantity.
    */
-  function _getQuantity(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 quantity) {
+  function _getQuantity(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 quantity) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -96,10 +96,10 @@ library InventoryItem {
   /**
    * @notice Set quantity.
    */
-  function setQuantity(uint256 smartObjectId, uint256 inventoryItemId, uint256 quantity) internal {
+  function setQuantity(uint256 smartObjectId, uint256 itemObjectId, uint256 quantity) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((quantity)), _fieldLayout);
   }
@@ -107,10 +107,10 @@ library InventoryItem {
   /**
    * @notice Set quantity.
    */
-  function _setQuantity(uint256 smartObjectId, uint256 inventoryItemId, uint256 quantity) internal {
+  function _setQuantity(uint256 smartObjectId, uint256 itemObjectId, uint256 quantity) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((quantity)), _fieldLayout);
   }
@@ -118,10 +118,10 @@ library InventoryItem {
   /**
    * @notice Get index.
    */
-  function getIndex(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 index) {
+  function getIndex(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 index) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -130,10 +130,10 @@ library InventoryItem {
   /**
    * @notice Get index.
    */
-  function _getIndex(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 index) {
+  function _getIndex(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 index) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -142,10 +142,10 @@ library InventoryItem {
   /**
    * @notice Set index.
    */
-  function setIndex(uint256 smartObjectId, uint256 inventoryItemId, uint256 index) internal {
+  function setIndex(uint256 smartObjectId, uint256 itemObjectId, uint256 index) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((index)), _fieldLayout);
   }
@@ -153,10 +153,10 @@ library InventoryItem {
   /**
    * @notice Set index.
    */
-  function _setIndex(uint256 smartObjectId, uint256 inventoryItemId, uint256 index) internal {
+  function _setIndex(uint256 smartObjectId, uint256 itemObjectId, uint256 index) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((index)), _fieldLayout);
   }
@@ -164,10 +164,10 @@ library InventoryItem {
   /**
    * @notice Get stateUpdate.
    */
-  function getStateUpdate(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 stateUpdate) {
+  function getStateUpdate(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 stateUpdate) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -176,10 +176,10 @@ library InventoryItem {
   /**
    * @notice Get stateUpdate.
    */
-  function _getStateUpdate(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (uint256 stateUpdate) {
+  function _getStateUpdate(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 stateUpdate) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -188,10 +188,10 @@ library InventoryItem {
   /**
    * @notice Set stateUpdate.
    */
-  function setStateUpdate(uint256 smartObjectId, uint256 inventoryItemId, uint256 stateUpdate) internal {
+  function setStateUpdate(uint256 smartObjectId, uint256 itemObjectId, uint256 stateUpdate) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((stateUpdate)), _fieldLayout);
   }
@@ -199,10 +199,10 @@ library InventoryItem {
   /**
    * @notice Set stateUpdate.
    */
-  function _setStateUpdate(uint256 smartObjectId, uint256 inventoryItemId, uint256 stateUpdate) internal {
+  function _setStateUpdate(uint256 smartObjectId, uint256 itemObjectId, uint256 stateUpdate) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((stateUpdate)), _fieldLayout);
   }
@@ -210,10 +210,10 @@ library InventoryItem {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId, uint256 inventoryItemId) internal view returns (InventoryItemData memory _table) {
+  function get(uint256 smartObjectId, uint256 itemObjectId) internal view returns (InventoryItemData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -226,13 +226,10 @@ library InventoryItem {
   /**
    * @notice Get the full data.
    */
-  function _get(
-    uint256 smartObjectId,
-    uint256 inventoryItemId
-  ) internal view returns (InventoryItemData memory _table) {
+  function _get(uint256 smartObjectId, uint256 itemObjectId) internal view returns (InventoryItemData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -247,7 +244,7 @@ library InventoryItem {
    */
   function set(
     uint256 smartObjectId,
-    uint256 inventoryItemId,
+    uint256 itemObjectId,
     uint256 quantity,
     uint256 index,
     uint256 stateUpdate
@@ -259,7 +256,7 @@ library InventoryItem {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -269,7 +266,7 @@ library InventoryItem {
    */
   function _set(
     uint256 smartObjectId,
-    uint256 inventoryItemId,
+    uint256 itemObjectId,
     uint256 quantity,
     uint256 index,
     uint256 stateUpdate
@@ -281,7 +278,7 @@ library InventoryItem {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -289,7 +286,7 @@ library InventoryItem {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, uint256 inventoryItemId, InventoryItemData memory _table) internal {
+  function set(uint256 smartObjectId, uint256 itemObjectId, InventoryItemData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.quantity, _table.index, _table.stateUpdate);
 
     EncodedLengths _encodedLengths;
@@ -297,7 +294,7 @@ library InventoryItem {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -305,7 +302,7 @@ library InventoryItem {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, uint256 inventoryItemId, InventoryItemData memory _table) internal {
+  function _set(uint256 smartObjectId, uint256 itemObjectId, InventoryItemData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.quantity, _table.index, _table.stateUpdate);
 
     EncodedLengths _encodedLengths;
@@ -313,7 +310,7 @@ library InventoryItem {
 
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -348,10 +345,10 @@ library InventoryItem {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 smartObjectId, uint256 inventoryItemId) internal {
+  function deleteRecord(uint256 smartObjectId, uint256 itemObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -359,10 +356,10 @@ library InventoryItem {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 smartObjectId, uint256 inventoryItemId) internal {
+  function _deleteRecord(uint256 smartObjectId, uint256 itemObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -397,10 +394,10 @@ library InventoryItem {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 smartObjectId, uint256 inventoryItemId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId, uint256 itemObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
-    _keyTuple[1] = bytes32(uint256(inventoryItemId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     return _keyTuple;
   }

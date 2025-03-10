@@ -21,23 +21,49 @@ export default defineWorld({
     evefrontier: {
       tables: {
         /***************************
-         * SMART ASSEMBLY TABLE *
+         * OWNERSHIP TABLES *
          ***************************/
-        /**
-         * Used to store the assembly typeof a smart object
-         */
-        SmartAssembly: {
+        WorldOwnership: {
           schema: {
             smartObjectId: "uint256",
-            smartAssemblyId: "uint256",
-            smartAssemblyType: "string",
+            quantity: "uint256",
           },
           key: ["smartObjectId"],
         },
-
+        AccountOwnership: {
+          schema: {
+            smartObjectId: "uint256",
+            account: "address",
+            quantity: "uint256",
+          },
+          key: ["smartObjectId", "account"],
+        },
+        OwnershipByObject: {
+          schema: {
+            smartObjectId: "uint256",
+            account: "address",
+          },
+          key: ["smartObjectId"],
+        },
+        InventoryByItem: {
+          schema: {
+            itemObjectId: "uint256",
+            inventoryId: "uint256",
+          },
+          key: ["itemObjectId"],
+        },
         /**********************
          * ENTITY RECORD TABLES *
          **********************/
+        /**
+         * Used to store the allowed tenantId assignable a smart object being created in this World
+         */
+        Tenant: {
+          schema: {
+            tenantId: "bytes32",
+          }, 
+          key: [],
+        },
         /**
          * Used to create a record which holds important game related data for an entity onchain
          * Singleton entities are treated as objects, OBJECT smartObjectIds are calculated as `objectId = uint256(keccak256(abi.encodePacked(<game-tenantID-as-utf8-string>, <game-itemID-as-uint256>)))`
@@ -47,10 +73,10 @@ export default defineWorld({
           schema: {
             smartObjectId: "uint256",
             exists: "bool",
+            tenantId: "bytes32",
             itemId: "uint256",
             typeId: "uint256",
             volume: "uint256",
-            tenantId: "string",
           },
           key: ["smartObjectId"],
         },
@@ -63,12 +89,27 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
+        /***************************
+         * SMART ASSEMBLY TABLE *
+         ***************************/
+        /**
+         * Used to store the assembly typeof a smart object
+         */
+        SmartAssembly: {
+          schema: {
+            smartObjectId: "uint256",
+            assemblyId: "uint256",
+            assemblyType: "string",
+          },
+          key: ["smartObjectId"],
+        },
         /*************************
-         * SMART CHARACTER TABLE *
+         * SMART CHARACTER TABLES *
          *************************/
         Characters: {
           schema: {
             smartObjectId: "uint256",
+            exists: "bool",
             tribeId: "uint256",
             createdAt: "uint256",
           },
@@ -84,7 +125,6 @@ export default defineWorld({
         /*******************
          * LOCATION TABLE *
          *******************/
-
         /**
          * Used to store the location of a in-game entity in the solar system
          */
@@ -98,7 +138,6 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         /***************************
          * DEPLOYABLE TABLES *
          ***************************/
@@ -131,9 +170,8 @@ export default defineWorld({
           key: ["smartObjectId"],
         },
         /*******************
-         * FUEL TABLES *
+         * FUEL TABLE *
          *******************/
-
         /**
          * Used to store the fuel balance of a Deployable
          */
@@ -148,7 +186,6 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         /*******************
          * INVENTORY TABLES *
          *******************/
@@ -162,19 +199,36 @@ export default defineWorld({
           key: ["smartObjectId"],
         },
         /**
-         * Used to store the inventory items of a in-game smart storage unit
+         * Used to store the inventory item entries of a smart object's inventory
          */
         InventoryItem: {
           schema: {
             smartObjectId: "uint256",
-            inventoryItemId: "uint256",
+            itemObjectId: "uint256",
             quantity: "uint256",
             index: "uint256",
             stateUpdate: "uint256",
           },
-          key: ["smartObjectId", "inventoryItemId"],
+          key: ["smartObjectId", "itemObjectId"],
         },
-        //EPHEMERAL INVENTORY MODULE
+        /**
+         * Used to store the transfer details when a item is exchanged between its primary inventory and an associatedephemeral inventory
+         */
+        ObjectItemTransfer: {
+          schema: {
+            smartObjectId: "uint256",
+            itemObjectId: "uint256",
+            toObjectId: "uint256",
+            previousOwner: "address",
+            currentOwner: "address",
+            quantity: "uint256",
+            updatedAt: "uint256",
+          },
+          key: ["smartObjectId", "itemObjectId"],
+        },
+        /*******************
+         * EPHEMERAL INVENTORY TABLES *
+         *******************/
         /**
          * Used to Store Ephemeral Capacity by smartObjectId
          */
@@ -185,49 +239,29 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        /**
-         * Used to store the ephemeral inventory details of a in-game smart storage unit
-         * Each user has a separate ephemeral inventory capacity
-         */
-        EphemeralInv: {
+        ObjectByEphemeral: {
           schema: {
+            ephemeralSmartObjectId: "uint256",
             smartObjectId: "uint256",
-            ephemeralInvOwner: "address",
-            usedCapacity: "uint256",
-            items: "uint256[]",
           },
-          key: ["smartObjectId", "ephemeralInvOwner"],
+          key: ["ephemeralSmartObjectId"],
         },
         /**
-         * Used to store the ephemeral inventory items details of a in-game smart storage unit
+         * Used to store the transfer details when a item is exchanged between its primary inventory and an associatedephemeral inventory
          */
-        EphemeralInvItem: {
+        ItemTransfer: {
           schema: {
             smartObjectId: "uint256",
-            inventoryItemId: "uint256",
-            ephemeralInvOwner: "address",
-            quantity: "uint256",
-            index: "uint256",
-            stateUpdate: "uint256",
-          },
-          key: ["smartObjectId", "inventoryItemId", "ephemeralInvOwner"],
-        },
-        /**
-         * Used to store the transfer details when a item is exchanged
-         */
-        ItemTransferOffchain: {
-          schema: {
-            smartObjectId: "uint256",
-            inventoryItemId: "uint256",
+            itemObjectId: "uint256",
             previousOwner: "address",
             currentOwner: "address",
             quantity: "uint256",
             updatedAt: "uint256",
           },
-          key: ["smartObjectId", "inventoryItemId"],
+          key: ["smartObjectId", "itemObjectId"],
         },
         /*************************
-         * SMART TURRET TABLES *
+         * SMART TURRET TABLE *
          *************************/
         SmartTurretConfig: {
           schema: {
@@ -236,9 +270,8 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         /*************************
-         * SMART GATE TABLES *
+         * SMART GATE TABLE *
          *************************/
         SmartGateConfig: {
           schema: {
@@ -248,7 +281,6 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         SmartGateLink: {
           schema: {
             sourceGateId: "uint256",

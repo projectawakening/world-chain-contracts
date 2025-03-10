@@ -11,15 +11,9 @@ import { EntityRecordParams, EntityMetadata } from "../../namespaces/evefrontier
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IEntityRecordSystem {
-  function evefrontier__createEntityRecord(
-    uint256 smartObjectId,
-    EntityRecordParams memory entityRecordParams
-  ) external;
+  function evefrontier__create(uint256 smartObjectId, EntityRecordParams memory entityRecordParams) external;
 
-  function evefrontier__createEntityRecordMetadata(
-    uint256 smartObjectId,
-    EntityMetadata memory entityRecordMetadata
-  ) external;
+  function evefrontier__createMetadata(uint256 smartObjectId, EntityMetadata memory entityRecordMetadata) external;
 
   function evefrontier__setName(uint256 smartObjectId, string memory name) external;
 
