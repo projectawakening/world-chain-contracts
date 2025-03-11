@@ -3,598 +3,752 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-// import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { World } from "@latticexyz/world/src/World.sol";
+import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
-// import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// Smart Object Framework imports
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-// import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
-// import { Inventory, InventoryData } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
-// import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
-// import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
+// Local namespace tables
+import { 
+  GlobalDeployableState, 
+  Inventory, 
+  Tenant, 
+  EntityRecord, 
+  DeployableState, 
+  DeployableStateData, 
+  InventoryItemData, 
+  InventoryItem,
+  InventoryByItem,
+  EphemeralInvCapacity
+} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { State } from "../../src/codegen/common.sol";
 
-// import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-// import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-// import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
-// import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
-// import { InventoryItem } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
+// Local namespace systems
+import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
+import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
+import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
+import { ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+import { inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 
-// import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
-// import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
-// import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-// import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-// import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+// Types and parameters
+import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { InventoryItemParams, CreateInventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
+import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
-// import { State } from "../../src/codegen/common.sol";
-// import { Initialize } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { System } from "@latticexyz/world/src/System.sol";
+import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
+import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
+import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
+
+// Create a mock system to properly test system-to-system calls
+contract MockInventoryInteractSystem is System {
+  // Calls from this mock will have callCount > 1
+  // Call the inventory system deposit function
+  function callInventoryDeposit(uint256 targetInventoryId, InventoryItemParams[] memory items) public {
+    inventorySystem.depositInventory(targetInventoryId, items);
+  }
+  // Call the inventory system withdraw function
+    function callInventoryWithdraw(uint256 targetInventoryId, InventoryItemParams[] memory items) public {
+      inventorySystem.withdrawInventory(targetInventoryId, items);
+    }
+}
 
 contract InventoryTest is MudTest {
-  // // Inventory variables
-  // InventoryItem item1;
-  // InventoryItem item2;
-  // InventoryItem item3;
-  // InventoryItem item4;
-  // InventoryItem item5;
-  // InventoryItem item6;
-  // InventoryItem item7;
-  // InventoryItem item8;
-  // InventoryItem item9;
-  // InventoryItem item10;
-  // InventoryItem item11;
-  // InventoryItem item12;
-
-  // uint256 smartObjectId;
-  // uint256 characterId;
-  // uint256 ephCharacterId;
-  // uint256 tribeId;
-  // EntityRecordData charEntityRecordData;
-  // EntityRecordData ephCharEntityRecordData;
-  // EntityMetadata characterMetadata;
-  // string tokenCID;
-  // uint256 inventoryItemClassId;
-
-  // string mnemonic = "test test test test test test test test test test test junk";
-  // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-  // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
-  // address bob = vm.addr(vm.deriveKey(mnemonic, 3));
-
-  // function setUp() public virtual override {
-  //   super.setUp();
-  //   vm.startPrank(deployer);
-
-  //   smartObjectId = 1234;
-  //   characterId = 1111;
-  //   ephCharacterId = 1111;
-  //   tribeId = 1122;
-  //   charEntityRecordData = EntityRecordParams({ typeId: 2345, itemId: 1234, volume: 0 });
-  //   ephCharEntityRecordData = EntityRecordParams({ typeId: 2345, itemId: 1234, volume: 0 });
-  //   characterMetadata = EntityMetadata({
-  //     name: "Albus Demunster",
-  //     dappURL: "https://www.my-tribe-website.com",
-  //     description: "The top hunter-seeker in the Frontier."
-  //   });
-  //   tokenCID = "Qm1234abcdxxxx";
-
-  //   // create SSU Inventory Owner character
-  //   smartCharacterSystem.createCharacter(characterId, alice, tribeId, charEntityRecordData, characterMetadata);
-
-    // item1 = InventoryItem(4235, alice, 4235, 12, 100, 1);
-    // item2 = InventoryItem(4236, alice, 4236, 12, 200, 1);
-    // item3 = InventoryItem(4237, alice, 4237, 12, 300, 1);
-    // item4 = InventoryItem(4238, alice, 4238, 12, 400, 1);
-
-    // inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
-    // ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
-    // inventoryTestSystemIds[0] = inventorySystem.toResourceId();
-    // inventoryTestSystemIds[1] = deployableSystem.toResourceId();
-    // inventoryTestSystemIds[2] = fuelSystem.toResourceId();
-
-    // entitySystem.registerClass(inventoryItemClassId, inventoryTestSystemIds);
-
-    // //Mock Item creation
-    // EntityRecord.set(item1.inventoryItemId, item1.itemId, item1.typeId, item1.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item1.inventoryItemId, alice);
-    // EntityRecord.set(item2.inventoryItemId, item2.itemId, item2.typeId, item2.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item2.inventoryItemId, alice);
-    // EntityRecord.set(item3.inventoryItemId, item3.itemId, item3.typeId, item3.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item3.inventoryItemId, alice);
-    // EntityRecord.set(item4.inventoryItemId, item4.itemId, item4.typeId, item4.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item4.inventoryItemId, alice);
-
-    // uint256 inventoryTestClassId = uint256(bytes32("INVENTORY_TEST"));
-
-    // entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
-    // entitySystem.instantiate(inventoryTestClassId, smartObjectId, alice);
-
-  //   uint256 fuelUnitVolume = 1;
-  //   uint256 fuelConsumptionIntervalInSeconds = 1;
-  //   uint256 fuelMaxCapacity = 10000;
-
-  //   deployableSystem.globalResume();
-
-  //   deployableSystem.registerDeployable(
-  //     smartObjectId,
-  //     alice,
-  //     fuelUnitVolume,
-  //     fuelConsumptionIntervalInSeconds,
-  //     fuelMaxCapacity
-  //   );
-  //   DeployableState.set(
-  //     smartObjectId,
-  //     DeployableStateData({
-  //       createdAt: block.timestamp,
-  //       previousState: State.ANCHORED,
-  //       currentState: State.ONLINE,
-  //       isValid: true,
-  //       anchoredAt: block.timestamp,
-  //       updatedBlockNumber: block.number,
-  //       updatedBlockTime: block.timestamp
-  //     })
-  //   );
-
-  //   vm.stopPrank();
-  // }
-
-  // function testSetInventoryCapacity(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity != 0);
-
-  //   vm.startPrank(deployer);
-  //   inventorySystem.setInventoryCapacity(smartObjectId, storageCapacity);
-  //   vm.stopPrank();
-
-  //   assertEq(Inventory.getCapacity(smartObjectId), storageCapacity);
-  // }
-
-  // function testRevertSetInventoryCapacity(uint256 storageCapacity) public {
-  //   storageCapacity = 0;
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(
-  //       InventorySystem.Inventory_InvalidCapacity.selector,
-  //       "InventorySystem: storage capacity cannot be 0"
-  //     )
-  //   );
-  //   vm.startPrank(deployer);
-  //   inventorySystem.setInventoryCapacity(smartObjectId, storageCapacity);
-  //   vm.stopPrank();
-  // }
-
-  // function testDepositToInventory(uint256 storageCapacity) public {
-  //   vm.assume(smartObjectId != 0);
-  //   vm.assume(storageCapacity >= 1500 && storageCapacity <= 10000);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](3);
-  //   item1.quantity = 3;
-  //   item2.quantity = 2;
-  //   item3.quantity = 2;
-  //   items[0] = item1;
-  //   items[1] = item2;
-  //   items[2] = item3;
-
-  //   testSetInventoryCapacity(storageCapacity);
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   uint256 capacityBeforeDeposit = inventoryData.usedCapacity;
-  //   uint256 capacityAfterDeposit = 0;
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-  //   inventoryData = Inventory.get(smartObjectId);
-
-  //   //Check whether the items are stored in the inventory table
-  //   for (uint256 i = 0; i < items.length; i++) {
-  //     uint256 itemVolume = items[i].volume * items[i].quantity;
-  //     capacityAfterDeposit += itemVolume;
-  //     assertEq(inventoryData.items[i], items[i].inventoryItemId);
-  //   }
-
-  //   inventoryData = Inventory.get(smartObjectId);
-  //   assert(capacityBeforeDeposit < capacityAfterDeposit);
-  //   assertEq(inventoryData.items.length, 3);
-
-    // InventoryItemData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
-    // InventoryItemData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, items[1].inventoryItemId);
-    // InventoryItemData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, items[2].inventoryItemId);
-
-  //   assertEq(inventoryItem1.quantity, items[0].quantity);
-  //   assertEq(inventoryItem2.quantity, items[1].quantity);
-  //   assertEq(inventoryItem3.quantity, items[2].quantity);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem2.index, 1);
-  //   assertEq(inventoryItem3.index, 2);
-  // }
-
-  // function testInventoryItemQuantityIncrease(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity >= 20000 && storageCapacity <= 50000);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](3);
-  //   item1.quantity = 3;
-  //   item2.quantity = 2;
-  //   item3.quantity = 2;
-  //   items[0] = item1;
-  //   items[1] = item2;
-  //   items[2] = item3;
-
-  //   testSetInventoryCapacity(storageCapacity);
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   InventoryItemData memory inventoryItem2 = InventoryItem.get(smartObjectId, items[1].inventoryItemId);
-
-  //   assertEq(inventoryItem1.quantity, items[0].quantity);
-  //   assertEq(inventoryItem2.quantity, items[1].quantity);
-
-  //   //check the increase in quantity
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   inventoryItem2 = InventoryItem.get(smartObjectId, items[1].inventoryItemId);
-
-  //   assertEq(inventoryItem1.quantity, items[0].quantity * 2);
-  //   assertEq(inventoryItem2.quantity, items[1].quantity * 2);
-
-  //   uint256 itemsLength = Inventory.getItems(smartObjectId).length;
-  //   assertEq(itemsLength, 3);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem2.index, 1);
-  // }
-
-  // function testDepositToExistingInventory(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity >= 4000 && storageCapacity <= 10000);
-  //   testDepositToInventory(storageCapacity);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
-  //   items[0] = item4;
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   uint256 itemsLength = Inventory.getItems(smartObjectId).length;
-  //   assertEq(itemsLength, 4);
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   assertEq(inventoryItem1.index, 3);
-  // }
-
-  // function testRevertDepositToInventory(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity >= 150 && storageCapacity <= 500);
-
-  //   // create SSU smart object with token
-  //   testSetInventoryCapacity(storageCapacity);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
-  //   item1.inventoryItemId = 20;
-  //   items[0] = item1;
-
-  //   // invalid item revert
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(
-  //       InventorySystem.Inventory_InvalidItem.selector,
-  //       "InventorySystem: item is not created on-chain",
-  //       item1.inventoryItemId
-  //     )
-  //   );
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   item2.quantity = 60;
-  //   items[0] = item2;
-  //   // capacity revert
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(
-  //       InventorySystem.Inventory_InsufficientCapacity.selector,
-  //       "InventorySystem: insufficient capacity",
-  //       storageCapacity,
-  //       items[0].volume * items[0].quantity
-  //     )
-  //   );
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-  // }
-
-  // function testWithdrawFromInventory(uint256 storageCapacity) public {
-  //   testDepositToInventory(storageCapacity);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](3);
-  //   item1.quantity = 1;
-  //   item2.quantity = 2;
-  //   item3.quantity = 1;
-  //   items[0] = item1;
-  //   items[1] = item2;
-  //   items[2] = item3;
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
-  //   uint256 itemVolume = 0;
-
-    // assertEq(capacityBeforeWithdrawal, 1300);
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   for (uint256 i = 0; i < items.length; i++) {
-  //     itemVolume += items[i].volume * items[i].quantity;
-  //   }
-
-  //   inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
-  //   assertEq(inventoryData.items.length, 2);
-
-  //   assertEq(inventoryData.items[0], items[0].inventoryItemId);
-  //   assertEq(inventoryData.items[1], items[2].inventoryItemId);
-
-  //   //Check whether the items quantity is reduced
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   InventoryItemData memory inventoryItem3 = InventoryItem.get(smartObjectId, items[2].inventoryItemId);
-  //   assertEq(inventoryItem1.quantity, 2);
-  //   assertEq(inventoryItem3.quantity, 1);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem3.index, 1);
-  // }
-
-  // function testDeposit1andWithdraw1(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity >= 1100 && storageCapacity <= 10000);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
-  //   item1.quantity = 3;
-  //   items[0] = item1;
-
-  //   testSetInventoryCapacity(storageCapacity);
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.items.length, 0);
-
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-
-  //   assertEq(inventoryItem1.quantity, 0);
-  // }
-
-  // function testWithdrawRemove2Items(uint256 storageCapacity) public {
-  //   testDepositToInventory(storageCapacity);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](2);
-  //   item1.quantity = 3;
-  //   item2.quantity = 2;
-  //   items[0] = item1;
-  //   items[1] = item2;
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
-  //   uint256 itemVolume = 0;
-
-    // assertEq(capacityBeforeWithdrawal, 1300);
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   for (uint256 i = 0; i < items.length; i++) {
-  //     itemVolume += items[i].volume * items[i].quantity;
-  //   }
-
-  //   inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
-  //   assertEq(inventoryData.items.length, 1);
-
-  //   uint256[] memory existingItems = inventoryData.items;
-  //   assertEq(existingItems.length, 1);
-
-  //   //Check weather the items quantity is reduced
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   InventoryItemData memory inventoryItem2 = InventoryItem.get(smartObjectId, items[1].inventoryItemId);
-  //   InventoryItemData memory inventoryItem3 = InventoryItem.get(smartObjectId, 4237);
-  //   assertEq(inventoryItem1.quantity, 0);
-  //   assertEq(inventoryItem2.quantity, 0);
-  //   assertEq(inventoryItem3.quantity, 2);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem2.index, 0);
-  //   assertEq(inventoryItem3.index, 0);
-  // }
-
-  // function testWithdrawRemoveCompletely(uint256 storageCapacity) public {
-  //   testDepositToInventory(storageCapacity);
-
-  //   item1.quantity = 3;
-  //   item2.quantity = 2;
-  //   item3.quantity = 2;
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](3);
-  //   items[0] = item1;
-  //   items[1] = item2;
-  //   items[2] = item3;
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
-  //   uint256 itemVolume = 0;
-
-    // assertEq(capacityBeforeWithdrawal, 1300);
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   for (uint256 i = 0; i < items.length; i++) {
-  //     itemVolume += items[i].volume * items[i].quantity;
-  //   }
-
-  //   inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.usedCapacity, capacityBeforeWithdrawal - itemVolume);
-  //   assertEq(inventoryData.items.length, 0);
-
-  //   uint256[] memory existingItems = inventoryData.items;
-  //   assertEq(existingItems.length, 0);
-
-  //   //Check weather the items quantity is reduced
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   InventoryItemData memory inventoryItem2 = InventoryItem.get(smartObjectId, items[1].inventoryItemId);
-  //   InventoryItemData memory inventoryItem3 = InventoryItem.get(smartObjectId, items[2].inventoryItemId);
-  //   assertEq(inventoryItem1.quantity, 0);
-  //   assertEq(inventoryItem2.quantity, 0);
-  //   assertEq(inventoryItem3.quantity, 0);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem2.index, 0);
-  //   assertEq(inventoryItem3.index, 0);
-  // }
-
-  // function testWithdrawWithBigArraySize(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity >= 11000 && storageCapacity <= 90000);
-
-    // testSetInventoryCapacity(storageCapacity);
-
-    // vm.startPrank(deployer);
-    // item5 = InventoryItem(4239, alice, 4239, 12, 400, 1);
-    // item6 = InventoryItem(4240, alice, 4240, 12, 400, 1);
-    // item7 = InventoryItem(4241, alice, 4241, 12, 400, 1);
-    // item8 = InventoryItem(4242, alice, 4242, 12, 400, 1);
-    // item9 = InventoryItem(4243, alice, 4243, 12, 400, 1);
-    // item10 = InventoryItem(4244, alice, 4244, 12, 400, 1);
-    // item11 = InventoryItem(4245, alice, 4245, 12, 400, 1);
-    // item12 = InventoryItem(4246, alice, 4246, 12, 400, 1);
-
-    // EntityRecord.set(item5.inventoryItemId, item5.itemId, item5.typeId, item5.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item5.inventoryItemId, alice);
-    // EntityRecord.set(item6.inventoryItemId, item6.itemId, item6.typeId, item6.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item6.inventoryItemId, alice);
-    // EntityRecord.set(item7.inventoryItemId, item7.itemId, item7.typeId, item7.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item7.inventoryItemId, alice);
-    // EntityRecord.set(item8.inventoryItemId, item8.itemId, item8.typeId, item8.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item8.inventoryItemId, alice);
-    // EntityRecord.set(item9.inventoryItemId, item9.itemId, item9.typeId, item9.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item9.inventoryItemId, alice);
-    // EntityRecord.set(item10.inventoryItemId, item10.itemId, item10.typeId, item10.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item10.inventoryItemId, alice);
-    // EntityRecord.set(item11.inventoryItemId, item11.itemId, item11.typeId, item11.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item11.inventoryItemId, alice);
-    // EntityRecord.set(item12.inventoryItemId, item12.itemId, item12.typeId, item12.volume, true);
-    // entitySystem.instantiate(inventoryItemClassId, item12.inventoryItemId, alice);
-    // vm.stopPrank();
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](12);
-  //   item1.quantity = 3;
-  //   item2.quantity = 2;
-  //   item3.quantity = 2;
-  //   item4.quantity = 2;
-  //   item5.quantity = 2;
-  //   item6.quantity = 2;
-  //   item7.quantity = 2;
-  //   item8.quantity = 2;
-  //   item9.quantity = 2;
-  //   item10.quantity = 2;
-  //   item11.quantity = 2;
-  //   item12.quantity = 2;
-
-  //   items[0] = item1;
-  //   items[1] = item2;
-  //   items[2] = item3;
-  //   items[3] = item4;
-  //   items[4] = item5;
-  //   items[5] = item6;
-  //   items[6] = item7;
-  //   items[7] = item8;
-  //   items[8] = item9;
-  //   items[9] = item10;
-  //   items[10] = item11;
-  //   items[11] = item12;
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   //Change the order
-  //   items = new InventoryItemParams[](12);
-  //   items[0] = item10;
-  //   items[1] = item7;
-  //   items[2] = item3;
-  //   items[3] = item12;
-  //   items[4] = item5;
-  //   items[5] = item8;
-  //   items[6] = item2;
-  //   items[7] = item6;
-  //   items[8] = item11;
-  //   items[9] = item1;
-  //   items[10] = item9;
-  //   items[11] = item4;
-
-  //   vm.startPrank(alice);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.items.length, 0);
-
-  //   //check if everything is 0
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   InventoryItemData memory inventoryItem2 = InventoryItem.get(smartObjectId, items[1].inventoryItemId);
-  //   InventoryItemData memory inventoryItem3 = InventoryItem.get(smartObjectId, items[2].inventoryItemId);
-  //   assertEq(inventoryItem1.quantity, 0);
-  //   assertEq(inventoryItem2.quantity, 0);
-  //   assertEq(inventoryItem3.quantity, 0);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem2.index, 0);
-  //   assertEq(inventoryItem3.index, 0);
-  // }
-
-  // function testWithdrawMultipleTimes(uint256 storageCapacity) public {
-  //   testWithdrawFromInventory(storageCapacity);
-
-  //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.items.length, 2);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
-  //   item3.quantity = 1;
-  //   items[0] = item3;
-
-  //   // Try withdraw again
-  //   vm.startPrank(alice);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-
-    // uint256 itemId3 = uint256(4237);
-
-    // InventoryItemData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, itemId3);
-
-    // assertEq(inventoryItem3.quantity, 0);
-
-  //   inventoryData = Inventory.get(smartObjectId);
-  //   assertEq(inventoryData.items.length, 1);
-  // }
-
-  // function revertWithdrawalForInvalidQuantity(uint256 storageCapacity) public {
-  //   testDepositToInventory(storageCapacity);
-
-  //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
-  //   item3.quantity = 1;
-
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(
-  //       InventorySystem.Inventory_InvalidItemQuantity.selector,
-  //       "InventorySystem: invalid quantity",
-  //       3,
-  //       items[0].quantity
-  //     )
-  //   );
-  //   vm.startPrank(alice);
-  //   inventorySystem.withdrawFromInventory(smartObjectId, items);
-  //   vm.stopPrank();
-  // }
+  using WorldResourceIdInstance for ResourceId;
+
+  IWorldWithContext public world;
+
+  // Test variables
+  uint256 smartObjectId;
+  uint256 secondInventoryId;
+  bytes32 tenantId;
+  
+  // Item variables
+  uint256 constant ITEM1_ID = 4235;
+  uint256 constant ITEM2_ID = 4236;
+  uint256 constant ITEM3_ID = 4237;
+  uint256 constant TRANSFER_ITEM_ID = 4238;
+  uint256 constant ITEM_TYPE_ID = 1000;
+  uint256 constant ITEM_TYPE_ID_NON_SINGLETON = 1001; // Non-singleton item type
+  uint256 constant ITEM_VOLUME = 100;
+
+  // Test addresses
+  address deployer;
+  address alice;
+  address bob;
+  
+  // Mock system address
+  MockInventoryInteractSystem mockSystem;
+  ResourceId mockSystemId;
+
+  // Define singleton and non-singleton items in your constants section
+  bool constant ITEM1_IS_SINGLETON = true;
+  bool constant ITEM2_IS_SINGLETON = true;
+  bool constant ITEM3_IS_NON_SINGLETON = false; // Making this a non-singleton item
+  bool constant TRANSFER_ITEM_IS_NON_SINGLETON = false;
+
+  uint256 item1ObjectId;
+  uint256 item2ObjectId;
+  uint256 item3ObjectId;
+  uint256 transferItemObjectId;
+
+  // Add these constants to your test file 
+  uint256 constant CREATE_SINGLETON_ITEM_ID = 9001;
+  uint256 constant CREATE_NONSING_ITEM_ID = 9002;
+  uint256 constant CREATE_ITEM_TYPE_ID = 9000;
+  bool constant CREATE_SINGLETON_IS_SINGLETON = true;
+  bool constant CREATE_NONSING_IS_SINGLETON = false;
+
+  function setUp() public virtual override {
+    super.setUp();
+    // Deploy a new World
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
+    
+    // Initialize addresses
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+    alice = vm.addr(vm.deriveKey(mnemonic, 2));
+    bob = vm.addr(vm.deriveKey(mnemonic, 3));
+    
+    vm.startPrank(deployer);
+    
+    // Setup tenant
+    tenantId = keccak256(abi.encodePacked("test-tenant"));
+    Tenant.set(tenantId);
+    
+    // Setup smart object ID
+    smartObjectId = 1234;
+    secondInventoryId = 5678;
+
+    // Create resource ID for the mock system using the proper format
+    bytes14 namespace = bytes14("evefrontier");
+    bytes16 name = bytes16("mockInvInteract"); 
+    mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
+    
+    // Deploy and register the mock system
+    mockSystem = new MockInventoryInteractSystem();
+    
+    // Register the system with the world
+    world.registerSystem(mockSystemId, mockSystem, true);
+    
+    // Register class and setup deployable state
+    uint256 inventoryClassId = uint256(keccak256(abi.encodePacked("INVENTORY_TEST")));
+    ResourceId[] memory systemIds = new ResourceId[](1);
+    systemIds[0] = inventorySystem.toResourceId();
+    systemIds[1] = mockSystemId;
+    entitySystem.registerClass(inventoryClassId, systemIds);
+    entitySystem.instantiate(inventoryClassId, smartObjectId, alice);
+    entitySystem.instantiate(inventoryClassId, secondInventoryId, bob);
+
+    // Make sure deploy system is active
+    GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
+    
+    // Setup deployable state for first inventory
+    DeployableState.set(
+      smartObjectId,
+      DeployableStateData({
+        createdAt: block.timestamp,
+        previousState: State.ANCHORED,
+        currentState: State.ONLINE,
+        isValid: true,
+        anchoredAt: block.timestamp,
+        updatedBlockNumber: block.number,
+        updatedBlockTime: block.timestamp
+      })
+    );
+    
+    // Setup deployable state for second inventory
+    DeployableState.set(
+      secondInventoryId,
+      DeployableStateData({
+        createdAt: block.timestamp,
+        previousState: State.ANCHORED,
+        currentState: State.ONLINE,
+        isValid: true,
+        anchoredAt: block.timestamp,
+        updatedBlockNumber: block.number,
+        updatedBlockTime: block.timestamp
+      })
+    );
+    
+    // Configure access control to allow the mock system to call inventory system
+    ResourceId inventorySystemId = inventorySystem.toResourceId();
+    bytes4[2] memory inventoryFunctionSelectors = [
+      InventorySystem.depositInventory.selector,
+      InventorySystem.withdrawInventory.selector
+    ];
+    for (uint i = 0; i < inventoryFunctionSelectors.length; i++) {
+      CallAccess.set(inventorySystemId, inventoryFunctionSelectors[i], address(mockSystem), true);
+    }
+    
+    vm.stopPrank();
+    
+    // Set capacity for both inventories
+    uint256 capacity = 1000;
+    
+    vm.startPrank(alice);
+    inventorySystem.setCapacity(smartObjectId, capacity);
+    vm.stopPrank();
+    
+    vm.startPrank(bob);
+    inventorySystem.setCapacity(secondInventoryId, capacity);
+    vm.stopPrank();
+
+    // Calculate itemObjectIds
+    item1ObjectId = _calculateItemObjectId(ITEM1_ID, ITEM_TYPE_ID, ITEM1_IS_SINGLETON);
+    item2ObjectId = _calculateItemObjectId(ITEM2_ID, ITEM_TYPE_ID, ITEM2_IS_SINGLETON);
+    item3ObjectId = _calculateItemObjectId(ITEM3_ID, ITEM_TYPE_ID, ITEM3_IS_NON_SINGLETON);
+    transferItemObjectId = _calculateItemObjectId(TRANSFER_ITEM_ID, ITEM_TYPE_ID, TRANSFER_ITEM_IS_NON_SINGLETON);
+    
+    // Set up item records with the correct parameters
+    _setupItemRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
+    _setupItemRecord(item2ObjectId, ITEM2_ID, ITEM_TYPE_ID, ITEM_VOLUME);
+    _setupItemRecord(item3ObjectId, ITEM3_ID, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
+    _setupItemRecord(transferItemObjectId, TRANSFER_ITEM_ID, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
+  }
+
+  // Test setting inventory capacity
+  function test_setCapacity() public {
+    uint256 capacity = 1000;
+    
+    // Check initial capacity
+    assertEq(Inventory.getCapacity(smartObjectId), 0);
+    
+    // Try with invalid capacity
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        InventorySystem.Inventory_InvalidCapacity.selector,
+        "InventorySystem: storage capacity cannot be 0"
+      )
+    );
+    inventorySystem.setCapacity(smartObjectId, 0);
+    
+    // Set valid capacity
+    inventorySystem.setCapacity(smartObjectId, capacity);
+    vm.stopPrank();
+    // Verify capacity was set correctly
+    assertEq(Inventory.getCapacity(smartObjectId), capacity);
+  }
+
+  // Test setting ephemeral inventory capacity
+  function test_setEphemeralCapacity() public {
+    uint256 ephemeralCapacity = 500;
+    
+    // Check initial capacity
+    assertEq(EphemeralInvCapacity.getCapacity(smartObjectId), 0);
+    
+    // Set ephemeral capacity
+    vm.startPrank(alice);
+    inventorySystem.setEphemeralCapacity(smartObjectId, ephemeralCapacity);
+    vm.stopPrank();
+    
+    // Verify capacity was set correctly
+    assertEq(EphemeralInvCapacity.getCapacity(smartObjectId), ephemeralCapacity);
+  }
+
+  // Test creating and depositing inventory items
+  function test_createAndDepositInventory() public {
+    // Setup initial capacity
+    uint256 capacity = 1000;
+    vm.startPrank(alice);
+    inventorySystem.setCapacity(smartObjectId, capacity);
+    vm.stopPrank();
+    
+    // Calculate object IDs for the new items
+    uint256 singletonObjectId = _calculateItemObjectId(CREATE_SINGLETON_ITEM_ID, CREATE_ITEM_TYPE_ID, CREATE_SINGLETON_IS_SINGLETON);
+    uint256 nonSingletonObjectId = _calculateItemObjectId(CREATE_NONSING_ITEM_ID, CREATE_ITEM_TYPE_ID, CREATE_NONSING_IS_SINGLETON);
+
+    // Setup items array
+    CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
+
+    // Add the singleton item
+    items[0] = CreateInventoryItemParams({
+      smartObjectId: singletonObjectId,
+      tenantId: tenantId,
+      typeId: CREATE_ITEM_TYPE_ID,
+      itemId: CREATE_SINGLETON_ITEM_ID,
+      quantity: 1, // Singleton can only have quantity of 1
+      volume: ITEM_VOLUME
+    });
+
+    // Add the non-singleton item
+    items[1] = CreateInventoryItemParams({
+      smartObjectId: nonSingletonObjectId,
+      tenantId: bytes32(0), // For non-singleton items, tenantId is zero
+      typeId: CREATE_ITEM_TYPE_ID,
+      itemId: 0, // For non-singleton items, itemId is zero
+      quantity: 9, // Non-singleton can have any quantity
+      volume: ITEM_VOLUME
+    });
+    
+    // Verify initial state
+    assertEq(Inventory.getItems(smartObjectId).length, 0);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), 0);
+    assertEq(EntityRecord.getExists(singletonObjectId), false);
+    assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
+    
+    // Create and deposit items
+    vm.startPrank(alice);
+    inventorySystem.createAndDepositInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Verify final state
+    assertEq(Inventory.getItems(smartObjectId).length, 2);
+    // Calculate expected volume: 1 singleton item (quantity 1) + non-singleton items (quantity 9)
+    uint256 expectedVolume = (1 * ITEM_VOLUME) + (9 * ITEM_VOLUME);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), expectedVolume);
+    assertEq(EntityRecord.getExists(singletonObjectId), true);
+    assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
+    
+    // Check item details
+    InventoryItemData memory singletonItemData = InventoryItem.get(smartObjectId, singletonObjectId);
+    InventoryItemData memory nonSingletonItemData = InventoryItem.get(smartObjectId, nonSingletonObjectId);
+    
+    assertEq(singletonItemData.quantity, 1);
+    assertEq(nonSingletonItemData.quantity, 9);
+    assertEq(singletonItemData.index, 0);
+    assertEq(nonSingletonItemData.index, 1);
+  }
+
+  // Test depositing inventory items
+  function test_depositInventory() public {
+    
+    // Prepare item params for deposit
+    InventoryItemParams[] memory items = new InventoryItemParams[](2);
+    
+    items[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 1
+    });
+    
+    items[1] = InventoryItemParams({
+      smartObjectId: ITEM2_ID,
+      quantity: 2
+    });
+    
+    // Test revert: game is paused
+    GlobalDeployableState.setIsPaused(false);
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        DeployableSystem.Deployable_StateTransitionPaused.selector
+      )
+    );
+    inventorySystem.depositInventory(smartObjectId, items);
+    vm.stopPrank();
+    GlobalDeployableState.setIsPaused(true);
+    
+    // Test revert: incorrect state
+    DeployableState.setCurrentState(smartObjectId, State.ANCHORED);
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        DeployableSystem.Deployable_IncorrectState.selector,
+        smartObjectId,
+        State.ANCHORED
+      )
+    );
+    inventorySystem.depositInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Reset state to ONLINE
+    DeployableState.setCurrentState(smartObjectId, State.ONLINE);
+    
+    // Test revert: non-existent entity record
+    InventoryItemParams[] memory invalidItems = new InventoryItemParams[](1);
+    invalidItems[0] = InventoryItemParams({
+      smartObjectId: 999999, // Non-existent ID
+      quantity: 1
+    });
+    
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        InventorySystem.Inventory_NonExistentEntityRecord.selector,
+        "InventorySystem: non-existent entity record",
+        999999
+      )
+    );
+    inventorySystem.depositInventory(smartObjectId, invalidItems);
+    vm.stopPrank();
+
+    // Test direct call behavior (callCount == 1)
+    // This verifies that ascribeToInventory is called on direct calls
+    vm.startPrank(alice);
+    
+    // Check initial ownership state
+    assertEq(InventoryByItem.get(ITEM1_ID), 0); // Initially not in any inventory
+    
+    // Call depositInventory directly
+    inventorySystem.depositInventory(smartObjectId, items);
+    
+    // Verify ownership was ascribed to inventory
+    assertEq(InventoryByItem.get(ITEM1_ID), smartObjectId);
+    assertEq(InventoryByItem.get(ITEM2_ID), smartObjectId);
+    vm.stopPrank();
+    
+    // Test system-to-system call behavior (callCount > 1)
+    // First deposit the transfer item into the first inventory
+    InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
+    transferItems[0] = InventoryItemParams({
+      smartObjectId: TRANSFER_ITEM_ID,
+      quantity: 10
+    });
+    
+    vm.startPrank(alice);
+    inventorySystem.depositInventory(smartObjectId, transferItems);
+    assertEq(InventoryByItem.get(TRANSFER_ITEM_ID), smartObjectId); // Verify initial inventory
+    // quantity should be 10
+    assertEq(InventoryItem.get(smartObjectId, TRANSFER_ITEM_ID).quantity, 10);
+    vm.stopPrank();
+    
+    // Now simulate a proper system-to-system call using our mock system
+    _simulateSystemToSystemTransfer(TRANSFER_ITEM_ID, secondInventoryId, 5);
+    
+    // Verify the item was transferred between inventories
+    assertEq(InventoryByItem.get(TRANSFER_ITEM_ID), secondInventoryId);
+    // quantity should be 5 and 5
+    assertEq(InventoryItem.get(smartObjectId, TRANSFER_ITEM_ID).quantity, 5);
+    assertEq(InventoryItem.get(secondInventoryId, TRANSFER_ITEM_ID).quantity, 5);
+    
+    // Check initial state before depositing more items
+    assertEq(Inventory.getItems(smartObjectId).length, 2);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), ITEM_VOLUME * 3); // 1 + 2 items
+    
+    // Deposit more items
+    vm.startPrank(alice);
+    inventorySystem.depositInventory(smartObjectId, items);
+    vm.stopPrank();
+
+    // Verify final state
+    assertEq(Inventory.getItems(smartObjectId).length, 2);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), ITEM_VOLUME * 6); // 2 + 4 items
+    
+    // Check item details
+    InventoryItemData memory item1Data = InventoryItem.get(smartObjectId, ITEM1_ID);
+    InventoryItemData memory item2Data = InventoryItem.get(smartObjectId, ITEM2_ID);
+    
+    assertEq(item1Data.quantity, 2);
+    assertEq(item2Data.quantity, 4);
+    assertEq(item1Data.index, 0);
+    assertEq(item2Data.index, 1);
+    
+    // Test revert: insufficient capacity
+    items[0].quantity = 10; // Would exceed capacity
+    
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        InventorySystem.Inventory_InsufficientCapacity.selector,
+        "InventorySystem: insufficient capacity",
+        1000,
+        ITEM_VOLUME * 14 // 2 + 4 + 10 - 2
+      )
+    );
+    inventorySystem.depositInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Test increasing existing item quantity
+    items[0].quantity = 1; // Set back to 1 to test increasing
+    
+    vm.startPrank(alice);
+    inventorySystem.depositInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Verify quantity increased
+    item1Data = InventoryItem.get(smartObjectId, ITEM1_ID);
+    item2Data = InventoryItem.get(smartObjectId, ITEM2_ID);
+    
+    assertEq(item1Data.quantity, 3); // Was 2, now 3
+    assertEq(item2Data.quantity, 6); // Was 4, now 6
+    assertEq(Inventory.getUsedCapacity(smartObjectId), ITEM_VOLUME * 9); // 3 + 6 items
+    assertEq(Inventory.getItems(smartObjectId).length, 2); // Still 2 unique items
+  }
+
+  // Test withdrawing inventory items
+  function test_withdrawInventory() public {
+    // First set up inventory with items
+    test_depositInventory();
+    
+    // We should now have 2 items with quantities 2 and 4, total capacity used = 600
+    uint256 initialCapacityUsed = Inventory.getUsedCapacity(smartObjectId);
+    assertEq(initialCapacityUsed, ITEM_VOLUME * 6);
+    
+    // Create withdrawal params
+    InventoryItemParams[] memory items = new InventoryItemParams[](2);
+    
+    items[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 1 // Withdraw 1 of 2
+    });
+    
+    items[1] = InventoryItemParams({
+      smartObjectId: ITEM2_ID,
+      quantity: 4 // Withdraw all 4
+    });
+    
+    // Test revert: game is paused
+    GlobalDeployableState.setIsPaused(false);
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        DeployableSystem.Deployable_StateTransitionPaused.selector
+      )
+    );
+    inventorySystem.withdrawInventory(smartObjectId, items);
+    vm.stopPrank();
+    GlobalDeployableState.setIsPaused(true);
+    
+    // Test revert: incorrect state
+    DeployableState.setCurrentState(smartObjectId, State.ANCHORED);
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        DeployableSystem.Deployable_IncorrectState.selector,
+        smartObjectId,
+        State.ANCHORED
+      )
+    );
+    inventorySystem.withdrawInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Reset state to ONLINE
+    DeployableState.setCurrentState(smartObjectId, State.ONLINE);
+    
+    // Test revert: invalid withdrawal quantity
+    InventoryItemParams[] memory invalidItems = new InventoryItemParams[](1);
+    invalidItems[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 10 // Trying to withdraw more than available
+    });
+    
+    vm.startPrank(alice);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        InventorySystem.Inventory_InvalidItemWithdrawalQuantity.selector,
+        "InventorySystem: invalid quantity",
+        ITEM1_ID,
+        10,
+        2 // We have 2 available
+      )
+    );
+    inventorySystem.withdrawInventory(smartObjectId, invalidItems);
+    vm.stopPrank();
+    
+    // Now perform valid withdrawal
+    vm.startPrank(alice);
+    inventorySystem.withdrawInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Verify final state
+    InventoryItemData memory item1Data = InventoryItem.get(smartObjectId, ITEM1_ID);
+    assertEq(item1Data.quantity, 1); // Was 2, now 1
+    
+    // Item 2 should be completely removed
+    uint256[] memory remainingItems = Inventory.getItems(smartObjectId);
+    assertEq(remainingItems.length, 1); // Only item1 should remain
+    assertEq(remainingItems[0], ITEM1_ID);
+    
+    // Check capacity
+    uint256 finalCapacityUsed = Inventory.getUsedCapacity(smartObjectId);
+    assertEq(finalCapacityUsed, ITEM_VOLUME); // Only 1 item of volume 100 left
+  }
+
+  // Test complete removal of all items
+  function test_withdrawAllItems() public {
+    // First set up inventory with items
+    test_depositInventory();
+    
+    // We should now have 2 items with quantities 2 and 4
+    // Create withdrawal params to remove all
+    InventoryItemParams[] memory items = new InventoryItemParams[](2);
+    
+    items[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 2 // Withdraw all 2
+    });
+    
+    items[1] = InventoryItemParams({
+      smartObjectId: ITEM2_ID,
+      quantity: 4 // Withdraw all 4
+    });
+    
+    // Perform withdrawal
+    vm.startPrank(alice);
+    inventorySystem.withdrawInventory(smartObjectId, items);
+    vm.stopPrank();
+    
+    // Verify final state
+    uint256[] memory remainingItems = Inventory.getItems(smartObjectId);
+    assertEq(remainingItems.length, 0); // No items should remain
+    assertEq(Inventory.getUsedCapacity(smartObjectId), 0); // No capacity used
+  }
+
+  // Test complex deposit and withdraw scenario
+  function test_depositAndWithdrawMultipleItems() public {
+    // Setup capacity
+    uint256 capacity = 2000;
+    vm.startPrank(alice);
+    inventorySystem.setCapacity(smartObjectId, capacity);
+    vm.stopPrank();
+    
+    // Deposit items in batches
+    InventoryItemParams[] memory deposit1 = new InventoryItemParams[](2);
+    deposit1[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 3
+    });
+    deposit1[1] = InventoryItemParams({
+      smartObjectId: ITEM2_ID,
+      quantity: 2
+    });
+    
+    vm.startPrank(alice);
+    inventorySystem.depositInventory(smartObjectId, deposit1);
+    vm.stopPrank();
+    
+    // Verify first deposit
+    assertEq(Inventory.getItems(smartObjectId).length, 2);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), ITEM_VOLUME * 5);
+    
+    // Deposit more items
+    InventoryItemParams[] memory deposit2 = new InventoryItemParams[](2);
+    deposit2[0] = InventoryItemParams({
+      smartObjectId: ITEM2_ID,
+      quantity: 1
+    });
+    deposit2[1] = InventoryItemParams({
+      smartObjectId: ITEM3_ID,
+      quantity: 4
+    });
+    
+    vm.startPrank(alice);
+    inventorySystem.depositInventory(smartObjectId, deposit2);
+    vm.stopPrank();
+    
+    // Verify second deposit
+    assertEq(Inventory.getItems(smartObjectId).length, 3);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), ITEM_VOLUME * 10); // 3 + 3 + 4
+    
+    // Check individual items
+    InventoryItemData memory item1Data = InventoryItem.get(smartObjectId, ITEM1_ID);
+    InventoryItemData memory item2Data = InventoryItem.get(smartObjectId, ITEM2_ID);
+    InventoryItemData memory item3Data = InventoryItem.get(smartObjectId, ITEM3_ID);
+    
+    assertEq(item1Data.quantity, 3);
+    assertEq(item2Data.quantity, 3);
+    assertEq(item3Data.quantity, 4);
+    
+    // Withdraw partial amounts
+    InventoryItemParams[] memory withdraw1 = new InventoryItemParams[](2);
+    withdraw1[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 2
+    });
+    withdraw1[1] = InventoryItemParams({
+      smartObjectId: ITEM3_ID,
+      quantity: 3
+    });
+    
+    vm.startPrank(alice);
+    inventorySystem.withdrawInventory(smartObjectId, withdraw1);
+    vm.stopPrank();
+    
+    // Verify after partial withdrawal
+    item1Data = InventoryItem.get(smartObjectId, ITEM1_ID);
+    item3Data = InventoryItem.get(smartObjectId, ITEM3_ID);
+    
+    assertEq(item1Data.quantity, 1);
+    assertEq(item3Data.quantity, 1);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), ITEM_VOLUME * 5); // 1 + 3 + 1
+    
+    // Final withdrawal of everything
+    InventoryItemParams[] memory withdraw2 = new InventoryItemParams[](3);
+    withdraw2[0] = InventoryItemParams({
+      smartObjectId: ITEM1_ID,
+      quantity: 1
+    });
+    withdraw2[1] = InventoryItemParams({
+      smartObjectId: ITEM2_ID,
+      quantity: 3
+    });
+    withdraw2[2] = InventoryItemParams({
+      smartObjectId: ITEM3_ID,
+      quantity: 1
+    });
+    
+    vm.startPrank(alice);
+    inventorySystem.withdrawInventory(smartObjectId, withdraw2);
+    vm.stopPrank();
+    
+    // Verify complete withdrawal
+    assertEq(Inventory.getItems(smartObjectId).length, 0);
+    assertEq(Inventory.getUsedCapacity(smartObjectId), 0);
+  }
+
+  // Helper function to simulate a proper system-to-system call
+  function _simulateSystemToSystemTransfer(
+    uint256 itemId,
+    uint256 toInventoryId,
+    uint256 quantity
+  ) internal {
+    // Create transfer item params
+    InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
+    transferItems[0] = InventoryItemParams({
+      smartObjectId: itemId,
+      quantity: quantity
+    });
+    
+    // Call the inventory system through our mock system to get callCount > 1
+    vm.startPrank(bob); // Bob is owner of the second inventory
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(
+        MockInventoryInteractSystem.callInventoryDeposit.selector,
+        toInventoryId,
+        transferItems
+      )
+    );
+    vm.stopPrank();
+  }
+
+  // Helper function to setup item records
+  function _setupItemRecord(uint256 itemObjectId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+    uint256 itemClassId = uint256(keccak256(abi.encodePacked(typeId)));
+    
+    if (itemId != 0) { // For singleton items
+      EntityRecord.set(itemObjectId, true, tenantId, itemId, typeId, volume);
+
+      if (!EntityRecord.getExists(itemClassId)) {
+        EntityRecord.set(itemClassId, true, bytes32(0), 0, typeId, volume);
+      }
+    } else { // For non-singleton items
+      EntityRecord.set(itemClassId, true, bytes32(0), 0, typeId, volume);
+    }
+    
+    if (!Entity.getExists(itemClassId)) {
+      entitySystem.registerClass(itemClassId, new ResourceId[](0));
+    }
+  }
+
+  // Add a helper function to calculate itemObjectId
+  function _calculateItemObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+    if (isSingleton) {
+      // For singleton items: hash of tenantId and itemId
+      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
+    } else {
+      // For non-singleton items: hash of typeId
+      return uint256(keccak256(abi.encodePacked(typeId)));
+    }
+  }
 }

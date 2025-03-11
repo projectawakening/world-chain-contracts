@@ -141,10 +141,7 @@ contract InventorySystem is SmartObjectFramework {
         ownershipSystem.ascribeToInventory(items[i].smartObjectId, smartObjectId, items[i].quantity);
       } else {
         // Transfer item ownership to this inventory from the previous inventory
-        uint256 fromObjectId = InventoryByItem.get(items[i].smartObjectId);
-        if (fromObjectId != smartObjectId) {
-          ownershipSystem.transferInventory(items[i].smartObjectId, smartObjectId, items[i].quantity);
-        }
+        ownershipSystem.transferInventory(items[i].smartObjectId, smartObjectId, items[i].quantity);
       }
 
       // Process the item deposit (returning the updated used capacity after processing the item)
