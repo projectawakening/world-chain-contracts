@@ -3,53 +3,59 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
 import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
-import { State } from "../../src/codegen/common.sol";
 import { Inventory, InventoryData } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
-import { InventoryItemData, InventoryItem } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
+import { InventoryItemData, InventoryItem as InventoryItemTable } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
+import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
 
 import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
 import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
 import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
-import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
-import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { IWorld } from "../../src/codegen/world/IWorld.sol";
+import { InventoryItem } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
+
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { EveTest } from "../EveTest.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
-import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
+import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
-contract InventoryTest is EveTest {
-  // // Inventory variables
-  // InventoryItemParams item1;
-  // InventoryItemParams item2;
-  // InventoryItemParams item3;
-  // InventoryItemParams item4;
-  // InventoryItemParams item5;
-  // InventoryItemParams item6;
-  // InventoryItemParams item7;
-  // InventoryItemParams item8;
-  // InventoryItemParams item9;
-  // InventoryItemParams item10;
-  // InventoryItemParams item11;
-  // InventoryItemParams item12;
-  // InventoryItemParams item13;
+import { State } from "../../src/codegen/common.sol";
+import { Initialize } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
-  // uint256 smartObjectId;
-  // uint256 characterId;
-  // uint256 ephCharacterId;
-  // uint256 tribeId;
-  // EntityRecordParams charEntityRecordData;
-  // EntityRecordParams ephCharEntityRecordData;
-  // EntityMetadata characterMetadata;
-  // string tokenCID;
+contract InventoryTest is MudTest {
+  // Inventory variables
+  InventoryItem item1;
+  InventoryItem item2;
+  InventoryItem item3;
+  InventoryItem item4;
+  InventoryItem item5;
+  InventoryItem item6;
+  InventoryItem item7;
+  InventoryItem item8;
+  InventoryItem item9;
+  InventoryItem item10;
+  InventoryItem item11;
+  InventoryItem item12;
+
+  uint256 smartObjectId;
+  uint256 characterId;
+  uint256 ephCharacterId;
+  uint256 tribeId;
+  EntityRecordData charEntityRecordData;
+  EntityRecordData ephCharEntityRecordData;
+  EntityMetadata characterMetadata;
+  string tokenCID;
+  uint256 inventoryItemClassId;
+
+  string mnemonic = "test test test test test test test test test test test junk";
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  address bob = vm.addr(vm.deriveKey(mnemonic, 3));
 
   // function setUp() public virtual override {
   //   super.setUp();
@@ -71,59 +77,33 @@ contract InventoryTest is EveTest {
   //   // create SSU Inventory Owner character
   //   smartCharacterSystem.createCharacter(characterId, alice, tribeId, charEntityRecordData, characterMetadata);
 
-  //   item1 = InventoryItemParams({ inventoryItemId: 4235, owner: alice, itemId: 4235, volume: 100, quantity: 1 });
-  //   item2 = InventoryItemParams({ inventoryItemId: 4236, owner: alice, itemId: 4236, volume: 200, quantity: 1 });
-  //   item3 = InventoryItemParams({ inventoryItemId: 4237, owner: alice, itemId: 4237, volume: 150, quantity: 1 });
-  //   item4 = InventoryItemParams({ inventoryItemId: 8235, owner: alice, itemId: 8235, volume: 100, quantity: 1 });
-  //   item5 = InventoryItemParams({ inventoryItemId: 8236, owner: alice, itemId: 8236, volume: 200, quantity: 1 });
-  //   item6 = InventoryItemParams({ inventoryItemId: 8237, owner: alice, itemId: 8237, volume: 150, quantity: 1 });
-  //   item7 = InventoryItemParams({ inventoryItemId: 5237, owner: alice, itemId: 5237, volume: 150, quantity: 1 });
-  //   item8 = InventoryItemParams({ inventoryItemId: 6237, owner: alice, itemId: 6237, volume: 150, quantity: 1 });
-  //   item9 = InventoryItemParams({ inventoryItemId: 7237, owner: alice, itemId: 7237, volume: 150, quantity: 1 });
-  //   item10 = InventoryItemParams({ inventoryItemId: 5238, owner: alice, itemId: 5238, volume: 150, quantity: 1 });
-  //   item11 = InventoryItemParams({ inventoryItemId: 5239, owner: alice, itemId: 5239, volume: 150, quantity: 1 });
-  //   item12 = InventoryItemParams({ inventoryItemId: 6238, owner: alice, itemId: 6238, volume: 150, quantity: 1 });
-  //   item13 = InventoryItemParams({ inventoryItemId: 6239, owner: bob, itemId: 6239, volume: 150, quantity: 1 });
+    item1 = InventoryItem(4235, alice, 4235, 12, 100, 1);
+    item2 = InventoryItem(4236, alice, 4236, 12, 200, 1);
+    item3 = InventoryItem(4237, alice, 4237, 12, 300, 1);
+    item4 = InventoryItem(4238, alice, 4238, 12, 400, 1);
 
-  //   uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
+    inventoryTestSystemIds[0] = inventorySystem.toResourceId();
+    inventoryTestSystemIds[1] = deployableSystem.toResourceId();
+    inventoryTestSystemIds[2] = fuelSystem.toResourceId();
 
-  //   //Mock Item creation
+    entitySystem.registerClass(inventoryItemClassId, inventoryTestSystemIds);
 
-  //   EntityRecord.set(item1.inventoryItemId, item1.itemId, item1.typeId, item1.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item1.inventoryItemId, alice);
-  //   EntityRecord.set(item2.inventoryItemId, item2.itemId, item2.typeId, item2.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item2.inventoryItemId, alice);
-  //   EntityRecord.set(item3.inventoryItemId, item3.itemId, item3.typeId, item3.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item3.inventoryItemId, alice);
-  //   EntityRecord.set(item4.inventoryItemId, item4.itemId, item4.typeId, item4.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item4.inventoryItemId, alice);
-  //   EntityRecord.set(item5.inventoryItemId, item5.itemId, item5.typeId, item5.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item5.inventoryItemId, alice);
-  //   EntityRecord.set(item6.inventoryItemId, item6.itemId, item6.typeId, item6.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item6.inventoryItemId, alice);
-  //   EntityRecord.set(item7.inventoryItemId, item7.itemId, item7.typeId, item7.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item7.inventoryItemId, alice);
-  //   EntityRecord.set(item8.inventoryItemId, item8.itemId, item8.typeId, item8.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item8.inventoryItemId, alice);
-  //   EntityRecord.set(item9.inventoryItemId, item9.itemId, item9.typeId, item9.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item9.inventoryItemId, alice);
-  //   EntityRecord.set(item10.inventoryItemId, item10.itemId, item10.typeId, item10.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item10.inventoryItemId, alice);
-  //   EntityRecord.set(item11.inventoryItemId, item11.itemId, item11.typeId, item11.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item11.inventoryItemId, alice);
-  //   EntityRecord.set(item12.inventoryItemId, item12.itemId, item12.typeId, item12.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item12.inventoryItemId, alice);
-  //   EntityRecord.set(item13.inventoryItemId, item13.itemId, item13.typeId, item13.volume, true);
-  //   entitySystem.instantiate(inventoryItemClassId, item13.inventoryItemId, bob);
+    //Mock Item creation
+    EntityRecord.set(item1.inventoryItemId, item1.itemId, item1.typeId, item1.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item1.inventoryItemId, alice);
+    EntityRecord.set(item2.inventoryItemId, item2.itemId, item2.typeId, item2.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item2.inventoryItemId, alice);
+    EntityRecord.set(item3.inventoryItemId, item3.itemId, item3.typeId, item3.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item3.inventoryItemId, alice);
+    EntityRecord.set(item4.inventoryItemId, item4.itemId, item4.typeId, item4.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item4.inventoryItemId, alice);
 
-  //   uint256 inventoryTestClassId = uint256(bytes32("INVENTORY_TEST"));
-  //   ResourceId[] memory inventoryTestSystemIds = new ResourceId[](3);
-  //   inventoryTestSystemIds[0] = inventorySystem.toResourceId();
-  //   inventoryTestSystemIds[1] = deployableSystem.toResourceId();
-  //   inventoryTestSystemIds[2] = fuelSystem.toResourceId();
-  //   entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
+    uint256 inventoryTestClassId = uint256(bytes32("INVENTORY_TEST"));
 
-  //   entitySystem.instantiate(inventoryTestClassId, smartObjectId, alice);
+    entitySystem.registerClass(inventoryTestClassId, inventoryTestSystemIds);
+    entitySystem.instantiate(inventoryTestClassId, smartObjectId, alice);
 
   //   uint256 fuelUnitVolume = 1;
   //   uint256 fuelConsumptionIntervalInSeconds = 1;
@@ -211,10 +191,9 @@ contract InventoryTest is EveTest {
   //   assert(capacityBeforeDeposit < capacityAfterDeposit);
   //   assertEq(inventoryData.items.length, 3);
 
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-  //   InventoryItemData memory inventoryItem2 = InventoryItem.get(smartObjectId, items[1].inventoryItemId);
-
-  //   InventoryItemData memory inventoryItem3 = InventoryItem.get(smartObjectId, items[2].inventoryItemId);
+    InventoryItemData memory inventoryItem1 = InventoryItemTable.get(smartObjectId, items[0].inventoryItemId);
+    InventoryItemData memory inventoryItem2 = InventoryItemTable.get(smartObjectId, items[1].inventoryItemId);
+    InventoryItemData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, items[2].inventoryItemId);
 
   //   assertEq(inventoryItem1.quantity, items[0].quantity);
   //   assertEq(inventoryItem2.quantity, items[1].quantity);
@@ -266,9 +245,9 @@ contract InventoryTest is EveTest {
   //   assertEq(inventoryItem2.index, 1);
   // }
 
-  // function testDepositToExistingInventory(uint256 storageCapacity) public {
-  //   vm.assume(storageCapacity >= 1200 && storageCapacity <= 10000);
-  //   testDepositToInventory(storageCapacity);
+  function testDepositToExistingInventory(uint256 storageCapacity) public {
+    vm.assume(storageCapacity >= 4000 && storageCapacity <= 10000);
+    testDepositToInventory(storageCapacity);
 
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = item4;
@@ -339,7 +318,7 @@ contract InventoryTest is EveTest {
   //   uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
   //   uint256 itemVolume = 0;
 
-  //   assertEq(capacityBeforeWithdrawal, 1000);
+    assertEq(capacityBeforeWithdrawal, 1300);
 
   //   vm.startPrank(alice);
   //   inventorySystem.withdrawFromInventory(smartObjectId, items);
@@ -401,7 +380,7 @@ contract InventoryTest is EveTest {
   //   uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
   //   uint256 itemVolume = 0;
 
-  //   assertEq(capacityBeforeWithdrawal, 1000);
+    assertEq(capacityBeforeWithdrawal, 1300);
 
   //   vm.startPrank(alice);
   //   inventorySystem.withdrawFromInventory(smartObjectId, items);
@@ -446,7 +425,7 @@ contract InventoryTest is EveTest {
   //   uint256 capacityBeforeWithdrawal = inventoryData.usedCapacity;
   //   uint256 itemVolume = 0;
 
-  //   assertEq(capacityBeforeWithdrawal, 1000);
+    assertEq(capacityBeforeWithdrawal, 1300);
 
   //   vm.startPrank(alice);
   //   inventorySystem.withdrawFromInventory(smartObjectId, items);
@@ -479,7 +458,35 @@ contract InventoryTest is EveTest {
   // function testWithdrawWithBigArraySize(uint256 storageCapacity) public {
   //   vm.assume(storageCapacity >= 11000 && storageCapacity <= 90000);
 
-  //   testSetInventoryCapacity(storageCapacity);
+    testSetInventoryCapacity(storageCapacity);
+
+    vm.startPrank(deployer);
+    item5 = InventoryItem(4239, alice, 4239, 12, 400, 1);
+    item6 = InventoryItem(4240, alice, 4240, 12, 400, 1);
+    item7 = InventoryItem(4241, alice, 4241, 12, 400, 1);
+    item8 = InventoryItem(4242, alice, 4242, 12, 400, 1);
+    item9 = InventoryItem(4243, alice, 4243, 12, 400, 1);
+    item10 = InventoryItem(4244, alice, 4244, 12, 400, 1);
+    item11 = InventoryItem(4245, alice, 4245, 12, 400, 1);
+    item12 = InventoryItem(4246, alice, 4246, 12, 400, 1);
+
+    EntityRecord.set(item5.inventoryItemId, item5.itemId, item5.typeId, item5.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item5.inventoryItemId, alice);
+    EntityRecord.set(item6.inventoryItemId, item6.itemId, item6.typeId, item6.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item6.inventoryItemId, alice);
+    EntityRecord.set(item7.inventoryItemId, item7.itemId, item7.typeId, item7.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item7.inventoryItemId, alice);
+    EntityRecord.set(item8.inventoryItemId, item8.itemId, item8.typeId, item8.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item8.inventoryItemId, alice);
+    EntityRecord.set(item9.inventoryItemId, item9.itemId, item9.typeId, item9.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item9.inventoryItemId, alice);
+    EntityRecord.set(item10.inventoryItemId, item10.itemId, item10.typeId, item10.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item10.inventoryItemId, alice);
+    EntityRecord.set(item11.inventoryItemId, item11.itemId, item11.typeId, item11.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item11.inventoryItemId, alice);
+    EntityRecord.set(item12.inventoryItemId, item12.itemId, item12.typeId, item12.volume, true);
+    entitySystem.instantiate(inventoryItemClassId, item12.inventoryItemId, alice);
+    vm.stopPrank();
 
   //   InventoryItemParams[] memory items = new InventoryItemParams[](12);
   //   item1.quantity = 3;
@@ -562,17 +569,11 @@ contract InventoryTest is EveTest {
   //   inventorySystem.withdrawFromInventory(smartObjectId, items);
   //   vm.stopPrank();
 
-  //   uint256 itemId1 = uint256(4235);
-  //   uint256 itemId3 = uint256(4237);
+    uint256 itemId3 = uint256(4237);
 
-  //   InventoryItemData memory inventoryItem1 = InventoryItem.get(smartObjectId, itemId1);
-  //   InventoryItemData memory inventoryItem2 = InventoryItem.get(smartObjectId, itemId3);
+    InventoryItemData memory inventoryItem3 = InventoryItemTable.get(smartObjectId, itemId3);
 
-  //   assertEq(inventoryItem1.quantity, 2);
-  //   assertEq(inventoryItem2.quantity, 0);
-
-  //   assertEq(inventoryItem1.index, 0);
-  //   assertEq(inventoryItem2.index, 0);
+    assertEq(inventoryItem3.quantity, 0);
 
   //   inventoryData = Inventory.get(smartObjectId);
   //   assertEq(inventoryData.items.length, 1);

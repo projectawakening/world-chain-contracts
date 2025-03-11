@@ -173,7 +173,7 @@ contract SmartGateSystem is SmartObjectFramework {
   }
 
   function getSmartGateClassId() public view returns (uint256) {
-    return uint256(bytes32("SMART_GATE"));
+    return Initialize.get(smartGateSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {

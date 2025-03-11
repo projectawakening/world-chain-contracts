@@ -141,8 +141,8 @@ contract SmartTurretSystem is SmartObjectFramework {
     return updatedPriorityQueue;
   }
 
-  function getSmartTurretClassId() public pure returns (uint256) {
-    return uint256(bytes32("SMART_TURRET"));
+  function getSmartTurretClassId() public view returns (uint256) {
+    return Initialize.get(smartTurretSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {

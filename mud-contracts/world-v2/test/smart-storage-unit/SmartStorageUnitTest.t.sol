@@ -6,8 +6,15 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+import { SmartStorageUnitSystem } from "../../src/namespaces/evefrontier/systems/smart-storage-unit/SmartStorageUnitSystem.sol";
+import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
+import { InventoryUtils } from "../../src/namespaces/evefrontier/systems/inventory/InventoryUtils.sol";
+import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
+import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
+import { State, SmartObjectData } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
+import { EntityRecordData, EntityMetadata } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { WorldPosition, Coord } from "../../src/namespaces/evefrontier/systems/location/types.sol";
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { InventoryData, Inventory } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
@@ -23,16 +30,24 @@ import { ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codeg
 import { smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { SMART_STORAGE_UNIT } from "../../src/namespaces/evefrontier/systems/constants.sol";
-import { EveTest } from "../EveTest.sol";
 
-contract SmartStorageUnitTest is EveTest {
-  // uint256 smartObjectId = 6666666;
-  // uint256 characterId = 123;
-  // uint256 diffCharacterId = 9999;
-  // uint256 tribeId = 100;
-  // WorldPosition worldPosition;
-  // EntityRecordParams entityRecord;
-  // uint256 fuelMaxCapacity = 1000000000;
+import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+import { EntityRecordSystemLib, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
+
+contract SmartStorageUnitTest is MudTest {
+  string mnemonic = "test test test test test test test test test test test junk";
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  address bob = vm.addr(vm.deriveKey(mnemonic, 3));
+
+  uint256 smartObjectId = 6666666;
+  uint256 characterId = 123;
+  uint256 diffCharacterId = 9999;
+  uint256 tribeId = 100;
+  SmartObjectData smartObjectData;
+  WorldPosition worldPosition;
+  EntityRecordData entityRecord;
+  uint256 fuelMaxCapacity = 1000000000;
 
   // uint256 inventoryItemId = 1233333;
   // uint256 diffInventoryItemId = 9999999;
@@ -56,10 +71,19 @@ contract SmartStorageUnitTest is EveTest {
   //   Coord memory position = Coord({ x: 1, y: 1, z: 1 });
   //   worldPosition = WorldPosition({ solarSystemId: 1, position: position });
 
-  //   smartCharacterSystem.createCharacter(characterId, alice, tribeId, entityRecord, entityRecordMetadata);
-  //   smartCharacterSystem.createCharacter(diffCharacterId, bob, tribeId, entityRecord, entityRecordMetadata);
-  //   vm.stopPrank();
-  // }
+    smartCharacterSystem.createCharacter(characterId, alice, tribeId, entityRecord, entityRecordMetadata);
+    smartCharacterSystem.createCharacter(diffCharacterId, bob, tribeId, entityRecord, entityRecordMetadata);
+
+    uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
+    ResourceId[] memory inventoryTestSystemIds = new ResourceId[](5);
+    inventoryTestSystemIds[0] = inventorySystem.toResourceId();
+    inventoryTestSystemIds[1] = ephemeralInventorySystem.toResourceId();
+    inventoryTestSystemIds[2] = deployableSystem.toResourceId();
+    inventoryTestSystemIds[3] = fuelSystem.toResourceId();
+    inventoryTestSystemIds[4] = entityRecordSystem.toResourceId();
+    entitySystem.registerClass(inventoryItemClassId, inventoryTestSystemIds);
+    vm.stopPrank();
+  }
 
   // function testcreateAndAnchorSmartStorageUnit(
   //   uint256 fuelUnitVolume,

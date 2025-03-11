@@ -7,6 +7,8 @@ import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+
 import { SmartGateConfig } from "../../src/namespaces/evefrontier/codegen/tables/SmartGateConfig.sol";
 import { DeployableState } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
 import { SmartAssembly } from "../../src/namespaces/evefrontier/codegen/tables/SmartAssembly.sol";
@@ -25,12 +27,12 @@ import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/
 import { LocationData } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
 
 import { SMART_GATE } from "../../src/namespaces/evefrontier/systems/constants.sol";
-import { EveTest } from "../EveTest.sol";
-import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-system/AccessSystem.sol";
+import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
 
-contract SmartGateTest is EveTest {
-  // SmartGateCustomMock smartGateCustomMock;
-  // bytes14 constant CUSTOM_NAMESPACE = "custom-namespa";
+contract SmartGateTest is MudTest {
+  IWorldWithContext world;
+  SmartGateCustomMock smartGateCustomMock;
+  bytes14 constant CUSTOM_NAMESPACE = "custom-namespa";
 
   // ResourceId SMART_GATE_CUSTOM_MOCK_SYSTEM_ID;
 
@@ -46,12 +48,20 @@ contract SmartGateTest is EveTest {
   // uint256 fuelMaxCapacity = 100;
   // uint256 maxDistance = 100000000 * 1e18;
 
-  // EntityRecordParams entityRecord;
-  // WorldPosition worldPosition;
+  SmartObjectData smartObjectData;
+  EntityRecordData entityRecord;
+  WorldPosition worldPosition;
 
-  // function setUp() public virtual override {
-  //   super.setUp();
-  //   entityRecord = EntityRecordParams({ typeId: 123, itemId: 234, volume: 100 });
+  string mnemonic = "test test test test test test test test test test test junk";
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+
+  function setUp() public virtual override {
+    super.setUp();
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithContext(worldAddress);
+
+    entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
 
   //   EntityMetadata memory entityRecordMetadata = EntityMetadata({
   //     name: "name",

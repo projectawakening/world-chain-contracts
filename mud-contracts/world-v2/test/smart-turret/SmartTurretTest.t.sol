@@ -6,6 +6,7 @@ import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 import { SmartAssembly } from "../../src/namespaces/evefrontier/codegen/tables/SmartAssembly.sol";
 import { SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/tables/SmartTurretConfig.sol";
@@ -23,11 +24,12 @@ import { fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/Fue
 import { LocationData } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { AggressionParams } from "../../src/namespaces/evefrontier/systems/smart-turret/types.sol";
-import { EveTest } from "../EveTest.sol";
-import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-system/AccessSystem.sol";
-contract SmartTurretTest is EveTest {
-  // SmartTurretCustomMock smartTurretCustomMock;
-  // bytes14 constant CUSTOM_NAMESPACE = "custom-namespa";
+import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
+
+contract SmartTurretTest is MudTest {
+  IWorldWithContext world;
+  SmartTurretCustomMock smartTurretCustomMock;
+  bytes14 constant CUSTOM_NAMESPACE = "custom-namespa";
 
   // ResourceId SMART_TURRET_CUSTOM_MOCK_SYSTEM_ID;
 
@@ -35,11 +37,18 @@ contract SmartTurretTest is EveTest {
   // uint256 characterId = 11111;
   // uint256 tribeId = 100;
 
-  // EntityRecordParams entityRecord;
-  // WorldPosition worldPosition;
+  SmartObjectData smartObjectData;
+  EntityRecordData entityRecord;
+  WorldPosition worldPosition;
 
-  // function setUp() public virtual override {
-  //   super.setUp();
+  string mnemonic = "test test test test test test test test test test test junk";
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+
+  function setUp() public virtual override {
+    super.setUp();
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithContext(worldAddress);
 
   //   entityRecord = EntityRecordParams({ typeId: 123, itemId: 234, volume: 100 });
 

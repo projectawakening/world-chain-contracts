@@ -3,8 +3,6 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { World } from "@latticexyz/world/src/World.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
@@ -16,12 +14,13 @@ import { SmartAssembly } from "../../src/namespaces/evefrontier/codegen/tables/S
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { smartAssemblySystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
 
-import { EveTest } from "../EveTest.sol";
+contract SmartAssemblyTest is MudTest {
+  uint256 testClassId = uint256(bytes32("TEST"));
+  uint256 smartObjectId = 1234;
+  string smartAssemblyType = "SSU";
 
-contract SmartAssemblyTest is EveTest {
-  // uint256 testClassId = uint256(bytes32("TEST"));
-  // uint256 smartObjectId = 1234;
-  // string smartAssemblyType = "SSU";
+  string mnemonic = "test test test test test test test test test test test junk";
+  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
 
   // function setUp() public virtual override {
   //   super.setUp();

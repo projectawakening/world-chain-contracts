@@ -103,7 +103,7 @@ contract SmartCharacterSystem is SmartObjectFramework {
     entitySystem.deleteObject(smartObjectId);
   }
 
-  function getSmartCharacterClassId() public pure returns (uint256) {
-    return uint256(bytes32("SMART_CHARACTER"));
+  function getSmartCharacterClassId() public view returns (uint256) {
+    return Initialize.get(smartCharacterSystem.toResourceId());
   }
 }

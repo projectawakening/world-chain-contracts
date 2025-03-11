@@ -27,13 +27,13 @@ runs:
           ${{ runner.os }}-pnpm-store-
 
     - name: Cache Nx cache directory
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/.nx
         key: ${{ runner.os }}-nx-${{ hashFiles('**/nx.json') }}
 
     - name: Cache codegen directory
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ./**/src/codegen
         key: ${{ runner.os }}-codegen-${{ hashFiles('./**/**/src/codegen/**') }}

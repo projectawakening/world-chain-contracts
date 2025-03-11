@@ -29,5 +29,5 @@ interface ISmartCharacterSystem {
 
   function evefrontier__removeCharacter(uint256 smartObjectId) external;
 
-  function evefrontier__getSmartCharacterClassId() external pure returns (uint256);
+  function evefrontier__getSmartCharacterClassId() external view returns (uint256);
 }

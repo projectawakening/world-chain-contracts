@@ -26,10 +26,10 @@ fs_permissions = [{ access = "read", path = "./"}]
 [fuzz]
 max_test_rejects = 750536
 runs = 1000
+gas_limit = 12000000000
 
 [profile.garnet]
 eth_rpc_url = "https://rpc.garnetchain.com"
 
 [profile.redstone]
 eth_rpc_url = "https://rpc.redstonechain.com"
-
