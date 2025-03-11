@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Start anvil with the saved state
 echo "Starting Anvil node with saved smart object frameowrk snapshot..."
