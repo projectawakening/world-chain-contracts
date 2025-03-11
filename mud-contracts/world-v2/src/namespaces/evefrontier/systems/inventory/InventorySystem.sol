@@ -21,7 +21,7 @@ import {
   DeployableState, 
   DeployableStateData, 
   InventoryItemData, 
-  InventoryItem, 
+  InventoryItem,
   InventoryByItem,
   EphemeralInvCapacity
 } from "../../codegen/index.sol";
@@ -56,7 +56,7 @@ contract InventorySystem is SmartObjectFramework {
    * modifier to enforce inventory changes can happen only when the game server is running
    */
   modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused() == false) {
+    if (!GlobalDeployableState.getIsPaused()) {
       revert DeployableSystem.Deployable_StateTransitionPaused();
     }
     _;
@@ -96,14 +96,14 @@ contract InventorySystem is SmartObjectFramework {
    * @param smartObjectId The associated smart object id
    * @param items The items to create records for and deposit to the inventory
    */
-  function createAndDeposit(
+  function createAndDepositInventory(
     uint256 smartObjectId,
     CreateInventoryItemParams[] memory items
   ) public context access(smartObjectId) scope(smartObjectId) {
     // Create entity records for the items and format input as InventoryItemParams
-    InventoryItemParams[] memory inventoryItems = _createEntityRecords(smartObjectId, items);
+    InventoryItemParams[] memory inventoryItems = _createEntityRecords(items);
     // Deposit the items
-    deposit(smartObjectId, inventoryItems);
+    depositInventory(smartObjectId, inventoryItems);
   }
 
   /**
@@ -111,14 +111,14 @@ contract InventorySystem is SmartObjectFramework {
    * @param smartObjectId The associated smart object id
    * @param items The items to deposit to inventory
    */
-  function deposit(
+  function depositInventory(
     uint256 smartObjectId,
     InventoryItemParams[] memory items
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     // Validate state (uses the primary inventory's associated smart object state)
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (currentState == State.NULL || currentState != State.ONLINE) { // NOTE: NULL can never be the state of a Deployable smart object, so we are using it to pass non-Deployable smart objects
+      if (currentState == State.NULL || currentState != State.ONLINE) { // NOTE: NULL can never be the state of a createdDeployable smart object, so we are using it to pass non-Deployable smart objects
         revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
       }
     }
@@ -161,7 +161,7 @@ contract InventorySystem is SmartObjectFramework {
    * @param smartObjectId The associated smart object id
    * @param items The items to withdraw from inventory
    */
-  function withdraw(
+  function withdrawInventory(
     uint256 smartObjectId,
     InventoryItemParams[] memory items
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
@@ -314,7 +314,6 @@ contract InventorySystem is SmartObjectFramework {
   }
 
   function _createEntityRecords(
-    uint256 smartObjectId,
     CreateInventoryItemParams[] memory items
   ) internal returns (InventoryItemParams[] memory) {
     InventoryItemParams[] memory inventoryItems = new InventoryItemParams[](items.length);

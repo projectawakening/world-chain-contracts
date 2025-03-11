@@ -4,27 +4,26 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+// import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { Characters, CharactersData } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-import { EntityRecord, EntityRecordData } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { Characters } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
+// import { Characters, CharactersData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+// import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
+// import { EntityRecord, EntityRecordData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+// import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+// import { Characters } from "../../src/namespaces/evefrontier/codegen/index.sol";
+// import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
+// import { smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 
-import "forge-std/console.sol";
 
 contract SmartCharacterTest is MudTest {
-  string mnemonic = "test test test test test test test test test test test junk";
-  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  // string mnemonic = "test test test test test test test test test test test junk";
+  // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
 
-  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
 
-  uint256 testClassId = uint256(bytes32("characterClassId"));
+  // uint256 testClassId = uint256(bytes32("characterClassId"));
 
   // function setUp() public virtual override {
   //   super.setUp();

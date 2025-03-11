@@ -93,7 +93,7 @@ contract DeployableSystem is SmartObjectFramework {
     uint256 fuelMaxCapacity
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
-    if (!(previousState == State.NULL || previousState == State.UNANCHORED)) {
+    if (previousState != State.NULL) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
@@ -229,7 +229,6 @@ contract DeployableSystem is SmartObjectFramework {
 
   /**
    * @dev brings all smart deployables online
-   * TODO: limit to admin use only
    */
   function globalPause() public context access(0) scope(0) {
     GlobalDeployableState.setIsPaused(false);
@@ -239,7 +238,6 @@ contract DeployableSystem is SmartObjectFramework {
 
   /**
    * @dev brings all smart deployables offline
-   * TODO: limit to admin use only
    */
   function globalResume() public context access(0) scope(0) {
     GlobalDeployableState.setIsPaused(true);

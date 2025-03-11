@@ -11,14 +11,12 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { SmartGateConfig } from "../../codegen/tables/SmartGateConfig.sol";
-import { SmartGateLink, SmartGateLinkData } from "../../codegen/tables/SmartGateLink.sol";
-import { DeployableState } from "../../codegen/index.sol";
-import { LocationData, Location } from "../../codegen/tables/Location.sol";
+import { SmartGateConfig, SmartGateLink, SmartGateLinkData, DeployableState, Location, LocationData, Initialize } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
-import { DeployableSystemLib, deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
 
 // Types and parameters
 import { State, CreateAndAnchorParams } from "../deployable/types.sol";

@@ -42,7 +42,7 @@ import { State } from "../deployable/types.sol";
  * @author CCP Games
  * @notice EphemeralInventorySystem provides ephemeral inventory functionality
  * 
- * NOTE: Ephemeral inventories are owned by a specific player and track items separately than the primary smart object inventory.
+ * NOTE: Ephemeral inventories are owned by a specific player and track items separately than the primary smart object inventory. We create an ephemeral smart object for each player and use that epheemral smart object id to track the inventory.
  */
 contract EphemeralInventorySystem is SmartObjectFramework {
   using WorldResourceIdInstance for ResourceId;
@@ -58,7 +58,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
    * modifier to enforce inventory changes can happen only when the game server is running
    */
   modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused() == false) {
+    if (!GlobalDeployableState.getIsPaused()) {
       revert DeployableSystem.Deployable_StateTransitionPaused();
     }
     _;
@@ -114,7 +114,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     // Generate ephemeral inventory object id
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
     
-    // Link the ephemeral inventory to the associated smart object (if needed)
+    // Link the ephemeral inventory object to the associated smart object (if needed)
     if (ObjectByEphemeral.getSmartObjectId(ephemeralSmartObjectId) == 0) {
       ObjectByEphemeral.set(ephemeralSmartObjectId, smartObjectId);
     }
@@ -170,7 +170,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
-  ) public context access(smartObjectId) scope(smartObjectId) {
+  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     // Validate state (uses the associated smart object's state. This entails that the associated smart object exists and is anchored or online.
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);

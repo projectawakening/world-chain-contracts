@@ -15,7 +15,7 @@
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix --quiet",
     "test:world": "mud test --worldAddress $WORLD_ADDRESS --forgeOptions='--no-match-path=test/eve-erc721-puppet/ERC721.t.sol -vvv'",
-    "config-sof": "forge script script/ConfigSof.s.sol:ConfigSof --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
+    "config": "forge script script/Config.s.sol:Config --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "test": "chmod +x run-tests.sh && ./run-tests.sh"
   },
   "dependencies": {

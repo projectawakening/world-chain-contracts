@@ -19,9 +19,9 @@ interface IEveSystem {
 
   function evefrontier__configureEntityRecordAccess() external;
 
-  function evefrontier__configureStaticDataAccess() external;
-
   function evefrontier__configureSmartAssemblyAccess() external;
+
+  function evefrontier__configureOwnershipAccess() external;
 
   function evefrontier__configureSmartCharacterAccess() external;
 
@@ -34,6 +34,8 @@ interface IEveSystem {
   function evefrontier__configureInventoryAccess() external;
 
   function evefrontier__configureEphemeralInventoryAccess() external;
+
+  function evefrontier__configureEphemeralInteractAccess() external;
 
   function evefrontier__configureInventoryInteractAccess() external;
 

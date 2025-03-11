@@ -5,10 +5,13 @@ pragma solidity >=0.8.24;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
+// Local namespace tables
+import { Initialize } from "../../codegen/index.sol";
+
 // Local namespace systems
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
-
+import { smartStorageUnitSystem } from "../../codegen/systems/SmartStorageUnitSystemLib.sol";
 // Types and parameters
 import { CreateAndAnchorParams } from "../deployable/types.sol";
 import { SMART_STORAGE_UNIT } from "../constants.sol";
@@ -29,7 +32,7 @@ contract SmartStorageUnitSystem is SmartObjectFramework {
     inventorySystem.setEphemeralCapacity(params.smartObjectId, ephemeralStorageCapacity);
   }
 
-  function getSmartStorageUnitClassId() public pure returns (uint256) {
-    return uint256(bytes32("SSU"));
+  function getSmartStorageUnitClassId() public view returns (uint256) {
+    return Initialize.get(smartStorageUnitSystem.toResourceId());
   }
 }

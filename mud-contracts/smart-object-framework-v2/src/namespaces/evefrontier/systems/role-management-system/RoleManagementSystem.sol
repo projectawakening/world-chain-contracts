@@ -282,7 +282,6 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
    * @dev Attempts to grant `role` membership to `account` (if HasRole.hasRole is false)
    * @param role Role to grant
    * @param account Role membership recipient address
-   * @dev if the role is singleton and already has a member, the function will revert
    */
   function _grantRole(bytes32 role, address account) internal virtual {
     uint256 lengthMembers = Role.lengthMembers(role);

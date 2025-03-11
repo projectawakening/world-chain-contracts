@@ -10,8 +10,7 @@ import {
   WorldOwnership, 
   AccountOwnership, 
   OwnershipByObject, 
-  InventoryByItem, 
-  Inventory, 
+  InventoryByItem,
   InventoryItem, 
   EntityRecord, 
   CharactersByAccount 
@@ -78,10 +77,10 @@ contract OwnershipSystem is SmartObjectFramework {
 
     /**
      * @notice Ascribe new ownership of a singleton smart object to an account
-     * @param smartObjectId The smart object id
+     * @param smartObjectId The smart object id to ascribe ownership of (could be an ephemeral object)
      * @param to The owner account address to ascribe the smart object to
      */
-    function ascribeToAccount(uint256 smartObjectId, address to) access(smartObjectId) scope(smartObjectId) public {
+    function ascribeToAccount(uint256 smartObjectId, address to) public access(smartObjectId) {
       // Check if the object exists
       if (!Entity.getExists(smartObjectId)) {
         revert Ownership_NonexistentObject(smartObjectId);
@@ -105,10 +104,10 @@ contract OwnershipSystem is SmartObjectFramework {
     /**
      * @notice Ascribe new ownership of smart object(s) to an inventory, in the given quantity.
      * @param itemObjectId The smart object id of the item to ascribe (singleton or non-singleton)
-     * @param inventoryObjectId The inventory object id (singleton)
+     * @param inventoryObjectId The assocaited smart object id of this inventory (could be an ephemeral object)
      * @param quantity The quantity to ascribe
      */
-    function ascribeToInventory(uint256 itemObjectId, uint256 inventoryObjectId, uint256 quantity) access(inventoryObjectId) public {
+    function ascribeToInventory(uint256 itemObjectId, uint256 inventoryObjectId, uint256 quantity) public access(inventoryObjectId) {
       if (!EntityRecord.getExists(itemObjectId)) {
         revert Ownership_NonexistentItemRecord(itemObjectId);
       }
@@ -135,10 +134,10 @@ contract OwnershipSystem is SmartObjectFramework {
 
     /**
      * @notice Annul ownership of a singleton smart object from an account.
-     * @param smartObjectId The singleton smart object id
+     * @param smartObjectId The smart object id to annul ownership of
      * @param from The current owner account address
      */
-    function annulFromAccount(uint256 smartObjectId, address from) access(smartObjectId) scope(smartObjectId) public {
+    function annulFromAccount(uint256 smartObjectId, address from) public access(smartObjectId) {
       // Check if the object exists
       if (!Entity.getExists(smartObjectId)) {
         revert Ownership_NonexistentObject(smartObjectId);
@@ -165,11 +164,11 @@ contract OwnershipSystem is SmartObjectFramework {
 
     /**
      * @notice Annul ownership of smart object(s) from an inventory in the given quantity.
-     * @param itemObjectId The smart object id
-     * @param inventoryObjectId The inventory object id
+     * @param itemObjectId The item smart object id
+     * @param inventoryObjectId The assocaited smart object id of this inventory (could be an ephemeral object)
      * @param quantity The quantity to annul
      */
-    function annulFromInventory(uint256 itemObjectId, uint256 inventoryObjectId, uint256 quantity) access(inventoryObjectId) public {
+    function annulFromInventory(uint256 itemObjectId, uint256 inventoryObjectId, uint256 quantity) public access(inventoryObjectId) {
       // Check if item is in the inventory
       if (InventoryByItem.getInventoryId(itemObjectId) != inventoryObjectId) {
         revert Ownership_InvalidInventory(itemObjectId, inventoryObjectId);
@@ -197,7 +196,7 @@ contract OwnershipSystem is SmartObjectFramework {
      * @param toInventoryObjectId The destination inventory smart object id
      * @param quantity The quantity to transfer
      */
-    function transferInventory(uint256 itemObjectId, uint256 toInventoryObjectId, uint256 quantity) access(toInventoryObjectId) public {
+    function transferInventory(uint256 itemObjectId, uint256 toInventoryObjectId, uint256 quantity) public access(toInventoryObjectId) {
       // Check if the source inventory is owned
       if (owner(itemObjectId) == address(0)) {
         revert Ownership_InvalidOwner(itemObjectId, address(0));

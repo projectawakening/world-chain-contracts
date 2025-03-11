@@ -13,11 +13,12 @@ import { EntityTagMap, Entity } from "@eveworld/smart-object-framework-v2/src/na
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { Characters, CharactersByAccount, EntityRecord, Tenant } from "../../codegen/index.sol";
+import { Characters, CharactersByAccount, EntityRecord, Initialize, Tenant } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams, EntityMetadataParams } from "../entity-record/types.sol";

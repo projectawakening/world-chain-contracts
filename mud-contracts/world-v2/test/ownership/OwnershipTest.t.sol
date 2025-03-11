@@ -3,31 +3,31 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { World } from "@latticexyz/world/src/World.sol";
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+// import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+// import { World } from "@latticexyz/world/src/World.sol";
+// import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { WorldOwnership } from "../../src/namespaces/evefrontier/codegen/tables/WorldOwnership.sol";
-import { AccountOwnership } from "../../src/namespaces/evefrontier/codegen/tables/AccountOwnership.sol";
-import { OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/tables/OwnershipByObject.sol";
-import { InventoryByItem } from "../../src/namespaces/evefrontier/codegen/tables/InventoryByItem.sol";
-import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
-import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
-import { Inventory, InventoryData } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
-import { InventoryItem, InventoryItemData } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
-import { CharactersByAccount } from "../../src/namespaces/evefrontier/codegen/tables/CharactersByAccount.sol";
+// import { WorldOwnership } from "../../src/namespaces/evefrontier/codegen/tables/WorldOwnership.sol";
+// import { AccountOwnership } from "../../src/namespaces/evefrontier/codegen/tables/AccountOwnership.sol";
+// import { OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/tables/OwnershipByObject.sol";
+// import { InventoryByItem } from "../../src/namespaces/evefrontier/codegen/tables/InventoryByItem.sol";
+// import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/tables/EntityRecord.sol";
+// import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
+// import { Inventory, InventoryData } from "../../src/namespaces/evefrontier/codegen/tables/Inventory.sol";
+// import { InventoryItem, InventoryItemData } from "../../src/namespaces/evefrontier/codegen/tables/InventoryItem.sol";
+// import { CharactersByAccount } from "../../src/namespaces/evefrontier/codegen/tables/CharactersByAccount.sol";
 
-import { OwnershipSystemLib, ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
-import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
-import { EveTest } from "../EveTest.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
-import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-system/AccessSystem.sol";
-import { OwnershipSystem } from "../../src/namespaces/evefrontier/systems/ownership/OwnershipSystem.sol";
-import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
+// import { OwnershipSystemLib, ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+// import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
+// import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
+// import { EveTest } from "../EveTest.sol";
+// import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-system/AccessSystem.sol";
+// import { OwnershipSystem } from "../../src/namespaces/evefrontier/systems/ownership/OwnershipSystem.sol";
+// import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+// import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 
-contract OwnershipTest is EveTest {
+contract OwnershipTest is MudTest {
   // uint256 singletonObjectId = 1234;
   // uint256 nonSingletonObjectId = 2345;
   // uint256 inventoryObjectId = 3456;

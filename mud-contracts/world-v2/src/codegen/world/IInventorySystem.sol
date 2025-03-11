@@ -28,9 +28,12 @@ interface IInventorySystem {
 
   function evefrontier__setEphemeralCapacity(uint256 smartObjectId, uint256 ephemeralCapacity) external;
 
-  function evefrontier__createAndDeposit(uint256 smartObjectId, CreateInventoryItemParams[] memory items) external;
+  function evefrontier__createAndDepositInventory(
+    uint256 smartObjectId,
+    CreateInventoryItemParams[] memory items
+  ) external;
 
-  function evefrontier__deposit(uint256 smartObjectId, InventoryItemParams[] memory items) external;
+  function evefrontier__depositInventory(uint256 smartObjectId, InventoryItemParams[] memory items) external;
 
-  function evefrontier__withdraw(uint256 smartObjectId, InventoryItemParams[] memory items) external;
+  function evefrontier__withdrawInventory(uint256 smartObjectId, InventoryItemParams[] memory items) external;
 }

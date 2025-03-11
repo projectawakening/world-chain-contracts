@@ -3,29 +3,29 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+// import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { Fuel } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { FuelSystem } from "../../src/namespaces/evefrontier/systems/fuel/FuelSystem.sol";
-import { Fuel, FuelData } from "../../src/namespaces/evefrontier/codegen/tables/Fuel.sol";
-import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
-import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
-import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { Location, LocationData } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
+// import { Fuel } from "../../src/namespaces/evefrontier/codegen/index.sol";
+// import { FuelSystem } from "../../src/namespaces/evefrontier/systems/fuel/FuelSystem.sol";
+// import { Fuel, FuelData } from "../../src/namespaces/evefrontier/codegen/tables/Fuel.sol";
+// import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
+// import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
+// import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
+// import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
+// import { Location, LocationData } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
 
-import { DECIMALS, ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
+// import { DECIMALS, ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
 
 import { DeployableTest } from "../deployable/DeployableTest.t.sol";
-import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
-import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+// import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
+// import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
 contract FuelTest is DeployableTest {
   // LocationData location = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
 
-  function setUp() public virtual override {
-    super.setUp();
-  }
+  // function setUp() public virtual override {
+  //   super.setUp();
+  // }
 
   // function testSetFuel(
   //   uint256 fuelUnitVolume,

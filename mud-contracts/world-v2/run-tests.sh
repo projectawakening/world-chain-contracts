@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start anvil with the saved state
-echo "Starting Anvil node with saved smart object frameowrk snapshot..."
+echo "Starting Anvil node with saved smart object framework snapshot..."
 anvil --load-state sof-state.json > /dev/null 2>&1 &
 ANVIL_PID=$!
 
@@ -15,7 +15,7 @@ export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f
 export RPC_URL=http://127.0.0.1:8545
 
 pnpm run deploy --worldAddress $WORLD_ADDRESS
-pnpm run config-sof
+pnpm run config
 pnpm run test:world
 
 # Kill anvil process

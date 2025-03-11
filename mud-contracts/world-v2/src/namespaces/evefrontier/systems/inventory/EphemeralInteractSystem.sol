@@ -4,6 +4,7 @@ pragma solidity >=0.8.24;
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
+import { HasRole, Role } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
 import { ItemTransfer } from "../../codegen/tables/ItemTransfer.sol";
@@ -39,7 +40,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     // withdraw the items from the designated ephemeral inventory
     ephemeralInventorySystem.withdrawEphemeral(smartObjectId, ephemeralOwner, items);
     // deposit the items to the designated inventory
-    inventorySystem.deposit(smartObjectId, items);
+    inventorySystem.depositInventory(smartObjectId, items);
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
@@ -62,7 +63,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     address inventoryOwner = ownershipSystem.owner(smartObjectId);
 
     // withdraw the items from the designated inventory
-    inventorySystem.withdraw(smartObjectId, items);
+    inventorySystem.withdrawInventory(smartObjectId, items);
     // deposit the items to the designated ephemeral inventory
     ephemeralInventorySystem.depositEphemeral(smartObjectId, ephemeralOwner, items);
 
@@ -78,11 +79,17 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     bool isAllowed
   ) public context access(smartObjectId) scope(smartObjectId) {
     bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_FROM_EPHEMERAL_ROLE", smartObjectId));
+    
+    // Create the role if it doesn't exist
+    if (!Role.getExists(accessRole)) {
+      roleManagementSystem.scopedCreateRole(smartObjectId, accessRole, accessRole, accessAddress);
+    }
 
-    if (isAllowed) {
-      roleManagementSystem.grantRole(accessRole, accessAddress);
-    } else {
-      roleManagementSystem.revokeRole(accessRole, accessAddress);
+    // Grant or revoke the role
+    if (!HasRole.getIsMember(accessRole, accessAddress) && isAllowed) {
+      roleManagementSystem.scopedGrantRole(smartObjectId, accessRole, accessAddress);
+    } else if (HasRole.getIsMember(accessRole, accessAddress) && !isAllowed) {
+      roleManagementSystem.scopedRevokeRole(smartObjectId, accessRole, accessAddress);
     }
   }
 
@@ -93,10 +100,16 @@ contract EphemeralInteractSystem is SmartObjectFramework {
   ) public context access(smartObjectId) scope(smartObjectId) {
     bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_TO_EPHEMERAL_ROLE", smartObjectId));
 
-    if (isAllowed) {
-      roleManagementSystem.grantRole(accessRole, accessAddress);
-    } else {
-      roleManagementSystem.revokeRole(accessRole, accessAddress);
+    // Create the role if it doesn't exist
+    if (!Role.getExists(accessRole)) {
+      roleManagementSystem.scopedCreateRole(smartObjectId, accessRole, accessRole, accessAddress);
+    }
+
+    // Grant or revoke the role
+    if (!HasRole.getIsMember(accessRole, accessAddress) && isAllowed) {
+      roleManagementSystem.scopedGrantRole(smartObjectId, accessRole, accessAddress);
+    } else if (HasRole.getIsMember(accessRole, accessAddress) && !isAllowed) {
+      roleManagementSystem.scopedRevokeRole(smartObjectId, accessRole, accessAddress);
     }
   }
 }

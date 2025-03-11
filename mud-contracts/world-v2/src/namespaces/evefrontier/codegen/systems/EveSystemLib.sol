@@ -56,12 +56,12 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureEntityRecordAccess();
   }
 
-  function configureStaticDataAccess(EveSystemType self) internal {
-    return CallWrapper(self.toResourceId(), address(0)).configureStaticDataAccess();
-  }
-
   function configureSmartAssemblyAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureSmartAssemblyAccess();
+  }
+
+  function configureOwnershipAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureOwnershipAccess();
   }
 
   function configureSmartCharacterAccess(EveSystemType self) internal {
@@ -86,6 +86,10 @@ library EveSystemLib {
 
   function configureEphemeralInventoryAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureEphemeralInventoryAccess();
+  }
+
+  function configureEphemeralInteractAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureEphemeralInteractAccess();
   }
 
   function configureInventoryInteractAccess(EveSystemType self) internal {
@@ -160,21 +164,21 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function configureStaticDataAccess(CallWrapper memory self) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_configureStaticDataAccess.configureStaticDataAccess, ());
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
   function configureSmartAssemblyAccess(CallWrapper memory self) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_configureSmartAssemblyAccess.configureSmartAssemblyAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureOwnershipAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureOwnershipAccess.configureOwnershipAccess, ());
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -235,6 +239,16 @@ library EveSystemLib {
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_configureEphemeralInventoryAccess.configureEphemeralInventoryAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureEphemeralInteractAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureEphemeralInteractAccess.configureEphemeralInteractAccess, ());
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -311,13 +325,13 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function configureStaticDataAccess(RootCallWrapper memory self) internal {
-    bytes memory systemCall = abi.encodeCall(_configureStaticDataAccess.configureStaticDataAccess, ());
+  function configureSmartAssemblyAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureSmartAssemblyAccess.configureSmartAssemblyAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function configureSmartAssemblyAccess(RootCallWrapper memory self) internal {
-    bytes memory systemCall = abi.encodeCall(_configureSmartAssemblyAccess.configureSmartAssemblyAccess, ());
+  function configureOwnershipAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureOwnershipAccess.configureOwnershipAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -348,6 +362,11 @@ library EveSystemLib {
 
   function configureEphemeralInventoryAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureEphemeralInventoryAccess.configureEphemeralInventoryAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function configureEphemeralInteractAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureEphemeralInteractAccess.configureEphemeralInteractAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -429,12 +448,12 @@ interface _configureEntityRecordAccess {
   function configureEntityRecordAccess() external;
 }
 
-interface _configureStaticDataAccess {
-  function configureStaticDataAccess() external;
-}
-
 interface _configureSmartAssemblyAccess {
   function configureSmartAssemblyAccess() external;
+}
+
+interface _configureOwnershipAccess {
+  function configureOwnershipAccess() external;
 }
 
 interface _configureSmartCharacterAccess {
@@ -459,6 +478,10 @@ interface _configureInventoryAccess {
 
 interface _configureEphemeralInventoryAccess {
   function configureEphemeralInventoryAccess() external;
+}
+
+interface _configureEphemeralInteractAccess {
+  function configureEphemeralInteractAccess() external;
 }
 
 interface _configureInventoryInteractAccess {

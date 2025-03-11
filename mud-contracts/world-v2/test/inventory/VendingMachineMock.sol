@@ -2,12 +2,12 @@
 pragma solidity >=0.8.24;
 
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+// import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
+// import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
+// import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 
-import { InventoryInteractSystemLib, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
+// import { InventoryInteractSystemLib, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 
 contract VendingMachineMock is SmartObjectFramework {
   // /**

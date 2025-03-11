@@ -36,53 +36,72 @@ struct RootCallWrapper {
 library AccessSystemLib {
   error AccessSystemLib_CallingFromRootSystem();
   error Access_NotAdmin(address caller);
-  error Access_NotDeployableOwner(address caller, uint256 smartObjectId);
+  error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferFromEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotDeployableOwnerOrInventoryInteractSystem(address caller, uint256 smartObjectId);
-  error Access_NotInventoryAdmin(address caller, uint256 smartObjectId);
-  error Access_NotAdminOrDeployableSystem(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
 
-  function onlyOwnerOrCanTransferToEphemeral(
+  function onlyOwnerOrCanTransferToEphemeralRole(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCanTransferToEphemeral(smartObjectId, data);
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCanTransferToEphemeralRole(smartObjectId, data);
   }
 
-  function onlyOwnerOrCanTransferFromEphemeral(
+  function onlyOwnerOrCanTransferFromEphemeralRole(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCanTransferFromEphemeral(smartObjectId, data);
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCanTransferFromEphemeralRole(smartObjectId, data);
   }
 
-  function onlyDeployableOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyDeployableOwner(smartObjectId, data);
+  function onlyOwnerOrCanTransferToInventoryRole(
+    AccessSystemType self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCanTransferToInventoryRole(smartObjectId, data);
+  }
+
+  function onlyOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwner(smartObjectId, data);
   }
 
   function onlyAdmin(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
     return CallWrapper(self.toResourceId(), address(0)).onlyAdmin(smartObjectId, data);
   }
 
-  function onlyAdminOrDeployableOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrDeployableOwner(smartObjectId, data);
+  function onlyAdminOrOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrOwner(smartObjectId, data);
   }
 
-  function onlyDeployableOwnerOrInventoryInteractSystem(
+  function onlyAdminForCharactersOtherwiseAlsoOwner(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return
-      CallWrapper(self.toResourceId(), address(0)).onlyDeployableOwnerOrInventoryInteractSystem(smartObjectId, data);
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminForCharactersOtherwiseAlsoOwner(smartObjectId, data);
   }
 
-  function onlyAdminOrDeployableSystem(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrDeployableSystem(smartObjectId, data);
+  function onlyOwnerOrCallAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCallAccess(smartObjectId, data);
+  }
+
+  function onlyAdminOrCallAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrCallAccess(smartObjectId, data);
+  }
+
+  function onlyAdminOrCallAccessWithScopeEnforced(
+    AccessSystemType self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrCallAccessWithScopeEnforced(smartObjectId, data);
   }
 
   function isAdmin(AccessSystemType self, address caller) internal view returns (bool) {
@@ -117,19 +136,7 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).canTransferToInventory(smartObjectId, caller);
   }
 
-  function isInventoryInteractSystem(AccessSystemType self, address caller) internal view returns (bool) {
-    return CallWrapper(self.toResourceId(), address(0)).isInventoryInteractSystem(caller);
-  }
-
-  function isEphemeralInteractSystem(AccessSystemType self, address caller) internal view returns (bool) {
-    return CallWrapper(self.toResourceId(), address(0)).isEphemeralInteractSystem(caller);
-  }
-
-  function isDeployableSystem(AccessSystemType self, address caller) internal view returns (bool) {
-    return CallWrapper(self.toResourceId(), address(0)).isDeployableSystem(caller);
-  }
-
-  function onlyOwnerOrCanTransferToEphemeral(
+  function onlyOwnerOrCanTransferToEphemeralRole(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -138,7 +145,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyOwnerOrCanTransferToEphemeral_uint256_bytes.onlyOwnerOrCanTransferToEphemeral,
+      _onlyOwnerOrCanTransferToEphemeralRole_uint256_bytes.onlyOwnerOrCanTransferToEphemeralRole,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -149,7 +156,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyOwnerOrCanTransferFromEphemeral(
+  function onlyOwnerOrCanTransferFromEphemeralRole(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -158,7 +165,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyOwnerOrCanTransferFromEphemeral_uint256_bytes.onlyOwnerOrCanTransferFromEphemeral,
+      _onlyOwnerOrCanTransferFromEphemeralRole_uint256_bytes.onlyOwnerOrCanTransferFromEphemeralRole,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -169,14 +176,31 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDeployableOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyOwnerOrCanTransferToInventoryRole(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyDeployableOwner_uint256_bytes.onlyDeployableOwner,
+      _onlyOwnerOrCanTransferToInventoryRole_uint256_bytes.onlyOwnerOrCanTransferToInventoryRole,
       (smartObjectId, data)
     );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
+  function onlyOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_onlyOwner_uint256_bytes.onlyOwner, (smartObjectId, data));
     bytes memory worldCall = self.from == address(0)
       ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
       : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
@@ -198,12 +222,29 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminOrDeployableOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyAdminOrOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_onlyAdminOrOwner_uint256_bytes.onlyAdminOrOwner, (smartObjectId, data));
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
+  function onlyAdminForCharactersOtherwiseAlsoOwner(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrDeployableOwner_uint256_bytes.onlyAdminOrDeployableOwner,
+      _onlyAdminForCharactersOtherwiseAlsoOwner_uint256_bytes.onlyAdminForCharactersOtherwiseAlsoOwner,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -214,16 +255,12 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDeployableOwnerOrInventoryInteractSystem(
-    CallWrapper memory self,
-    uint256 smartObjectId,
-    bytes memory data
-  ) internal view {
+  function onlyOwnerOrCallAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyDeployableOwnerOrInventoryInteractSystem_uint256_bytes.onlyDeployableOwnerOrInventoryInteractSystem,
+      _onlyOwnerOrCallAccess_uint256_bytes.onlyOwnerOrCallAccess,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -234,7 +271,23 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminOrDeployableSystem(
+  function onlyAdminOrCallAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _onlyAdminOrCallAccess_uint256_bytes.onlyAdminOrCallAccess,
+      (smartObjectId, data)
+    );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
+  function onlyAdminOrCallAccessWithScopeEnforced(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -243,7 +296,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrDeployableSystem_uint256_bytes.onlyAdminOrDeployableSystem,
+      _onlyAdminOrCallAccessWithScopeEnforced_uint256_bytes.onlyAdminOrCallAccessWithScopeEnforced,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -350,80 +403,44 @@ library AccessSystemLib {
     return abi.decode(result, (bool));
   }
 
-  function isInventoryInteractSystem(CallWrapper memory self, address caller) internal view returns (bool) {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_isInventoryInteractSystem_address.isInventoryInteractSystem, (caller));
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-
-    bytes memory result = abi.decode(returnData, (bytes));
-    return abi.decode(result, (bool));
-  }
-
-  function isEphemeralInteractSystem(CallWrapper memory self, address caller) internal view returns (bool) {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_isEphemeralInteractSystem_address.isEphemeralInteractSystem, (caller));
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-
-    bytes memory result = abi.decode(returnData, (bytes));
-    return abi.decode(result, (bool));
-  }
-
-  function isDeployableSystem(CallWrapper memory self, address caller) internal view returns (bool) {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_isDeployableSystem_address.isDeployableSystem, (caller));
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-
-    bytes memory result = abi.decode(returnData, (bytes));
-    return abi.decode(result, (bool));
-  }
-
-  function onlyOwnerOrCanTransferToEphemeral(
+  function onlyOwnerOrCanTransferToEphemeralRole(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyOwnerOrCanTransferToEphemeral_uint256_bytes.onlyOwnerOrCanTransferToEphemeral,
+      _onlyOwnerOrCanTransferToEphemeralRole_uint256_bytes.onlyOwnerOrCanTransferToEphemeralRole,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyOwnerOrCanTransferFromEphemeral(
+  function onlyOwnerOrCanTransferFromEphemeralRole(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyOwnerOrCanTransferFromEphemeral_uint256_bytes.onlyOwnerOrCanTransferFromEphemeral,
+      _onlyOwnerOrCanTransferFromEphemeralRole_uint256_bytes.onlyOwnerOrCanTransferFromEphemeralRole,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDeployableOwner(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyOwnerOrCanTransferToInventoryRole(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDeployableOwner_uint256_bytes.onlyDeployableOwner,
+      _onlyOwnerOrCanTransferToInventoryRole_uint256_bytes.onlyOwnerOrCanTransferToInventoryRole,
       (smartObjectId, data)
     );
+    SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+  }
+
+  function onlyOwner(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(_onlyOwner_uint256_bytes.onlyOwner, (smartObjectId, data));
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
@@ -432,37 +449,46 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminOrDeployableOwner(
+  function onlyAdminOrOwner(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(_onlyAdminOrOwner_uint256_bytes.onlyAdminOrOwner, (smartObjectId, data));
+    SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+  }
+
+  function onlyAdminForCharactersOtherwiseAlsoOwner(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrDeployableOwner_uint256_bytes.onlyAdminOrDeployableOwner,
+      _onlyAdminForCharactersOtherwiseAlsoOwner_uint256_bytes.onlyAdminForCharactersOtherwiseAlsoOwner,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDeployableOwnerOrInventoryInteractSystem(
-    RootCallWrapper memory self,
-    uint256 smartObjectId,
-    bytes memory data
-  ) internal view {
+  function onlyOwnerOrCallAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDeployableOwnerOrInventoryInteractSystem_uint256_bytes.onlyDeployableOwnerOrInventoryInteractSystem,
+      _onlyOwnerOrCallAccess_uint256_bytes.onlyOwnerOrCallAccess,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminOrDeployableSystem(
+  function onlyAdminOrCallAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(
+      _onlyAdminOrCallAccess_uint256_bytes.onlyAdminOrCallAccess,
+      (smartObjectId, data)
+    );
+    SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+  }
+
+  function onlyAdminOrCallAccessWithScopeEnforced(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrDeployableSystem_uint256_bytes.onlyAdminOrDeployableSystem,
+      _onlyAdminOrCallAccessWithScopeEnforced_uint256_bytes.onlyAdminOrCallAccessWithScopeEnforced,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
@@ -524,27 +550,6 @@ library AccessSystemLib {
     return abi.decode(result, (bool));
   }
 
-  function isInventoryInteractSystem(RootCallWrapper memory self, address caller) internal view returns (bool) {
-    bytes memory systemCall = abi.encodeCall(_isInventoryInteractSystem_address.isInventoryInteractSystem, (caller));
-
-    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
-    return abi.decode(result, (bool));
-  }
-
-  function isEphemeralInteractSystem(RootCallWrapper memory self, address caller) internal view returns (bool) {
-    bytes memory systemCall = abi.encodeCall(_isEphemeralInteractSystem_address.isEphemeralInteractSystem, (caller));
-
-    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
-    return abi.decode(result, (bool));
-  }
-
-  function isDeployableSystem(RootCallWrapper memory self, address caller) internal view returns (bool) {
-    bytes memory systemCall = abi.encodeCall(_isDeployableSystem_address.isDeployableSystem, (caller));
-
-    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
-    return abi.decode(result, (bool));
-  }
-
   function callFrom(AccessSystemType self, address from) internal pure returns (CallWrapper memory) {
     return CallWrapper(self.toResourceId(), from);
   }
@@ -583,32 +588,44 @@ library AccessSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _onlyOwnerOrCanTransferToEphemeral_uint256_bytes {
-  function onlyOwnerOrCanTransferToEphemeral(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwnerOrCanTransferToEphemeralRole_uint256_bytes {
+  function onlyOwnerOrCanTransferToEphemeralRole(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyOwnerOrCanTransferFromEphemeral_uint256_bytes {
-  function onlyOwnerOrCanTransferFromEphemeral(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwnerOrCanTransferFromEphemeralRole_uint256_bytes {
+  function onlyOwnerOrCanTransferFromEphemeralRole(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDeployableOwner_uint256_bytes {
-  function onlyDeployableOwner(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwnerOrCanTransferToInventoryRole_uint256_bytes {
+  function onlyOwnerOrCanTransferToInventoryRole(uint256 smartObjectId, bytes memory data) external;
+}
+
+interface _onlyOwner_uint256_bytes {
+  function onlyOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyAdmin_uint256_bytes {
   function onlyAdmin(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminOrDeployableOwner_uint256_bytes {
-  function onlyAdminOrDeployableOwner(uint256 smartObjectId, bytes memory data) external;
+interface _onlyAdminOrOwner_uint256_bytes {
+  function onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDeployableOwnerOrInventoryInteractSystem_uint256_bytes {
-  function onlyDeployableOwnerOrInventoryInteractSystem(uint256 smartObjectId, bytes memory data) external;
+interface _onlyAdminForCharactersOtherwiseAlsoOwner_uint256_bytes {
+  function onlyAdminForCharactersOtherwiseAlsoOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminOrDeployableSystem_uint256_bytes {
-  function onlyAdminOrDeployableSystem(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwnerOrCallAccess_uint256_bytes {
+  function onlyOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external;
+}
+
+interface _onlyAdminOrCallAccess_uint256_bytes {
+  function onlyAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external;
+}
+
+interface _onlyAdminOrCallAccessWithScopeEnforced_uint256_bytes {
+  function onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _isAdmin_address {
@@ -629,18 +646,6 @@ interface _canTransferToEphemeral_uint256_address {
 
 interface _canTransferToInventory_uint256_address {
   function canTransferToInventory(uint256 smartObjectId, address caller) external;
-}
-
-interface _isInventoryInteractSystem_address {
-  function isInventoryInteractSystem(address caller) external;
-}
-
-interface _isEphemeralInteractSystem_address {
-  function isEphemeralInteractSystem(address caller) external;
-}
-
-interface _isDeployableSystem_address {
-  function isDeployableSystem(address caller) external;
 }
 
 using AccessSystemLib for AccessSystemType global;

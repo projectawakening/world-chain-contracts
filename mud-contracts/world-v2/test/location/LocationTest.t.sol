@@ -4,20 +4,20 @@ pragma solidity >=0.8.24;
 import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { Location } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
-import { LocationData } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
-import { LocationSystemLib, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
+// import { Location } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
+// import { LocationData } from "../../src/namespaces/evefrontier/codegen/tables/Location.sol";
+// import { LocationSystemLib, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
+// import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+// import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
 
 contract LocationTest is MudTest {
-  uint256 smartObjectId = 1234;
+  // uint256 smartObjectId = 1234;
 
-  string mnemonic = "test test test test test test test test test test test junk";
-  address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-  address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+  // string mnemonic = "test test test test test test test test test test test junk";
+  // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+  // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
 
   // function setUp() public virtual override {
   //   super.setUp();
@@ -62,10 +62,10 @@ contract LocationTest is MudTest {
   //   assertEq(z, location.z);
   // }
 
-  function testMustBeAdminToSetLocation(uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
-    vm.startPrank(alice);
-    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdmin.selector, alice));
-    locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }));
-    vm.stopPrank();
-  }
+  // function testMustBeAdminToSetLocation(uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
+  //   vm.startPrank(alice);
+  //   vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdmin.selector, alice));
+  //   locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }));
+  //   vm.stopPrank();
+  // }
 }

@@ -40,11 +40,6 @@ interface IEveSystem {
   function configureEntityRecordAccess() external;
 
   /**
-   * @notice Configure access for StaticDataSystem
-   */
-  function configureStaticDataAccess() external;
-
-  /**
    * @notice Configure access for SmartAssemblySystem
    */
   function configureSmartAssemblyAccess() external;
@@ -83,6 +78,11 @@ interface IEveSystem {
    * @notice Configure access for InventoryInteractSystem
    */
   function configureInventoryInteractAccess() external;
+
+  /**
+   * @notice Configure access for EphemeralInteractSystem
+   */
+  function configureEphemeralInteractAccess() external;
 
   /**
    * @notice Configure access for SmartStorageUnitSystem

@@ -11,11 +11,12 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, SmartTurretConfig, Characters } from "../../codegen/index.sol";
+import { DeployableState, SmartTurretConfig, Characters, Initialize } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { smartTurretSystem } from "../../codegen/systems/SmartTurretSystemLib.sol";
 
 // Types and parameters
 import { State, CreateAndAnchorParams } from "../deployable/types.sol";

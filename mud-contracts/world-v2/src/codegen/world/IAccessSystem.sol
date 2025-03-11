@@ -10,30 +10,36 @@ pragma solidity >=0.8.24;
  */
 interface IAccessSystem {
   error Access_NotAdmin(address caller);
-  error Access_NotDeployableOwner(address caller, uint256 smartObjectId);
+  error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferFromEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotDeployableOwnerOrInventoryInteractSystem(address caller, uint256 smartObjectId);
-  error Access_NotInventoryAdmin(address caller, uint256 smartObjectId);
-  error Access_NotAdminOrDeployableSystem(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
+  error Access_NotOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
 
-  function evefrontier__onlyOwnerOrCanTransferToEphemeral(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyOwnerOrCanTransferToEphemeralRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyOwnerOrCanTransferFromEphemeral(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyOwnerOrCanTransferFromEphemeralRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDeployableOwner(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyOwnerOrCanTransferToInventoryRole(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__onlyOwner(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdmin(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminOrDeployableOwner(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDeployableOwnerOrInventoryInteractSystem(
+  function evefrontier__onlyAdminForCharactersOtherwiseAlsoOwner(
     uint256 smartObjectId,
     bytes memory data
   ) external view;
 
-  function evefrontier__onlyAdminOrDeployableSystem(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__onlyAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__isAdmin(address caller) external view returns (bool);
 
@@ -44,10 +50,4 @@ interface IAccessSystem {
   function evefrontier__canTransferToEphemeral(uint256 smartObjectId, address caller) external view returns (bool);
 
   function evefrontier__canTransferToInventory(uint256 smartObjectId, address caller) external view returns (bool);
-
-  function evefrontier__isInventoryInteractSystem(address caller) external view returns (bool);
-
-  function evefrontier__isEphemeralInteractSystem(address caller) external view returns (bool);
-
-  function evefrontier__isDeployableSystem(address caller) external view returns (bool);
 }

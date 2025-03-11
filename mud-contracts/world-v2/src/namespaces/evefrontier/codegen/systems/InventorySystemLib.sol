@@ -57,20 +57,28 @@ library InventorySystemLib {
     return CallWrapper(self.toResourceId(), address(0)).setEphemeralCapacity(smartObjectId, ephemeralCapacity);
   }
 
-  function createAndDeposit(
+  function createAndDepositInventory(
     InventorySystemType self,
     uint256 smartObjectId,
     CreateInventoryItemParams[] memory items
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndDeposit(smartObjectId, items);
+    return CallWrapper(self.toResourceId(), address(0)).createAndDepositInventory(smartObjectId, items);
   }
 
-  function deposit(InventorySystemType self, uint256 smartObjectId, InventoryItemParams[] memory items) internal {
-    return CallWrapper(self.toResourceId(), address(0)).deposit(smartObjectId, items);
+  function depositInventory(
+    InventorySystemType self,
+    uint256 smartObjectId,
+    InventoryItemParams[] memory items
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).depositInventory(smartObjectId, items);
   }
 
-  function withdraw(InventorySystemType self, uint256 smartObjectId, InventoryItemParams[] memory items) internal {
-    return CallWrapper(self.toResourceId(), address(0)).withdraw(smartObjectId, items);
+  function withdrawInventory(
+    InventorySystemType self,
+    uint256 smartObjectId,
+    InventoryItemParams[] memory items
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).withdrawInventory(smartObjectId, items);
   }
 
   function setCapacity(CallWrapper memory self, uint256 smartObjectId, uint256 capacity) internal {
@@ -96,7 +104,7 @@ library InventorySystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function createAndDeposit(
+  function createAndDepositInventory(
     CallWrapper memory self,
     uint256 smartObjectId,
     CreateInventoryItemParams[] memory items
@@ -105,7 +113,7 @@ library InventorySystemLib {
     if (address(_world()) == address(this)) revert InventorySystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndDeposit_uint256_CreateInventoryItemParamsArray.createAndDeposit,
+      _createAndDepositInventory_uint256_CreateInventoryItemParamsArray.createAndDepositInventory,
       (smartObjectId, items)
     );
     self.from == address(0)
@@ -113,22 +121,33 @@ library InventorySystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function deposit(CallWrapper memory self, uint256 smartObjectId, InventoryItemParams[] memory items) internal {
+  function depositInventory(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    InventoryItemParams[] memory items
+  ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert InventorySystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_deposit_uint256_InventoryItemParamsArray.deposit, (smartObjectId, items));
+    bytes memory systemCall = abi.encodeCall(
+      _depositInventory_uint256_InventoryItemParamsArray.depositInventory,
+      (smartObjectId, items)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function withdraw(CallWrapper memory self, uint256 smartObjectId, InventoryItemParams[] memory items) internal {
+  function withdrawInventory(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    InventoryItemParams[] memory items
+  ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert InventorySystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _withdraw_uint256_InventoryItemParamsArray.withdraw,
+      _withdrawInventory_uint256_InventoryItemParamsArray.withdrawInventory,
       (smartObjectId, items)
     );
     self.from == address(0)
@@ -153,26 +172,37 @@ library InventorySystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function createAndDeposit(
+  function createAndDepositInventory(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     CreateInventoryItemParams[] memory items
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndDeposit_uint256_CreateInventoryItemParamsArray.createAndDeposit,
+      _createAndDepositInventory_uint256_CreateInventoryItemParamsArray.createAndDepositInventory,
       (smartObjectId, items)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function deposit(RootCallWrapper memory self, uint256 smartObjectId, InventoryItemParams[] memory items) internal {
-    bytes memory systemCall = abi.encodeCall(_deposit_uint256_InventoryItemParamsArray.deposit, (smartObjectId, items));
+  function depositInventory(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    InventoryItemParams[] memory items
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _depositInventory_uint256_InventoryItemParamsArray.depositInventory,
+      (smartObjectId, items)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function withdraw(RootCallWrapper memory self, uint256 smartObjectId, InventoryItemParams[] memory items) internal {
+  function withdrawInventory(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    InventoryItemParams[] memory items
+  ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _withdraw_uint256_InventoryItemParamsArray.withdraw,
+      _withdrawInventory_uint256_InventoryItemParamsArray.withdrawInventory,
       (smartObjectId, items)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -224,16 +254,16 @@ interface _setEphemeralCapacity_uint256_uint256 {
   function setEphemeralCapacity(uint256 smartObjectId, uint256 ephemeralCapacity) external;
 }
 
-interface _createAndDeposit_uint256_CreateInventoryItemParamsArray {
-  function createAndDeposit(uint256 smartObjectId, CreateInventoryItemParams[] memory items) external;
+interface _createAndDepositInventory_uint256_CreateInventoryItemParamsArray {
+  function createAndDepositInventory(uint256 smartObjectId, CreateInventoryItemParams[] memory items) external;
 }
 
-interface _deposit_uint256_InventoryItemParamsArray {
-  function deposit(uint256 smartObjectId, InventoryItemParams[] memory items) external;
+interface _depositInventory_uint256_InventoryItemParamsArray {
+  function depositInventory(uint256 smartObjectId, InventoryItemParams[] memory items) external;
 }
 
-interface _withdraw_uint256_InventoryItemParamsArray {
-  function withdraw(uint256 smartObjectId, InventoryItemParams[] memory items) external;
+interface _withdrawInventory_uint256_InventoryItemParamsArray {
+  function withdrawInventory(uint256 smartObjectId, InventoryItemParams[] memory items) external;
 }
 
 using InventorySystemLib for InventorySystemType global;

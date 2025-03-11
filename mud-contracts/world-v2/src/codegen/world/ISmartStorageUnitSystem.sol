@@ -17,5 +17,5 @@ interface ISmartStorageUnitSystem {
     uint256 ephemeralStorageCapacity
   ) external;
 
-  function evefrontier__getSmartStorageUnitClassId() external pure returns (uint256);
+  function evefrontier__getSmartStorageUnitClassId() external view returns (uint256);
 }
