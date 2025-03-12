@@ -28,5 +28,4 @@ interface IRoleManagementSystem {
   error RoleManagement_BadConfirmation();
   error RoleManagement_RoleDoesNotExist(bytes32 role);
   error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
-  error RoleManagement_SingletonRoleAlreadyHasMember(bytes32 role);
 }

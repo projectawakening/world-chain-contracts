@@ -36,6 +36,11 @@ struct RootCallWrapper {
  */
 library AccessConfigSystemLib {
   error AccessConfigSystemLib_CallingFromRootSystem();
+  error AccessConfig_AccessDenied(ResourceId targetSystemId, address caller);
+  error AccessConfig_RoleAccessDenied(bytes32 roleId, address caller);
+  error AccessConfig_InvalidTargetSystem(ResourceId targetSystemId);
+  error AccessConfig_InvalidAccessSystem(ResourceId accessSystemId);
+  error AccessConfig_TargetNotConfigured(ResourceId targetSystemId, bytes4 targetFunctionId);
 
   function configureAccess(
     AccessConfigSystemType self,

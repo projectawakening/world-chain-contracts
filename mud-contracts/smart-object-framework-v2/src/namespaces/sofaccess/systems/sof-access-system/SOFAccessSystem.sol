@@ -15,11 +15,7 @@ import { TagId, TagIdLib } from "../../../../libs/TagId.sol";
 
 import { TAG_TYPE_PROPERTY, TAG_TYPE_ENTITY_RELATION, TAG_TYPE_RESOURCE_RELATION, TAG_IDENTIFIER_CLASS, TagParams, EntityRelationValue, ResourceRelationValue } from "../../../evefrontier/systems/tag-system/types.sol";
 
-import { ISOFAccessSystem } from "../../interfaces/ISOFAccessSystem.sol";
 import { IWorldWithContext } from "../../../../IWorldWithContext.sol";
-
-import { IEntitySystem } from "../../../evefrontier/interfaces/IEntitySystem.sol";
-import { entitySystem } from "../../../evefrontier/codegen/systems/EntitySystemLib.sol";
 
 import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
@@ -28,8 +24,10 @@ import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.s
  * @author CCP Games
  * @dev Handles access control logic for SOF Systems (EntitySystem and TagSystem)
  */
-contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
+contract SOFAccessSystem is SmartObjectFramework {
   using WorldResourceIdInstance for ResourceId;
+
+  error SOFAccess_AccessDenied(uint256 entityId, address caller);
 
   /**
    * @notice Validates if caller has the required role to access an entity (and is directly calling)

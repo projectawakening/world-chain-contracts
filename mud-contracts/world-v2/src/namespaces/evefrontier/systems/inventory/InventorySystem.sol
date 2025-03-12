@@ -165,7 +165,7 @@ contract InventorySystem is SmartObjectFramework {
     // Validate state (uses the primary inventory's associated smart object state)
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (!(currentState == State.NULL || currentState == State.ONLINE)) { // NOTE: NULL can never be the state of a Deployable smart object, so we are using it to pass non-Deployable smart objects
+      if (!(currentState == State.NULL || currentState == State.ANCHORED || currentState == State.ONLINE)) { // NOTE: NULL can never be the state of a Deployable smart object, so we are using it to pass non-Deployable smart objects
         revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
       }
     }

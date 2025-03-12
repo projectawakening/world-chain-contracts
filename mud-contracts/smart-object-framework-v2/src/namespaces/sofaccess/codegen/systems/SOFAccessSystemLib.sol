@@ -35,6 +35,7 @@ struct RootCallWrapper {
  */
 library SOFAccessSystemLib {
   error SOFAccessSystemLib_CallingFromRootSystem();
+  error SOFAccess_AccessDenied(uint256 entityId, address caller);
 
   function allowDirectAccessRoleOnly(
     SOFAccessSystemType self,
@@ -123,6 +124,10 @@ library SOFAccessSystemLib {
         entityId,
         targetCallData
       );
+  }
+
+  function noAllowances(SOFAccessSystemType self, uint256 entityId, bytes memory targetCallData) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).noAllowances(entityId, targetCallData);
   }
 
   function allowDirectAccessRoleOnly(
@@ -323,6 +328,19 @@ library SOFAccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
+  function noAllowances(CallWrapper memory self, uint256 entityId, bytes memory targetCallData) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert SOFAccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_noAllowances_uint256_bytes.noAllowances, (entityId, targetCallData));
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
   function allowDirectAccessRoleOnly(
     RootCallWrapper memory self,
     uint256 entityId,
@@ -445,6 +463,11 @@ library SOFAccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
+  function noAllowances(RootCallWrapper memory self, uint256 entityId, bytes memory targetCallData) internal view {
+    bytes memory systemCall = abi.encodeCall(_noAllowances_uint256_bytes.noAllowances, (entityId, targetCallData));
+    SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+  }
+
   function callFrom(SOFAccessSystemType self, address from) internal pure returns (CallWrapper memory) {
     return CallWrapper(self.toResourceId(), from);
   }
@@ -524,6 +547,10 @@ interface _allowCallAccessOrClassScopedSystemOrDirectClassAccessRole_uint256_byt
     uint256 entityId,
     bytes memory targetCallData
   ) external;
+}
+
+interface _noAllowances_uint256_bytes {
+  function noAllowances(uint256 entityId, bytes memory targetCallData) external;
 }
 
 using SOFAccessSystemLib for SOFAccessSystemType global;
