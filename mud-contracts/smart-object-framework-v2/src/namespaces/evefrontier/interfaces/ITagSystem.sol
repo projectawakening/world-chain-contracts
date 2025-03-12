@@ -23,6 +23,5 @@ interface ITagSystem {
   error Tag_ResourceNotRegistered(ResourceId systemId);
   error Tag_EntityAlreadyHasTag(uint256 entityId, TagId tagId);
   error Tag_InvalidCaller(address caller);
-
   error Tag_OnlyClassOrObjectPropertyAllowed();
 }
