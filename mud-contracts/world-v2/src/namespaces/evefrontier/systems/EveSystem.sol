@@ -120,7 +120,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       entityRecordSystem.toResourceId(),
       EntityRecordSystem.createRecord.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyAdmin.selector
+      AccessSystem.onlyDirectAdminOrCallAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       entityRecordSystem.toResourceId(),
@@ -334,10 +334,9 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for InventorySystem
   function configureInventoryAccess() public {
-    bytes4[3] memory inventoryOnlyAdminSelectors = [
+    bytes4[2] memory inventoryOnlyAdminSelectors = [
       InventorySystem.setCapacity.selector,
-      InventorySystem.setEphemeralCapacity.selector,
-      InventorySystem.createAndDepositInventory.selector
+      InventorySystem.setEphemeralCapacity.selector
     ];
 
     for (uint256 i = 0; i < inventoryOnlyAdminSelectors.length; i++) {
@@ -354,21 +353,22 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       );
     }
 
-    bytes4[2] memory inventoryOnlyAdminOrCallAccessSelectors = [
+    bytes4[3] memory inventoryOnlyOwnerOrCallAccessSelectors = [
+      InventorySystem.createAndDepositInventory.selector,
       InventorySystem.depositInventory.selector,
       InventorySystem.withdrawInventory.selector
     ];
 
-    for (uint256 i = 0; i < inventoryOnlyAdminOrCallAccessSelectors.length; i++) {
+    for (uint256 i = 0; i < inventoryOnlyOwnerOrCallAccessSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         inventorySystem.toResourceId(),
-        inventoryOnlyAdminOrCallAccessSelectors[i],
+        inventoryOnlyOwnerOrCallAccessSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyAdminOrCallAccess.selector
+        AccessSystem.onlyOwnerOrCallAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         inventorySystem.toResourceId(), 
-        inventoryOnlyAdminOrCallAccessSelectors[i], 
+        inventoryOnlyOwnerOrCallAccessSelectors[i], 
         true
       );
     }

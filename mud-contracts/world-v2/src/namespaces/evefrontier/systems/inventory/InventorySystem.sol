@@ -66,6 +66,7 @@ contract InventorySystem is SmartObjectFramework {
    * @notice Set the storage capacity of an inventory associated with `smartObjectId`
    * @param smartObjectId The associated smart object id
    * @param capacity The storage capacity to set for the inventory
+   * @dev access control: this function is only callable by the admin role directly or via scoped system call
    */
   function setCapacity(
     uint256 smartObjectId,
@@ -83,6 +84,7 @@ contract InventorySystem is SmartObjectFramework {
    * @notice Set the storage capacity for all ephemeral inventories associated with `smartObjectId`
    * @param smartObjectId The associated smart object id
    * @param ephemeralCapacity The storage capacity to set for all ephemeral inventories associated with `smartObjectId`
+   * @dev access control: this function is only callable by the admin role directly or via scoped system call
    */
   function setEphemeralCapacity(
     uint256 smartObjectId,
@@ -95,6 +97,7 @@ contract InventorySystem is SmartObjectFramework {
    * @notice Create and deposit items to the inventory
    * @param smartObjectId The associated smart object id
    * @param items The items to create records for and deposit to the inventory
+   * @dev access control: this function is only callable by the admin role directly or via scoped system call
    */
   function createAndDepositInventory(
     uint256 smartObjectId,
@@ -110,6 +113,7 @@ contract InventorySystem is SmartObjectFramework {
    * @notice Deposit items to the inventory
    * @param smartObjectId The associated smart object id
    * @param items The items to deposit to inventory
+   * @dev access control: this function is callable by the admin role directly or via scoped system call or by the inventory/ephemeral interact systems
    */
   function depositInventory(
     uint256 smartObjectId,
@@ -157,6 +161,7 @@ contract InventorySystem is SmartObjectFramework {
    * @notice Withdraw items from the inventory
    * @param smartObjectId The associated smart object id
    * @param items The items to withdraw from inventory
+   * @dev access control: this function is callable by the admin role directly or via scoped system call or by the inventory/ephemeral interact systems
    */
   function withdrawInventory(
     uint256 smartObjectId,
@@ -318,13 +323,13 @@ contract InventorySystem is SmartObjectFramework {
       // only create entity records for items that don't already exist
       if (!EntityRecord.getExists(items[i].smartObjectId)) {
         // item sanity checks
-        if (Tenant.get() != items[i].tenantId) {
-          revert Inventory_InvalidTenantId(items[i].smartObjectId, items[i].tenantId);
-        }
         if (items[i].itemId != 0) { // singleton item case
+          if (Tenant.get() != items[i].tenantId) {
+            revert Inventory_InvalidTenantId(items[i].smartObjectId, items[i].tenantId);
+          }
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].itemId)))) {
             revert Inventory_InvalidItemObjectId(items[i].smartObjectId);
-          } 
+          }
           if (items[i].quantity != 1) {
             revert Inventory_InvalidItemDepositQuantity(items[i].smartObjectId, items[i].quantity);
           }

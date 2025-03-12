@@ -17,6 +17,7 @@ interface IAccessSystem {
   error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotDirectAdminOrCallAccess(address caller, uint256 smartObjectId);
 
   function evefrontier__onlyOwnerOrCanTransferToEphemeralRole(uint256 smartObjectId, bytes memory data) external view;
 
@@ -40,6 +41,8 @@ interface IAccessSystem {
   function evefrontier__onlyAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__onlyDirectAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__isAdmin(address caller) external view returns (bool);
 

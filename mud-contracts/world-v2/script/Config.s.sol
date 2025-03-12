@@ -18,21 +18,18 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { tagSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/TagSystemLib.sol";
 import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
 
-import { EveSystemLib, eveSystem } from "../src/namespaces/evefrontier/codegen/systems/EveSystemLib.sol";
-import { InventorySystem } from "../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { inventorySystem } from "../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { EphemeralInventorySystem } from "../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-import { ephemeralInventorySystem } from "../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-import { OwnershipSystem } from "../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
-import { ownershipSystem } from "../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+import { eveSystem } from "../src/namespaces/evefrontier/codegen/systems/EveSystemLib.sol";
+import { InventorySystem, inventorySystem } from "../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
+import { EphemeralInventorySystem, ephemeralInventorySystem } from "../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
+import { OwnershipSystem, ownershipSystem } from "../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
 import { deployableSystem } from "../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { smartCharacterSystem } from "../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { inventoryInteractSystem } from "../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { ephemeralInteractSystem } from "../src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
 import { IEveSystem } from "../src/namespaces/evefrontier/interfaces/IEveSystem.sol";
-import { FuelSystem } from "../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
-import { fuelSystem } from "../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
-
+import { FuelSystem, fuelSystem } from "../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+import { smartAssemblySystem } from "../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
+import { EntityRecordSystem, entityRecordSystem } from "../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { Tenant } from "../src/namespaces/evefrontier/codegen/tables/Tenant.sol";
 
 contract Config is Script {
@@ -97,6 +94,12 @@ contract Config is Script {
   }
 
   function _initializeWorldAccess() internal {
+    // EntityRecordSystem.sol
+    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, inventorySystem.getAddress(), true);
+    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, ephemeralInventorySystem.getAddress(), true);
+    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartCharacterSystem.getAddress(), true);
+    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartAssemblySystem.getAddress(), true);
+
     // FuelSystem.sol
     bytes4[2] memory fuelFunctionSelectors = [
       FuelSystem.updateFuel.selector,
@@ -136,7 +139,6 @@ contract Config is Script {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], inventorySystem.getAddress(), true);
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], ephemeralInventorySystem.getAddress(), true);
     }
-
     bytes4[2] memory ownershipAccountFunctionSelectors = [
       OwnershipSystem.ascribeToAccount.selector,
       OwnershipSystem.annulFromAccount.selector
@@ -145,11 +147,11 @@ contract Config is Script {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipAccountFunctionSelectors[i], deployableSystem.getAddress(), true);
       CallAccess.set(ownershipSystem.toResourceId(), ownershipAccountFunctionSelectors[i], smartCharacterSystem.getAddress(), true);
     }
-
     CallAccess.set(ownershipSystem.toResourceId(), OwnershipSystem.ascribeToAccount.selector, ephemeralInventorySystem.getAddress(), true);
 
+
     bytes32 adminRole = bytes32("admin");
-    roleManagementSystem.createRole(adminRole, adminRole);
+    roleManagementSystem.createRole(adminRole, adminRole); // this auto-grants the role to the caller (deployer)
 
     eveSystem.configureEntityRecordAccess();
     eveSystem.configureFuelAccess();

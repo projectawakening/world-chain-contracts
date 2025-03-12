@@ -20,11 +20,12 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @dev creates a new entity record
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param entityRecordParams is the EnityRecordParams struct with all the data needed to create a new entity record
+   * @dev access control: this function is only callable directly by the admin role or by the inventory or ephemeral inventory systems
    */
   function createRecord(
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
-  ) public context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) {
     EntityRecord.set(smartObjectId, true, entityRecordParams.tenantId, entityRecordParams.itemId, entityRecordParams.typeId, entityRecordParams.volume);
   }
 
@@ -32,6 +33,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @dev creates the metadata for an entity record
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param entityRecordMetadata is the EntityMetadata struct with all the data needed to create a new entity record metadata
+   * @dev access control: this function is only callable by the smart object owner directly or via scoped system call (or in the case of SmartCharacter by the admin role directly or via scoped system call)
    */
   function createMetadata(
     uint256 smartObjectId,
@@ -49,6 +51,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @dev sets the name of an entity
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param name the name of the entity
+   * @dev access control: this function is only callable by the smart object owner directly or via scoped system call (or in the case of SmartCharacter by the admin role directly or via scoped system call)
    */
   function setName(
     uint256 smartObjectId,
@@ -61,6 +64,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @dev sets the dappURL of an entity
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param dappURL the dappURL of the entity
+   * @dev access control: this function is callable by the smart object owner (or an admin) directly or via scoped system call
    */
   function setDappURL(
     uint256 smartObjectId,
@@ -73,6 +77,7 @@ contract EntityRecordSystem is SmartObjectFramework {
    * @dev sets the description of an entity
    * @param smartObjectId the id of a in game entity referred as smart object id
    * @param description the description of the entity
+   * @dev access control: this function is callable by the smart object owner (or an admin) directly or via scoped system call
    */
   function setDescription(
     uint256 smartObjectId,

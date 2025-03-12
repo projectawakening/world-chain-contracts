@@ -330,10 +330,10 @@ contract EphemeralInventorySystem is SmartObjectFramework {
       // only create entity records for items that don't already exist
       if (!EntityRecord.getExists(items[i].smartObjectId)) {
         // item sanity checks
-        if (Tenant.get() != items[i].tenantId) {
-          revert EphemeralInventory_InvalidTenantId(items[i].smartObjectId, items[i].tenantId);
-        }
         if (items[i].itemId != 0) { // singleton item case
+          if (Tenant.get() != items[i].tenantId) {
+            revert EphemeralInventory_InvalidTenantId(items[i].smartObjectId, items[i].tenantId);
+          }
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].itemId)))) {
             revert EphemeralInventory_InvalidItemObjectId(items[i].smartObjectId);
           } 
