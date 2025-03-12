@@ -142,7 +142,7 @@ contract InventoryTest is MudTest {
     
     // Register class and setup deployable state
     uint256 inventoryClassId = uint256(keccak256(abi.encodePacked("INVENTORY_TEST")));
-    ResourceId[] memory systemIds = new ResourceId[](1);
+    ResourceId[] memory systemIds = new ResourceId[](2);
     systemIds[0] = inventorySystem.toResourceId();
     systemIds[1] = mockSystemId;
     entitySystem.registerClass(inventoryClassId, systemIds);
@@ -190,18 +190,12 @@ contract InventoryTest is MudTest {
       CallAccess.set(inventorySystemId, inventoryFunctionSelectors[i], address(mockSystem), true);
     }
     
-    vm.stopPrank();
-    
     // Set capacity for both inventories
     uint256 capacity = 1000;
     
-    vm.startPrank(alice);
     inventorySystem.setCapacity(smartObjectId, capacity);
-    vm.stopPrank();
     
-    vm.startPrank(bob);
     inventorySystem.setCapacity(secondInventoryId, capacity);
-    vm.stopPrank();
 
     // Calculate itemObjectIds
     item1ObjectId = _calculateItemObjectId(ITEM1_ID, ITEM_TYPE_ID, ITEM1_IS_SINGLETON);
@@ -214,6 +208,7 @@ contract InventoryTest is MudTest {
     _setupItemRecord(item2ObjectId, ITEM2_ID, ITEM_TYPE_ID, ITEM_VOLUME);
     _setupItemRecord(item3ObjectId, ITEM3_ID, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
     _setupItemRecord(transferItemObjectId, TRANSFER_ITEM_ID, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
+     vm.stopPrank();
   }
 
   // Test setting inventory capacity
