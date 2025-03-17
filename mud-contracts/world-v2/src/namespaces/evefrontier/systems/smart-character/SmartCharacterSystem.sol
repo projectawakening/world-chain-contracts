@@ -53,7 +53,7 @@ contract SmartCharacterSystem is SmartObjectFramework {
     }
 
     // sanity checks
-    if (uint256(keccak256(abi.encodePacked(entityRecordParams.typeId))) != getSmartCharacterClassId()) {
+    if (uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) != getSmartCharacterClassId()) {
       revert SmartCharacter_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
     }
     if (Tenant.get() != entityRecordParams.tenantId) {

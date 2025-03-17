@@ -150,7 +150,7 @@ contract InventoryTest is MudTest {
     world.registerSystem(mockSystemId, mockSystem, true);
     
     // Register class and setup smart object state
-    uint256 inventoryObjectClassId = uint256(keccak256(abi.encodePacked(SMART_OBJECT_TYPE_ID)));
+    uint256 inventoryObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
  
     ResourceId[] memory systemIds = new ResourceId[](7);
     systemIds[0] = deployableSystem.toResourceId();
@@ -166,7 +166,6 @@ contract InventoryTest is MudTest {
     // instantiate the smart objects
     entitySystem.instantiate(inventoryObjectClassId, smartObjectId, alice);
     entitySystem.instantiate(inventoryObjectClassId, secondObjectId, bob);
-
 
     // Make sure deploy system is active
     GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
@@ -343,7 +342,7 @@ contract InventoryTest is MudTest {
     CreateInventoryItemParams[] memory invalidNonSingletonObjectItems = new CreateInventoryItemParams[](1);
     invalidNonSingletonObjectItems[0] = CreateInventoryItemParams({
       smartObjectId: wrongNonSingletonObjectId,
-      tenantId: bytes32(0),
+      tenantId: tenantId,
       typeId: CREATE_NON_SINGLETON_ITEM_TYPE_ID,
       itemId: 0, // For non-singleton items, itemId is zero
       quantity: 9,
@@ -357,7 +356,7 @@ contract InventoryTest is MudTest {
     CreateInventoryItemParams[] memory invalidNonSingletonQuantityItems = new CreateInventoryItemParams[](1);
     invalidNonSingletonQuantityItems[0] = CreateInventoryItemParams({
       smartObjectId: nonSingletonObjectId,
-      tenantId: bytes32(0),
+      tenantId: tenantId,
       typeId: CREATE_NON_SINGLETON_ITEM_TYPE_ID,
       itemId: 0,
       quantity: 0, // Should be > 0 for non-singleton items
@@ -384,7 +383,7 @@ contract InventoryTest is MudTest {
     // Add the non-singleton item
     items[1] = CreateInventoryItemParams({
       smartObjectId: nonSingletonObjectId,
-      tenantId: bytes32(0), // For non-singleton items, tenantId is zero
+      tenantId: tenantId,
       typeId: CREATE_NON_SINGLETON_ITEM_TYPE_ID,
       itemId: 0, // For non-singleton items, itemId is zero
       quantity: 9, // Non-singleton can have any quantity
@@ -845,6 +844,48 @@ contract InventoryTest is MudTest {
     // Check capacity
     uint256 objectCapacityUsed = Inventory.getUsedCapacity(smartObjectId);
     assertEq(objectCapacityUsed, ITEM_VOLUME * 2); // 1 + 1
+
+    // Test the case where smartObjectId is unanchored and then re-anchored
+    // This should bump the version and withdrawal should fail
+    
+    // First, let's simulate unanchoring which destroys the current state
+    vm.startPrank(alice, deployer);
+    vm.warp(block.timestamp + 20 minutes);
+    deployableSystem.unanchor(smartObjectId);
+    
+    // Re-anchor and bring online - this recreates the smart object with a new version
+    deployableSystem.anchor(smartObjectId, alice, LocationData({
+      solarSystemId: 30000142,
+      x: 100,
+      y: 100,
+      z: 100
+    }));
+    fuelSystem.depositFuel(smartObjectId, 10000);
+    deployableSystem.bringOnline(smartObjectId);
+    vm.stopPrank();
+    
+    // Verify version is bumped
+    assertEq(Inventory.getVersion(smartObjectId), 2);
+    
+    // Attempt to withdraw the transferItemObjectId item
+    // This should fail because the version has been bumped and items from the previous version no longer exist
+    InventoryItemParams[] memory oldVersionItems = new InventoryItemParams[](1);
+    oldVersionItems[0] = InventoryItemParams({
+      smartObjectId: transferItemObjectId,
+      quantity: 1
+    });
+    
+    vm.startPrank(alice, deployer);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        OwnershipSystem.Inventory_InsufficientQuantity.selector,
+        transferItemObjectId,
+        1,
+        0 // We now have 0 available (new version has no items)
+      )
+    );
+    inventorySystem.withdrawInventory(smartObjectId, oldVersionItems);
+    vm.stopPrank();
   }
 
   // Test complete removal of all items
@@ -1085,16 +1126,16 @@ contract InventoryTest is MudTest {
 
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
-    uint256 classId = uint256(keccak256(abi.encodePacked(typeId)));
+    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
     
     if (itemId != 0) { // For singleton items
       EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
 
       if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+        EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
       }
     } else { // For non-singleton items
-      EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+      EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
     }
     
     if (!Entity.getExists(classId)) {
@@ -1109,7 +1150,7 @@ contract InventoryTest is MudTest {
       return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
     } else {
       // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(typeId)));
+      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
     }
   }
 }

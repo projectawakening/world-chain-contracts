@@ -11,7 +11,11 @@ import {
   Inventory,
   InventoryByItem,
   InventoryItem,
-  OwnershipByObject
+  OwnershipByObject,
+  ObjectByEphemeral,
+  ObjectByEphemeralData,
+  EphemeralInventory,
+  EphemeralInvItem
 } from "../../codegen/index.sol";
 
 contract OwnershipSystem is SmartObjectFramework {
@@ -19,6 +23,7 @@ contract OwnershipSystem is SmartObjectFramework {
   error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
   error Ownership_ZeroQuantity(uint256 itemObjectId);
   error Inventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error EphemeralInventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
   error Ownership_InvalidSingleton(uint256 smartObjectId);
   error Ownership_InvalidAccount(address account);
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
@@ -37,14 +42,27 @@ contract OwnershipSystem is SmartObjectFramework {
     if (directOwner != address(0)) {
       return directOwner;
     }
-    
-    // Check if the object is in an inventory with valid versioning
+
     uint256 inventoryObjectId = InventoryByItem.get(smartObjectId);
-    uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
-    uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, smartObjectId);
+
+    // Check if the inventoryObjectId is an ephemeral inventory object
+    uint256 currentVersion;
+    uint256 recordedVersion;
+    uint256 associatedSmartObjectId;
+    if (ObjectByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
+      ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
+      currentVersion = EphemeralInventory.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner);
+      recordedVersion = EphemeralInvItem.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, smartObjectId);
+      associatedSmartObjectId = objectByEphemeralData.smartObjectId;
+    } else { // no, it is not an ephemeral inventory
+      currentVersion = Inventory.getVersion(inventoryObjectId);
+      recordedVersion = InventoryItem.getVersion(inventoryObjectId, smartObjectId);
+      associatedSmartObjectId = inventoryObjectId;
+    }
+
     bool versionChanged = currentVersion > recordedVersion;
     if (!versionChanged) {
-      return OwnershipByObject.get(inventoryObjectId);
+      return OwnershipByObject.get(associatedSmartObjectId);
     }
 
     return address(0);
@@ -117,7 +135,7 @@ contract OwnershipSystem is SmartObjectFramework {
       revert Ownership_NonexistentItemRecord(itemObjectId);
     }
 
-    if (!Entity.getExists(inventoryObjectId)) {
+    if (!(Entity.getExists(inventoryObjectId) || ObjectByEphemeral.getExists(inventoryObjectId))) {
       revert Ownership_NonexistentObject(inventoryObjectId);
     }
     
@@ -133,17 +151,33 @@ contract OwnershipSystem is SmartObjectFramework {
         revert Ownership_ZeroQuantity(itemObjectId);
       }
     }
+    
+    if (ObjectByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
+      ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
+      uint256 existingItemQuantity = EphemeralInvItem.getQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
+      uint256 currentVersion = EphemeralInventory.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner);
+      uint256 recordedVersion = EphemeralInvItem.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
+      bool versionChanged = currentVersion > recordedVersion;
+      
+      // Update ephemeral inventory quantity for this item
+      EphemeralInvItem.setQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
+      
+      if (versionChanged) { // if the version has changed, update the version
+        EphemeralInvItem.setVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId, currentVersion);
+      }
 
-    uint256 existingItemQuantity = InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
-    uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
-    uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
-    bool versionChanged = currentVersion > recordedVersion;
+    } else { // no, it is not an ephemeral inventory
+      uint256 existingItemQuantity = InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
+      uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
+      uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
+      bool versionChanged = currentVersion > recordedVersion;
 
-    // Update inventory quantity for this item
-    InventoryItem.setQuantity(inventoryObjectId, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
+      // Update inventory quantity for this item
+      InventoryItem.setQuantity(inventoryObjectId, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
 
-    if (versionChanged) {
-      InventoryItem.setVersion(inventoryObjectId, itemObjectId, currentVersion);
+      if (versionChanged) { // if the version has changed, update the version
+        InventoryItem.setVersion(inventoryObjectId, itemObjectId, currentVersion);
+      }
     }
   }
 
@@ -174,17 +208,37 @@ contract OwnershipSystem is SmartObjectFramework {
       }
     }
 
-    uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
-    uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
-    uint256 existingItemQuantity = currentVersion > recordedVersion ? 0: InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
+    if (ObjectByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
+      ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
+      uint256 currentVersion = EphemeralInventory.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner);
+      uint256 recordedVersion = EphemeralInvItem.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
+      uint256 existingItemQuantity = currentVersion > recordedVersion ? 0: EphemeralInvItem.getQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
 
-    // safety check
-    if (existingItemQuantity < quantity) {
-      revert Inventory_InsufficientQuantity(itemObjectId, quantity, existingItemQuantity);
+      // safety check
+      if (existingItemQuantity < quantity) {
+        revert EphemeralInventory_InsufficientQuantity(itemObjectId, quantity, existingItemQuantity);
+      }
+
+      // Update inventory quantity for this item
+      EphemeralInvItem.setQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId, existingItemQuantity - quantity);
+
+    } else { // no, it is not an ephemeral inventory
+      uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
+      uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
+      uint256 existingItemQuantity = currentVersion > recordedVersion ? 0: InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
+
+      // safety check
+      if (existingItemQuantity < quantity) {
+        revert Inventory_InsufficientQuantity(itemObjectId, quantity, existingItemQuantity);
+      }
+
+      // Update inventory quantity for this item
+      InventoryItem.setQuantity(inventoryObjectId, itemObjectId, existingItemQuantity - quantity);
     }
 
-    // Update inventory quantity for this item
-    InventoryItem.setQuantity(inventoryObjectId, itemObjectId, existingItemQuantity - quantity);
+
+
+
   }
 
   /**

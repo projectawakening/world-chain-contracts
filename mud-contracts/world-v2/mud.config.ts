@@ -236,10 +236,35 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
+        EphemeralInventory: {
+          schema: {
+            smartObjectId: "uint256",
+            ephemeralOwner: "address",
+            capacity: "uint256",
+            usedCapacity: "uint256",
+            version: "uint256",
+            items: "uint256[]",
+          },
+          key: ["smartObjectId", "ephemeralOwner"],
+        },
+        EphemeralInvItem: {
+          schema: {
+            smartObjectId: "uint256",
+            ephemeralOwner: "address",
+            itemObjectId: "uint256",
+            exists: "bool",
+            quantity: "uint256",
+            index: "uint256",
+            version: "uint256",
+          },
+          key: ["smartObjectId", "ephemeralOwner", "itemObjectId"],
+        },
         ObjectByEphemeral: {
           schema: {
             ephemeralSmartObjectId: "uint256",
+            exists: "bool",
             smartObjectId: "uint256",
+            ephemeralOwner: "address",
           },
           key: ["ephemeralSmartObjectId"],
         },

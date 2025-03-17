@@ -49,7 +49,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
       (EntityRelationValue)
     );
     // sanity checks
-    if (uint256(keccak256(abi.encodePacked(entityRecordParams.typeId))) != entityRelationValue.relatedEntityId) {
+    if (uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) != entityRelationValue.relatedEntityId) {
       revert SmartAssembly_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
     }
     if (Tenant.get() != entityRecordParams.tenantId) {

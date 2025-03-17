@@ -12,6 +12,11 @@ interface IOwnershipSystem {
   error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
   error Ownership_ZeroQuantity(uint256 itemObjectId);
   error Inventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error EphemeralInventory_InsufficientQuantity(
+    uint256 itemObjectId,
+    uint256 providedQuantity,
+    uint256 availableQuantity
+  );
   error Ownership_InvalidSingleton(uint256 smartObjectId);
   error Ownership_InvalidAccount(address account);
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);

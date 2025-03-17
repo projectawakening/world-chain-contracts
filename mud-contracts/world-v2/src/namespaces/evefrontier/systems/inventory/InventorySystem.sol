@@ -130,8 +130,7 @@ contract InventorySystem is SmartObjectFramework {
 
     uint256 usedCapacity = Inventory.getUsedCapacity(smartObjectId);
     uint256 maxCapacity = Inventory.getCapacity(smartObjectId);
-    uint256 existingItemsLength = Inventory.lengthItems(smartObjectId);
-    
+
     for (uint256 i = 0; i < items.length; i++) {
         if (!EntityRecord.getExists(items[i].smartObjectId)) { // we expect all items to have an EntityRecord. If not, then they should be called via createAndDeposit first
         revert Inventory_NonExistentEntityRecord(
@@ -140,8 +139,7 @@ contract InventorySystem is SmartObjectFramework {
         );
       }
       // Process the item deposit (returning the updated used capacity after processing the item)
-      uint256 itemIndex = existingItemsLength + i;
-      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, itemIndex);
+      usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity);
     }
 
     // Update the new aggregate used capacity of the inventory
@@ -183,8 +181,7 @@ contract InventorySystem is SmartObjectFramework {
     uint256 smartObjectId,
     InventoryItemParams memory item,
     uint256 usedCapacity,
-    uint256 maxCapacity,
-    uint256 itemIndex
+    uint256 maxCapacity
   ) internal returns (uint256) {
     uint256 reqCapacity = EntityRecord.getVolume(item.smartObjectId) * item.quantity;
     if ((usedCapacity + reqCapacity) > maxCapacity) {
@@ -196,6 +193,7 @@ contract InventorySystem is SmartObjectFramework {
     }
 
     if (!InventoryItem.getExists(smartObjectId, item.smartObjectId)) {
+      uint256 itemIndex = Inventory.lengthItems(smartObjectId);
       Inventory.pushItems(smartObjectId, item.smartObjectId);
       InventoryItem.set(smartObjectId, item.smartObjectId, true, 0, itemIndex, Inventory.getVersion(smartObjectId));
     }
@@ -266,10 +264,10 @@ contract InventorySystem is SmartObjectFramework {
             revert Inventory_InvalidItemDepositQuantity(items[i].smartObjectId, items[i].quantity);
           }
 
-          uint256 classId = uint256(keccak256(abi.encodePacked(items[i].typeId)));
+          uint256 classId = uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].typeId)));
           _ensureClassIdExists(classId, items[i].typeId, items[i].volume);
         } else { // non-singleton item case
-          if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].typeId)))) {
+          if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].typeId)))) {
             revert Inventory_InvalidItemObjectId(items[i].smartObjectId);
           }
           

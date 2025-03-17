@@ -411,10 +411,9 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for EphemeralInventorySystem
   function configureEphemeralInventoryAccess() public {
-    bytes4[3] memory ephemeralInventoryOnlyOwnerOrCallAccessSelectors = [
+    bytes4[2] memory ephemeralInventoryOnlyOwnerOrCallAccessSelectors = [
       EphemeralInventorySystem.createAndDepositEphemeral.selector,
-      EphemeralInventorySystem.depositEphemeral.selector,
-      EphemeralInventorySystem.withdrawEphemeral.selector
+      EphemeralInventorySystem.depositEphemeral.selector
     ];
 
     for (uint256 i = 0; i < ephemeralInventoryOnlyOwnerOrCallAccessSelectors.length; i++) {
@@ -422,7 +421,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         ephemeralInventorySystem.toResourceId(),
         ephemeralInventoryOnlyOwnerOrCallAccessSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerOrCallAccess.selector
+        AccessSystem.onlyDirectEphemeralOwnerOrCallAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         ephemeralInventorySystem.toResourceId(), 
@@ -430,6 +429,19 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         true
       );
     }
+    accessConfigSystem.configureAccess(
+      ephemeralInventorySystem.toResourceId(),
+      EphemeralInventorySystem.withdrawEphemeral.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyDirectEphemeralOwnerOrCallAccessWithOwner.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      ephemeralInventorySystem.toResourceId(), 
+      EphemeralInventorySystem.withdrawEphemeral.selector, 
+      true
+    );
+
+    
   }
 
   // Configure access for EphemralInteractSystem

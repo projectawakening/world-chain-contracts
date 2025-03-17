@@ -16,6 +16,8 @@ interface IEphemeralInventorySystem {
   error EphemeralInventory_InvalidItemObjectId(uint256 smartObjectId);
   error EphemeralInventory_InvalidItemDepositQuantity(uint256 smartObjectId, uint256 quantity);
   error EphemeralInventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
+  error EphemeralInventory_InvalidSmartObjectId(uint256 smartObjectId);
+  error EphemeralInventory_InvalidEphemeralOwner(uint256 smartObjectId, address ephemeralOwner);
 
   function evefrontier__getEphemeralSmartObjectId(
     uint256 smartObjectId,
