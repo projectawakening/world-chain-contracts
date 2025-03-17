@@ -11,7 +11,7 @@ pragma solidity >=0.8.24;
 interface IOwnershipSystem {
   error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
   error Ownership_ZeroQuantity(uint256 itemObjectId);
-  error Ownership_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error Inventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
   error Ownership_InvalidSingleton(uint256 smartObjectId);
   error Ownership_InvalidAccount(address account);
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
@@ -19,19 +19,13 @@ interface IOwnershipSystem {
   error Ownership_NonexistentObject(uint256 smartObjectId);
   error Ownership_InvalidInventory(uint256 itemObjectId, uint256 inventoryObjectId);
 
-  function evefrontier__worldQuantity(uint256 smartObjectId) external view returns (uint256);
-
-  function evefrontier__accountQuantity(uint256 smartObjectId, address account) external view returns (uint256);
-
   function evefrontier__owner(uint256 smartObjectId) external view returns (address);
 
   function evefrontier__ascribeToAccount(uint256 smartObjectId, address to) external;
 
-  function evefrontier__ascribeToInventory(uint256 itemObjectId, uint256 inventoryObjectId, uint256 quantity) external;
-
   function evefrontier__annulFromAccount(uint256 smartObjectId, address from) external;
 
-  function evefrontier__annulFromInventory(uint256 itemObjectId, uint256 inventoryObjectId, uint256 quantity) external;
+  function evefrontier__ascribeToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 
-  function evefrontier__transferInventory(uint256 itemObjectId, uint256 toInventoryObjectId, uint256 quantity) external;
+  function evefrontier__annulFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 }

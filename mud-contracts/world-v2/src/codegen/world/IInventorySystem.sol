@@ -16,12 +16,6 @@ interface IInventorySystem {
   error Inventory_InvalidTenantId(uint256 itemObjectId, bytes32 tenantId);
   error Inventory_InvalidItemObjectId(uint256 itemObjectId);
   error Inventory_InvalidItemDepositQuantity(uint256 itemObjectId, uint256 quantity);
-  error Inventory_InvalidItemWithdrawalQuantity(
-    string message,
-    uint256 itemSmartObjectId,
-    uint256 quantity,
-    uint256 maxQuantity
-  );
   error Inventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
 
   function evefrontier__setCapacity(uint256 smartObjectId, uint256 capacity) external;

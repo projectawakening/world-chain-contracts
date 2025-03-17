@@ -43,7 +43,7 @@ library InventoryByItem {
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
     fieldNames = new string[](1);
-    fieldNames[0] = "inventoryId";
+    fieldNames[0] = "inventoryObjectId";
   }
 
   /**
@@ -61,9 +61,9 @@ library InventoryByItem {
   }
 
   /**
-   * @notice Get inventoryId.
+   * @notice Get inventoryObjectId.
    */
-  function getInventoryId(uint256 itemObjectId) internal view returns (uint256 inventoryId) {
+  function getInventoryObjectId(uint256 itemObjectId) internal view returns (uint256 inventoryObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
@@ -72,9 +72,9 @@ library InventoryByItem {
   }
 
   /**
-   * @notice Get inventoryId.
+   * @notice Get inventoryObjectId.
    */
-  function _getInventoryId(uint256 itemObjectId) internal view returns (uint256 inventoryId) {
+  function _getInventoryObjectId(uint256 itemObjectId) internal view returns (uint256 inventoryObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
@@ -83,9 +83,9 @@ library InventoryByItem {
   }
 
   /**
-   * @notice Get inventoryId.
+   * @notice Get inventoryObjectId.
    */
-  function get(uint256 itemObjectId) internal view returns (uint256 inventoryId) {
+  function get(uint256 itemObjectId) internal view returns (uint256 inventoryObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
@@ -94,9 +94,9 @@ library InventoryByItem {
   }
 
   /**
-   * @notice Get inventoryId.
+   * @notice Get inventoryObjectId.
    */
-  function _get(uint256 itemObjectId) internal view returns (uint256 inventoryId) {
+  function _get(uint256 itemObjectId) internal view returns (uint256 inventoryObjectId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
@@ -105,43 +105,43 @@ library InventoryByItem {
   }
 
   /**
-   * @notice Set inventoryId.
+   * @notice Set inventoryObjectId.
    */
-  function setInventoryId(uint256 itemObjectId, uint256 inventoryId) internal {
+  function setInventoryObjectId(uint256 itemObjectId, uint256 inventoryObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryObjectId)), _fieldLayout);
   }
 
   /**
-   * @notice Set inventoryId.
+   * @notice Set inventoryObjectId.
    */
-  function _setInventoryId(uint256 itemObjectId, uint256 inventoryId) internal {
+  function _setInventoryObjectId(uint256 itemObjectId, uint256 inventoryObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryObjectId)), _fieldLayout);
   }
 
   /**
-   * @notice Set inventoryId.
+   * @notice Set inventoryObjectId.
    */
-  function set(uint256 itemObjectId, uint256 inventoryId) internal {
+  function set(uint256 itemObjectId, uint256 inventoryObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryObjectId)), _fieldLayout);
   }
 
   /**
-   * @notice Set inventoryId.
+   * @notice Set inventoryObjectId.
    */
-  function _set(uint256 itemObjectId, uint256 inventoryId) internal {
+  function _set(uint256 itemObjectId, uint256 inventoryObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((inventoryObjectId)), _fieldLayout);
   }
 
   /**
@@ -168,8 +168,8 @@ library InventoryByItem {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 inventoryId) internal pure returns (bytes memory) {
-    return abi.encodePacked(inventoryId);
+  function encodeStatic(uint256 inventoryObjectId) internal pure returns (bytes memory) {
+    return abi.encodePacked(inventoryObjectId);
   }
 
   /**
@@ -178,8 +178,8 @@ library InventoryByItem {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(uint256 inventoryId) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(inventoryId);
+  function encode(uint256 inventoryObjectId) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData = encodeStatic(inventoryObjectId);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

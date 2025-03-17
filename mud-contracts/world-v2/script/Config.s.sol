@@ -100,15 +100,6 @@ contract Config is Script {
     CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartCharacterSystem.getAddress(), true);
     CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartAssemblySystem.getAddress(), true);
 
-    // FuelSystem.sol
-    bytes4[2] memory fuelFunctionSelectors = [
-      FuelSystem.updateFuel.selector,
-      FuelSystem.setFuelAmount.selector
-    ];
-    for (uint i = 0; i < fuelFunctionSelectors.length; i++) {
-      CallAccess.set(fuelSystem.toResourceId(), fuelFunctionSelectors[i], deployableSystem.getAddress(), true);
-    }
-
     // InventorySystem.sol
     bytes4[2] memory inventoryFunctionSelectors = [
       InventorySystem.depositInventory.selector,
@@ -130,10 +121,9 @@ contract Config is Script {
     }
 
     // OwnershipSystem.sol
-    bytes4[3] memory ownershipInventoryFunctionSelectors = [
+    bytes4[2] memory ownershipInventoryFunctionSelectors = [
       OwnershipSystem.ascribeToInventory.selector,
-      OwnershipSystem.annulFromInventory.selector,
-      OwnershipSystem.transferInventory.selector
+      OwnershipSystem.annulFromInventory.selector
     ];
     for (uint i = 0; i < ownershipInventoryFunctionSelectors.length; i++) {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], inventorySystem.getAddress(), true);

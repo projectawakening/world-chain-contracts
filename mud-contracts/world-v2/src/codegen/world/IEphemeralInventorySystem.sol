@@ -11,17 +11,11 @@ import { CreateInventoryItemParams, InventoryItemParams } from "../../namespaces
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IEphemeralInventorySystem {
-  error EphemeralInventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
   error EphemeralInventory_InsufficientCapacity(string message, uint256 maxCapacity, uint256 usedCapacity);
-  error EphemeralInventory_InvalidItemWithdrawalQuantity(
-    string message,
-    uint256 smartObjectId,
-    uint256 quantity,
-    uint256 maxQuantity
-  );
   error EphemeralInventory_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
   error EphemeralInventory_InvalidItemObjectId(uint256 smartObjectId);
   error EphemeralInventory_InvalidItemDepositQuantity(uint256 smartObjectId, uint256 quantity);
+  error EphemeralInventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
 
   function evefrontier__getEphemeralSmartObjectId(
     uint256 smartObjectId,

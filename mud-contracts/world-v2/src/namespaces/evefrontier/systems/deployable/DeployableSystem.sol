@@ -17,7 +17,9 @@ import {
   Fuel, 
   FuelData,
   Location, 
-  LocationData
+  LocationData,
+  Inventory,
+  InventoryItem
 } from "../../codegen/index.sol";
 
 // Local namespace systems
@@ -73,7 +75,8 @@ contract DeployableSystem is SmartObjectFramework {
       params.fuelConsumptionIntervalInSeconds,
       params.fuelMaxCapacity
     );
-    anchor(params.smartObjectId, params.locationData);
+
+    anchor(params.smartObjectId, params.owner, params.locationData);
   }
 
   /**
@@ -110,6 +113,12 @@ contract DeployableSystem is SmartObjectFramework {
       );
     }
 
+    // TODO: the following is a candidate for hook logic
+    // set the initial inventory data version to 1
+    if (Inventory.getVersion(smartObjectId) == 0) {
+      Inventory.setVersion(smartObjectId, 1);
+    }
+    
     // Use OwnershipSystem to track ownership
     ownershipSystem.ascribeToAccount(smartObjectId, owner);
 
@@ -144,11 +153,16 @@ contract DeployableSystem is SmartObjectFramework {
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
+    // increment the inventory data version (this will make ALL previous inventory item data stale)
+    // reset the used capacity to 0
+    // TODO: the following is a candidate for hook logic and optimization
+    if (Inventory.getVersion(smartObjectId) != 0) {
+      Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
+      Inventory.setUsedCapacity(smartObjectId, 0);
+    }
     
-    // Get the current owner
+    // Remove ownership tracking of the deployable smart object
     address owner = ownershipSystem.owner(smartObjectId);
-    
-    // Remove ownership through OwnershipSystem
     ownershipSystem.annulFromAccount(smartObjectId, owner);
     
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
@@ -196,6 +210,7 @@ contract DeployableSystem is SmartObjectFramework {
    */
   function anchor(
     uint256 smartObjectId,
+    address owner,
     LocationData memory locationData
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
@@ -203,7 +218,8 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
     _setDeployableState(smartObjectId, previousState, State.ANCHORED);
-
+    //re-add ownership tracking of the deployable smart object
+    ownershipSystem.ascribeToAccount(smartObjectId, owner);
     locationSystem.saveLocation(smartObjectId, locationData);
 
     DeployableState.setIsValid(smartObjectId, true);
@@ -221,6 +237,17 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     _setDeployableState(smartObjectId, previousState, State.UNANCHORED);
+    // increment the inventory data version (this will make ALL previous inventory item data stale)
+    // reset the used capacity to 0
+    // TODO: the following is a candidate for hook logic and optimization
+    if (Inventory.getVersion(smartObjectId) != 0) {
+      Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
+      Inventory.setUsedCapacity(smartObjectId, 0);
+    }
+
+    // Remove ownership tracking through OwnershipSystem
+    address owner = ownershipSystem.owner(smartObjectId);
+    ownershipSystem.annulFromAccount(smartObjectId, owner);
 
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 

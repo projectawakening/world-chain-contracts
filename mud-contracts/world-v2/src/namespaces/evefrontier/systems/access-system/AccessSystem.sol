@@ -7,17 +7,23 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
+import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
+import { TAG_TYPE_PROPERTY, TAG_TYPE_RESOURCE_RELATION, TAG_IDENTIFIER_CLASS } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 import { HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
 import { ObjectByEphemeral } from "../../codegen/tables/ObjectByEphemeral.sol";
+import { EntityRecord } from "../../codegen/tables/EntityRecord.sol";
 
 // Local namespace system imports
-
 import { OwnershipSystem, ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
+
+// params
+import { EntityRecordParams } from "../entity-record/types.sol";
 
 contract AccessSystem is SmartObjectFramework {
   error Access_NotAdmin(address caller);
@@ -29,8 +35,14 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotDirectAdminOrCallAccess(address caller, uint256 smartObjectId);
-  
-  function onlyOwnerOrCanTransferToEphemeralRole(uint256 smartObjectId, bytes memory data) public view {
+  error Access_NotOwnerWithAdminSupportAccess(address caller, uint256 smartObjectId);
+  error Access_NotClassScoped(address caller, uint256 smartObjectId);
+  error Access_NotCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotAdminSupported(address caller, uint256 smartObjectId);
+  error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
+  error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
+
+  function onlyOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
     if (isOwner(smartObjectId, caller)) {
       return;
@@ -45,7 +57,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotOwnerOrCanTransferToEphemeral(caller, smartObjectId);
   }
 
-  function onlyOwnerOrCanTransferFromEphemeralRole(uint256 smartObjectId, bytes memory data) public view {
+  function onlyOwnerOrCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
     if (isOwner(smartObjectId, caller)) {
       return;
@@ -60,7 +72,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotOwnerOrCanTransferFromEphemeral(caller, smartObjectId);
   }
 
-  function onlyOwnerOrCanTransferToInventoryRole(uint256 smartObjectId, bytes memory data) public view {
+  function onlyOwnerOrCanTransferToInventoryRoleAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
     if (isOwner(smartObjectId, caller)) {
       return;
@@ -75,7 +87,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotOwnerOrCanTransferToInventory(caller, smartObjectId);
   }
 
-  function onlyOwner(uint256 smartObjectId, bytes memory data) public view {
+  function onlyOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
     if (isOwner(smartObjectId, _callMsgSender(1))) {
       return;
     }
@@ -83,7 +95,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotOwner(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyAdmin(uint256 smartObjectId, bytes memory data) public view {
+  function onlyAdminAccess(uint256 smartObjectId, bytes memory data) public view {
     if (isAdmin(_callMsgSender(1))) {
       return;
     }
@@ -91,7 +103,15 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotAdmin(_callMsgSender(1));
   }
 
-  function onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) public view {
+  function onlyAdminSupportedAccess(uint256 smartObjectId, bytes memory data) public view {
+    if (isAdmin(tx.origin)) {
+      return;
+    }
+
+    revert Access_NotAdminSupported(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlyAdminOrOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
     if (isAdmin(_callMsgSender(1))) {
       return;
     }
@@ -103,7 +123,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyAdminForCharactersOtherwiseAlsoOwner(uint256 smartObjectId, bytes memory data) public view {
+  function onlyAdminForCharactersOtherwiseAlsoOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
     if (isAdmin(_callMsgSender(1))) {
       return;
     }
@@ -115,6 +135,17 @@ contract AccessSystem is SmartObjectFramework {
     }
 
     revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlyCallAccess(uint256 smartObjectId, bytes memory data) public view {
+
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    if (callCount > 1 && CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    }
+
+    revert Access_NotCallAccess(msgSender, smartObjectId);
   }
 
   function onlyOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -149,18 +180,9 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotAdminOrCallAccess(caller, smartObjectId);
   }
 
-  function onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) public view {
-    address caller = _callMsgSender(1);
-    if (isAdmin(caller)) {
-      return;
-    }
+  function onlyCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
-    if (CallAccess.get(systemId, functionId, msgSender)) {
-      return;
-    } else {
-      caller = msgSender;
-    }
     uint256 associatedObject = ObjectByEphemeral.getSmartObjectId(smartObjectId);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
     if (associatedObject == 0) {
@@ -169,10 +191,39 @@ contract AccessSystem is SmartObjectFramework {
       _scope(associatedObject, callingSystemId);
     }
 
+    if (callCount > 1 && CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    }
+
+    revert Access_NotCallAccess(msgSender, smartObjectId);
+  }
+
+  function onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) public view {
+    uint256 associatedObject = ObjectByEphemeral.getSmartObjectId(smartObjectId);
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+    if (associatedObject == 0) {
+      _scope(smartObjectId, callingSystemId);
+    } else {
+      _scope(associatedObject, callingSystemId);
+    }
+
+    address caller = _callMsgSender(1);
+    if (isAdmin(caller)) {
+      return;
+    }
+
+    if (CallAccess.get(systemId, functionId, msgSender)) {
+      return;
+    } else {
+      caller = msgSender;
+    }
+
     revert Access_NotAdminOrCallAccess(caller, smartObjectId);
   }
 
-    function onlyDirectAdminOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectAdminOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     if (isAdmin(caller) && callCount == 1) {
@@ -189,6 +240,56 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotDirectAdminOrCallAccess(caller, smartObjectId);
   }
 
+  function onlyOwnerWithAdminSupportAccess(uint256 smartObjectId, bytes memory data) public view {
+    if (isOwner(smartObjectId, _callMsgSender(1)) && isAdmin(tx.origin)) {
+      return;
+    }
+
+    revert Access_NotOwnerWithAdminSupportAccess(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlyClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTypeId(smartObjectId))));
+    if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
+      return;
+    }
+
+    revert Access_NotClassScoped(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlyAdminOrClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTypeId(smartObjectId))));
+    if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
+      return;
+    }
+
+    if (isAdmin(_callMsgSender(1))) {
+      return;
+    }
+
+    revert Access_NotAdminOrClassScoped(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlySmartAssemblyClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+
+    (, , EntityRecordParams memory entityRecordParams) = abi.decode(data, (uint256, string, EntityRecordParams));
+    uint256 classId = uint256(keccak256(abi.encodePacked(entityRecordParams.typeId)));
+    if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
+      return;
+    }
+
+    revert Access_NotClassScoped(_callMsgSender(1), smartObjectId);
+  }
+
   function isAdmin(address caller) public view returns (bool) {
     bytes32 adminRole = bytes32("admin");
     return HasRole.getIsMember(adminRole, caller);
@@ -202,6 +303,19 @@ contract AccessSystem is SmartObjectFramework {
       ), (address));
     return caller == owner;
   }
+
+  function isClassScoped(uint256 classId, ResourceId systemId) public view returns (bool) {
+    TagId systemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(systemId)));
+
+    if (EntityTagMap.getHasTag(classId, TagIdLib.encode(TAG_TYPE_PROPERTY, TAG_IDENTIFIER_CLASS))) {
+      if (EntityTagMap.getHasTag(classId, systemTagId)) {
+        return true;
+      }
+    }
+  
+    return false;
+  }
+
 
 
   function canTransferFromEphemeral(uint256 smartObjectId, address caller) public view returns (bool) {

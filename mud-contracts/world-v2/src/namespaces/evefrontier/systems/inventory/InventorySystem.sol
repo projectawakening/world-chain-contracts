@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import "forge-std/console.sol";
 // MUD core imports
 import { ResourceId, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { NamespaceOwner } from "@latticexyz/world/src/codegen/tables/NamespaceOwner.sol";
@@ -14,12 +15,13 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 
 // Local namespace tables
 import { 
-  GlobalDeployableState, 
-  Inventory, 
+  GlobalDeployableState,
   Tenant, 
   EntityRecord, 
   DeployableState, 
-  DeployableStateData, 
+  DeployableStateData,
+    Inventory,
+  InventoryData,
   InventoryItemData, 
   InventoryItem,
   InventoryByItem,
@@ -49,7 +51,6 @@ contract InventorySystem is SmartObjectFramework {
   error Inventory_InvalidTenantId(uint256 itemObjectId, bytes32 tenantId);
   error Inventory_InvalidItemObjectId(uint256 itemObjectId);
   error Inventory_InvalidItemDepositQuantity(uint256 itemObjectId, uint256 quantity);
-  error Inventory_InvalidItemWithdrawalQuantity(string message, uint256 itemSmartObjectId, uint256 quantity, uint256 maxQuantity);
   error Inventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
 
   /**
@@ -127,10 +128,9 @@ contract InventorySystem is SmartObjectFramework {
       }
     }
 
-    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     uint256 usedCapacity = Inventory.getUsedCapacity(smartObjectId);
     uint256 maxCapacity = Inventory.getCapacity(smartObjectId);
-    uint256 existingItemsLength = Inventory.getItems(smartObjectId).length;
+    uint256 existingItemsLength = Inventory.lengthItems(smartObjectId);
     
     for (uint256 i = 0; i < items.length; i++) {
         if (!EntityRecord.getExists(items[i].smartObjectId)) { // we expect all items to have an EntityRecord. If not, then they should be called via createAndDeposit first
@@ -139,15 +139,6 @@ contract InventorySystem is SmartObjectFramework {
           items[i].smartObjectId
         );
       }
-      // Direct calls represent new items being moved onto the chain from the game world simulation
-      if(callCount == 1) {
-        // Ascribe item ownership to the inventory
-        ownershipSystem.ascribeToInventory(items[i].smartObjectId, smartObjectId, items[i].quantity);
-      } else {
-        // Transfer item ownership to this inventory from the previous inventory
-        ownershipSystem.transferInventory(items[i].smartObjectId, smartObjectId, items[i].quantity);
-      }
-
       // Process the item deposit (returning the updated used capacity after processing the item)
       uint256 itemIndex = existingItemsLength + i;
       usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity, itemIndex);
@@ -160,7 +151,7 @@ contract InventorySystem is SmartObjectFramework {
   /**
    * @notice Withdraw items from the inventory
    * @param smartObjectId The associated smart object id
-   * @param items The items to withdraw from inventory
+   * @param items The items to withdraw from the inventory
    * @dev access control: this function is callable by the admin role directly or via scoped system call or by the inventory/ephemeral interact systems
    */
   function withdrawInventory(
@@ -175,17 +166,10 @@ contract InventorySystem is SmartObjectFramework {
       }
     }
 
-    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     uint256 usedCapacity = Inventory.getUsedCapacity(smartObjectId);
-
     for (uint256 i = 0; i < items.length; i++) {
       // Process the item withdrawal (returning the updated used capacity after processing the item)
       usedCapacity = _processItemWithdrawal(smartObjectId, items[i], usedCapacity);
-      // Direct calls represent items leaving the chain to the game world simulation
-      if(callCount == 1) { // a direct call
-        // Annul ownership tracking
-        ownershipSystem.annulFromInventory(items[i].smartObjectId, smartObjectId, items[i].quantity);
-      }
     }
 
     // Update the new aggregate used capacity of the inventory
@@ -211,39 +195,15 @@ contract InventorySystem is SmartObjectFramework {
       );
     }
 
-    _updateInventoryAfterDeposit(smartObjectId, item, itemIndex);
-    return usedCapacity + reqCapacity;
-  }
-
-  function _updateInventoryAfterDeposit(uint256 smartObjectId, InventoryItemParams memory item, uint256 itemIndex) internal {
-    InventoryItemData memory itemData = InventoryItem.get(smartObjectId, item.smartObjectId);
-    // Validate associated deployable state.
-    DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-
-    // Create a new item if the item storage entry does not exist or if the associated smart object has been re-anchored since the last deposit
-    if (itemData.stateUpdate == 0 || itemData.stateUpdate < deployableStateData.anchoredAt) {
-      // Item is new or associated with a smart object has been re-anchored since the last deposit
-      _depositNewItem(smartObjectId, item, itemIndex);
-    } else {
-      // Deployable has not been re-anchored and item exists in the inventory
-      _increaseItemQuantity(smartObjectId, item, itemData.index);
+    if (!InventoryItem.getExists(smartObjectId, item.smartObjectId)) {
+      Inventory.pushItems(smartObjectId, item.smartObjectId);
+      InventoryItem.set(smartObjectId, item.smartObjectId, true, 0, itemIndex, Inventory.getVersion(smartObjectId));
     }
-  }
 
-  /**
-   * @notice Increase the quantity of an item in the inventory
-   * @dev Increase the quantity of an item in the inventory by smart storage unit id
-   * @param smartObjectId The smart storage unit id
-   * @param item The item to increase the quantity
-   */
-  function _increaseItemQuantity(uint256 smartObjectId, InventoryItemParams memory item, uint256 itemIndex) internal {
-    uint256 quantity = InventoryItem.getQuantity(smartObjectId, item.smartObjectId);
-    InventoryItem.set(smartObjectId, item.smartObjectId, quantity + item.quantity, itemIndex, block.timestamp);
-  }
+    // Adjust ownership/quantity data
+    ownershipSystem.ascribeToInventory(smartObjectId, item.smartObjectId, item.quantity);
 
-  function _depositNewItem(uint256 smartObjectId, InventoryItemParams memory item, uint256 itemIndex) internal {
-    Inventory.pushItems(smartObjectId, item.smartObjectId);
-    InventoryItem.set(smartObjectId, item.smartObjectId, item.quantity, itemIndex, block.timestamp);
+    return usedCapacity + reqCapacity;
   }
 
   function _processItemWithdrawal(
@@ -252,112 +212,67 @@ contract InventorySystem is SmartObjectFramework {
     uint256 usedCapacity
   ) internal returns (uint256) {
     InventoryItemData memory itemData = InventoryItem.get(smartObjectId, item.smartObjectId);
+
+    uint256 existingItemQuantity = InventoryItem.getQuantity(smartObjectId, item.smartObjectId);
     
-    _validateWithdrawal(item, itemData);
-    _updateInventoryAfterWithdrawal(smartObjectId, item, itemData);
+    // Adjust ownership and quantities
+    ownershipSystem.annulFromInventory(smartObjectId, item.smartObjectId, item.quantity);
+    
+    // remove item if quantity is reduced to 0
+    if (item.quantity == existingItemQuantity) {
+      _removeItem(smartObjectId, item, itemData);
+    }
 
     return usedCapacity - (EntityRecord.getVolume(item.smartObjectId) * item.quantity);
   }
 
-  function _validateWithdrawal(InventoryItemParams memory item, InventoryItemData memory itemData) internal pure {
-    if (item.quantity > itemData.quantity) {
-      revert Inventory_InvalidItemWithdrawalQuantity("InventorySystem: invalid quantity", item.smartObjectId, item.quantity, itemData.quantity);
-    }
-  }
-
-  function _updateInventoryAfterWithdrawal(
+  function _removeItem(
     uint256 smartObjectId,
     InventoryItemParams memory item,
     InventoryItemData memory itemData
   ) internal {
-    // Validate associated deployable state.
-    DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-
-    if (itemData.stateUpdate < deployableStateData.anchoredAt) {
-      // Cannot withdraw any items if there have been no deposit actions since the inventory was last re-anchored (re-anchoring treats this as a new inventory)
-      revert Inventory_InvalidItemWithdrawalQuantity("InventorySystem: invalid quantity", item.smartObjectId, item.quantity, 0);
-    } else {
-      // Deployable has not been re-anchored since item data was last updated and item exists in the inventory
-      if (item.quantity == itemData.quantity) {
-        _removeItemCompletely(smartObjectId, item, itemData);
-      } else if (item.quantity < itemData.quantity) {
-        _reduceItemQuantity(smartObjectId, item, itemData);
-      }
+    uint256 length = Inventory.lengthItems(smartObjectId);
+    // Only perform swap if this isn't the last item (saves gas)
+    if (length > 1 && itemData.index < length - 1) {
+      uint256 lastElement = Inventory.getItemItems(smartObjectId, length - 1);
+      Inventory.updateItems(smartObjectId, itemData.index, lastElement);
+      InventoryItem.setIndex(smartObjectId, lastElement, itemData.index);
     }
-  }
-
-  function _removeItemCompletely(
-    uint256 smartObjectId,
-    InventoryItemParams memory item,
-    InventoryItemData memory itemData
-  ) internal {
-    uint256[] memory inventoryItems = Inventory.getItems(smartObjectId);
-    uint256 lastElement = inventoryItems[inventoryItems.length - 1];
-    Inventory.updateItems(smartObjectId, itemData.index, lastElement);
+    
     Inventory.popItems(smartObjectId);
-
-    //when a last element is swapped, change the index of the last element in the InventoryItem Table
-    InventoryItem.setIndex(smartObjectId, lastElement, itemData.index);
     InventoryItem.deleteRecord(smartObjectId, item.smartObjectId);
-  }
-
-  function _reduceItemQuantity(
-    uint256 smartObjectId,
-    InventoryItemParams memory item,
-    InventoryItemData memory itemData
-  ) internal {
-    InventoryItem.set(
-      smartObjectId,
-      item.smartObjectId,
-      itemData.quantity - item.quantity,
-      itemData.index,
-      block.timestamp
-    );
   }
 
   function _createEntityRecords(
     CreateInventoryItemParams[] memory items
   ) internal returns (InventoryItemParams[] memory) {
     InventoryItemParams[] memory inventoryItems = new InventoryItemParams[](items.length);
+    bytes32 currentTenantId = Tenant.get(); // Cache tenant ID - only read once
+    
     for (uint256 i = 0; i < items.length; i++) {
       // only create entity records for items that don't already exist
       if (!EntityRecord.getExists(items[i].smartObjectId)) {
         // item sanity checks
         if (items[i].itemId != 0) { // singleton item case
-          if (Tenant.get() != items[i].tenantId) {
+          if (currentTenantId != items[i].tenantId) {
             revert Inventory_InvalidTenantId(items[i].smartObjectId, items[i].tenantId);
           }
+          
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].itemId)))) {
             revert Inventory_InvalidItemObjectId(items[i].smartObjectId);
           }
+          
           if (items[i].quantity != 1) {
             revert Inventory_InvalidItemDepositQuantity(items[i].smartObjectId, items[i].quantity);
           }
 
           uint256 classId = uint256(keccak256(abi.encodePacked(items[i].typeId)));
-          if (!EntityRecord.getExists(classId)) { // the classId EntityRecord is not created
-            if (!Entity.getExists(classId)) {
-              // register the classId with the `evefrontier namespace owner as the default CLASS_ACCESS_ROLE member
-              // TODO: after data validation implementation, revisit this:
-              // - consider using the CCP Games data signer instead of the namespace owner
-              // - alternatively we could setup a specifc role and member for this purpose
-              // - alternatively, we could block this call with a revert unless classId is already registered, and thereby requiring all classes to be pre-configured
-              entitySystem.scopedRegisterClass(classId, NamespaceOwner.getOwner(SystemRegistry.get(address(this)).getNamespaceId()), new ResourceId[](0));
-            }
-            // Create an EntityRecord for the classId if it doesn't exist
-            if (!EntityRecord.getExists(classId)) {
-              entityRecordSystem.createRecord(classId, EntityRecordParams({
-                tenantId: 0,
-                typeId: items[i].typeId,
-                itemId: 0,
-                volume: items[i].volume
-              }));
-            }
-          }
+          _ensureClassIdExists(classId, items[i].typeId, items[i].volume);
         } else { // non-singleton item case
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].typeId)))) {
             revert Inventory_InvalidItemObjectId(items[i].smartObjectId);
           }
+          
           if (items[i].quantity == 0) {
             revert Inventory_InvalidItemDepositQuantity(items[i].smartObjectId, items[i].quantity);
           }
@@ -369,13 +284,45 @@ contract InventorySystem is SmartObjectFramework {
           itemId: items[i].itemId,
           volume: items[i].volume
         }));
-
-        inventoryItems[i] = InventoryItemParams({
-          smartObjectId: items[i].smartObjectId,
-          quantity: items[i].quantity
-        });
       }
+      
+      // Always populate the output array
+      inventoryItems[i] = InventoryItemParams({
+        smartObjectId: items[i].smartObjectId,
+        quantity: items[i].quantity
+      });
     }
     return inventoryItems;
+  }
+
+  /**
+   * @notice Helper function to ensure a class ID entity record exists
+   * @param classId The class ID to check
+   * @param typeId The type ID to use if creating the class record
+   * @param volume The volume to use if creating the class record
+   */
+  function _ensureClassIdExists(uint256 classId, uint256 typeId, uint256 volume) internal {
+    if (!EntityRecord.getExists(classId)) { // the classId EntityRecord is not created
+      if (!Entity.getExists(classId)) {
+        // register the classId with the namespace owner as the default CLASS_ACCESS_ROLE member
+        // TODO: after data validation implementation, revisit this:
+        // - consider using the CCP Games data signer instead of the namespace owner
+        // - alternatively we could setup a specifc role and member for this purpose
+        // - alternatively, we could block this call with a revert unless classId is already registered, and thereby requiring all classes to be pre-configured
+        entitySystem.scopedRegisterClass(
+          classId, 
+          NamespaceOwner.getOwner(SystemRegistry.get(address(this)).getNamespaceId()), 
+          new ResourceId[](0)
+        );
+      }
+      
+      // Create an EntityRecord for the classId
+      entityRecordSystem.createRecord(classId, EntityRecordParams({
+        tenantId: 0,
+        typeId: typeId,
+        itemId: 0,
+        volume: volume
+      }));
+    }
   }
 }

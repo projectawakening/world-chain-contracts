@@ -78,8 +78,13 @@ library DeployableSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).bringOffline(smartObjectId);
   }
 
-  function anchor(DeployableSystemType self, uint256 smartObjectId, LocationData memory locationData) internal {
-    return CallWrapper(self.toResourceId(), address(0)).anchor(smartObjectId, locationData);
+  function anchor(
+    DeployableSystemType self,
+    uint256 smartObjectId,
+    address owner,
+    LocationData memory locationData
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).anchor(smartObjectId, owner, locationData);
   }
 
   function unanchor(DeployableSystemType self, uint256 smartObjectId) internal {
@@ -154,11 +159,19 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function anchor(CallWrapper memory self, uint256 smartObjectId, LocationData memory locationData) internal {
+  function anchor(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    address owner,
+    LocationData memory locationData
+  ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_anchor_uint256_LocationData.anchor, (smartObjectId, locationData));
+    bytes memory systemCall = abi.encodeCall(
+      _anchor_uint256_address_LocationData.anchor,
+      (smartObjectId, owner, locationData)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -229,8 +242,16 @@ library DeployableSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function anchor(RootCallWrapper memory self, uint256 smartObjectId, LocationData memory locationData) internal {
-    bytes memory systemCall = abi.encodeCall(_anchor_uint256_LocationData.anchor, (smartObjectId, locationData));
+  function anchor(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    address owner,
+    LocationData memory locationData
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _anchor_uint256_address_LocationData.anchor,
+      (smartObjectId, owner, locationData)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -313,8 +334,8 @@ interface _bringOffline_uint256 {
   function bringOffline(uint256 smartObjectId) external;
 }
 
-interface _anchor_uint256_LocationData {
-  function anchor(uint256 smartObjectId, LocationData memory locationData) external;
+interface _anchor_uint256_address_LocationData {
+  function anchor(uint256 smartObjectId, address owner, LocationData memory locationData) external;
 }
 
 interface _unanchor_uint256 {

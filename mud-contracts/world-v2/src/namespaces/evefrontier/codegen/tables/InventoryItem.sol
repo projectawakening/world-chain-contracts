@@ -17,9 +17,10 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct InventoryItemData {
+  bool exists;
   uint256 quantity;
   uint256 index;
-  uint256 stateUpdate;
+  uint256 version;
 }
 
 library InventoryItem {
@@ -27,12 +28,12 @@ library InventoryItem {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000496e76656e746f72794974656d000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0060030020202000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0061040001202020000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256, uint256)
   Schema constant _keySchema = Schema.wrap(0x004002001f1f0000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x006003001f1f1f00000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool, uint256, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x00610400601f1f1f000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -49,10 +50,11 @@ library InventoryItem {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
-    fieldNames[0] = "quantity";
-    fieldNames[1] = "index";
-    fieldNames[2] = "stateUpdate";
+    fieldNames = new string[](4);
+    fieldNames[0] = "exists";
+    fieldNames[1] = "quantity";
+    fieldNames[2] = "index";
+    fieldNames[3] = "version";
   }
 
   /**
@@ -70,6 +72,52 @@ library InventoryItem {
   }
 
   /**
+   * @notice Get exists.
+   */
+  function getExists(uint256 smartObjectId, uint256 itemObjectId) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Get exists.
+   */
+  function _getExists(uint256 smartObjectId, uint256 itemObjectId) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (_toBool(uint8(bytes1(_blob))));
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function setExists(uint256 smartObjectId, uint256 itemObjectId, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set exists.
+   */
+  function _setExists(uint256 smartObjectId, uint256 itemObjectId, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
+  }
+
+  /**
    * @notice Get quantity.
    */
   function getQuantity(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 quantity) {
@@ -77,7 +125,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -89,7 +137,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -101,7 +149,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((quantity)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((quantity)), _fieldLayout);
   }
 
   /**
@@ -112,7 +160,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((quantity)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((quantity)), _fieldLayout);
   }
 
   /**
@@ -123,7 +171,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -135,7 +183,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -147,7 +195,7 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((index)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((index)), _fieldLayout);
   }
 
   /**
@@ -158,53 +206,53 @@ library InventoryItem {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((index)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((index)), _fieldLayout);
   }
 
   /**
-   * @notice Get stateUpdate.
+   * @notice Get version.
    */
-  function getStateUpdate(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 stateUpdate) {
+  function getVersion(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 version) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Get stateUpdate.
+   * @notice Get version.
    */
-  function _getStateUpdate(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 stateUpdate) {
+  function _getVersion(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 version) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
   /**
-   * @notice Set stateUpdate.
+   * @notice Set version.
    */
-  function setStateUpdate(uint256 smartObjectId, uint256 itemObjectId, uint256 stateUpdate) internal {
+  function setVersion(uint256 smartObjectId, uint256 itemObjectId, uint256 version) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((stateUpdate)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((version)), _fieldLayout);
   }
 
   /**
-   * @notice Set stateUpdate.
+   * @notice Set version.
    */
-  function _setStateUpdate(uint256 smartObjectId, uint256 itemObjectId, uint256 stateUpdate) internal {
+  function _setVersion(uint256 smartObjectId, uint256 itemObjectId, uint256 version) internal {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((stateUpdate)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((version)), _fieldLayout);
   }
 
   /**
@@ -245,11 +293,12 @@ library InventoryItem {
   function set(
     uint256 smartObjectId,
     uint256 itemObjectId,
+    bool exists,
     uint256 quantity,
     uint256 index,
-    uint256 stateUpdate
+    uint256 version
   ) internal {
-    bytes memory _staticData = encodeStatic(quantity, index, stateUpdate);
+    bytes memory _staticData = encodeStatic(exists, quantity, index, version);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -267,11 +316,12 @@ library InventoryItem {
   function _set(
     uint256 smartObjectId,
     uint256 itemObjectId,
+    bool exists,
     uint256 quantity,
     uint256 index,
-    uint256 stateUpdate
+    uint256 version
   ) internal {
-    bytes memory _staticData = encodeStatic(quantity, index, stateUpdate);
+    bytes memory _staticData = encodeStatic(exists, quantity, index, version);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -287,7 +337,7 @@ library InventoryItem {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 smartObjectId, uint256 itemObjectId, InventoryItemData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.quantity, _table.index, _table.stateUpdate);
+    bytes memory _staticData = encodeStatic(_table.exists, _table.quantity, _table.index, _table.version);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -303,7 +353,7 @@ library InventoryItem {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 smartObjectId, uint256 itemObjectId, InventoryItemData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.quantity, _table.index, _table.stateUpdate);
+    bytes memory _staticData = encodeStatic(_table.exists, _table.quantity, _table.index, _table.version);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -320,12 +370,14 @@ library InventoryItem {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (uint256 quantity, uint256 index, uint256 stateUpdate) {
-    quantity = (uint256(Bytes.getBytes32(_blob, 0)));
+  ) internal pure returns (bool exists, uint256 quantity, uint256 index, uint256 version) {
+    exists = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
 
-    index = (uint256(Bytes.getBytes32(_blob, 32)));
+    quantity = (uint256(Bytes.getBytes32(_blob, 1)));
 
-    stateUpdate = (uint256(Bytes.getBytes32(_blob, 64)));
+    index = (uint256(Bytes.getBytes32(_blob, 33)));
+
+    version = (uint256(Bytes.getBytes32(_blob, 65)));
   }
 
   /**
@@ -339,7 +391,7 @@ library InventoryItem {
     EncodedLengths,
     bytes memory
   ) internal pure returns (InventoryItemData memory _table) {
-    (_table.quantity, _table.index, _table.stateUpdate) = decodeStatic(_staticData);
+    (_table.exists, _table.quantity, _table.index, _table.version) = decodeStatic(_staticData);
   }
 
   /**
@@ -368,8 +420,13 @@ library InventoryItem {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 quantity, uint256 index, uint256 stateUpdate) internal pure returns (bytes memory) {
-    return abi.encodePacked(quantity, index, stateUpdate);
+  function encodeStatic(
+    bool exists,
+    uint256 quantity,
+    uint256 index,
+    uint256 version
+  ) internal pure returns (bytes memory) {
+    return abi.encodePacked(exists, quantity, index, version);
   }
 
   /**
@@ -379,11 +436,12 @@ library InventoryItem {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
+    bool exists,
     uint256 quantity,
     uint256 index,
-    uint256 stateUpdate
+    uint256 version
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(quantity, index, stateUpdate);
+    bytes memory _staticData = encodeStatic(exists, quantity, index, version);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -400,5 +458,17 @@ library InventoryItem {
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
     return _keyTuple;
+  }
+}
+
+/**
+ * @notice Cast a value to a bool.
+ * @dev Boolean values are encoded as uint8 (1 = true, 0 = false), but Solidity doesn't allow casting between uint8 and bool.
+ * @param value The uint8 value to convert.
+ * @return result The boolean value.
+ */
+function _toBool(uint8 value) pure returns (bool result) {
+  assembly {
+    result := value
   }
 }

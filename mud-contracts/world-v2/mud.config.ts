@@ -33,20 +33,12 @@ export default defineWorld({
         /***************************
          * OWNERSHIP TABLES *
          ***************************/
-        WorldOwnership: {
+        InventoryByItem: {
           schema: {
-            smartObjectId: "uint256",
-            quantity: "uint256",
+            itemObjectId: "uint256",
+            inventoryObjectId: "uint256",
           },
-          key: ["smartObjectId"],
-        },
-        AccountOwnership: {
-          schema: {
-            smartObjectId: "uint256",
-            account: "address",
-            quantity: "uint256",
-          },
-          key: ["smartObjectId", "account"],
+          key: ["itemObjectId"],
         },
         OwnershipByObject: {
           schema: {
@@ -54,13 +46,6 @@ export default defineWorld({
             account: "address",
           },
           key: ["smartObjectId"],
-        },
-        InventoryByItem: {
-          schema: {
-            itemObjectId: "uint256",
-            inventoryId: "uint256",
-          },
-          key: ["itemObjectId"],
         },
         /**********************
          * ENTITY RECORD TABLES *
@@ -204,6 +189,7 @@ export default defineWorld({
             smartObjectId: "uint256",
             capacity: "uint256",
             usedCapacity: "uint256",
+            version: "uint256",
             items: "uint256[]",
           },
           key: ["smartObjectId"],
@@ -215,9 +201,10 @@ export default defineWorld({
           schema: {
             smartObjectId: "uint256",
             itemObjectId: "uint256",
+            exists: "bool",
             quantity: "uint256",
             index: "uint256",
-            stateUpdate: "uint256",
+            version: "uint256",
           },
           key: ["smartObjectId", "itemObjectId"],
         },

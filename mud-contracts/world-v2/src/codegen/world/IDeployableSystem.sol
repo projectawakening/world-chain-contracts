@@ -35,7 +35,7 @@ interface IDeployableSystem {
 
   function evefrontier__bringOffline(uint256 smartObjectId) external;
 
-  function evefrontier__anchor(uint256 smartObjectId, LocationData memory locationData) external;
+  function evefrontier__anchor(uint256 smartObjectId, address owner, LocationData memory locationData) external;
 
   function evefrontier__unanchor(uint256 smartObjectId) external;
 

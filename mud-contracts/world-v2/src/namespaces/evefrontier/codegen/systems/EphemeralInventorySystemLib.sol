@@ -36,17 +36,11 @@ struct RootCallWrapper {
  */
 library EphemeralInventorySystemLib {
   error EphemeralInventorySystemLib_CallingFromRootSystem();
-  error EphemeralInventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
   error EphemeralInventory_InsufficientCapacity(string message, uint256 maxCapacity, uint256 usedCapacity);
-  error EphemeralInventory_InvalidItemWithdrawalQuantity(
-    string message,
-    uint256 smartObjectId,
-    uint256 quantity,
-    uint256 maxQuantity
-  );
   error EphemeralInventory_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
   error EphemeralInventory_InvalidItemObjectId(uint256 smartObjectId);
   error EphemeralInventory_InvalidItemDepositQuantity(uint256 smartObjectId, uint256 quantity);
+  error EphemeralInventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
 
   function getEphemeralSmartObjectId(
     EphemeralInventorySystemType self,
