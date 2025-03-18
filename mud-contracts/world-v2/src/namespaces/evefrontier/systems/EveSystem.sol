@@ -9,6 +9,8 @@ import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/na
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
+import { Tenant } from "../codegen/tables/Tenant.sol";
+
 import { AccessSystem } from "./access-system/AccessSystem.sol";
 import { accessSystem } from "../codegen/systems/AccessSystemLib.sol";
 
@@ -608,7 +610,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
    */
   function initialize(uint256 typeId, ResourceId[] memory systemIds) internal returns (uint256) {
     if (typeId == 0) revert("Invalid typeId");
-    uint256 classId = uint256(keccak256(abi.encodePacked(typeId)));
+    uint256 classId = uint256(keccak256(abi.encodePacked(Tenant.get(), typeId)));
     entitySystem.scopedRegisterClass(classId, _callMsgSender(1), systemIds);
 
     return classId;

@@ -73,6 +73,31 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     }
   }
 
+  // /**
+  //  * @notice Transfer items from one ephemeral inventory to another
+  //  * @param smartObjectId is the smart object id
+  //  * @param fromEphemeralOwner is the source ephemeral inventory owner
+  //  * @param toEphemeralOwner is the destination ephemeral inventory owner
+  //  * @param items is the array of items to transfer
+  //  */
+  // function crossTransferToEphemeral(
+  //   uint256 smartObjectId,
+  //   address fromEphemeralOwner,
+  //   address toEphemeralOwner,
+  //   InventoryItemParams[] memory items
+  //   ) public context access(smartObjectId) scope(smartObjectId) {
+  //     // withdraw the items from the designated inventory
+  //     ephemeralInventorySystem.withdrawEphemeral(smartObjectId, fromEphemeralOwner, items);
+  //     // deposit the items to the designated ephemeral inventory
+  //     ephemeralInventorySystem.depositEphemeral(smartObjectId, toEphemeralOwner, items);
+
+  //     // record each item transfer
+  //     for (uint i = 0; i < items.length; i++) {
+  //       ItemTransfer.set(smartObjectId, items[i].smartObjectId, fromEphemeralOwner, toEphemeralOwner, items[i].quantity, block.timestamp);
+  //     }
+  //   }
+  // }
+
   function setTransferFromEphemeralAccess(
     uint256 smartObjectId,
     address accessAddress,
