@@ -448,43 +448,47 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for EphemralInteractSystem
   function configureEphemeralInteractAccess() public {
-    bytes4[1] memory ephemeralInteractOnlyOwnerOrCanTransferToEphemeralSelectors = [
-      EphemeralInteractSystem.transferToEphemeral.selector
-    ];
-    for (uint256 i = 0; i < ephemeralInteractOnlyOwnerOrCanTransferToEphemeralSelectors.length; i++) {
-      accessConfigSystem.configureAccess(
-        ephemeralInteractSystem.toResourceId(),
-        ephemeralInteractOnlyOwnerOrCanTransferToEphemeralSelectors[i],
-        accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerOrCanTransferToEphemeralRoleAccess.selector
-      );
-      accessConfigSystem.setAccessEnforcement(
-        ephemeralInteractSystem.toResourceId(),
-        ephemeralInteractOnlyOwnerOrCanTransferToEphemeralSelectors[i],
-        true
-      );
-    }
 
-    bytes4[1] memory ephemeralInteractOnlyOwnerOrCanTransferFromEphemeralSelectors = [
-      EphemeralInteractSystem.transferFromEphemeral.selector
-    ];
-    for (uint256 i = 0; i < ephemeralInteractOnlyOwnerOrCanTransferFromEphemeralSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         ephemeralInteractSystem.toResourceId(),
-        ephemeralInteractOnlyOwnerOrCanTransferFromEphemeralSelectors[i],
+        EphemeralInteractSystem.transferToEphemeral.selector,
         accessSystem.toResourceId(),
         AccessSystem.onlyOwnerOrCanTransferFromEphemeralRoleAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         ephemeralInteractSystem.toResourceId(),
-        ephemeralInteractOnlyOwnerOrCanTransferFromEphemeralSelectors[i],
+        EphemeralInteractSystem.transferToEphemeral.selector,
         true
       );
-    }
 
-    bytes4[2] memory ephemeralInteractOnlyOwnerSelectors = [
+    accessConfigSystem.configureAccess(
+      ephemeralInteractSystem.toResourceId(),
+      EphemeralInteractSystem.transferFromEphemeral.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyOwnerOrCanTransferFromEphemeralRoleAccess.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      ephemeralInteractSystem.toResourceId(),
+      EphemeralInteractSystem.transferFromEphemeral.selector,
+      true
+    );
+
+    accessConfigSystem.configureAccess(
+      ephemeralInteractSystem.toResourceId(),
+      EphemeralInteractSystem.crossTransferToEphemeral.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      ephemeralInteractSystem.toResourceId(),
+      EphemeralInteractSystem.crossTransferToEphemeral.selector,
+      true
+    );
+    
+    bytes4[3] memory ephemeralInteractOnlyOwnerSelectors = [
       EphemeralInteractSystem.setTransferFromEphemeralAccess.selector,
-      EphemeralInteractSystem.setTransferToEphemeralAccess.selector
+      EphemeralInteractSystem.setTransferToEphemeralAccess.selector,
+      EphemeralInteractSystem.setCrossTransferToEphemeralAccess.selector
     ];
     for (uint256 i = 0; i < ephemeralInteractOnlyOwnerSelectors.length; i++) {
       accessConfigSystem.configureAccess(

@@ -1155,7 +1155,7 @@ contract EphemeralInventoryTest is MudTest {
     }
   }
 
-  // Add a helper function to calculate itemObjectId
+  // Helper function to calculate smart object ids
   function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
     if (isSingleton) {
       // For singleton items: hash of tenantId and itemId

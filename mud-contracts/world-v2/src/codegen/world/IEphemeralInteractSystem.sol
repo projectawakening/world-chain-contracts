@@ -23,6 +23,13 @@ interface IEphemeralInteractSystem {
     InventoryItemParams[] memory items
   ) external;
 
+  function evefrontier__crossTransferToEphemeral(
+    uint256 smartObjectId,
+    address fromEphemeralOwner,
+    address toEphemeralOwner,
+    InventoryItemParams[] memory items
+  ) external;
+
   function evefrontier__setTransferFromEphemeralAccess(
     uint256 smartObjectId,
     address accessAddress,
@@ -30,6 +37,12 @@ interface IEphemeralInteractSystem {
   ) external;
 
   function evefrontier__setTransferToEphemeralAccess(
+    uint256 smartObjectId,
+    address accessAddress,
+    bool isAllowed
+  ) external;
+
+  function evefrontier__setCrossTransferToEphemeralAccess(
     uint256 smartObjectId,
     address accessAddress,
     bool isAllowed

@@ -51,6 +51,7 @@ library AccessSystemLib {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
 
   function onlyOwnerOrCanTransferToEphemeralRoleAccess(
     AccessSystemType self,
@@ -59,6 +60,18 @@ library AccessSystemLib {
   ) internal view {
     return
       CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrCanTransferToEphemeralRoleAccess(smartObjectId, data);
+  }
+
+  function onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+    AccessSystemType self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
+    return
+      CallWrapper(self.toResourceId(), address(0)).onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+        smartObjectId,
+        data
+      );
   }
 
   function onlyOwnerOrCanTransferFromEphemeralRoleAccess(
@@ -222,6 +235,14 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).canTransferToInventory(smartObjectId, caller);
   }
 
+  function canCrossTransferToEphemeral(
+    AccessSystemType self,
+    uint256 smartObjectId,
+    address caller
+  ) internal view returns (bool) {
+    return CallWrapper(self.toResourceId(), address(0)).canCrossTransferToEphemeral(smartObjectId, caller);
+  }
+
   function onlyOwnerOrCanTransferToEphemeralRoleAccess(
     CallWrapper memory self,
     uint256 smartObjectId,
@@ -232,6 +253,27 @@ library AccessSystemLib {
 
     bytes memory systemCall = abi.encodeCall(
       _onlyOwnerOrCanTransferToEphemeralRoleAccess_uint256_bytes.onlyOwnerOrCanTransferToEphemeralRoleAccess,
+      (smartObjectId, data)
+    );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
+  function onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess_uint256_bytes
+        .onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -715,6 +757,28 @@ library AccessSystemLib {
     return abi.decode(result, (bool));
   }
 
+  function canCrossTransferToEphemeral(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    address caller
+  ) internal view returns (bool) {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _canCrossTransferToEphemeral_uint256_address.canCrossTransferToEphemeral,
+      (smartObjectId, caller)
+    );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+
+    bytes memory result = abi.decode(returnData, (bytes));
+    return abi.decode(result, (bool));
+  }
+
   function onlyOwnerOrCanTransferToEphemeralRoleAccess(
     RootCallWrapper memory self,
     uint256 smartObjectId,
@@ -722,6 +786,19 @@ library AccessSystemLib {
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
       _onlyOwnerOrCanTransferToEphemeralRoleAccess_uint256_bytes.onlyOwnerOrCanTransferToEphemeralRoleAccess,
+      (smartObjectId, data)
+    );
+    SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+  }
+
+  function onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    bytes memory data
+  ) internal view {
+    bytes memory systemCall = abi.encodeCall(
+      _onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess_uint256_bytes
+        .onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
@@ -1000,6 +1077,20 @@ library AccessSystemLib {
     return abi.decode(result, (bool));
   }
 
+  function canCrossTransferToEphemeral(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    address caller
+  ) internal view returns (bool) {
+    bytes memory systemCall = abi.encodeCall(
+      _canCrossTransferToEphemeral_uint256_address.canCrossTransferToEphemeral,
+      (smartObjectId, caller)
+    );
+
+    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+    return abi.decode(result, (bool));
+  }
+
   function callFrom(AccessSystemType self, address from) internal pure returns (CallWrapper memory) {
     return CallWrapper(self.toResourceId(), from);
   }
@@ -1040,6 +1131,10 @@ library AccessSystemLib {
 
 interface _onlyOwnerOrCanTransferToEphemeralRoleAccess_uint256_bytes {
   function onlyOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external;
+}
+
+interface _onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess_uint256_bytes {
+  function onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyOwnerOrCanTransferFromEphemeralRoleAccess_uint256_bytes {
@@ -1144,6 +1239,10 @@ interface _canTransferToEphemeral_uint256_address {
 
 interface _canTransferToInventory_uint256_address {
   function canTransferToInventory(uint256 smartObjectId, address caller) external;
+}
+
+interface _canCrossTransferToEphemeral_uint256_address {
+  function canCrossTransferToEphemeral(uint256 smartObjectId, address caller) external;
 }
 
 using AccessSystemLib for AccessSystemType global;

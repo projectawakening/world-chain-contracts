@@ -42,6 +42,7 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
 
   function onlyOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
@@ -56,6 +57,22 @@ contract AccessSystem is SmartObjectFramework {
     }
 
     revert Access_NotOwnerOrCanTransferToEphemeral(caller, smartObjectId);
+  }
+
+  function onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+    address caller = _callMsgSender(1);
+    (, address fromEphemeralOwner, , ) = abi.decode(data, (uint256, address, address, bytes));
+    if ( caller == fromEphemeralOwner) {
+      return;
+    }
+    
+    if (canCrossTransferToEphemeral(smartObjectId, _callMsgSender())) {
+      return;
+    } else {
+      caller = _callMsgSender();
+    }
+
+    revert Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(caller, smartObjectId);
   }
 
   function onlyOwnerOrCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -372,4 +389,8 @@ contract AccessSystem is SmartObjectFramework {
     return HasRole.getIsMember(accessRole, caller);
   }
 
+  function canCrossTransferToEphemeral(uint256 smartObjectId, address caller) public view returns (bool) {
+    bytes32 accessRole = keccak256(abi.encodePacked("CROSS_TRANSFER_TO_EPHEMERAL_ROLE", smartObjectId));
+    return HasRole.getIsMember(accessRole, caller);
+  }
 }

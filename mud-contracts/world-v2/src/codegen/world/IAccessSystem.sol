@@ -27,8 +27,14 @@ interface IAccessSystem {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
 
   function evefrontier__onlyOwnerOrCanTransferToEphemeralRoleAccess(
+    uint256 smartObjectId,
+    bytes memory data
+  ) external view;
+
+  function evefrontier__onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
     uint256 smartObjectId,
     bytes memory data
   ) external view;
@@ -100,4 +106,6 @@ interface IAccessSystem {
   function evefrontier__canTransferToEphemeral(uint256 smartObjectId, address caller) external view returns (bool);
 
   function evefrontier__canTransferToInventory(uint256 smartObjectId, address caller) external view returns (bool);
+
+  function evefrontier__canCrossTransferToEphemeral(uint256 smartObjectId, address caller) external view returns (bool);
 }

@@ -55,6 +55,22 @@ library EphemeralInteractSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).transferToEphemeral(smartObjectId, ephemeralOwner, items);
   }
 
+  function crossTransferToEphemeral(
+    EphemeralInteractSystemType self,
+    uint256 smartObjectId,
+    address fromEphemeralOwner,
+    address toEphemeralOwner,
+    InventoryItemParams[] memory items
+  ) internal {
+    return
+      CallWrapper(self.toResourceId(), address(0)).crossTransferToEphemeral(
+        smartObjectId,
+        fromEphemeralOwner,
+        toEphemeralOwner,
+        items
+      );
+  }
+
   function setTransferFromEphemeralAccess(
     EphemeralInteractSystemType self,
     uint256 smartObjectId,
@@ -83,6 +99,20 @@ library EphemeralInteractSystemLib {
       );
   }
 
+  function setCrossTransferToEphemeralAccess(
+    EphemeralInteractSystemType self,
+    uint256 smartObjectId,
+    address accessAddress,
+    bool isAllowed
+  ) internal {
+    return
+      CallWrapper(self.toResourceId(), address(0)).setCrossTransferToEphemeralAccess(
+        smartObjectId,
+        accessAddress,
+        isAllowed
+      );
+  }
+
   function transferFromEphemeral(
     CallWrapper memory self,
     uint256 smartObjectId,
@@ -113,6 +143,25 @@ library EphemeralInteractSystemLib {
     bytes memory systemCall = abi.encodeCall(
       _transferToEphemeral_uint256_address_InventoryItemParamsArray.transferToEphemeral,
       (smartObjectId, ephemeralOwner, items)
+    );
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function crossTransferToEphemeral(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    address fromEphemeralOwner,
+    address toEphemeralOwner,
+    InventoryItemParams[] memory items
+  ) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EphemeralInteractSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _crossTransferToEphemeral_uint256_address_address_InventoryItemParamsArray.crossTransferToEphemeral,
+      (smartObjectId, fromEphemeralOwner, toEphemeralOwner, items)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -155,6 +204,24 @@ library EphemeralInteractSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function setCrossTransferToEphemeralAccess(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    address accessAddress,
+    bool isAllowed
+  ) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EphemeralInteractSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _setCrossTransferToEphemeralAccess_uint256_address_bool.setCrossTransferToEphemeralAccess,
+      (smartObjectId, accessAddress, isAllowed)
+    );
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function transferFromEphemeral(
     RootCallWrapper memory self,
     uint256 smartObjectId,
@@ -181,6 +248,20 @@ library EphemeralInteractSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function crossTransferToEphemeral(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    address fromEphemeralOwner,
+    address toEphemeralOwner,
+    InventoryItemParams[] memory items
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _crossTransferToEphemeral_uint256_address_address_InventoryItemParamsArray.crossTransferToEphemeral,
+      (smartObjectId, fromEphemeralOwner, toEphemeralOwner, items)
+    );
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function setTransferFromEphemeralAccess(
     RootCallWrapper memory self,
     uint256 smartObjectId,
@@ -202,6 +283,19 @@ library EphemeralInteractSystemLib {
   ) internal {
     bytes memory systemCall = abi.encodeCall(
       _setTransferToEphemeralAccess_uint256_address_bool.setTransferToEphemeralAccess,
+      (smartObjectId, accessAddress, isAllowed)
+    );
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function setCrossTransferToEphemeralAccess(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    address accessAddress,
+    bool isAllowed
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _setCrossTransferToEphemeralAccess_uint256_address_bool.setCrossTransferToEphemeralAccess,
       (smartObjectId, accessAddress, isAllowed)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -264,12 +358,25 @@ interface _transferToEphemeral_uint256_address_InventoryItemParamsArray {
   ) external;
 }
 
+interface _crossTransferToEphemeral_uint256_address_address_InventoryItemParamsArray {
+  function crossTransferToEphemeral(
+    uint256 smartObjectId,
+    address fromEphemeralOwner,
+    address toEphemeralOwner,
+    InventoryItemParams[] memory items
+  ) external;
+}
+
 interface _setTransferFromEphemeralAccess_uint256_address_bool {
   function setTransferFromEphemeralAccess(uint256 smartObjectId, address accessAddress, bool isAllowed) external;
 }
 
 interface _setTransferToEphemeralAccess_uint256_address_bool {
   function setTransferToEphemeralAccess(uint256 smartObjectId, address accessAddress, bool isAllowed) external;
+}
+
+interface _setCrossTransferToEphemeralAccess_uint256_address_bool {
+  function setCrossTransferToEphemeralAccess(uint256 smartObjectId, address accessAddress, bool isAllowed) external;
 }
 
 using EphemeralInteractSystemLib for EphemeralInteractSystemType global;

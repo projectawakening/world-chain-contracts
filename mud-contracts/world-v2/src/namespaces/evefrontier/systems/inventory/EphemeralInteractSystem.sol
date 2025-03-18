@@ -73,30 +73,31 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     }
   }
 
-  // /**
-  //  * @notice Transfer items from one ephemeral inventory to another
-  //  * @param smartObjectId is the smart object id
-  //  * @param fromEphemeralOwner is the source ephemeral inventory owner
-  //  * @param toEphemeralOwner is the destination ephemeral inventory owner
-  //  * @param items is the array of items to transfer
-  //  */
-  // function crossTransferToEphemeral(
-  //   uint256 smartObjectId,
-  //   address fromEphemeralOwner,
-  //   address toEphemeralOwner,
-  //   InventoryItemParams[] memory items
-  //   ) public context access(smartObjectId) scope(smartObjectId) {
-  //     // withdraw the items from the designated inventory
-  //     ephemeralInventorySystem.withdrawEphemeral(smartObjectId, fromEphemeralOwner, items);
-  //     // deposit the items to the designated ephemeral inventory
-  //     ephemeralInventorySystem.depositEphemeral(smartObjectId, toEphemeralOwner, items);
+  /**
+   * @notice Transfer items from one ephemeral inventory to another
+   * @param smartObjectId is the smart object id
+   * @param fromEphemeralOwner is the source ephemeral inventory owner
+   * @param toEphemeralOwner is the destination ephemeral inventory owner
+   * @param items is the array of items to transfer
+   * NOTE: in addition to any configured access restrictions, the _callMsgSender(1) must be equal to `fromEphemeralOwner` for safe operations
+   */
+  function crossTransferToEphemeral(
+    uint256 smartObjectId,
+    address fromEphemeralOwner,
+    address toEphemeralOwner,
+    InventoryItemParams[] memory items
+  ) public context access(smartObjectId) scope(smartObjectId) {
+    // withdraw the items from the designated inventory
+    ephemeralInventorySystem.withdrawEphemeral(smartObjectId, fromEphemeralOwner, items);
+    // deposit the items to the designated ephemeral inventory
+    ephemeralInventorySystem.depositEphemeral(smartObjectId, toEphemeralOwner, items);
 
-  //     // record each item transfer
-  //     for (uint i = 0; i < items.length; i++) {
-  //       ItemTransfer.set(smartObjectId, items[i].smartObjectId, fromEphemeralOwner, toEphemeralOwner, items[i].quantity, block.timestamp);
-  //     }
-  //   }
-  // }
+    // record each item transfer
+    for (uint i = 0; i < items.length; i++) {
+      ItemTransfer.set(smartObjectId, items[i].smartObjectId, fromEphemeralOwner, toEphemeralOwner, items[i].quantity, block.timestamp);
+    }
+  }
+
 
   function setTransferFromEphemeralAccess(
     uint256 smartObjectId,
@@ -124,6 +125,26 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     bool isAllowed
   ) public context access(smartObjectId) scope(smartObjectId) {
     bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_TO_EPHEMERAL_ROLE", smartObjectId));
+
+    // Create the role if it doesn't exist
+    if (!Role.getExists(accessRole)) {
+      roleManagementSystem.scopedCreateRole(smartObjectId, accessRole, accessRole, accessAddress);
+    }
+
+    // Grant or revoke the role
+    if (!HasRole.getIsMember(accessRole, accessAddress) && isAllowed) {
+      roleManagementSystem.scopedGrantRole(smartObjectId, accessRole, accessAddress);
+    } else if (HasRole.getIsMember(accessRole, accessAddress) && !isAllowed) {
+      roleManagementSystem.scopedRevokeRole(smartObjectId, accessRole, accessAddress);
+    }
+  }
+
+  function setCrossTransferToEphemeralAccess(
+    uint256 smartObjectId,
+    address accessAddress,
+    bool isAllowed
+  ) public context access(smartObjectId) scope(smartObjectId) {
+    bytes32 accessRole = keccak256(abi.encodePacked("CROSS_TRANSFER_TO_EPHEMERAL_ROLE", smartObjectId));
 
     // Create the role if it doesn't exist
     if (!Role.getExists(accessRole)) {
