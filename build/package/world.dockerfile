@@ -1,7 +1,6 @@
 # Use the latest foundry image as of April 11th 2024
 FROM --platform=linux/amd64 ghcr.io/foundry-rs/foundry@sha256:8b843eb65cc7b155303b316f65d27173c862b37719dc095ef3a2ef27ce8d3c00
 
-
 ARG IMAGE_TAG
 ENV IMAGE_TAG=${IMAGE_TAG}
 
@@ -23,5 +22,7 @@ RUN CI=1 pnpm install --frozen-lockfile
 # Building all modules
 RUN pnpm nx run-many -t build
 
+# Make entrypoint script executable
+RUN chmod +x ./build/package/entrypoint.sh
 
-ENTRYPOINT ["./build/package/deploy-in-docker.sh"]
+ENTRYPOINT ["./build/package/entrypoint.sh"]

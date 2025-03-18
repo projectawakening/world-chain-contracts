@@ -7,6 +7,7 @@
     "build": "mud build",
     "clean": "forge clean && rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL --alwaysRunPostDeploy",
+    "upgrade": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && mud deploy --rpc $RPC_URL --worldAddress $WORLD_ADDRESS",
     "deploy:garnet": "mud deploy --profile=garnet",
     "deploy:redstone": "mud deploy --profile=redstone",
     "dev": "mud dev-contracts",

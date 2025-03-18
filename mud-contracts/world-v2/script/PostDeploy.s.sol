@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.24;
+pragma solidity >=0.8.20;
 
 import { Script } from "forge-std/Script.sol";
 
@@ -42,8 +42,6 @@ contract PostDeploy is Script {
     // install all the necessary tokens
     _installPuppet(world);
     _createEVEToken(world);
-    _createCharacterToken(world);
-    _createDeployableToken(world);
 
     vm.stopBroadcast();
   }
@@ -84,38 +82,6 @@ contract PostDeploy is Script {
     console.log("amount: ", amount * 1 ether);
   }
 
-  function _createCharacterToken(IBaseWorld world) internal {
-    string memory baseURI = vm.envString("BASE_URI");
-
-    // SmartCharacter
-    IERC721Mintable erc721SmartCharacter = registerERC721(
-      world,
-      "erc721charactr",
-      ERC721MetadataData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
-    );
-
-    console.log("Deploying Smart Character token with address: ", address(erc721SmartCharacter));
-
-    console.log("Setting baseURI for Smart Character token: ", baseURI);
-    staticDataSystem.setBaseURI(baseURI);
-    smartCharacterSystem.registerCharacterToken(address(erc721SmartCharacter));
-  }
-
-  function _createDeployableToken(IBaseWorld world) internal {
-    string memory baseURI = vm.envString("BASE_URI");
-
-    // SmartDeployable
-    IERC721Mintable erc721SmartDeployableToken = registerERC721(
-      world,
-      "erc721deploybl",
-      ERC721MetadataData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
-    );
-
-    console.log("Deploying Smart Deployable token with address: ", address(erc721SmartDeployableToken));
-
-    staticDataSystem.setBaseURI(baseURI);
-    deployableSystem.registerDeployableToken(address(erc721SmartDeployableToken));
-  }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {
     bytes memory tempBytes = bytes(str);

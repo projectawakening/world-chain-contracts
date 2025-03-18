@@ -8,7 +8,7 @@
     "build:abi-ts": "mud abi-ts",
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "deploy": "ERC20_TOKEN_NAME=$ERC20_TOKEN_NAME && ERC20_TOKEN_SYMBOL=$ERC20_TOKEN_SYMBOL && ERC20_INITIAL_SUPPLY=$ERC20_INITIAL_SUPPLY && EVE_TOKEN_NAMESPACE=$EVE_TOKEN_NAMESPACE && EVE_TOKEN_ADMIN=$EVE_TOKEN_ADMIN && PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL --alwaysRunPostDeploy",
-    "upgrade": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL --worldAddress $WORLD_ADDRESS",
+    "upgrade": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && mud deploy --rpc $RPC_URL --worldAddress $WORLD_ADDRESS",
     "clean": "rm -rf src/codegen && rm -rf out && rm -rf cache",
     "dev": "pnpm mud dev-contracts",
     "lint": "pnpm run prettier && pnpm run solhint",

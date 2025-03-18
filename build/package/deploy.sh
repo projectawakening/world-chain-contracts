@@ -101,6 +101,14 @@ echo "Using chain ID: $chain_id" | tee -a $LOG_FILE
 export RPC_URL="$rpc_url"
 export PRIVATE_KEY="$private_key"
 
+# Validate world address format if provided
+if [ ! -z "$world_address" ]; then
+    if [[ ! "$world_address" =~ ^0x[a-fA-F0-9]{40}$ ]]; then
+        echo "Error: Invalid world address format. Must be a valid Ethereum address (0x... with 40 hex characters)" | tee -a $LOG_FILE
+        exit 1
+    fi
+fi
+
 show_progress 0 8
 
 #1 Deploying the standard contracts
@@ -201,7 +209,7 @@ mkdir -p abis
 mkdir -p abis/trusted-forwarder
 mkdir -p abis/world
 
-#8 Copy ABIS to be used for External consumption
+# 8 Copy ABIS to be used for External consumption
 cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-${IMAGE_TAG}.abi.json"
 cp mud-contracts/world/out/IWorld.sol/IWorld.abi.json "abis/world/IWorld-${IMAGE_TAG}.abi.json"
 
