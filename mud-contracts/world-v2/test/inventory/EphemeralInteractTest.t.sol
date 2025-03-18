@@ -18,6 +18,7 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
 import { 
@@ -38,7 +39,9 @@ import {
   ObjectByEphemeralData,
   EphemeralInventory,
   EphemeralInvItem,
-  EphemeralInvItemData
+  EphemeralInvItemData,
+  ItemTransfer,
+  ItemTransferData
 } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
@@ -234,45 +237,384 @@ contract EphemeralInteractTest is MudTest {
       quantity: 3 // Transfer part of the quantity
     });
     
-    // // METHOD 1: Direct transfer from ephemeral to inventory
-    // vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_CannotTransferFromEphemeral.selector, bob, inventoryObjectId));
-    // ephemeralInteractSystem.transferFromEphemeral(inventoryObjectId, bob, itemParams);
+    // Direct transfer from ephemeral to inventory
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_CannotTransferFromEphemeral.selector, bob, inventoryObjectId));
+    ephemeralInteractSystem.transferFromEphemeral(inventoryObjectId, bob, itemParams);
     
-    // // Verify state changes after direct transfer
-    // // Check ephemeral inventory - should have 0 of item1 and 2 of item2 left
-    // assertEq(EphemeralInvItem.getExists(inventoryObjectId, bob, item1ObjectId), false);
-    // assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 2);
+
+    // Call should also fail due to missing access rights
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_CannotTransferFromEphemeral.selector, address(customSystem), inventoryObjectId));
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callTransferFromEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        itemParams
+      )
+    );
     
-    // // Check primary inventory - should now have the transferred items
-    // assertEq(Inventory.lengthItems(inventoryObjectId), 2);
-    // assertEq(InventoryItem.getQuantity(inventoryObjectId, item1ObjectId), 1);
-    // assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 3);
-    
-    // // METHOD 2: Use custom system to transfer remaining items
-    // InventoryItemParams[] memory remainingItems = new InventoryItemParams[](1);
-    // remainingItems[0] = InventoryItemParams({
-    //   smartObjectId: item2ObjectId,
-    //   quantity: 2 // Transfer the rest
-    // });
-    
-    // Call transfer via custom system
-    // world.call(
-    //   customSystemId,
-    //   abi.encodeWithSelector(
-    //     CustomEphemeralInteractSystem.callTransferFromEphemeral.selector,
-    //     inventoryObjectId,
-    //     bob,
-    //     remainingItems
-    //   )
-    // );
-    
-    // // Verify state after custom system transfer
-    // // Ephemeral inventory should be empty for these items
-    // assertEq(EphemeralInvItem.getExists(inventoryObjectId, bob, item2ObjectId), false);
-    
-    // // Regular inventory should now have all 5 items
-    // assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 5);
     vm.stopPrank();
+
+    vm.prank(alice);
+    // Set access for custom system to transfer from ephemeral
+    ephemeralInteractSystem.setTransferFromEphemeralAccess(inventoryObjectId, address(customSystem), true);
+    
+
+    vm.prank(charlie);
+    // Call transfer via custom system, but not the correct ephemeral owner (fails on the ephemeral inventory access control)
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner.selector, ephemeralInteractSystem.getAddress(), inventoryObjectId));
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callTransferFromEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        itemParams
+      )
+    );
+
+    vm.prank(bob);
+    // Call transfer via custom system
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callTransferFromEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        itemParams
+      )
+    );
+
+    // Verify state changes after transfer
+    // Check ephemeral inventory - should have 0 of item1 and 2 of item2 left
+    assertEq(EphemeralInvItem.getExists(inventoryObjectId, bob, item1ObjectId), false);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 2);
+    
+    // Check primary inventory - should now have the transferred items
+    assertEq(Inventory.lengthItems(inventoryObjectId), 2);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item1ObjectId), 1);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 3);
+
+    // verify item transfer record is being populated (the last item to be transfered will be stored here)
+    ItemTransferData memory itemTransferData = ItemTransfer.get(inventoryObjectId, item2ObjectId);
+    assertEq(itemTransferData.previousOwner, bob);
+    assertEq(itemTransferData.currentOwner, alice);
+    assertEq(itemTransferData.quantity, 3);
+    assertEq(itemTransferData.updatedAt, block.timestamp);
+  }
+
+  function test_transferToEphemeral() public {
+    // First, add items to primary inventory
+    InventoryItemParams[] memory itemParams = new InventoryItemParams[](2);
+    itemParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1
+    });
+    itemParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 5
+    });
+
+    vm.startPrank(alice, deployer);
+    // Add items to primary inventory
+    inventorySystem.depositInventory(inventoryObjectId, itemParams);
+    vm.stopPrank();
+    
+    // Verify state before transfer
+    assertEq(Inventory.lengthItems(inventoryObjectId), 2);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item1ObjectId), 1);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 5);
+    
+    // Verify ephemeral inventory is empty
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 0);
+    
+    // Prepare transfer parameters - transfer some items to ephemeral inventory
+    InventoryItemParams[] memory transferParams = new InventoryItemParams[](2);
+    transferParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1 // Transfer all of item1
+    });
+    transferParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 3 // Transfer part of item2
+    });
+    
+    // Direct call with alice is allowed (SSU owner)
+    vm.startPrank(alice);
+    ephemeralInteractSystem.transferToEphemeral(inventoryObjectId, bob, transferParams);
+    
+    // Verify state after the direct call
+    // Check primary inventory - should have less items now
+    assertEq(Inventory.lengthItems(inventoryObjectId), 1); // item1 completely gone
+    assertEq(InventoryItem.getExists(inventoryObjectId, item1ObjectId), false);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 2); // 5-3=2
+    
+    // Check ephemeral inventory - should have the transferred items
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 2);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item1ObjectId), 1);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 3);
+    
+    // Try to add more items via custom system (should fail without access)
+    InventoryItemParams[] memory customTransferParams = new InventoryItemParams[](1);
+    customTransferParams[0] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 1 // Transfer 1 more of item2
+    });
+    
+    // Call should fail due to missing access rights
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectOwnerOrCanTransferToEphemeral.selector, address(customSystem), inventoryObjectId));
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callTransferToEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        customTransferParams
+      )
+    );
+    
+    // Set access for custom system to transfer to ephemeral
+    ephemeralInteractSystem.setTransferToEphemeralAccess(inventoryObjectId, address(customSystem), true);
+  
+    // Now the call should succeed
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callTransferToEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        customTransferParams
+      )
+    );
+    vm.stopPrank();
+    
+    // Verify state after the custom system call
+    // Check primary inventory - should have even fewer items
+    assertEq(Inventory.lengthItems(inventoryObjectId), 1);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 1); // 2-1=1
+    
+    // Check ephemeral inventory - should have more items
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 2);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item1ObjectId), 1); // unchanged
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 4); // 3+1=4
+
+    // verify item transfer record is being populated (the last item to be transfered will be stored here)
+    ItemTransferData memory itemTransferData = ItemTransfer.get(inventoryObjectId, item2ObjectId);
+    assertEq(itemTransferData.previousOwner, alice);
+    assertEq(itemTransferData.currentOwner, bob);
+    assertEq(itemTransferData.quantity, 1);
+    assertEq(itemTransferData.updatedAt, block.timestamp);
+  }
+
+  function test_crossTransferToEphemeral() public {
+    // First, add items to bob's ephemeral inventory
+    InventoryItemParams[] memory bobItems = new InventoryItemParams[](2);
+    bobItems[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1
+    });
+    bobItems[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 5
+    });
+    
+    // Add items to Bob's ephemeral inventory
+    vm.prank(bob, deployer);
+    ephemeralInventorySystem.depositEphemeral(inventoryObjectId, bob, bobItems);
+    
+    // Verify state before transfer
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 2);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item1ObjectId), 1);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 5);
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, charlie), 0);
+    
+    // Prepare cross-transfer parameters
+    InventoryItemParams[] memory transferParams = new InventoryItemParams[](2);
+    transferParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1 // Transfer all of item1
+    });
+    transferParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 3 // Transfer part of item2
+    });
+    
+    // Direct call from bob should pass
+    vm.prank(bob);
+    ephemeralInteractSystem.crossTransferToEphemeral(inventoryObjectId, bob, charlie, transferParams);
+    
+    // Verify state after the direct call
+    // Check Bob's ephemeral inventory - should have less items now
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 1); // item1 completely gone
+    assertEq(EphemeralInvItem.getExists(inventoryObjectId, bob, item1ObjectId), false);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 2); // 5-3=2
+    
+    // Check Charlie's ephemeral inventory - should have the transferred items
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, charlie), 2);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, charlie, item1ObjectId), 1);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, charlie, item2ObjectId), 3);
+    
+    // Prepare another cross-transfer for testing via custom system
+    InventoryItemParams[] memory customTransferParams = new InventoryItemParams[](1);
+    customTransferParams[0] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 1 // Transfer 1 more of item2
+    });
+    
+    // Call via custom system should fail due to missing access
+    vm.prank(bob);
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral.selector, address(customSystem), inventoryObjectId));
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callCrossTransferToEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        charlie,
+        customTransferParams
+      )
+    );
+    
+    // Set transfer access
+    vm.prank(alice); 
+    ephemeralInteractSystem.setCrossTransferToEphemeralAccess(inventoryObjectId, address(customSystem), true);
+    
+    vm.prank(charlie); // Not the from-ephemeral owner
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner.selector, ephemeralInteractSystem.getAddress(), inventoryObjectId));
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callCrossTransferToEphemeral.selector,
+        inventoryObjectId,
+        bob, // Still trying to transfer from Bob
+        charlie,
+        customTransferParams
+      )
+    );
+    
+    // Now the call should succeed with bob as caller (correct ephemeral owner)
+    vm.prank(bob);
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomEphemeralInteractSystem.callCrossTransferToEphemeral.selector,
+        inventoryObjectId,
+        bob,
+        charlie,
+        customTransferParams
+      )
+    );
+    
+    // Verify state after the custom system call
+    // Check Bob's ephemeral inventory - should have even fewer items
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 1);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 1); // 2-1=1
+    
+    // Check Charlie's ephemeral inventory - should have more items
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, charlie), 2);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, charlie, item1ObjectId), 1); // unchanged
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, charlie, item2ObjectId), 4); // 3+1=4
+    
+    // Verify no items in primary inventory
+    assertEq(Inventory.lengthItems(inventoryObjectId), 0);
+
+    // verify item transfer record is being populated (the last item to be transfered will be stored here)
+    ItemTransferData memory itemTransferData = ItemTransfer.get(inventoryObjectId, item2ObjectId);
+    assertEq(itemTransferData.previousOwner, bob);
+    assertEq(itemTransferData.currentOwner, charlie);
+    assertEq(itemTransferData.quantity, 1);
+    assertEq(itemTransferData.updatedAt, block.timestamp);
+  }
+
+  function test_SetTransferFromEphemeralAccess() public {
+    // Calculate the role ID
+    bytes32 roleId = keccak256(abi.encodePacked("TRANSFER_FROM_EPHEMERAL_ROLE", inventoryObjectId));
+    
+    // Verify initial state - role should not exist and charlie should not have access
+    assertEq(Role.getExists(roleId), false);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+    
+    // Non-owner (bob) attempts to set access should fail
+    vm.prank(bob);
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectOwner.selector, bob, inventoryObjectId));
+    ephemeralInteractSystem.setTransferFromEphemeralAccess(inventoryObjectId, charlie, true);
+    
+    // Owner (alice) can set access
+    vm.prank(alice);
+    ephemeralInteractSystem.setTransferFromEphemeralAccess(inventoryObjectId, charlie, true);
+    
+    // Verify state is updated - role should exist and charlie should have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), true);
+    
+    // Owner can also revoke access
+    vm.prank(alice);
+    ephemeralInteractSystem.setTransferFromEphemeralAccess(inventoryObjectId, charlie, false);
+    
+    // Verify state is updated - role should still exist but charlie should not have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+  }
+
+  function test_SetTransferToEphemeralAccess() public {
+    // Calculate the role ID
+    bytes32 roleId = keccak256(abi.encodePacked("TRANSFER_TO_EPHEMERAL_ROLE", inventoryObjectId));
+    
+    // Verify initial state - role should not exist and charlie should not have access
+    assertEq(Role.getExists(roleId), false);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+    
+    // Non-owner (bob) attempts to set access should fail
+    vm.prank(bob);
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectOwner.selector, bob, inventoryObjectId));
+    ephemeralInteractSystem.setTransferToEphemeralAccess(inventoryObjectId, charlie, true);
+    
+    // Owner (alice) can set access
+    vm.prank(alice);
+    ephemeralInteractSystem.setTransferToEphemeralAccess(inventoryObjectId, charlie, true);
+    
+    // Verify state is updated - role should exist and charlie should have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), true);
+    
+    // Owner can also revoke access
+    vm.prank(alice);
+    ephemeralInteractSystem.setTransferToEphemeralAccess(inventoryObjectId, charlie, false);
+    
+    // Verify state is updated - role should still exist but charlie should not have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+  }
+
+  function test_SetCrossTransferToEphemeralAccess() public {
+    // Calculate the role ID
+    bytes32 roleId = keccak256(abi.encodePacked("CROSS_TRANSFER_TO_EPHEMERAL_ROLE", inventoryObjectId));
+    
+    // Verify initial state - role should not exist and charlie should not have access
+    assertEq(Role.getExists(roleId), false);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+    
+    // Non-owner (bob) attempts to set access should fail
+    vm.prank(bob);
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectOwner.selector, bob, inventoryObjectId));
+    ephemeralInteractSystem.setCrossTransferToEphemeralAccess(inventoryObjectId, charlie, true);
+    
+    // Owner (alice) can set access
+    vm.prank(alice);
+    ephemeralInteractSystem.setCrossTransferToEphemeralAccess(inventoryObjectId, charlie, true);
+    
+    // Verify state is updated - role should exist and charlie should have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), true);
+    
+    // Owner can also revoke access
+    vm.prank(alice);
+    ephemeralInteractSystem.setCrossTransferToEphemeralAccess(inventoryObjectId, charlie, false);
+    
+    // Verify state is updated - role should still exist but charlie should not have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
   }
 
   // Helper function to setup item records

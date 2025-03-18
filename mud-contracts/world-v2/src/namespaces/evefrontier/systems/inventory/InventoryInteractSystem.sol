@@ -33,7 +33,7 @@ contract InventoryInteractSystem is SmartObjectFramework {
     uint256 smartObjectId,
     uint256 toObjectId,
     InventoryItemParams[] memory items
-  ) public context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) {
     address inventoryOwner = ownershipSystem.owner(smartObjectId);
     address toInventoryOwner = ownershipSystem.owner(toObjectId);
 
@@ -52,7 +52,7 @@ contract InventoryInteractSystem is SmartObjectFramework {
     uint256 smartObjectId,
     address accessAddress,
     bool isAllowed
-  ) public context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) {
     bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_TO_INVENTORY_ROLE", smartObjectId));
 
     // Create the role if it doesn't exist

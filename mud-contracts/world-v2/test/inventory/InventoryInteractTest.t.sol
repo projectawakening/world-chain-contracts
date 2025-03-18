@@ -2,257 +2,398 @@
 pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
+
+// MUD imports
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-// import { World } from "@latticexyz/world/src/World.sol";
-// import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-// import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-// import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
+import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
+import { World } from "@latticexyz/world/src/World.sol";
+import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
+// for the custom interact system
+import { System } from "@latticexyz/world/src/System.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-// import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
-// import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// Smart Object Framework imports
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
-// import { DeployableState, DeployableStateData } from "../../src/namespaces/evefrontier/codegen/tables/DeployableState.sol";
-// import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-// import { EntityRecord } from "../../src/namespaces/evefrontier/codegen/index.sol";
-// import { InventoryItemData, InventoryItem  } from "../../src/namespaces/evefrontier/codegen/index.sol";
-// import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-// import { DEPLOYMENT_NAMESPACE } from "../../src/namespaces/evefrontier/systems/constants.sol";
-// import { SmartCharacterSystem } from "../../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-// import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
-// import { EphemeralInventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/EphemeralInventorySystem.sol";
-// import { InventorySystem } from "../../src/namespaces/evefrontier/systems/inventory/InventorySystem.sol";
-// import { DeployableSystem } from "../../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
-// import { InventoryInteractSystem } from "../../src/namespaces/evefrontier/systems/inventory/InventoryInteractSystem.sol";
-// import { TransferItem } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
-// import { SmartCharacterSystemLib, smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
-// import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
-// import { InventorySystemLib, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-// import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-// import { InventoryInteractSystemLib, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
-// import { AccessSystem } from "../../src/namespaces/evefrontier/systems/access-systems/AccessSystem.sol";
-// import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
-// import { VendingMachineMock } from "./VendingMachineMock.sol";
-// import { EntityRecordSystemLib, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
+// Local namespace tables
+import { 
+  GlobalDeployableState, 
+  Inventory, 
+  Tenant, 
+  EntityRecord, 
+  DeployableState, 
+  DeployableStateData, 
+  InventoryItemData, 
+  InventoryItem,
+  InventoryByItem,
+  OwnershipByObject,
+  EphemeralInvCapacity,
+  CharactersByAccount,
+  LocationData,
+  ObjectByEphemeral,
+  ObjectByEphemeralData,
+  ObjectItemTransfer,
+  ObjectItemTransferData
+} from "../../src/namespaces/evefrontier/codegen/index.sol";
 
-contract InventoryInteractTest is MudTest {
-  // IWorldWithContext world;
+// Local namespace systems
+import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
+import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
+import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
+import { EphemeralInteractSystem, ephemeralInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
+import { InventoryInteractSystem, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
+import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
+import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
+import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
-  // uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-2345")));
-  // uint256 itemObjectId1 = uint256(keccak256(abi.encode("item:45")));
-  // uint256 itemObjectId2 = uint256(keccak256(abi.encode("item:46")));
-  // uint256 storageCapacity = 100000;
-  // uint256 ephemeralStorageCapacity = 100000;
 
-  // // Smart Character variables
-  // uint256 characterId = 1111;
-  // uint256 ephCharacterId = 2222;
-  // uint256 tribeId = 1122;
-  // EntityRecordData charEntityRecordData = EntityRecordData({ typeId: 2345, itemId: 1234, volume: 0 });
-  // EntityRecordData ephCharEntityRecordData = EntityRecordData({ typeId: 2345, itemId: 1234, volume: 0 });
-  // EntityMetadata characterMetadata =
-  //   EntityMetadata({
-  //     name: "Albus Demunster",
-  //     dappURL: "https://www.my-tribe-website.com",
-  //     description: "The top hunter-seeker in the Frontier."
-  //   });
+// Types and parameters
+import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
+import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
+import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
-  // string mnemonic = "test test test test test test test test test test test junk";
-  // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-  // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
-  // address bob = vm.addr(vm.deriveKey(mnemonic, 3));
+// Create a mock custom system to call into the ephemeral interact system
+// This fits the expected builder pattern -  
+//   - create a custom contract that calls into the interact systems, and 
+//   - then set access config to only allow this custom contract to make calls for thier smart object
+contract CustomInventoryInteractSystem is System {
 
-  // function setUp() public override {
-  //   super.setUp();
-  //   worldAddress = vm.envAddress("WORLD_ADDRESS");
-  //   world = IWorldWithContext(worldAddress);
-  //   vm.startPrank(deployer);
+  // Call inventory interact system transferToInventory function
+  function callTransferToInventory(uint256 inventoryObjectId, uint256 toObjectId, InventoryItemParams[] memory items) public {
+    inventoryInteractSystem.transferToInventory(inventoryObjectId, toObjectId, items);
+  }
 
-  // //   deployableSystem.globalResume();
+}
 
-  //   // create SSU Inventory Owner character
-  //   smartCharacterSystem.createCharacter(characterId, alice, tribeId, charEntityRecordData, characterMetadata);
-  //   // create ephemeral Inventory Owner character
-  //   smartCharacterSystem.createCharacter(ephCharacterId, bob, tribeId, charEntityRecordData, characterMetadata);
+contract EphemeralInteractTest is MudTest {
+  using WorldResourceIdInstance for ResourceId;
 
-  //   registerClass();
-  //   setupDeployable();
+  IWorldWithContext public world;
 
-  // //   // Inventory variables
-  // //   EntityRecord.set(itemObjectId1, itemObjectId1, 1, 50, true);
-  // //   EntityRecord.set(itemObjectId2, itemObjectId2, 2, 70, true);
+  // SSU variables
+  uint256 inventoryObjectId;
+  uint256 inventoryObjectId2;
+  
+  // custom interact system variables
+  ResourceId customSystemId;
+  CustomInventoryInteractSystem customSystem;
 
-  //   InventoryItem[] memory invItems = new InventoryItem[](1);
-  //   InventoryItem[] memory ephInvItems = new InventoryItem[](1);
-  //   invItems[0] = InventoryItem(itemObjectId1, alice, 45, 1, 50, 10);
-  //   ephInvItems[0] = InventoryItem(itemObjectId2, bob, 46, 2, 70, 10);
+  // Item variables
+  bytes32 tenantId;
+  uint256 constant ITEM1_ID = 4235;
+  uint256 constant ITEM_TYPE_ID = 1000;
+  uint256 constant ITEM_TYPE_ID_NON_SINGLETON = 1001; // Non-singleton item type
+  uint256 constant ITEM_VOLUME = 100;
+  uint256 constant TRANSFER_ITEM_TYPE_ID = 9091;
 
-  //   inventorySystem.setInventoryCapacity(smartObjectId, storageCapacity);
-  //   ephemeralInventorySystem.setEphemeralInventoryCapacity(smartObjectId, ephemeralStorageCapacity);
-  //   vm.stopPrank();
+  // Test addresses
+  address deployer;
+  address alice;
+  address bob;
+  address charlie;
 
-  //   vm.startPrank(alice);
-  //   inventorySystem.depositToInventory(smartObjectId, invItems);
-  //   ephemeralInventorySystem.depositToEphemeralInventory(smartObjectId, bob, ephInvItems);
-  //   vm.stopPrank();
-  // }
+  uint256 constant SMART_OBJECT_ITEM_ID = 1234;
+  uint256 constant SMART_OBJECT_ITEM_ID_2 = 5678; // New ID for second SSU
+  
+  uint256 item1ObjectId;
+  uint256 item2ObjectId;
 
-  // function setupDeployable() internal {
-  //   uint256 fuelUnitVolume = 1;
-  //   uint256 fuelConsumptionIntervalInSeconds = 1;
-  //   uint256 fuelMaxCapacity = 10000;
-  //   SmartObjectData memory smartObjectData = SmartObjectData({ owner: alice, tokenURI: "test" });
+  function setUp() public virtual override {
+    vm.pauseGasMetering();
+    // Deploy a new World
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
+    
+    // Initialize addresses
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+    alice = vm.addr(vm.deriveKey(mnemonic, 2));
+    bob = vm.addr(vm.deriveKey(mnemonic, 3));
+    charlie = vm.addr(vm.deriveKey(mnemonic, 4));
 
-  //   deployableSystem.registerDeployable(
-  //     smartObjectId,
-  //     smartObjectData,
-  //     fuelUnitVolume,
-  //     fuelConsumptionIntervalInSeconds,
-  //     fuelMaxCapacity
-  //   );
-  //   DeployableState.set(
-  //     smartObjectId,
-  //     DeployableStateData({
-  //       createdAt: block.timestamp,
-  //       previousState: State.ANCHORED,
-  //       currentState: State.ONLINE,
-  //       isValid: true,
-  //       anchoredAt: block.timestamp,
-  //       updatedBlockNumber: block.number,
-  //       updatedBlockTime: block.timestamp
-  //     })
-  //   );
-  // }
+    vm.startPrank(deployer, deployer);
 
-  // function registerClass() internal {
-  //   uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
-  //   ResourceId[] memory systemIds = new ResourceId[](6);
-  //   systemIds[0] = inventorySystem.toResourceId();
-  //   systemIds[1] = deployableSystem.toResourceId();
-  //   systemIds[2] = ephemeralInventorySystem.toResourceId();
-  //   systemIds[3] = inventoryInteractSystem.toResourceId();
-  //   systemIds[4] = fuelSystem.toResourceId();
-  //   systemIds[5] = entityRecordSystem.toResourceId();
-  //   entitySystem.registerClass(inventoryItemClassId, systemIds);
-  //   entitySystem.instantiate(inventoryItemClassId, smartObjectId, alice);
-  //   entitySystem.instantiate(inventoryItemClassId, itemObjectId1, alice);
-  //   entitySystem.instantiate(inventoryItemClassId, itemObjectId2, bob);
-  // }
+    // Mock smart character data for alice and bob
+    CharactersByAccount.set(alice, 1);
+    CharactersByAccount.set(bob, 2);
+    
+    // Setup tenant
+    tenantId = keccak256(abi.encodePacked("TEST"));
+    
+    // Setup smart object IDs
+    inventoryObjectId = _calculateObjectId(SMART_OBJECT_ITEM_ID, EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()), true);
+    inventoryObjectId2 = _calculateObjectId(SMART_OBJECT_ITEM_ID_2, EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()), true);
 
-  // function testEphemeralToInventoryTransfer() public {
-  //   uint256 quantity = 2;
+    // Make sure deploy system is active
+    GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
 
-  //   InventoryItemData memory storedInventoryItems = InventoryItem.get(smartObjectId, itemObjectId1);
-  //   assertEq(storedInventoryItems.quantity, 10);
-  //   InventoryItemData memory storedInventoryItems2 = InventoryItem.get(smartObjectId, itemObjectId2);
-  //   assertEq(storedInventoryItems2.quantity, 0);
-  //   EphemeralInvItemData memory storedEphInvItems = EphemeralInvItem.get(smartObjectId, itemObjectId2, bob);
-  //   assertEq(storedEphInvItems.quantity, 10);
+    // Setup first SSU for inventory (owned by Alice)
+    uint256 capacity = 1000;
+    world.call(
+      smartStorageUnitSystem.toResourceId(),
+      abi.encodeCall(
+        SmartStorageUnitSystem.createAndAnchorStorageUnit,
+        (
+        CreateAndAnchorParams(
+        inventoryObjectId,
+        "SSU",
+        EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+          itemId: SMART_OBJECT_ITEM_ID,
+          volume: 1000
+        }),
+        alice,
+        1,
+        10,
+        100000,
+        LocationData({
+          solarSystemId: 1,
+          x: 1000,
+          y: 1001,
+          z: 1002
+        })
+      ),
+      capacity,
+      capacity))
+    );
 
-  //   InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
-  //   transferItems[0] = InventoryItemParams({ inventoryItemId: itemObjectId2, owner: bob, itemId: itemObjectId2, volume: 10, quantity: quantity });
+    // Setup second SSU for inventory (owned by Bob)
+    world.call(
+      smartStorageUnitSystem.toResourceId(),
+      abi.encodeCall(
+        SmartStorageUnitSystem.createAndAnchorStorageUnit,
+        (
+        CreateAndAnchorParams(
+        inventoryObjectId2,
+        "SSU2",
+        EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+          itemId: SMART_OBJECT_ITEM_ID_2, 
+          volume: 1000
+        }),
+        bob,
+        1,
+        10,
+        100000,
+        LocationData({
+          solarSystemId: 2,   // Different solar system
+          x: 2000,            // Different coordinates
+          y: 2001, 
+          z: 2002
+        })
+      ),
+      capacity,
+      capacity))
+    );
 
-  //   vm.startPrank(alice);
-  //   inventoryInteractSystem.ephemeralToInventoryTransfer(smartObjectId, bob, transferItems);
-  //   vm.stopPrank();
+    // Calculate itemObjectIds
+    item1ObjectId = _calculateObjectId(ITEM1_ID, ITEM_TYPE_ID, true); // Singleton item
+    item2ObjectId = _calculateObjectId(0, ITEM_TYPE_ID_NON_SINGLETON, false); // Non-singleton item
+    
+    // Set up item records with the correct parameters
+    _setupEntityRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
+    _setupEntityRecord(item2ObjectId, 0, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
+    vm.stopPrank();
 
-  //   storedInventoryItems = InventoryItem.get(smartObjectId, itemObjectId1);
-  //   assertEq(storedInventoryItems.quantity, 10);
-  //   storedInventoryItems2 = InventoryItem.get(smartObjectId, itemObjectId2);
-  //   assertEq(storedInventoryItems2.quantity, 2);
-  //   storedEphInvItems = EphemeralInvItem.get(smartObjectId, itemObjectId2, bob);
-  //   assertEq(storedEphInvItems.quantity, 8);
-  // }
+    // Bring Alice's SSU online
+    vm.startPrank(alice, deployer);
+    fuelSystem.depositFuel(inventoryObjectId, 10000);
+    deployableSystem.bringOnline(inventoryObjectId);
+    vm.stopPrank();
 
-  // function testRevertEphemeralToInventoryTransfer() public {
-  //   uint256 quantity = 12;
+    // Bring Bob's SSU online
+    vm.startPrank(bob, deployer);
+    fuelSystem.depositFuel(inventoryObjectId2, 10000);
+    deployableSystem.bringOnline(inventoryObjectId2);
+    vm.stopPrank();
 
-  //   InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
-  //   transferItems[0] = InventoryItemParams({ inventoryItemId: itemObjectId2, owner: bob, itemId: itemObjectId2, volume: 10, quantity: quantity });
+    // Mock builder deployment of custom interact system
+    // Create resource ID for the mock system using the proper format
+    bytes14 namespace = bytes14("spaceforalice");
+    bytes16 name = bytes16("CustomEphemeralI"); 
+    customSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
+    
+    vm.startPrank(alice);
+    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    // Deploy and register the mock system
+    customSystem = new CustomInventoryInteractSystem();
+    
+    // Register the system with the world
+    world.registerSystem(customSystemId, customSystem, true);
 
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(
-  //       InventoryInteractSystem.Inventory_InvalidInventoryItemQuantity.selector,
-  //       "InventoryInteractSystem: not enough items to transfer",
-  //       smartObjectId,
-  //       "EPHEMERAL",
-  //       bob,
-  //       itemObjectId2,
-  //       quantity
-  //     )
-  //   );
+    vm.stopPrank();
+    vm.resumeGasMetering();
+  }
 
-  //   vm.startPrank(alice);
-  //   inventoryInteractSystem.ephemeralToInventoryTransfer(smartObjectId, bob, transferItems);
-  //   vm.stopPrank();
+  function test_transferToInventory() public {
+    // First, add items to primary inventory
+    InventoryItemParams[] memory itemParams = new InventoryItemParams[](2);
+    itemParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1
+    });
+    itemParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 5
+    });
 
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(
-  //       InventoryInteractSystem.Inventory_InvalidInventoryItemQuantity.selector,
-  //       "InventoryInteractSystem: not enough items to transfer",
-  //       smartObjectId,
-  //       "EPHEMERAL",
-  //       bob,
-  //       itemObjectId2,
-  //       quantity
-  //     )
-  //   );
+    vm.startPrank(alice, deployer);
+    // Add items to primary inventory
+    inventorySystem.depositInventory(inventoryObjectId, itemParams);
+    vm.stopPrank();
+    
+    // Verify state before transfer
+    assertEq(Inventory.lengthItems(inventoryObjectId), 2);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item1ObjectId), 1);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 5);
+    
+    // Verify ephemeral inventory is empty
+    assertEq(Inventory.lengthItems(inventoryObjectId2), 0);
+    
+    // Prepare transfer parameters - transfer some items to target inventory
+    InventoryItemParams[] memory transferParams = new InventoryItemParams[](2);
+    transferParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1 // Transfer all of item1
+    });
+    transferParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 3 // Transfer part of item2
+    });
+    vm.pauseGasMetering();
+    // Direct call with alice is allowed (SSU owner)
+    vm.startPrank(alice);
+    inventoryInteractSystem.transferToInventory(inventoryObjectId, inventoryObjectId2, transferParams);
+    vm.resumeGasMetering();
+    // Verify state after the direct call
+    // Check primary inventory - should have less items now
+    assertEq(Inventory.lengthItems(inventoryObjectId), 1); // item1 completely gone
+    assertEq(InventoryItem.getExists(inventoryObjectId, item1ObjectId), false);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 2); // 5-3=2
+    
+    // Check target inventory - should have the transferred items
+    assertEq(Inventory.lengthItems(inventoryObjectId2), 2);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId2, item1ObjectId), 1);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId2, item2ObjectId), 3);
+    
+    // Try to add more items via custom system (should fail without access)
+    InventoryItemParams[] memory customTransferParams = new InventoryItemParams[](1);
+    customTransferParams[0] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 1 // Transfer 1 more of item2
+    });
+    
+    // Call should fail due to missing access rights
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectOwnerOrCanTransferToInventory.selector, address(customSystem), inventoryObjectId));
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomInventoryInteractSystem.callTransferToInventory.selector,
+        inventoryObjectId,
+        inventoryObjectId2,
+        customTransferParams
+      )
+    );
+    
+    // Set access for custom system to transfer to inventory
+    inventoryInteractSystem.setTransferToInventoryAccess(inventoryObjectId, address(customSystem), true);
+  
+    // Now the call should succeed
+    world.call(
+      customSystemId,
+      abi.encodeWithSelector(
+        CustomInventoryInteractSystem.callTransferToInventory.selector,
+        inventoryObjectId,
+        inventoryObjectId2,
+        customTransferParams
+      )
+    );
+    vm.stopPrank();
+    
+    // Verify state after the custom system call
+    // Check primary inventory - should have even fewer items
+    assertEq(Inventory.lengthItems(inventoryObjectId), 1);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 1); // 2-1=1
+    
+    // Check target inventory - should have more items
+    assertEq(Inventory.lengthItems(inventoryObjectId2), 2);
+    assertEq(InventoryItem.getQuantity(inventoryObjectId2, item1ObjectId), 1); // unchanged
+    assertEq(InventoryItem.getQuantity(inventoryObjectId2, item2ObjectId), 4); // 3+1=4
 
-  //   vm.startPrank(alice);
-  //   inventoryInteractSystem.ephemeralToInventoryTransfer(smartObjectId, bob, transferItems);
-  //   vm.stopPrank();
-  // }
+    // verify item transfer record is being populated (the last item to be transfered will be stored here)
+    ObjectItemTransferData memory objectItemTransferData = ObjectItemTransfer.get(inventoryObjectId, item2ObjectId);
+    assertEq(objectItemTransferData.previousOwner, alice);
+    assertEq(objectItemTransferData.currentOwner, bob);
+    assertEq(objectItemTransferData.quantity, 1);
+    assertEq(objectItemTransferData.updatedAt, block.timestamp);
+  }
 
-  // function testInventoryToEphemeralTransfer() public {
-  //   uint256 quantity = 2;
+  function test_SetTransferToInventoryAccess() public {
+    // Calculate the role ID
+    bytes32 roleId = keccak256(abi.encodePacked("TRANSFER_TO_INVENTORY_ROLE", inventoryObjectId));
+    
+    // Verify initial state - role should not exist and charlie should not have access
+    assertEq(Role.getExists(roleId), false);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+    
+    // Non-owner (bob) attempts to set access should fail
+    vm.prank(bob);
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDirectOwner.selector, bob, inventoryObjectId));
+    inventoryInteractSystem.setTransferToInventoryAccess(inventoryObjectId, charlie, true);
+    
+    // Owner (alice) can set access
+    vm.prank(alice);
+    inventoryInteractSystem.setTransferToInventoryAccess(inventoryObjectId, charlie, true);
+    
+    // Verify state is updated - role should exist and charlie should have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), true);
+    
+    // Owner can also revoke access
+    vm.prank(alice);
+    inventoryInteractSystem.setTransferToInventoryAccess(inventoryObjectId, charlie, false);
+    
+    // Verify state is updated - role should still exist but charlie should not have access
+    assertEq(Role.getExists(roleId), true);
+    assertEq(HasRole.getIsMember(roleId, charlie), false);
+  }
 
-  //   InventoryItemData memory storedInventoryItems = InventoryItem.get(smartObjectId, itemObjectId1);
-  //   assertEq(storedInventoryItems.quantity, 10);
-  //   EphemeralInvItemData memory storedEphInvItems = EphemeralInvItem.get(smartObjectId, itemObjectId2, bob);
-  //   assertEq(storedEphInvItems.quantity, 10);
-  //   EphemeralInvItemData memory storedEphInventoryItems1 = EphemeralInvItem.get(smartObjectId, itemObjectId1, bob);
-  //   assertEq(storedEphInventoryItems1.quantity, 0);
+  // Helper function to setup item records
+  function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+    
+    if (itemId != 0) { // For singleton items
+      EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
 
-  //   InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
-  //   transferItems[0] = InventoryItemParams({ inventoryItemId: itemObjectId1, owner: alice, itemId: itemObjectId1, volume: 10, quantity: quantity });
+      if (!EntityRecord.getExists(classId)) {
+        EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+      }
+    } else { // For non-singleton items
+      EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+    }
+    
+    if (!Entity.getExists(classId)) {
+      entitySystem.registerClass(classId, new ResourceId[](0));
+    }
+  }
 
-  //   vm.startPrank(alice);
-  //   inventoryInteractSystem.inventoryToEphemeralTransfer(smartObjectId, bob, transferItems);
-  //   vm.stopPrank();
+  function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+    if (isSingleton) {
+      // For singleton items: hash of tenantId and itemId
+      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
+    } else {
+      // For non-singleton items: hash of typeId
+      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+    }
+  }
 
-  //   storedInventoryItems = InventoryItem.get(smartObjectId, itemObjectId1);
-  //   assertEq(storedInventoryItems.quantity, 8);
-  //   storedEphInvItems = EphemeralInvItem.get(smartObjectId, itemObjectId2, bob);
-  //   assertEq(storedEphInvItems.quantity, 10);
-  //   storedEphInventoryItems1 = EphemeralInvItem.get(smartObjectId, itemObjectId1, bob);
-  //   assertEq(storedEphInventoryItems1.quantity, 2);
-  // }
-
-  // function testBobCannotTransferFromInventory() public {
-  //   uint256 quantity = 2;
-
-  //   InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
-  //   transferItems[0] = InventoryItemParams({ inventoryItemId: itemObjectId1, owner: bob, itemId: itemObjectId1, volume: 10, quantity: quantity });
-
-  //   vm.startPrank(bob);
-  //   vm.expectRevert(
-  //     abi.encodeWithSelector(AccessSystem.Access_NotOwnerOrCanWithdrawFromInventory.selector, bob, smartObjectId)
-  //   );
-  //   inventoryInteractSystem.inventoryToEphemeralTransfer(smartObjectId, bob, transferItems);
-  //   vm.stopPrank();
-  // }
-
-  // function testGrantTransferFromInventoryAccess() public {
-  //   uint256 quantity = 2;
-
-  //   InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
-  //   transferItems[0] = InventoryItemParams({ inventoryItemId: itemObjectId1, owner: bob, itemId: itemObjectId1, volume: 10, quantity: quantity });
-
-  //   vm.startPrank(deployer);
-  //   inventoryInteractSystem.setInventoryToEphemeralTransferAccess(smartObjectId, bob, true);
-  //   vm.stopPrank();
-
-  //   vm.startPrank(bob);
-  //   inventoryInteractSystem.inventoryToEphemeralTransfer(smartObjectId, bob, transferItems);
-  //   vm.stopPrank();
-  // }
 }

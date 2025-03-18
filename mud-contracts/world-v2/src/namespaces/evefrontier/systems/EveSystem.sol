@@ -437,7 +437,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       ephemeralInventorySystem.toResourceId(),
       EphemeralInventorySystem.withdrawEphemeral.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyDirectEphemeralOwnerOrCallAccessWithOwner.selector
+      AccessSystem.onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner.selector
     );
     accessConfigSystem.setAccessEnforcement(
       ephemeralInventorySystem.toResourceId(), 
@@ -455,7 +455,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         ephemeralInteractSystem.toResourceId(),
         EphemeralInteractSystem.transferToEphemeral.selector,
         accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerOrCanTransferToEphemeralRoleAccess.selector
+        AccessSystem.onlyDirectOwnerOrCanTransferToEphemeralRoleAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         ephemeralInteractSystem.toResourceId(),
@@ -479,7 +479,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       ephemeralInteractSystem.toResourceId(),
       EphemeralInteractSystem.crossTransferToEphemeral.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess.selector
+      AccessSystem.onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       ephemeralInteractSystem.toResourceId(),
@@ -497,7 +497,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         ephemeralInteractSystem.toResourceId(),
         ephemeralInteractOnlyOwnerSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerAccess.selector
+        AccessSystem.onlyDirectOwnerAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         ephemeralInteractSystem.toResourceId(),
@@ -513,7 +513,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       inventoryInteractSystem.toResourceId(),
       InventoryInteractSystem.transferToInventory.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyOwnerOrCanTransferToInventoryRoleAccess.selector
+      AccessSystem.onlyDirectOwnerOrCanTransferToInventoryRoleAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       inventoryInteractSystem.toResourceId(),
@@ -525,7 +525,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       inventoryInteractSystem.toResourceId(),
       InventoryInteractSystem.setTransferToInventoryAccess.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyOwnerAccess.selector
+      AccessSystem.onlyDirectOwnerAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       inventoryInteractSystem.toResourceId(),

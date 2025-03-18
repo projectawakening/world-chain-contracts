@@ -113,6 +113,7 @@ contract InventoryTest is MudTest {
   uint256 constant CREATE_NON_SINGLETON_ITEM_TYPE_ID = 9090;
 
   function setUp() public virtual override {
+    vm.pauseGasMetering();
     super.setUp();
     // Deploy a new World
     worldAddress = vm.envAddress("WORLD_ADDRESS");
@@ -239,7 +240,8 @@ contract InventoryTest is MudTest {
     _setupEntityRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
     _setupEntityRecord(item2ObjectId, 0, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
     _setupEntityRecord(transferItemObjectId, 0, TRANSFER_ITEM_TYPE_ID, ITEM_VOLUME);
-     vm.stopPrank();
+    vm.stopPrank();
+    vm.resumeGasMetering();
   }
 
   // Test setting inventory capacity
@@ -907,7 +909,7 @@ contract InventoryTest is MudTest {
       smartObjectId: transferItemObjectId,
       quantity: 2
     });
-
+    vm.pauseGasMetering();
     vm.startPrank(alice, deployer);
     fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
@@ -923,17 +925,18 @@ contract InventoryTest is MudTest {
     uint256 initialCapacityUsed = Inventory.getUsedCapacity(smartObjectId);
     assertEq(initialCapacityUsed, ITEM_VOLUME * 5);
     assertEq(InventoryByItem.get(item1ObjectId), smartObjectId);
-    
+    vm.resumeGasMetering();
     // Perform withdrawal
     vm.startPrank(alice, deployer);
     inventorySystem.withdrawInventory(smartObjectId, itemParams);
     vm.stopPrank();
-    
+    vm.pauseGasMetering();
     // Verify final state
     uint256[] memory remainingItems = Inventory.getItems(smartObjectId);
     assertEq(remainingItems.length, 0); // No items should remain
     assertEq(Inventory.getUsedCapacity(smartObjectId), 0); // No capacity used
     assertEq(InventoryByItem.get(item1ObjectId), uint256(0));
+    vm.resumeGasMetering();
   }
 
   // Test complex deposit and withdraw scenario

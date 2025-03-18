@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
-import "forge-std/console.sol";
+
 // MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
@@ -28,11 +28,12 @@ import { EntityRecordParams } from "../entity-record/types.sol";
 contract AccessSystem is SmartObjectFramework {
   error Access_NotAdmin(address caller);
   error Access_NotOwner(address caller, uint256 smartObjectId);
+  error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotDirectOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_CannotTransferFromEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
+  error Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotDirectOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotDirectAdminOrCallAccess(address caller, uint256 smartObjectId);
@@ -43,29 +44,31 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
-  error Access_NotEphemeralOwnerOrCallAccessWithOwner(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
  
   
 
-  function onlyOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     address caller = _callMsgSender(1);
-    if (isOwner(smartObjectId, caller)) {
+    if (callCount == 1 && isOwner(smartObjectId, caller)) {
       return;
     }
-
-    if (canTransferToEphemeral(smartObjectId, _callMsgSender())) {
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    if (canTransferToEphemeral(smartObjectId, msgSender)) {
       return;
     } else {
-      caller = _callMsgSender();
+      caller = msgSender;
     }
 
-    revert Access_NotOwnerOrCanTransferToEphemeral(caller, smartObjectId);
+    revert Access_NotDirectOwnerOrCanTransferToEphemeral(caller, smartObjectId);
   }
 
-  function onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     address caller = _callMsgSender(1);
     (, address fromEphemeralOwner, , ) = abi.decode(data, (uint256, address, address, bytes));
-    if ( caller == fromEphemeralOwner) {
+    if (callCount == 1 && caller == fromEphemeralOwner) {
       return;
     }
     
@@ -75,11 +78,10 @@ contract AccessSystem is SmartObjectFramework {
       caller = _callMsgSender();
     }
 
-    revert Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(caller, smartObjectId);
+    revert Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral(caller, smartObjectId);
   }
 
   function onlyCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
-    console.log("onlyCanTransferFromEphemeralRoleAccess");
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     if (canTransferFromEphemeral(smartObjectId, msgSender)) {
@@ -89,19 +91,20 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_CannotTransferFromEphemeral(msgSender, smartObjectId);
   }
 
-  function onlyOwnerOrCanTransferToInventoryRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectOwnerOrCanTransferToInventoryRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     address caller = _callMsgSender(1);
-    if (isOwner(smartObjectId, caller)) {
+    if (callCount == 1 && isOwner(smartObjectId, caller)) {
       return;
     }
-
-    if (canTransferToInventory(smartObjectId, caller)) {
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    if (canTransferToInventory(smartObjectId, msgSender)) {
       return;
     } else {
-      caller = _callMsgSender();
+      caller = msgSender;
     }
 
-    revert Access_NotOwnerOrCanTransferToInventory(caller, smartObjectId);
+    revert Access_NotDirectOwnerOrCanTransferToInventory(caller, smartObjectId);
   }
 
   function onlyOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -110,6 +113,15 @@ contract AccessSystem is SmartObjectFramework {
     }
 
     revert Access_NotOwner(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlyDirectOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    if (callCount == 1 && isOwner(smartObjectId, _callMsgSender(1))) {
+      return;
+    }
+
+    revert Access_NotDirectOwner(_callMsgSender(1), smartObjectId);
   }
 
   function onlyAdminAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -198,7 +210,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotEphemeralOwnerOrCallAccess(caller, smartObjectId);
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccessWithOwner(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     address caller = _callMsgSender(1);
     if (callCount == 1 && isEphemeralOwner(smartObjectId, caller, data) && isAdmin(tx.origin)) {
@@ -212,7 +224,7 @@ contract AccessSystem is SmartObjectFramework {
       caller = msgSender;
     }
 
-    revert Access_NotEphemeralOwnerOrCallAccessWithOwner(caller, smartObjectId);
+    revert Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(caller, smartObjectId);
   }
 
   function onlyAdminOrCallAccess(uint256 smartObjectId, bytes memory data) public view {

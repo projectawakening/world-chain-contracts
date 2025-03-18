@@ -13,11 +13,12 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 interface IAccessSystem {
   error Access_NotAdmin(address caller);
   error Access_NotOwner(address caller, uint256 smartObjectId);
+  error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotDirectOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_CannotTransferFromEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
+  error Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotDirectOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotDirectAdminOrCallAccess(address caller, uint256 smartObjectId);
@@ -28,26 +29,28 @@ interface IAccessSystem {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
-  error Access_NotEphemeralOwnerOrCallAccessWithOwner(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
 
-  function evefrontier__onlyOwnerOrCanTransferToEphemeralRoleAccess(
+  function evefrontier__onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(
     uint256 smartObjectId,
     bytes memory data
   ) external view;
 
-  function evefrontier__onlyEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+  function evefrontier__onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
     uint256 smartObjectId,
     bytes memory data
   ) external view;
 
   function evefrontier__onlyCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyOwnerOrCanTransferToInventoryRoleAccess(
+  function evefrontier__onlyDirectOwnerOrCanTransferToInventoryRoleAccess(
     uint256 smartObjectId,
     bytes memory data
   ) external view;
 
   function evefrontier__onlyOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__onlyDirectOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdminAccess(uint256 smartObjectId, bytes memory data) external view;
 
@@ -66,7 +69,7 @@ interface IAccessSystem {
 
   function evefrontier__onlyDirectEphemeralOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectEphemeralOwnerOrCallAccessWithOwner(
+  function evefrontier__onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
     uint256 smartObjectId,
     bytes memory data
   ) external view;

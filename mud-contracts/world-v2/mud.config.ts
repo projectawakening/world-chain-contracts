@@ -209,7 +209,7 @@ export default defineWorld({
           key: ["smartObjectId", "itemObjectId"],
         },
         /**
-         * Used to store the transfer details when a item is exchanged between its primary inventory and anpther smarto object primary inventory
+         * Used to signal the transfer details when a item is exchanged between its primary inventory and another smart object's primary inventory
          */
         ObjectItemTransfer: {
           schema: {
@@ -269,7 +269,7 @@ export default defineWorld({
           key: ["ephemeralSmartObjectId"],
         },
         /**
-         * Used to store the transfer details when a item is exchanged between it's primary inventory and an associated ephemeral inventory
+         * Used to signal the transfer details when a item is exchanged between it's primary inventory and an associated ephemeral inventory or two ehpemeral inventories
          */
         ItemTransfer: {
           schema: {
