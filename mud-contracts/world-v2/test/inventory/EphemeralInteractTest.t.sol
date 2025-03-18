@@ -3,11 +3,16 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 
+// MUD imports
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { World } from "@latticexyz/world/src/World.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
+// for the custom interact system
+import { System } from "@latticexyz/world/src/System.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
@@ -42,23 +47,51 @@ import { InventorySystem, inventorySystem } from "../../src/namespaces/evefronti
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { EphemeralInteractSystem, ephemeralInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
+import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
+import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
+// Create a mock custom system to call into the ephemeral interact system
+// This fits the expected builder pattern -  
+//   - create a custom contract that calls into the interact systems, and 
+//   - then set access config to only allow this custom contract to make calls for thier smart object
+contract CustomEphemeralInteractSystem is System {
+
+  // Call epehemeral interact system transferFromEphemeral function
+  function callTransferFromEphemeral(uint256 inventoryObjectId, address ephemeralOwner, InventoryItemParams[] memory items) public {
+      ephemeralInteractSystem.transferFromEphemeral(inventoryObjectId, ephemeralOwner, items);
+  }
+
+  // Call epehemeral interact system transferToEphemeral function
+  function callTransferToEphemeral(uint256 inventoryObjectId, address ephemeralOwner, InventoryItemParams[] memory items) public {
+    ephemeralInteractSystem.transferToEphemeral(inventoryObjectId, ephemeralOwner, items);
+  }
+
+  // Call epehemeral interact system crossTransferToEphemeral function
+  function callCrossTransferToEphemeral(uint256 inventoryObjectId, address fromEphemeralOwner, address toEphemeralOwner, InventoryItemParams[] memory items) public {
+    ephemeralInteractSystem.crossTransferToEphemeral(inventoryObjectId, fromEphemeralOwner, toEphemeralOwner, items);
+  }
+}
+
 contract EphemeralInteractTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
 
   IWorldWithContext public world;
 
-  // Test variables
+  // SSU variables
   uint256 inventoryObjectId;
-
-  bytes32 tenantId;
+  
+  // custom interact system variables
+  ResourceId customSystemId;
+  CustomEphemeralInteractSystem customSystem;
 
   // Item variables
+  bytes32 tenantId;
   uint256 constant ITEM1_ID = 4235;
   uint256 constant ITEM_TYPE_ID = 1000;
   uint256 constant ITEM_TYPE_ID_NON_SINGLETON = 1001; // Non-singleton item type
@@ -77,7 +110,7 @@ contract EphemeralInteractTest is MudTest {
   uint256 item2ObjectId;
 
   function setUp() public virtual override {
-    super.setUp();
+    vm.pauseGasMetering();
     // Deploy a new World
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
@@ -105,31 +138,36 @@ contract EphemeralInteractTest is MudTest {
     // Make sure deploy system is active
     GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
 
-    // Setup deployable state for inventory
-    deployableSystem.createAndAnchor(CreateAndAnchorParams(
-      inventoryObjectId,
-      "SSU",
-      EntityRecordParams({
-        tenantId: tenantId,
-        typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-        itemId: SMART_OBJECT_ITEM_ID,
-        volume: 1000
-      }),
-      alice,
-      1,
-      10,
-      100000,
-      LocationData({
-        solarSystemId: 1,
-        x: 1000,
-        y: 1001,
-        z: 1002
-      })
-    ));
-
-    // Set capacity for the inventory
+    // Setup SSU for inventory
     uint256 capacity = 1000;
-    inventorySystem.setCapacity(inventoryObjectId, capacity);
+    world.call(
+      smartStorageUnitSystem.toResourceId(),
+      abi.encodeCall(
+        SmartStorageUnitSystem.createAndAnchorStorageUnit,
+        (
+        CreateAndAnchorParams(
+        inventoryObjectId,
+        "SSU",
+        EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+          itemId: SMART_OBJECT_ITEM_ID,
+          volume: 1000
+        }),
+        alice,
+        1,
+        10,
+        100000,
+        LocationData({
+          solarSystemId: 1,
+          x: 1000,
+          y: 1001,
+          z: 1002
+        })
+      ),
+      capacity,
+      capacity))
+    );
 
     // Calculate itemObjectIds
     item1ObjectId = _calculateObjectId(ITEM1_ID, ITEM_TYPE_ID, true); // Singleton item
@@ -138,14 +176,104 @@ contract EphemeralInteractTest is MudTest {
     // Set up item records with the correct parameters
     _setupEntityRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
     _setupEntityRecord(item2ObjectId, 0, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
-
-    // Set ephemeral capacity for the smart object
-    uint256 ephemeralCapacity = 1000;
-    inventorySystem.setEphemeralCapacity(inventoryObjectId, ephemeralCapacity);
-    
     vm.stopPrank();
+
+    // Bring online
+    vm.startPrank(alice, deployer);
+    fuelSystem.depositFuel(inventoryObjectId, 10000);
+    deployableSystem.bringOnline(inventoryObjectId);
+    vm.stopPrank();
+
+    // Mock builder deployment of custom interact system
+    // Create resource ID for the mock system using the proper format
+    bytes14 namespace = bytes14("spaceforalice");
+    bytes16 name = bytes16("CustomEphemeralI"); 
+    customSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
+    
+    vm.startPrank(alice);
+    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    // Deploy and register the mock system
+    customSystem = new CustomEphemeralInteractSystem();
+    
+    // Register the system with the world
+    world.registerSystem(customSystemId, customSystem, true);
+
+    vm.stopPrank();
+    vm.resumeGasMetering();
   }
 
+  function test_transferFromEphemeral() public {
+    // First, we need to setup items in ephemeral inventory for bob
+    // Create item params for initial setup
+    InventoryItemParams[] memory itemParams = new InventoryItemParams[](2);
+    itemParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1
+    });
+    itemParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 5
+    });
+
+    vm.startPrank(bob, deployer);
+    // Add items to bob's ephemeral inventory
+    ephemeralInventorySystem.depositEphemeral(inventoryObjectId, bob, itemParams);
+    
+    // Verify the items are in ephemeral inventory before transfer
+    assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 2);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item1ObjectId), 1);
+    assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 5);
+    
+    // Adjust params for items to transfer from ephemeral to regular inventory
+    itemParams[0] = InventoryItemParams({
+      smartObjectId: item1ObjectId,
+      quantity: 1 // Transfer all of item1 quantity
+    });
+    itemParams[1] = InventoryItemParams({
+      smartObjectId: item2ObjectId,
+      quantity: 3 // Transfer part of the quantity
+    });
+    
+    // // METHOD 1: Direct transfer from ephemeral to inventory
+    // vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_CannotTransferFromEphemeral.selector, bob, inventoryObjectId));
+    // ephemeralInteractSystem.transferFromEphemeral(inventoryObjectId, bob, itemParams);
+    
+    // // Verify state changes after direct transfer
+    // // Check ephemeral inventory - should have 0 of item1 and 2 of item2 left
+    // assertEq(EphemeralInvItem.getExists(inventoryObjectId, bob, item1ObjectId), false);
+    // assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 2);
+    
+    // // Check primary inventory - should now have the transferred items
+    // assertEq(Inventory.lengthItems(inventoryObjectId), 2);
+    // assertEq(InventoryItem.getQuantity(inventoryObjectId, item1ObjectId), 1);
+    // assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 3);
+    
+    // // METHOD 2: Use custom system to transfer remaining items
+    // InventoryItemParams[] memory remainingItems = new InventoryItemParams[](1);
+    // remainingItems[0] = InventoryItemParams({
+    //   smartObjectId: item2ObjectId,
+    //   quantity: 2 // Transfer the rest
+    // });
+    
+    // Call transfer via custom system
+    // world.call(
+    //   customSystemId,
+    //   abi.encodeWithSelector(
+    //     CustomEphemeralInteractSystem.callTransferFromEphemeral.selector,
+    //     inventoryObjectId,
+    //     bob,
+    //     remainingItems
+    //   )
+    // );
+    
+    // // Verify state after custom system transfer
+    // // Ephemeral inventory should be empty for these items
+    // assertEq(EphemeralInvItem.getExists(inventoryObjectId, bob, item2ObjectId), false);
+    
+    // // Regular inventory should now have all 5 items
+    // assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 5);
+    vm.stopPrank();
+  }
 
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {

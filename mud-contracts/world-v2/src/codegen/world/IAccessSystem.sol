@@ -15,9 +15,10 @@ interface IAccessSystem {
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanTransferFromEphemeral(address caller, uint256 smartObjectId);
+  error Access_CannotTransferFromEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotAdminSupportedOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotDirectAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotOwnerWithAdminSupportAccess(address caller, uint256 smartObjectId);
@@ -27,7 +28,7 @@ interface IAccessSystem {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
-  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCallAccessWithOwner(address caller, uint256 smartObjectId);
 
   function evefrontier__onlyOwnerOrCanTransferToEphemeralRoleAccess(
     uint256 smartObjectId,
@@ -39,10 +40,7 @@ interface IAccessSystem {
     bytes memory data
   ) external view;
 
-  function evefrontier__onlyOwnerOrCanTransferFromEphemeralRoleAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external view;
+  function evefrontier__onlyCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyOwnerOrCanTransferToInventoryRoleAccess(
     uint256 smartObjectId,
@@ -64,7 +62,7 @@ interface IAccessSystem {
 
   function evefrontier__onlyCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminSupportedOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyDirectEphemeralOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 

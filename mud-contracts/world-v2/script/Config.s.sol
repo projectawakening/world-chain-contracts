@@ -87,10 +87,11 @@ contract Config is Script {
   }
 
   function _initializeClassRegistry() internal {
-    eveSystem.registerSmartCharacterClass(vm.envUint("CHARACTER_TYPE_ID"));
-    eveSystem.registerSmartStorageUnitClass(vm.envUint("SSU_TYPE_ID"));
-    eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"));
-    eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"));
+    eveSystem.registerSmartCharacterClass(vm.envUint("CHARACTER_TYPE_ID"), vm.envUint("CHARACTER_VOLUME"));
+    eveSystem.registerSmartStorageUnitClass(vm.envUint("SSU_TYPE_ID"), vm.envUint("SSU_VOLUME"));
+    eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"), vm.envUint("TURRET_VOLUME"));
+    eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"), vm.envUint("GATE_VOLUME"));
+
   }
 
   function _initializeWorldAccess() internal {
@@ -155,5 +156,7 @@ contract Config is Script {
     eveSystem.configureSmartStorageUnitAccess();
     eveSystem.configureSmartTurretAccess();
     eveSystem.configureSmartGateAccess();
+    eveSystem.configureEphemeralInteractAccess();
+    eveSystem.configureInventoryInteractAccess();
   }
 }

@@ -44,6 +44,8 @@ import { IEveSystem } from "../interfaces/IEveSystem.sol";
 import { EphemeralInteractSystem } from "./inventory/EphemeralInteractSystem.sol";
 import { ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSystemLib.sol";
 
+import { EntityRecordParams } from "./entity-record/types.sol";
+
 /**
  * @title EveSystem
  * @author CCP Games
@@ -51,18 +53,18 @@ import { ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSys
  * @dev Consider combining this with the SmartObjectSystem which is extended by all systems.
  */
 contract EveSystem is IEveSystem, SmartObjectFramework {
-  function registerSmartCharacterClass(uint256 typeId) public {
+  function registerSmartCharacterClass(uint256 typeId, uint256 volume) public {
     ResourceId[] memory systemIds = new ResourceId[](3);
     systemIds[0] = smartCharacterSystem.toResourceId();
     systemIds[1] = entityRecordSystem.toResourceId();
     systemIds[2] = ownershipSystem.toResourceId();
-    uint256 classId = initialize(typeId, systemIds);
+    uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartCharacterSystemId = smartCharacterSystem.toResourceId();
     Initialize.set(smartCharacterSystemId, classId);
   }
 
-  function registerSmartStorageUnitClass(uint256 typeId) public {
+  function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) public {
     ResourceId[] memory systemIds = new ResourceId[](11);
     systemIds[0] = smartStorageUnitSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
@@ -76,13 +78,13 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[9] = inventoryInteractSystem.toResourceId();
     systemIds[10] = ephemeralInteractSystem.toResourceId();
     
-    uint256 classId = initialize(typeId, systemIds);
+    uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartStorageUnitSystemId = smartStorageUnitSystem.toResourceId();
     Initialize.set(smartStorageUnitSystemId, classId);
   }
 
-  function registerSmartTurretClass(uint256 typeId) public {
+  function registerSmartTurretClass(uint256 typeId, uint256 volume) public {
     ResourceId[] memory systemIds = new ResourceId[](7);
     systemIds[0] = smartTurretSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
@@ -92,13 +94,13 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
     
-    uint256 classId = initialize(typeId, systemIds);
+    uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartTurretSystemId = smartTurretSystem.toResourceId();
     Initialize.set(smartTurretSystemId, classId);
   }
 
-  function registerSmartGateClass(uint256 typeId) public {
+  function registerSmartGateClass(uint256 typeId, uint256 volume) public {
     ResourceId[] memory systemIds = new ResourceId[](7);
     systemIds[0] = smartGateSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
@@ -108,7 +110,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
     
-    uint256 classId = initialize(typeId, systemIds);
+    uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartGateSystemId = smartGateSystem.toResourceId();
     Initialize.set(smartGateSystemId, classId);
@@ -371,41 +373,41 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for InventorySystem
   function configureInventoryAccess() public {
-    bytes4[2] memory inventoryOnlyAdminSelectors = [
+    bytes4[2] memory inventoryOnlyAdminOrClassScopedSelectors = [
       InventorySystem.setCapacity.selector,
       InventorySystem.setEphemeralCapacity.selector
     ];
 
-    for (uint256 i = 0; i < inventoryOnlyAdminSelectors.length; i++) {
+    for (uint256 i = 0; i < inventoryOnlyAdminOrClassScopedSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         inventorySystem.toResourceId(),
-        inventoryOnlyAdminSelectors[i],
+        inventoryOnlyAdminOrClassScopedSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyAdminAccess.selector
+        AccessSystem.onlyAdminOrClassScopedAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         inventorySystem.toResourceId(), 
-        inventoryOnlyAdminSelectors[i], 
+        inventoryOnlyAdminOrClassScopedSelectors[i], 
         true
       );
     }
 
-    bytes4[3] memory inventoryOnlyOwnerOrCallAccessSelectors = [
+    bytes4[3] memory inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors = [
       InventorySystem.createAndDepositInventory.selector,
       InventorySystem.depositInventory.selector,
       InventorySystem.withdrawInventory.selector
     ];
 
-    for (uint256 i = 0; i < inventoryOnlyOwnerOrCallAccessSelectors.length; i++) {
+    for (uint256 i = 0; i < inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         inventorySystem.toResourceId(),
-        inventoryOnlyOwnerOrCallAccessSelectors[i],
+        inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerOrCallAccess.selector
+        AccessSystem.onlyAdminSupportedOwnerOrCallAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         inventorySystem.toResourceId(), 
-        inventoryOnlyOwnerOrCallAccessSelectors[i], 
+        inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors[i], 
         true
       );
     }
@@ -413,21 +415,21 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for EphemeralInventorySystem
   function configureEphemeralInventoryAccess() public {
-    bytes4[2] memory ephemeralInventoryOnlyOwnerOrCallAccessSelectors = [
+    bytes4[2] memory ephemeralInventoryOnlyDirectEphemeralOwnerOrCallAccessSelectors = [
       EphemeralInventorySystem.createAndDepositEphemeral.selector,
       EphemeralInventorySystem.depositEphemeral.selector
     ];
 
-    for (uint256 i = 0; i < ephemeralInventoryOnlyOwnerOrCallAccessSelectors.length; i++) {
+    for (uint256 i = 0; i < ephemeralInventoryOnlyDirectEphemeralOwnerOrCallAccessSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         ephemeralInventorySystem.toResourceId(),
-        ephemeralInventoryOnlyOwnerOrCallAccessSelectors[i],
+        ephemeralInventoryOnlyDirectEphemeralOwnerOrCallAccessSelectors[i],
         accessSystem.toResourceId(),
         AccessSystem.onlyDirectEphemeralOwnerOrCallAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         ephemeralInventorySystem.toResourceId(), 
-        ephemeralInventoryOnlyOwnerOrCallAccessSelectors[i], 
+        ephemeralInventoryOnlyDirectEphemeralOwnerOrCallAccessSelectors[i], 
         true
       );
     }
@@ -453,7 +455,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         ephemeralInteractSystem.toResourceId(),
         EphemeralInteractSystem.transferToEphemeral.selector,
         accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerOrCanTransferFromEphemeralRoleAccess.selector
+        AccessSystem.onlyOwnerOrCanTransferToEphemeralRoleAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         ephemeralInteractSystem.toResourceId(),
@@ -465,7 +467,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       ephemeralInteractSystem.toResourceId(),
       EphemeralInteractSystem.transferFromEphemeral.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyOwnerOrCanTransferFromEphemeralRoleAccess.selector
+      AccessSystem.onlyCanTransferFromEphemeralRoleAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       ephemeralInteractSystem.toResourceId(),
@@ -612,11 +614,16 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
    * @param typeId The type id of the system
    * @param systemIds The system ids that belong to the class
    */
-  function initialize(uint256 typeId, ResourceId[] memory systemIds) internal returns (uint256) {
+  function initialize(uint256 typeId, uint256 volume, ResourceId[] memory systemIds) internal returns (uint256) {
     if (typeId == 0) revert("Invalid typeId");
     uint256 classId = uint256(keccak256(abi.encodePacked(Tenant.get(), typeId)));
     entitySystem.scopedRegisterClass(classId, _callMsgSender(1), systemIds);
-
+    entityRecordSystem.createRecord(classId, EntityRecordParams({
+      tenantId: Tenant.get(),
+      itemId: 0,
+      typeId: typeId,
+      volume: volume
+    }));
     return classId;
   }
 }

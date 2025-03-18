@@ -34,7 +34,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
-  ) public context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) {
     address inventoryOwner = ownershipSystem.owner(smartObjectId);
 
     // withdraw the items from the designated ephemeral inventory

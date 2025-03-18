@@ -9,13 +9,13 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IEveSystem {
-  function evefrontier__registerSmartCharacterClass(uint256 typeId) external;
+  function evefrontier__registerSmartCharacterClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartStorageUnitClass(uint256 typeId) external;
+  function evefrontier__registerSmartStorageUnitClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartTurretClass(uint256 typeId) external;
+  function evefrontier__registerSmartTurretClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartGateClass(uint256 typeId) external;
+  function evefrontier__registerSmartGateClass(uint256 typeId, uint256 volume) external;
 
   function evefrontier__configureEntityRecordAccess() external;
 

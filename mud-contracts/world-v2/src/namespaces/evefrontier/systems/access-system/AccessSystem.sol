@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
-
+import "forge-std/console.sol";
 // MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
@@ -30,9 +30,10 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCanTransferFromEphemeral(address caller, uint256 smartObjectId);
+  error Access_CannotTransferFromEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_NotOwnerOrCanTransferToInventory(address caller, uint256 smartObjectId);
-  error Access_NotOwnerOrCallAccess(address caller, uint256 smartObjectId);
+  error Access_NotAdminSupportedOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotDirectAdminOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotOwnerWithAdminSupportAccess(address caller, uint256 smartObjectId);
@@ -42,7 +43,9 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotClassScopedAccess(address caller, uint256 smartObjectId);
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
-  error Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
+  error Access_NotEphemeralOwnerOrCallAccessWithOwner(address caller, uint256 smartObjectId);
+ 
+  
 
   function onlyOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
@@ -75,19 +78,15 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotEphemeralOwnerOrCanCrossTransferToEphemeral(caller, smartObjectId);
   }
 
-  function onlyOwnerOrCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
-    address caller = _callMsgSender(1);
-    if (isOwner(smartObjectId, caller)) {
+  function onlyCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+    console.log("onlyCanTransferFromEphemeralRoleAccess");
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    if (canTransferFromEphemeral(smartObjectId, msgSender)) {
       return;
     }
 
-    if (canTransferFromEphemeral(smartObjectId, caller)) {
-      return;
-    } else {
-      caller = _callMsgSender();
-    }
-
-    revert Access_NotOwnerOrCanTransferFromEphemeral(caller, smartObjectId);
+    revert Access_CannotTransferFromEphemeral(msgSender, smartObjectId);
   }
 
   function onlyOwnerOrCanTransferToInventoryRoleAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -166,21 +165,20 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotCallAccess(msgSender, smartObjectId);
   }
 
-  function onlyOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyAdminSupportedOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
     address caller = _callMsgSender(1);
     if (isOwner(smartObjectId, caller) && isAdmin(tx.origin)) {
       return;
     }
 
-    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext();
     if (CallAccess.get(systemId, functionId, msgSender)) {
       return;
     } else {
       caller = msgSender;
     }
 
-    revert Access_NotOwnerOrCallAccess(caller, smartObjectId);
+    revert Access_NotAdminSupportedOwnerOrCallAccess(caller, smartObjectId);
   }
 
   function onlyDirectEphemeralOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -214,7 +212,7 @@ contract AccessSystem is SmartObjectFramework {
       caller = msgSender;
     }
 
-    revert Access_NotEphemeralOwnerOrCallAccess(caller, smartObjectId);
+    revert Access_NotEphemeralOwnerOrCallAccessWithOwner(caller, smartObjectId);
   }
 
   function onlyAdminOrCallAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -302,14 +300,14 @@ contract AccessSystem is SmartObjectFramework {
 
   function onlyClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
     uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
     if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
       return;
     }
 
-    revert Access_NotClassScoped(_callMsgSender(1), smartObjectId);
+    revert Access_NotClassScoped(msgSender, smartObjectId);
   }
 
   function onlyAdminOrClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -330,7 +328,7 @@ contract AccessSystem is SmartObjectFramework {
 
   function onlySmartAssemblyClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
 
     (, , EntityRecordParams memory entityRecordParams) = abi.decode(data, (uint256, string, EntityRecordParams));
