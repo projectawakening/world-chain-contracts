@@ -51,14 +51,14 @@ contract DeployableSystem is SmartObjectFramework {
    * modifier to enforce deployable state changes can happen only when the game server is running
    */
   modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused() == false) {
+    if (GlobalDeployableState.getIsPaused()) {
       revert Deployable_StateTransitionPaused();
     }
     _;
   }
 
   /**
-   * @dev creates and anchors a deployable
+   * @dev creates and anchors a deployable smart object
    * @param params struct containing all parameters for creating and anchoring a deployable
    */
   function createAndAnchor(
@@ -81,8 +81,8 @@ contract DeployableSystem is SmartObjectFramework {
 
   /**
    * TODO: restrict this to smartObjectIds that exist
-   * @dev creates a new smart deployable
-   * @param smartObjectId on-chain id of the in-game deployable
+   * @dev creates a new deployable smart object
+   * @param smartObjectId id of the smart object
    * @param owner the owner of the smart object
    * @param fuelUnitVolume the fuel unit volume in wei
    * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
@@ -143,8 +143,8 @@ contract DeployableSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev destroys a smart deployable
-   * @param smartObjectId on-chain id of the in-game deployable
+   * @dev destroys a deployable smart object
+   * @param smartObjectId id of the smart object
    */
   function destroyDeployable(
     uint256 smartObjectId
@@ -170,8 +170,8 @@ contract DeployableSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev brings a smart deployable online
-   * @param smartObjectId of the deployable
+   * @dev brings a deployable smart object online
+   * @param smartObjectId id of the smart object
    */
   function bringOnline(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
@@ -190,8 +190,8 @@ contract DeployableSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev brings a smart deployable offline
-   * @param smartObjectId id of the deployable
+   * @dev brings a deployable smart object offline
+   * @param smartObjectId id of the smart object
    */
   function bringOffline(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
@@ -265,7 +265,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev brings all smart deployables online
    */
   function globalPause() public context access(0) scope(0) {
-    GlobalDeployableState.setIsPaused(false);
+    GlobalDeployableState.setIsPaused(true);
     GlobalDeployableState.setUpdatedBlockNumber(block.number);
     GlobalDeployableState.setLastGlobalOffline(block.timestamp);
   }
@@ -274,7 +274,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev brings all smart deployables offline
    */
   function globalResume() public context access(0) scope(0) {
-    GlobalDeployableState.setIsPaused(true);
+    GlobalDeployableState.setIsPaused(false);
     GlobalDeployableState.setUpdatedBlockNumber(block.number);
     GlobalDeployableState.setLastGlobalOnline(block.timestamp);
   }

@@ -16,11 +16,10 @@ import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
 // import { DECIMALS, ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
 
-import { DeployableTest } from "../deployable/DeployableTest.t.sol";
 // import { DeployableSystemLib, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 // import { FuelSystemLib, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
-contract FuelTest is DeployableTest {
+// contract FuelTest is MudTest {
   // LocationData location = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
 
   // function setUp() public virtual override {
@@ -249,4 +248,4 @@ contract FuelTest is DeployableTest {
   //   assertEq(data.lastUpdatedAt, block.timestamp);
   //   assertEq(uint8(State.ONLINE), uint8(DeployableState.getCurrentState(smartObjectId)));
   // }
-}
+// }

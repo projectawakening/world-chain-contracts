@@ -195,7 +195,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       smartAssemblySystem.toResourceId(),
       SmartAssemblySystem.updateAssemblyType.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyAdminAccess.selector
+      AccessSystem.onlyDirectAdminAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       smartAssemblySystem.toResourceId(), 
@@ -228,19 +228,19 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for SmartCharacterSystem
   function configureSmartCharacterAccess() public {
-    bytes4[2] memory onlyAdminSelectors = [
+    bytes4[2] memory onlyDirectAdminSelectors = [
       SmartCharacterSystem.updateTribeId.selector,
       SmartCharacterSystem.removeCharacter.selector
     ];
 
-    for (uint256 i = 0; i < onlyAdminSelectors.length; i++) {
+    for (uint256 i = 0; i < onlyDirectAdminSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         smartCharacterSystem.toResourceId(),
-        onlyAdminSelectors[i],
+        onlyDirectAdminSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyAdminAccess.selector
+        AccessSystem.onlyDirectAdminAccess.selector
       );
-      accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), onlyAdminSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
     }
     accessConfigSystem.configureAccess(
       smartCharacterSystem.toResourceId(),
@@ -295,21 +295,21 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for DeployableSystem
   function configureDeployableAccess() public {
-    bytes4[3] memory deployableOnlyAdminAccessSelectors = [
+    bytes4[3] memory deployableOnlyDirectAdminAccessSelectors = [
       DeployableSystem.destroyDeployable.selector,
       DeployableSystem.globalPause.selector,
       DeployableSystem.globalResume.selector
       
     ];
 
-    for (uint256 i = 0; i < deployableOnlyAdminAccessSelectors.length; i++) {
+    for (uint256 i = 0; i < deployableOnlyDirectAdminAccessSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         deployableSystem.toResourceId(),
-        deployableOnlyAdminAccessSelectors[i],
+        deployableOnlyDirectAdminAccessSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyAdminAccess.selector
+        AccessSystem.onlyDirectAdminAccess.selector
       );
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), deployableOnlyAdminAccessSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), deployableOnlyDirectAdminAccessSelectors[i], true);
     }
 
     bytes4[3] memory deployableOnlyAdminSupportedSelectors = [

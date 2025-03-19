@@ -35,7 +35,7 @@ struct RootCallWrapper {
  */
 library AccessSystemLib {
   error AccessSystemLib_CallingFromRootSystem();
-  error Access_NotAdmin(address caller);
+  error Access_NotDirectAdmin(address caller);
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
@@ -107,8 +107,8 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).onlyDirectOwnerAccess(smartObjectId, data);
   }
 
-  function onlyAdminAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyAdminAccess(smartObjectId, data);
+  function onlyDirectAdminAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyDirectAdminAccess(smartObjectId, data);
   }
 
   function onlyAdminSupportedAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
@@ -373,11 +373,14 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyDirectAdminAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_onlyAdminAccess_uint256_bytes.onlyAdminAccess, (smartObjectId, data));
+    bytes memory systemCall = abi.encodeCall(
+      _onlyDirectAdminAccess_uint256_bytes.onlyDirectAdminAccess,
+      (smartObjectId, data)
+    );
     bytes memory worldCall = self.from == address(0)
       ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
       : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
@@ -884,8 +887,11 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
-    bytes memory systemCall = abi.encodeCall(_onlyAdminAccess_uint256_bytes.onlyAdminAccess, (smartObjectId, data));
+  function onlyDirectAdminAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(
+      _onlyDirectAdminAccess_uint256_bytes.onlyDirectAdminAccess,
+      (smartObjectId, data)
+    );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
@@ -1212,8 +1218,8 @@ interface _onlyDirectOwnerAccess_uint256_bytes {
   function onlyDirectOwnerAccess(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminAccess_uint256_bytes {
-  function onlyAdminAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyDirectAdminAccess_uint256_bytes {
+  function onlyDirectAdminAccess(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyAdminSupportedAccess_uint256_bytes {

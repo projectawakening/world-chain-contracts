@@ -57,7 +57,7 @@ contract InventorySystem is SmartObjectFramework {
    * modifier to enforce inventory changes can happen only when the game server is running
    */
   modifier onlyActive() {
-    if (!GlobalDeployableState.getIsPaused()) {
+    if (GlobalDeployableState.getIsPaused()) {
       revert DeployableSystem.Deployable_StateTransitionPaused();
     }
     _;

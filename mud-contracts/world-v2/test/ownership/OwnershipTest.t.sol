@@ -7,11 +7,16 @@ import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
+import { System } from "@latticexyz/world/src/System.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
+
 
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
 import { 
@@ -50,10 +55,6 @@ import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/ent
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { System } from "@latticexyz/world/src/System.sol";
-import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Create a mock system to properly test system-to-system calls
 contract MockOwnershipInteractSystem is System {
@@ -163,7 +164,7 @@ contract OwnershipTest is MudTest {
     entitySystem.instantiate(inventoryObjectClassId, smartObjectId, alice);
 
     // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
+    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for inventory
     deployableSystem.createAndAnchor(CreateAndAnchorParams(
@@ -665,7 +666,6 @@ contract OwnershipTest is MudTest {
         smartObjectId, bob, ephemeralSingletonItemId, 1, 0));
     ownershipSystem.annulFromInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
     assertEq(ownershipSystem.owner(ephemeralSingletonItemId), address(0), "Ephemeral singleton item should have no owner after version bump");
-    
   }
 
   // Helper function to setup item records
@@ -724,42 +724,4 @@ contract OwnershipTest is MudTest {
     );
   }
 
-  // // Add a test for system-to-system calls
-  // function test_systemToSystemCalls() public {
-  //   // Create a simple singleton object for testing
-  //   uint256 testObjectId = 8888;
-  //   uint256 testObjectTypeId = 9999;
-  //   uint256 newSmartObjectId = _calculateObjectId(testObjectId, testObjectTypeId, true);
-    
-  //   // Register a minimal class and instantiate the object
-  //   vm.startPrank(deployer, deployer);
-  //   uint256 newClassId = uint256(keccak256(abi.encodePacked(tenantId, testObjectTypeId)));
-    
-  //   // Create with minimal systems including our mock
-  //   ResourceId[] memory systemIds = new ResourceId[](2);
-  //   systemIds[0] = entityRecordSystem.toResourceId();
-  //   systemIds[1] = mockSystemId;  // Add mock system to this class
-    
-  //   entitySystem.registerClass(newClassId, systemIds);
-  //   entitySystem.instantiate(newClassId, newSmartObjectId, address(0)); // Create with no owner
-    
-  //   // Setup entity record to make it a singleton
-  //   _setupEntityRecord(newSmartObjectId, testObjectId, testObjectTypeId, 100);
-  //   vm.stopPrank();
-    
-  //   // Verify no owner initially
-  //   assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "Smart object should initially have no owner");
-    
-  //   // Test system-to-system ascribe call
-  //   _simulateAscribeToAccountCall(newSmartObjectId, alice);
-    
-  //   // Verify ownership was ascribed
-  //   assertEq(ownershipSystem.owner(newSmartObjectId), alice, "Smart object should now be owned by Alice");
-    
-  //   // Test system-to-system annul call
-  //   _simulateAnnulFromAccountCall(newSmartObjectId, alice);
-    
-  //   // Verify ownership was removed
-  //   assertEq(ownershipSystem.owner(newSmartObjectId), address(0), "Smart object should have no owner after annulment");
-  // }
 }

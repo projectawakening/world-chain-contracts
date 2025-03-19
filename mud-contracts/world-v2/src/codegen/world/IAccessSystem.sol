@@ -11,7 +11,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IAccessSystem {
-  error Access_NotAdmin(address caller);
+  error Access_NotDirectAdmin(address caller);
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
@@ -52,7 +52,7 @@ interface IAccessSystem {
 
   function evefrontier__onlyDirectOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyDirectAdminAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdminSupportedAccess(uint256 smartObjectId, bytes memory data) external view;
 

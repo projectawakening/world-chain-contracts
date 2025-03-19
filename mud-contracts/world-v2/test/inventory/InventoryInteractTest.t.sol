@@ -7,7 +7,6 @@ import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { World } from "@latticexyz/world/src/World.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 // for the custom interact system
 import { System } from "@latticexyz/world/src/System.sol";
@@ -132,7 +131,7 @@ contract EphemeralInteractTest is MudTest {
     inventoryObjectId2 = _calculateObjectId(SMART_OBJECT_ITEM_ID_2, EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()), true);
 
     // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
+    GlobalDeployableState.setIsPaused(false);
 
     // Setup first SSU for inventory (owned by Alice)
     uint256 capacity = 1000;

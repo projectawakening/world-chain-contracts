@@ -26,7 +26,7 @@ import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystem
 import { EntityRecordParams } from "../entity-record/types.sol";
 
 contract AccessSystem is SmartObjectFramework {
-  error Access_NotAdmin(address caller);
+  error Access_NotDirectAdmin(address caller);
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
@@ -124,12 +124,13 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotDirectOwner(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyAdminAccess(uint256 smartObjectId, bytes memory data) public view {
-    if (isAdmin(_callMsgSender(1))) {
+  function onlyDirectAdminAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    if (callCount == 1 && isAdmin(_callMsgSender(1))) {
       return;
     }
 
-    revert Access_NotAdmin(_callMsgSender(1));
+    revert Access_NotDirectAdmin(_callMsgSender(1));
   }
 
   function onlyAdminSupportedAccess(uint256 smartObjectId, bytes memory data) public view {

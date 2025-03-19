@@ -6,13 +6,16 @@ import "forge-std/Test.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { World } from "@latticexyz/world/src/World.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
+import { System } from "@latticexyz/world/src/System.sol";
+import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
 import { 
@@ -47,12 +50,6 @@ import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/ent
 import { InventoryItemParams, CreateInventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { System } from "@latticexyz/world/src/System.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
-import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 
 // Create a mock system to properly test system-to-system calls
 contract MockInventoryInteractSystem is System {
@@ -169,7 +166,7 @@ contract InventoryTest is MudTest {
     entitySystem.instantiate(inventoryObjectClassId, secondObjectId, bob);
 
     // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(true); // Use true for "active" (counterintuitive, but matches the contract)
+    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for first inventory
     deployableSystem.createAndAnchor(CreateAndAnchorParams(
@@ -451,7 +448,7 @@ contract InventoryTest is MudTest {
     vm.pauseGasMetering();
     // Test revert: game is paused
     vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
-    GlobalDeployableState.setIsPaused(false);
+    GlobalDeployableState.setIsPaused(true);
     vm.stopPrank();
     
     vm.startPrank(alice, deployer);
@@ -464,7 +461,7 @@ contract InventoryTest is MudTest {
     vm.stopPrank();
     
     vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
-    GlobalDeployableState.setIsPaused(true);
+    GlobalDeployableState.setIsPaused(false);
     vm.stopPrank();
     
     // Test revert: incorrect state
@@ -777,7 +774,7 @@ contract InventoryTest is MudTest {
     
     // Test revert: game is paused
     vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(false);
+    GlobalDeployableState.setIsPaused(true);
     vm.startPrank(alice, deployer);
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -788,7 +785,7 @@ contract InventoryTest is MudTest {
     vm.stopPrank();
 
     vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(true);
+    GlobalDeployableState.setIsPaused(false);
     
     // Test revert: incorrect state
     vm.prank(deployer);
