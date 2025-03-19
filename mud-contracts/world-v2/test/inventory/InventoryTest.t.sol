@@ -435,6 +435,7 @@ contract InventoryTest is MudTest {
 
   // Test depositing inventory items
   function test_depositInventory() public {
+    
     // Prepare item params for deposit
     InventoryItemParams[] memory items = new InventoryItemParams[](2);
     
@@ -447,7 +448,7 @@ contract InventoryTest is MudTest {
       smartObjectId: item2ObjectId,
       quantity: 2
     });
-    
+    vm.pauseGasMetering();
     // Test revert: game is paused
     vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
     GlobalDeployableState.setIsPaused(false);
@@ -513,7 +514,8 @@ contract InventoryTest is MudTest {
     assertEq(InventoryItem.get(secondObjectId, item1ObjectId).quantity, 0);
     assertEq(InventoryItem.get(secondObjectId, item2ObjectId).quantity, 0);
     assertEq(InventoryItem.get(secondObjectId, transferItemObjectId).quantity, 0);
-    
+
+
     vm.startPrank(alice, deployer);
     // Call depositInventory directly
     inventorySystem.depositInventory(smartObjectId, items);
@@ -534,7 +536,7 @@ contract InventoryTest is MudTest {
 
     // Verify ownership was ascribed to inventory for singleton item
     assertEq(InventoryByItem.getInventoryObjectId(item1ObjectId), smartObjectId);
-    
+ 
     // Test system-to-system call behavior (callCount > 1)
     // First deposit the transfer item into the first inventory
     InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
@@ -557,6 +559,7 @@ contract InventoryTest is MudTest {
       smartObjectId: transferItemObjectId,
       quantity: 5
     });
+    
 
     // bring second object online
     vm.startPrank(bob, deployer);
@@ -566,7 +569,7 @@ contract InventoryTest is MudTest {
 
     // Now simulate a proper system-to-system call using our mock system
     _simulateTransferCall(smartObjectId, secondObjectId, transferItems);
-    
+
     // Verify the item was transferred between inventories and ownership tracked
     // Check item details
     item1ObjectData = InventoryItem.get(smartObjectId, item1ObjectId);
@@ -635,11 +638,13 @@ contract InventoryTest is MudTest {
     assertEq(InventoryItem.getVersion(smartObjectId, item1ObjectId), 1);
     assertEq(InventoryItem.getVersion(smartObjectId, item2ObjectId), 1);
     assertEq(InventoryItem.getVersion(smartObjectId, transferItemObjectId), 1);
-
+    
     // Deposit the same items again after re-anchoring
     vm.startPrank(alice, deployer);
     vm.warp(block.timestamp + 1 minutes);
+    vm.resumeGasMetering();
     inventorySystem.depositInventory(smartObjectId, items);
+    vm.pauseGasMetering();
     vm.stopPrank();
 
     // Verify that the items were deposited and ownership was tracked correctly
@@ -679,7 +684,7 @@ contract InventoryTest is MudTest {
     transferItems[0].quantity = 6; 
     inventorySystem.depositInventory(smartObjectId, transferItems);
     vm.stopPrank();
-
+  
     transferItemObjectData = InventoryItem.get(smartObjectId, transferItemObjectId);
     assertEq(transferItemObjectData.quantity, 6);
     assertEq(transferItemObjectData.index, 2);
@@ -690,7 +695,7 @@ contract InventoryTest is MudTest {
 
     // Simulate another transfer (smartObjectId -> secondObjectId)
     _simulateTransferCall(smartObjectId, secondObjectId, transferItems);
-
+    
     // Verify final state after reanchoring and second transfer
     item1ObjectData = InventoryItem.get(smartObjectId, item1ObjectId);
     item2ObjectData = InventoryItem.get(smartObjectId, item2ObjectId);
@@ -719,6 +724,7 @@ contract InventoryTest is MudTest {
     
     assertEq(itemsFirstInv, 3); // still 3 items in array
     assertEq(itemsSecondInv, 1); // 1 item in array
+    vm.resumeGasMetering();
   }
 
   // Test withdrawing inventory items
@@ -814,6 +820,7 @@ contract InventoryTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(
         OwnershipSystem.Inventory_InsufficientQuantity.selector,
+        smartObjectId,
         item2ObjectId,
         10,
         2 // We have 2 available
@@ -881,6 +888,7 @@ contract InventoryTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(
         OwnershipSystem.Inventory_InsufficientQuantity.selector,
+        smartObjectId,
         transferItemObjectId,
         1,
         0 // We now have 0 available (new version has no items)

@@ -11,8 +11,15 @@ pragma solidity >=0.8.24;
 interface IOwnershipSystem {
   error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
   error Ownership_ZeroQuantity(uint256 itemObjectId);
-  error Inventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error Inventory_InsufficientQuantity(
+    uint256 inventoryObjectId,
+    uint256 itemObjectId,
+    uint256 providedQuantity,
+    uint256 availableQuantity
+  );
   error EphemeralInventory_InsufficientQuantity(
+    uint256 inventoryObjectId,
+    address ephemeralOwner,
     uint256 itemObjectId,
     uint256 providedQuantity,
     uint256 availableQuantity
@@ -23,6 +30,7 @@ interface IOwnershipSystem {
   error Ownership_NonexistentItemRecord(uint256 itemObjectId);
   error Ownership_NonexistentObject(uint256 smartObjectId);
   error Ownership_InvalidInventory(uint256 itemObjectId, uint256 inventoryObjectId);
+  error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
 
   function evefrontier__owner(uint256 smartObjectId) external view returns (address);
 

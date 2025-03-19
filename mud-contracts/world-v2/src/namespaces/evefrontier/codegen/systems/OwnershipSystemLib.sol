@@ -37,8 +37,15 @@ library OwnershipSystemLib {
   error OwnershipSystemLib_CallingFromRootSystem();
   error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
   error Ownership_ZeroQuantity(uint256 itemObjectId);
-  error Inventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error Inventory_InsufficientQuantity(
+    uint256 inventoryObjectId,
+    uint256 itemObjectId,
+    uint256 providedQuantity,
+    uint256 availableQuantity
+  );
   error EphemeralInventory_InsufficientQuantity(
+    uint256 inventoryObjectId,
+    address ephemeralOwner,
     uint256 itemObjectId,
     uint256 providedQuantity,
     uint256 availableQuantity
@@ -49,6 +56,7 @@ library OwnershipSystemLib {
   error Ownership_NonexistentItemRecord(uint256 itemObjectId);
   error Ownership_NonexistentObject(uint256 smartObjectId);
   error Ownership_InvalidInventory(uint256 itemObjectId, uint256 inventoryObjectId);
+  error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
 
   function owner(OwnershipSystemType self, uint256 smartObjectId) internal view returns (address) {
     return CallWrapper(self.toResourceId(), address(0)).owner(smartObjectId);

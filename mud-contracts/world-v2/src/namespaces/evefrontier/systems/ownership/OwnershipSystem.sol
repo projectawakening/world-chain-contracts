@@ -22,14 +22,15 @@ contract OwnershipSystem is SmartObjectFramework {
   // Custom errors
   error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
   error Ownership_ZeroQuantity(uint256 itemObjectId);
-  error Inventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
-  error EphemeralInventory_InsufficientQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error Inventory_InsufficientQuantity(uint256 inventoryObjectId, uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
+  error EphemeralInventory_InsufficientQuantity(uint256 inventoryObjectId, address ephemeralOwner, uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
   error Ownership_InvalidSingleton(uint256 smartObjectId);
   error Ownership_InvalidAccount(address account);
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
   error Ownership_NonexistentItemRecord(uint256 itemObjectId);
   error Ownership_NonexistentObject(uint256 smartObjectId);
   error Ownership_InvalidInventory(uint256 itemObjectId, uint256 inventoryObjectId);
+  error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
 
   /**
    * @notice Get the owner account of a smart object
@@ -48,21 +49,19 @@ contract OwnershipSystem is SmartObjectFramework {
     // Check if the inventoryObjectId is an ephemeral inventory object
     uint256 currentVersion;
     uint256 recordedVersion;
-    uint256 associatedSmartObjectId;
     if (ObjectByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
       ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
       currentVersion = EphemeralInventory.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner);
       recordedVersion = EphemeralInvItem.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, smartObjectId);
-      associatedSmartObjectId = objectByEphemeralData.smartObjectId;
+      if (currentVersion == recordedVersion) {
+        return objectByEphemeralData.ephemeralOwner;
+      }
     } else { // no, it is not an ephemeral inventory
       currentVersion = Inventory.getVersion(inventoryObjectId);
       recordedVersion = InventoryItem.getVersion(inventoryObjectId, smartObjectId);
-      associatedSmartObjectId = inventoryObjectId;
-    }
-
-    bool versionChanged = currentVersion > recordedVersion;
-    if (!versionChanged) {
-      return OwnershipByObject.get(associatedSmartObjectId);
+      if (currentVersion == recordedVersion) {
+        return OwnershipByObject.get(inventoryObjectId);
+      }
     }
 
     return address(0);
@@ -87,6 +86,12 @@ contract OwnershipSystem is SmartObjectFramework {
     // Check if the object is a singleton
     if (!_isSingleton(smartObjectId)) {
       revert Ownership_InvalidSingleton(smartObjectId);
+    }
+
+    // Check if the object is already ascribed to an account
+    address currentOwner = OwnershipByObject.get(smartObjectId);
+    if (currentOwner != address(0)) {
+      revert Ownership_AlreadyOwned(smartObjectId, currentOwner);
     }
 
     // Ascribe ownership of the singleton smart object to the defined account
@@ -151,30 +156,31 @@ contract OwnershipSystem is SmartObjectFramework {
         revert Ownership_ZeroQuantity(itemObjectId);
       }
     }
-    
+    uint256 existingItemQuantity;
+    uint256 currentVersion;
+    uint256 recordedVersion;
+    bool versionChanged;
     if (ObjectByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
       ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
-      uint256 existingItemQuantity = EphemeralInvItem.getQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
-      uint256 currentVersion = EphemeralInventory.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner);
-      uint256 recordedVersion = EphemeralInvItem.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
-      bool versionChanged = currentVersion > recordedVersion;
+      existingItemQuantity = EphemeralInvItem.getQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
+      currentVersion = EphemeralInventory.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner);
+      recordedVersion = EphemeralInvItem.getVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId);
+      versionChanged = currentVersion > recordedVersion;
       
       // Update ephemeral inventory quantity for this item
       EphemeralInvItem.setQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
-      
       if (versionChanged) { // if the version has changed, update the version
         EphemeralInvItem.setVersion(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId, currentVersion);
       }
 
     } else { // no, it is not an ephemeral inventory
-      uint256 existingItemQuantity = InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
-      uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
-      uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
-      bool versionChanged = currentVersion > recordedVersion;
+      existingItemQuantity = InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
+      currentVersion = Inventory.getVersion(inventoryObjectId);
+      recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
+      versionChanged = currentVersion > recordedVersion;
 
       // Update inventory quantity for this item
       InventoryItem.setQuantity(inventoryObjectId, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
-
       if (versionChanged) { // if the version has changed, update the version
         InventoryItem.setVersion(inventoryObjectId, itemObjectId, currentVersion);
       }
@@ -194,13 +200,13 @@ contract OwnershipSystem is SmartObjectFramework {
   ) public access(inventoryObjectId) {
     // sanity checks
     if (_isSingleton(itemObjectId)) {
-      if (quantity != 1) {
-        revert Ownership_InvalidQuantity(itemObjectId, quantity, 1);
-      }
       if (InventoryByItem.get(itemObjectId) != inventoryObjectId) {
         revert Ownership_InvalidInventory(itemObjectId, inventoryObjectId);
       } else {
         InventoryByItem.deleteRecord(itemObjectId);
+      }
+      if (quantity != 1) {
+        revert Ownership_InvalidQuantity(itemObjectId, quantity, 1);
       }
     } else {
       if (quantity == 0) {
@@ -216,7 +222,7 @@ contract OwnershipSystem is SmartObjectFramework {
 
       // safety check
       if (existingItemQuantity < quantity) {
-        revert EphemeralInventory_InsufficientQuantity(itemObjectId, quantity, existingItemQuantity);
+        revert EphemeralInventory_InsufficientQuantity(objectByEphemeralData.smartObjectId, objectByEphemeralData.ephemeralOwner, itemObjectId, quantity, existingItemQuantity);
       }
 
       // Update inventory quantity for this item
@@ -229,7 +235,7 @@ contract OwnershipSystem is SmartObjectFramework {
 
       // safety check
       if (existingItemQuantity < quantity) {
-        revert Inventory_InsufficientQuantity(itemObjectId, quantity, existingItemQuantity);
+        revert Inventory_InsufficientQuantity(inventoryObjectId, itemObjectId, quantity, existingItemQuantity);
       }
 
       // Update inventory quantity for this item

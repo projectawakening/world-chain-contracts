@@ -218,8 +218,15 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
     _setDeployableState(smartObjectId, previousState, State.ANCHORED);
-    //re-add ownership tracking of the deployable smart object
-    ownershipSystem.ascribeToAccount(smartObjectId, owner);
+    // ascribe ownership tracking of the deployable smart object
+    address currentOwner = ownershipSystem.owner(smartObjectId);
+    if (currentOwner != address(0) && currentOwner != owner) {
+      ownershipSystem.annulFromAccount(smartObjectId, currentOwner);
+      ownershipSystem.ascribeToAccount(smartObjectId, owner);
+    } else if (currentOwner == address(0)) {
+      ownershipSystem.ascribeToAccount(smartObjectId, owner);
+    }
+
     locationSystem.saveLocation(smartObjectId, locationData);
 
     DeployableState.setIsValid(smartObjectId, true);

@@ -749,6 +749,8 @@ contract EphemeralInventoryTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(
         OwnershipSystem.EphemeralInventory_InsufficientQuantity.selector,
+        inventoryObjectId,
+        bob,
         item2ObjectId,
         10,
         4 // We have 4 available
@@ -818,6 +820,8 @@ contract EphemeralInventoryTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(
         OwnershipSystem.EphemeralInventory_InsufficientQuantity.selector,
+        inventoryObjectId,
+        bob,
         transferItemObjectId,
         1,
         0 // We now have 0 available
