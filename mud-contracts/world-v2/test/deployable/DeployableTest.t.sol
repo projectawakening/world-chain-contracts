@@ -62,6 +62,7 @@ import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/ent
 import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
+import { ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
 
 // Create a mock system to properly test system-to-system calls
 contract MockDeployableInteractSystem is System {
@@ -116,20 +117,10 @@ contract DeployableTest is MudTest {
   uint256 constant SMART_OBJECT_ID = 1234;
   uint256 constant SMART_OBJECT_TYPE_ID = 1235;
 
-  // Item variables - simplified to just one singleton and one non-singleton type
-  uint256 constant SINGLETON_ITEM_ID = 4235;
-  uint256 constant SINGLETON_ITEM_TYPE_ID = 1000;
-  uint256 constant NON_SINGLETON_ITEM_TYPE_ID = 1001;
-  uint256 constant ITEM_VOLUME = 100;
-
   // Test addresses
   address deployer;
   address alice;
   address bob;
-
-  // Item object IDs
-  uint256 singletonItemObjectId;
-  uint256 nonSingletonItemObjectId;
 
   // Mock system address
   MockDeployableInteractSystem mockSystem;
@@ -192,14 +183,6 @@ contract DeployableTest is MudTest {
     // Make sure deploy system is active
     GlobalDeployableState.setIsPaused(false);
 
-    // Calculate itemObjectIds
-    singletonItemObjectId = _calculateObjectId(SINGLETON_ITEM_ID, SINGLETON_ITEM_TYPE_ID, true);
-    nonSingletonItemObjectId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
-    
-    // Set up item records with the correct parameters
-    _setupEntityRecord(singletonItemObjectId, SINGLETON_ITEM_ID, SINGLETON_ITEM_TYPE_ID, ITEM_VOLUME);
-    _setupEntityRecord(nonSingletonItemObjectId, 0, NON_SINGLETON_ITEM_TYPE_ID, ITEM_VOLUME);
-
     // Configure access control to allow the mock system to call ownership system
     ResourceId deployableSystemId = deployableSystem.toResourceId();
     bytes4[9] memory deployableFunctionSelectors = [
@@ -220,7 +203,17 @@ contract DeployableTest is MudTest {
     vm.stopPrank();
   }
 
-  function test_CreateAndAnchor() public {
+  function test_CreateAndAnchor(
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount
+  ) public {
+    vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
+    vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
+
     // Verify initial states
     assertEq(uint8(DeployableState.getCurrentState(smartObjectId)), uint8(State.NULL), "Initial state should be NULL");
     assertFalse(DeployableState.getIsValid(smartObjectId), "Deployable should not be valid initially");
@@ -240,9 +233,9 @@ contract DeployableTest is MudTest {
         volume: 1000
       }),
       alice,
-      1,
-      10,
-      100000,
+      fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds,
+      fuelMaxCapacity,
       LocationData({
         solarSystemId: 1,
         x: 1000,
@@ -270,8 +263,9 @@ contract DeployableTest is MudTest {
     // Verify fuel configuration
     FuelData memory fuel = Fuel.get(smartObjectId);
 
-    assertEq(fuel.fuelConsumptionIntervalInSeconds, 10, "Fuel consumption interval should be set correctly");
-    assertEq(fuel.fuelMaxCapacity, 100000, "Fuel max capacity should be set correctly");
+    assertEq(fuel.fuelUnitVolume, fuelUnitVolume, "Fuel unit volume should be set correctly");
+    assertEq(fuel.fuelConsumptionIntervalInSeconds, fuelConsumptionIntervalInSeconds, "Fuel consumption interval should be set correctly");
+    assertEq(fuel.fuelMaxCapacity, fuelMaxCapacity, "Fuel max capacity should be set correctly");
     
     // Verify ownership
     address owner = ownershipSystem.owner(smartObjectId);
@@ -288,7 +282,17 @@ contract DeployableTest is MudTest {
     assertEq(Inventory.getVersion(smartObjectId), 1, "Inventory version should be 1");
   }
 
-  function test_CreateDeployable() public {
+  function test_CreateDeployable(
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount
+  ) public {
+    vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
+    vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
+
     // Setup entity record for the smart object
     vm.startPrank(deployer);
     _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
@@ -300,12 +304,40 @@ contract DeployableTest is MudTest {
     
     // Test revert cases in order of failure
     
-    // Case 1: Invalid fuel consumption interval (should be at least 1)
+    // Invalid fuel unit volume min case
+    vm.prank(alice, deployer);
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelUnitVolume.selector, smartObjectId, 0, 1, uint256(type(uint128).max))
+    );
+    deployableSystem.createDeployable(smartObjectId, alice, 0, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // min amount is 1
+
+    // Invalid fuel unit volume max case
+    vm.prank(alice, deployer);
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelUnitVolume.selector, smartObjectId, uint256(type(uint128).max) + 1, 1, uint256(type(uint128).max))
+    );
+    deployableSystem.createDeployable(smartObjectId, alice, uint256(type(uint128).max) + 1, fuelConsumptionIntervalInSeconds, type(uint256).max); // max amount is type(uint128).max
+
+    // Invalid fuel consumption interval min case
     vm.prank(alice, deployer);
     vm.expectRevert(
       abi.encodeWithSelector(DeployableSystem.Deployable_InvalidFuelConsumptionInterval.selector, smartObjectId)
     );
-    deployableSystem.createDeployable(smartObjectId, alice, 100000, 0, 100000);
+    deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, 0, fuelMaxCapacity); // max amount is 1000000
+    
+    // Invalid fuel consumption interval max case
+    vm.prank(alice, deployer);
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelConsumptionInterval.selector, smartObjectId, type(uint256).max, 1, type(uint256).max / ONE_UNIT_IN_WEI)
+    );
+    deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, type(uint256).max, fuelMaxCapacity); // max amount is type(uint256).max / ONE_UNIT_IN_WEI
+
+    // Invalid fuel max capacity min case
+    vm.prank(alice, deployer);
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelMaxCapacity.selector, smartObjectId, 100000000, 100000001, type(uint256).max)
+    );
+    deployableSystem.createDeployable(smartObjectId, alice, 100000000, fuelConsumptionIntervalInSeconds, 100000000); // max amount is 1000000
     
     // Case 2: Invalid character (owner must have a character ID)
     address nonCharacter = address(0x1234);
@@ -318,11 +350,11 @@ contract DeployableTest is MudTest {
         smartObjectId
       )
     );
-    deployableSystem.createDeployable(smartObjectId, nonCharacter, 100000, 10, 100000);
+    deployableSystem.createDeployable(smartObjectId, nonCharacter, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
     
     // Successful case
     vm.prank(alice, deployer);
-    deployableSystem.createDeployable(smartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
     
     // Verify the state after successful creation
     
@@ -337,9 +369,9 @@ contract DeployableTest is MudTest {
     
     // Check fuel setup
     FuelData memory fuel = Fuel.get(smartObjectId);
-    assertEq(fuel.fuelUnitVolume, 100000, "Fuel unit volume should be set correctly");
-    assertEq(fuel.fuelConsumptionIntervalInSeconds, 10, "Fuel consumption interval should be set correctly");
-    assertEq(fuel.fuelMaxCapacity, 100000, "Fuel max capacity should be set correctly");
+    assertEq(fuel.fuelUnitVolume, fuelUnitVolume, "Fuel unit volume should be set correctly");
+    assertEq(fuel.fuelConsumptionIntervalInSeconds, fuelConsumptionIntervalInSeconds, "Fuel consumption interval should be set correctly");
+    assertEq(fuel.fuelMaxCapacity, fuelMaxCapacity, "Fuel max capacity should be set correctly");
     assertEq(fuel.fuelAmount, 0, "Initial fuel amount should be zero");
     
     // Check inventory setup
@@ -351,18 +383,17 @@ contract DeployableTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, smartObjectId, State.UNANCHORED)
     );
-    deployableSystem.createDeployable(smartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
   }
 
   function test_DestroyDeployable() public {
-
     // Try to destroy a deployable that's not in ANCHORED or ONLINE state
     // Create a deployable (puts it in UNANCHORED state)
     vm.startPrank(deployer);
     _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
     vm.stopPrank();
     vm.prank(alice, deployer);
-    deployableSystem.createDeployable(smartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(smartObjectId, alice, 100, 60, 100000000); // max amount is 1000000
 
     vm.startPrank(deployer);
     vm.expectRevert(
@@ -402,14 +433,24 @@ contract DeployableTest is MudTest {
     assertEq(Inventory.getVersion(smartObjectId), inventoryVersionBefore + 1, "Inventory version should be incremented");
   }
 
-  function test_Anchor() public {
+  function test_Anchor(
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount
+  ) public {
+    vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
+    vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
+    
     // Test revert case: Attempt to anchor when state is not UNANCHORED
     // First, create and anchor a deployable
     vm.startPrank(deployer);
     _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
-    deployableSystem.createDeployable(smartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
     
     // Verify it's in UNANCHORED state
     assertEq(uint8(DeployableState.getCurrentState(smartObjectId)), uint8(State.UNANCHORED), "State should be UNANCHORED");
@@ -441,7 +482,7 @@ contract DeployableTest is MudTest {
     
     // Initialize new deployable (puts it in UNANCHORED state)
     vm.prank(alice, deployer);
-    deployableSystem.createDeployable(newSmartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(newSmartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
     
     // Get pre-anchor state for comparison
     assertEq(uint8(DeployableState.getCurrentState(newSmartObjectId)), uint8(State.UNANCHORED), "State should be UNANCHORED initially");
@@ -491,7 +532,7 @@ contract DeployableTest is MudTest {
     
     // Initialize new deployable with alice as owner
     vm.prank(alice, deployer);
-    deployableSystem.createDeployable(thirdSmartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(thirdSmartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
     
     // Anchor it specifying alice again as owner (should not change ownership)
     vm.prank(alice, deployer);
@@ -503,13 +544,23 @@ contract DeployableTest is MudTest {
     // Test case where there is no owner yet is already confirmed in the createAndAnchor test
   }
 
-  function test_Unanchor() public {
+  function test_Unanchor(
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount
+  ) public {
+    vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
+    vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
+    
     // Test revert case: Attempt to unanchor when state is not ANCHORED
     vm.startPrank(deployer);
     _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
-    deployableSystem.createDeployable(smartObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(smartObjectId, alice, 100, 60, 100000000); // max amount is 1000000
     vm.stopPrank();
 
     vm.prank(alice, deployer);
@@ -574,7 +625,7 @@ contract DeployableTest is MudTest {
     
     // Create, anchor, and bring online
     vm.startPrank(alice, deployer);
-    deployableSystem.createDeployable(onlineObjectId, alice, 100000, 10, 100000);
+    deployableSystem.createDeployable(onlineObjectId, alice, 100, 60, 100000000); // max amount is 1000000
     deployableSystem.anchor(
       onlineObjectId, 
       alice,
@@ -585,6 +636,10 @@ contract DeployableTest is MudTest {
         z: 2002
       })
     );
+
+    // requirement specifically for depositFuel
+    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId); 
+    vm.assume(fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI && fuelAmount < (fuelMaxCapacity / fuelUnitVolume) - currentFuelAmount / ONE_UNIT_IN_WEI);
     
     // Add fuel and bring online
     fuelSystem.depositFuel(onlineObjectId, 1);
@@ -603,12 +658,23 @@ contract DeployableTest is MudTest {
     assertFalse(DeployableState.getIsValid(onlineObjectId), "Deployable should not be valid after unanchoring");
   }
 
-  function test_BringOnline() public {
+  function test_BringOnline(
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount
+  ) public {
+    vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
+   vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
+ 
     // Test revert case: Attempt to bring online when state is not UNANCHORED
     vm.startPrank(deployer);
     _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    vm.stopPrank();
     vm.startPrank(alice, deployer);
-    deployableSystem.createDeployable(smartObjectId, alice, 10000, 10, 10000000);
+    deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity);
     vm.stopPrank();
 
     // Test incorrect state (UNANCHORED) revert
@@ -633,10 +699,14 @@ contract DeployableTest is MudTest {
     vm.prank(alice, deployer);
     vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_NoFuel.selector, smartObjectId));
     deployableSystem.bringOnline(smartObjectId);
+
+    // requirement specifically for depositFuel
+    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId); // this will always be bigger than the calculated fuel amount
+    vm.assume(fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI && fuelAmount < (fuelMaxCapacity / fuelUnitVolume) - currentFuelAmount / ONE_UNIT_IN_WEI);
     
     // Add fuel and capture state before bringing online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 100);
+    fuelSystem.depositFuel(smartObjectId, fuelAmount);
     assertEq(uint8(DeployableState.getCurrentState(smartObjectId)), uint8(State.ANCHORED), "State should be ANCHORED before bringing online");
     
     // Successfully bring online
@@ -670,13 +740,23 @@ contract DeployableTest is MudTest {
     assertEq(uint8(DeployableState.getCurrentState(smartObjectId)), uint8(State.ONLINE), "State should be ONLINE after bringing online again");
   }
 
-  function test_BringOffline() public {
+  function test_BringOffline(
+    uint256 fuelUnitVolume,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelMaxCapacity,
+    uint256 fuelAmount
+  ) public {
+    vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
+    vm.assume(fuelAmount > 2 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
+
     // Setup: Create a deployable
     vm.startPrank(deployer);
     _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
-    deployableSystem.createDeployable(smartObjectId, alice, 10000, 10, 10000000);
+    deployableSystem.createDeployable(smartObjectId, alice, 100, 60, 100000000); // max amount is 1000000
     vm.stopPrank();
     
     // Test revert case: Attempt to bring offline when state is UNANCHORED
@@ -709,6 +789,10 @@ contract DeployableTest is MudTest {
     );
     deployableSystem.bringOffline(smartObjectId);
     
+    // requirement specifically for depositFuel
+    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId); 
+    vm.assume(fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI && fuelAmount < (fuelMaxCapacity / fuelUnitVolume) - currentFuelAmount / ONE_UNIT_IN_WEI);
+
     // Add fuel and bring the deployable online
     vm.prank(alice, deployer);
     fuelSystem.depositFuel(smartObjectId, 100);

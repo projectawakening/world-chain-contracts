@@ -9,9 +9,22 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IFuelSystem {
-  error Fuel_NoFuel(uint256 smartObjectId);
-  error Fuel_ExceedsMaxCapacity(uint256 smartObjectId, uint256 maxCapacity, uint256 fuelAmount);
-  error Fuel_InvalidFuelConsumptionInterval(uint256 smartObjectId);
+  error Fuel_InvalidFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume, uint256 min, uint256 max);
+  error Fuel_InvalidFuelConsumptionInterval(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 min,
+    uint256 max
+  );
+  error Fuel_InvalidFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity, uint256 min, uint256 max);
+  error Fuel_InvalidFuelAmount(uint256 smartObjectId, uint256 fuelAmount, uint256 min, uint256 max);
+  error Fuel_ExceedsMaxCapacity(
+    uint256 smartObjectId,
+    uint256 fuelAmount,
+    uint256 totalProjectedCapacity,
+    uint256 maxCapacity
+  );
+  error Fuel_InsufficientFuel(uint256 smartObjectId, uint256 fuelAmount, uint256 availableFuel);
 
   function evefrontier__configureFuelParameters(
     uint256 smartObjectId,
