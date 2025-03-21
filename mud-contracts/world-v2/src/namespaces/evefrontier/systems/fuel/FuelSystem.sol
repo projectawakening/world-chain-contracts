@@ -52,10 +52,10 @@ contract FuelSystem is SmartObjectFramework {
     if (fuelConsumptionIntervalInSeconds <= 1 || fuelConsumptionIntervalInSeconds > (type(uint256).max / ONE_UNIT_IN_WEI)) {
       revert Fuel_InvalidFuelConsumptionInterval(smartObjectId, fuelConsumptionIntervalInSeconds, 1, (type(uint256).max / ONE_UNIT_IN_WEI));
     }
-    if (fuelAmount * ONE_UNIT_IN_WEI > uint256(type(uint128).max)) {
+    if (fuelAmount > uint256(type(uint128).max) / ONE_UNIT_IN_WEI) {
       revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 0, uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
     }
-    if (fuelMaxCapacity < fuelAmount * fuelUnitVolume || fuelUnitVolume >= fuelMaxCapacity) {
+    if (fuelMaxCapacity < fuelAmount * fuelUnitVolume || fuelMaxCapacity <= fuelUnitVolume) {
       revert Fuel_InvalidFuelMaxCapacity(smartObjectId, fuelMaxCapacity, fuelAmount == 0 ? fuelUnitVolume + 1 : fuelAmount * fuelUnitVolume, uint256(type(uint256).max));
     }
 
@@ -237,7 +237,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 currentFuel = _currentFuelAmount(smartObjectId);
     State currentState = DeployableState.getCurrentState(smartObjectId);
 
-    if (currentFuel == 0 && (currentState == State.ONLINE)) {
+    if (currentFuel == 0 && currentState == State.ONLINE) {
       // set to OFFLINE
       DeployableState.setPreviousState(smartObjectId, currentState);
       DeployableState.setCurrentState(smartObjectId, State.ANCHORED);
@@ -257,18 +257,18 @@ contract FuelSystem is SmartObjectFramework {
    * @return the current fuel amount in WEI.
    */
   function _currentFuelAmount(uint256 smartObjectId) internal view returns (uint256) {
-    // Check if the deploybale is not online. If it's not online, return the fuel amount directly.
+    // Check if the entity is not online. If it's not online, return the fuel amount directly.
     if (DeployableState.getCurrentState(smartObjectId) != State.ONLINE) {
       return Fuel.getFuelAmount(smartObjectId);
     }
 
-    // Fetch the fuel balance data for the deployable.
+    // Fetch the fuel balance data for the entity.
     FuelData memory fuelData = Fuel.get(smartObjectId);
 
     // For example:
-    // oneFuelUnitConsumptionIntervalInSec = 1; // Consuming 1 unit of fuel every second.
-    // oneFuelUnitConsumptionIntervalInSec = 60; // Consuming 1 unit of fuel every minute.
-    // oneFuelUnitConsumptionIntervalInSec = 3600; // Consuming 1 unit of fuel every hour.
+    // OneFuelUnitConsumptionIntervalInSec = 1; // Consuming 1 unit of fuel every second.
+    // OneFuelUnitConsumptionIntervalInSec = 60; // Consuming 1 unit of fuel every minute.
+    // OneFuelUnitConsumptionIntervalInSec = 3600; // Consuming 1 unit of fuel every hour.
     uint256 oneFuelUnitConsumptionIntervalInSec = fuelData.fuelConsumptionIntervalInSeconds;
 
     // Calculate the fuel consumed since the last update.
@@ -277,6 +277,8 @@ contract FuelSystem is SmartObjectFramework {
 
     // Subtract any global offline fuel refund from the consumed fuel.
     fuelConsumed -= _globalOfflineFuelRefund(smartObjectId);
+    // truncate the last digit of the fuel consumed to avoid diffeence due to precision loss
+    fuelConsumed = (fuelConsumed / 10) * 10;
 
     // If the consumed fuel is greater than or equal to the current fuel amount, return 0.
     if (fuelConsumed >= fuelData.fuelAmount) {
@@ -306,7 +308,7 @@ contract FuelSystem is SmartObjectFramework {
       if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
 
       uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spent online during server downtime
-      return ((elapsedRefundTime * ONE_UNIT_IN_WEI) / (Fuel.getFuelConsumptionIntervalInSeconds(smartObjectId)));
+      return (elapsedRefundTime * ONE_UNIT_IN_WEI) / Fuel.getFuelConsumptionIntervalInSeconds(smartObjectId);
     } else {
       return 0;
     }

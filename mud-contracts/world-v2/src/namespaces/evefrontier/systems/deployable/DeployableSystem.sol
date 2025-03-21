@@ -220,10 +220,10 @@ contract DeployableSystem is SmartObjectFramework {
     _setDeployableState(smartObjectId, previousState, State.ANCHORED);
     // ascribe ownership tracking of the deployable smart object
     address currentOwner = ownershipSystem.owner(smartObjectId);
-    if (currentOwner != address(0) && currentOwner != owner) {
-      ownershipSystem.annulFromAccount(smartObjectId, currentOwner);
+    if (currentOwner == address(0)) {
       ownershipSystem.ascribeToAccount(smartObjectId, owner);
-    } else if (currentOwner == address(0)) {
+    } else if (currentOwner != address(0) && currentOwner != owner) {
+      ownershipSystem.annulFromAccount(smartObjectId, currentOwner);
       ownershipSystem.ascribeToAccount(smartObjectId, owner);
     }
 
