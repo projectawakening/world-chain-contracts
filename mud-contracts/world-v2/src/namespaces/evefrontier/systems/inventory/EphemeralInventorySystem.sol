@@ -23,7 +23,7 @@ import {
   EphemeralInvItem,
   EphemeralInvItemData,
   EntityRecord,
-  ObjectByEphemeral,
+  InventoryByEphemeral,
   InventoryItem,
   InventoryItemData,
   Tenant,
@@ -94,7 +94,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
     }
 
-    // Ensure the smartObjectId is an ascribed object
+    // Ensure the smartObjectId is an ownership assigned object
     if (OwnershipByObject.getAccount(smartObjectId) == address(0)) {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
     }
@@ -142,9 +142,9 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
     
     // Link the ephemeral inventory object to the associated smart object (if needed)
-    if (!ObjectByEphemeral.getExists(ephemeralSmartObjectId)) {
+    if (!InventoryByEphemeral.getExists(ephemeralSmartObjectId)) {
       // Store mapping from ephemeral ID to associated smart object and owner
-      ObjectByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, ephemeralOwner);
+      InventoryByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, ephemeralOwner);
     }
 
     // update ephemeral inventory capacity if it is not set and the smart object has an ephemeral capacity set
@@ -237,7 +237,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
 
     // Adjust ownership/quantity data
      uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
-    ownershipSystem.ascribeToInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
+    ownershipSystem.assignOwnerToInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
 
     return usedCapacity + reqCapacity;
   }
@@ -252,7 +252,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
 
     // Adjust ownership and quantities
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
-    ownershipSystem.annulFromInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
+    ownershipSystem.removeOwnerFromInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
     
     // remove item if quantity is reduced to 0
     if (item.quantity == itemData.quantity) {

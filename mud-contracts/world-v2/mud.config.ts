@@ -259,12 +259,15 @@ export default defineWorld({
           },
           key: ["smartObjectId", "ephemeralOwner", "itemObjectId"],
         },
-        ObjectByEphemeral: {
+        /**
+         * Look up table to find the associated inventory smart object for an ephemeral inventory
+         */
+        InventoryByEphemeral: {
           schema: {
             ephemeralSmartObjectId: "uint256",
             exists: "bool",
-            smartObjectId: "uint256",
-            ephemeralOwner: "address",
+            smartObjectId: "uint256", // parent container ID
+            ephemeralOwner: "address", // TODO : ? why is this needed? is this inventory owner? 
           },
           key: ["ephemeralSmartObjectId"],
         },

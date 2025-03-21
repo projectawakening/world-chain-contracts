@@ -22,7 +22,7 @@ import { ObjectItemTransfer, ObjectItemTransferData } from "./tables/ObjectItemT
 import { EphemeralInvCapacity } from "./tables/EphemeralInvCapacity.sol";
 import { EphemeralInventory, EphemeralInventoryData } from "./tables/EphemeralInventory.sol";
 import { EphemeralInvItem, EphemeralInvItemData } from "./tables/EphemeralInvItem.sol";
-import { ObjectByEphemeral, ObjectByEphemeralData } from "./tables/ObjectByEphemeral.sol";
+import { InventoryByEphemeral, InventoryByEphemeralData } from "./tables/InventoryByEphemeral.sol";
 import { ItemTransfer, ItemTransferData } from "./tables/ItemTransfer.sol";
 import { SmartTurretConfig } from "./tables/SmartTurretConfig.sol";
 import { SmartGateConfig, SmartGateConfigData } from "./tables/SmartGateConfig.sol";

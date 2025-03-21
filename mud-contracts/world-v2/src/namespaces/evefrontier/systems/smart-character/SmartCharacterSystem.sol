@@ -70,8 +70,8 @@ contract SmartCharacterSystem is SmartObjectFramework {
     entityRecordSystem.createMetadata(smartObjectId, entityRecordMetadata);
     // Save the character data in Characters Table
     Characters.set(smartObjectId, true, tribeId, createdAt);
-    // Ascribe the character ownership data - using the singleton version
-    ownershipSystem.ascribeToAccount(smartObjectId, owner);
+    // assign the character ownership data - using the singleton version
+    ownershipSystem.assignOwner(smartObjectId, owner);
     // Save the character reverse lookup in the CharactersByAccount Table
     CharactersByAccount.set(owner, smartObjectId);
   }
@@ -94,8 +94,8 @@ contract SmartCharacterSystem is SmartObjectFramework {
     // Delete the character reverse lookup in the CharactersByAccount Table
     CharactersByAccount.deleteRecord(owner);
     
-    // Annul the character ownership data using the singleton version
-    ownershipSystem.annulFromAccount(smartObjectId, owner);
+    // remove the character ownership data using the singleton version
+    ownershipSystem.removeOwner(smartObjectId, owner);
     
     // Delete the character data in Characters Table
     Characters.deleteRecord(smartObjectId);

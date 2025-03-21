@@ -531,7 +531,7 @@ contract InventoryTest is MudTest {
     assertEq(item2ObjectData.quantity, 2);
     assertEq(item2ObjectData.index, 1);
 
-    // Verify ownership was ascribed to inventory for singleton item
+    // Verify ownership was assigned to inventory for singleton item
     assertEq(InventoryByItem.getInventoryObjectId(item1ObjectId), smartObjectId);
  
     // Test system-to-system call behavior (callCount > 1)

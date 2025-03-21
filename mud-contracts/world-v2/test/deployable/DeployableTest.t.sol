@@ -36,7 +36,7 @@ import {
   LocationData,
   EphemeralInventory,
   EphemeralInvItem,
-  ObjectByEphemeral,
+  InventoryByEphemeral,
   SmartAssembly,
   SmartAssemblyData,
   Fuel,

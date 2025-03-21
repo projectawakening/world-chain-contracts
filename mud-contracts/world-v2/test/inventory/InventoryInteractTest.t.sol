@@ -34,8 +34,8 @@ import {
   EphemeralInvCapacity,
   CharactersByAccount,
   LocationData,
-  ObjectByEphemeral,
-  ObjectByEphemeralData,
+  InventoryByEphemeral,
+  InventoryByEphemeralData,
   ObjectItemTransfer,
   ObjectItemTransferData
 } from "../../src/namespaces/evefrontier/codegen/index.sol";

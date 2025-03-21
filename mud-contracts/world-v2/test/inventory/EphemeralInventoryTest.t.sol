@@ -32,8 +32,8 @@ import {
   EphemeralInvCapacity,
   CharactersByAccount,
   LocationData,
-  ObjectByEphemeral,
-  ObjectByEphemeralData,
+  InventoryByEphemeral,
+  InventoryByEphemeralData,
   EphemeralInventory,
   EphemeralInvItem,
   EphemeralInvItemData
@@ -253,9 +253,9 @@ contract EphemeralInventoryTest is MudTest {
   // Test creating and depositing items to ephemeral inventory
   function testCreateAndDepositEphemeral() public {
     // Create a valid entity without ascribing it
-    uint256 unascribedObjectId = _calculateObjectId(123456, 123457, true);
+    uint256 unassignedObjectId = _calculateObjectId(123456, 123457, true);
     vm.prank(deployer);
-    entitySystem.instantiate(inventoryObjectClassId, unascribedObjectId, alice);
+    entitySystem.instantiate(inventoryObjectClassId, unassignedObjectId, alice);
 
     // Calculate object IDs for the test items
     uint256 singletonObjectId = _calculateObjectId(CREATE_SINGLETON_ITEM_ID, CREATE_SINGLETON_ITEM_TYPE_ID, true);
@@ -289,13 +289,13 @@ contract EphemeralInventoryTest is MudTest {
     vm.stopPrank();
 
     vm.prank(bob, deployer);
-    // Try to call createAndDepositEphemeral with the unascribed object
+    // Try to call createAndDepositEphemeral with the unassignd object
     vm.expectRevert(abi.encodeWithSelector(
       EphemeralInventorySystem.EphemeralInventory_InvalidSmartObjectId.selector,
-      unascribedObjectId
+      unassignedObjectId
     ));
     ephemeralInventorySystem.createAndDepositEphemeral(
-      unascribedObjectId,
+      unassignedObjectId,
       bob,
       testItems
     );
@@ -375,7 +375,7 @@ contract EphemeralInventoryTest is MudTest {
 
     // Verify initial state - ephemeral inventory shouldn't exist yet and the objects should not exist
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(inventoryObjectId, bob);
-    assertEq(ObjectByEphemeral.getExists(ephemeralSmartObjectId), false);
+    assertEq(InventoryByEphemeral.getExists(ephemeralSmartObjectId), false);
     assertEq(EntityRecord.getExists(singletonObjectId), false);
     assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
     
@@ -400,7 +400,7 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
     
     // Verify the ephemeral inventory has been created and linked
-    ObjectByEphemeralData memory ephemeralObjectData = ObjectByEphemeral.get(ephemeralSmartObjectId);
+    InventoryByEphemeralData memory ephemeralObjectData = InventoryByEphemeral.get(ephemeralSmartObjectId);
     assertEq(ephemeralObjectData.exists, true);
     assertEq(ephemeralObjectData.smartObjectId, inventoryObjectId);
     assertEq(ephemeralObjectData.ephemeralOwner, bob);
@@ -536,7 +536,7 @@ contract EphemeralInventoryTest is MudTest {
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(inventoryObjectId, bob);
     
     // Verify initial ephemeral inventory state - should not exist yet
-    assertEq(ObjectByEphemeral.getExists(ephemeralSmartObjectId), false);
+    assertEq(InventoryByEphemeral.getExists(ephemeralSmartObjectId), false);
     assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 0);
     assertEq(EphemeralInventory.getUsedCapacity(inventoryObjectId, bob), 0);
     
@@ -546,10 +546,10 @@ contract EphemeralInventoryTest is MudTest {
     vm.stopPrank();
     
     // Verify the ephemeral inventory has been created and linked
-    ObjectByEphemeral.getExists(ephemeralSmartObjectId);
-    assertEq(ObjectByEphemeral.getExists(ephemeralSmartObjectId), true);
-    assertEq(ObjectByEphemeral.getSmartObjectId(ephemeralSmartObjectId), inventoryObjectId);
-    assertEq(ObjectByEphemeral.getEphemeralOwner(ephemeralSmartObjectId), bob);
+    InventoryByEphemeral.getExists(ephemeralSmartObjectId);
+    assertEq(InventoryByEphemeral.getExists(ephemeralSmartObjectId), true);
+    assertEq(InventoryByEphemeral.getSmartObjectId(ephemeralSmartObjectId), inventoryObjectId);
+    assertEq(InventoryByEphemeral.getEphemeralOwner(ephemeralSmartObjectId), bob);
     
     // Verify items were added to the ephemeral inventory
     uint256[] memory ephemeralItems = EphemeralInventory.getItems(inventoryObjectId, bob);

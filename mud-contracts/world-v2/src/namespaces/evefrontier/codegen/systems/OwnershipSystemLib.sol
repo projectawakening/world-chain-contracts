@@ -62,30 +62,32 @@ library OwnershipSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).owner(smartObjectId);
   }
 
-  function ascribeToAccount(OwnershipSystemType self, uint256 smartObjectId, address to) internal {
-    return CallWrapper(self.toResourceId(), address(0)).ascribeToAccount(smartObjectId, to);
+  function assignOwner(OwnershipSystemType self, uint256 smartObjectId, address to) internal {
+    return CallWrapper(self.toResourceId(), address(0)).assignOwner(smartObjectId, to);
   }
 
-  function annulFromAccount(OwnershipSystemType self, uint256 smartObjectId, address from) internal {
-    return CallWrapper(self.toResourceId(), address(0)).annulFromAccount(smartObjectId, from);
+  function removeOwner(OwnershipSystemType self, uint256 smartObjectId, address from) internal {
+    return CallWrapper(self.toResourceId(), address(0)).removeOwner(smartObjectId, from);
   }
 
-  function ascribeToInventory(
+  function assignOwnerToInventory(
     OwnershipSystemType self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).ascribeToInventory(inventoryObjectId, itemObjectId, quantity);
+    return
+      CallWrapper(self.toResourceId(), address(0)).assignOwnerToInventory(inventoryObjectId, itemObjectId, quantity);
   }
 
-  function annulFromInventory(
+  function removeOwnerFromInventory(
     OwnershipSystemType self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).annulFromInventory(inventoryObjectId, itemObjectId, quantity);
+    return
+      CallWrapper(self.toResourceId(), address(0)).removeOwnerFromInventory(inventoryObjectId, itemObjectId, quantity);
   }
 
   function owner(CallWrapper memory self, uint256 smartObjectId) internal view returns (address) {
@@ -103,27 +105,27 @@ library OwnershipSystemLib {
     return abi.decode(result, (address));
   }
 
-  function ascribeToAccount(CallWrapper memory self, uint256 smartObjectId, address to) internal {
+  function assignOwner(CallWrapper memory self, uint256 smartObjectId, address to) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert OwnershipSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_ascribeToAccount_uint256_address.ascribeToAccount, (smartObjectId, to));
+    bytes memory systemCall = abi.encodeCall(_assignOwner_uint256_address.assignOwner, (smartObjectId, to));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function annulFromAccount(CallWrapper memory self, uint256 smartObjectId, address from) internal {
+  function removeOwner(CallWrapper memory self, uint256 smartObjectId, address from) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert OwnershipSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_annulFromAccount_uint256_address.annulFromAccount, (smartObjectId, from));
+    bytes memory systemCall = abi.encodeCall(_removeOwner_uint256_address.removeOwner, (smartObjectId, from));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function ascribeToInventory(
+  function assignOwnerToInventory(
     CallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
@@ -133,7 +135,7 @@ library OwnershipSystemLib {
     if (address(_world()) == address(this)) revert OwnershipSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _ascribeToInventory_uint256_uint256_uint256.ascribeToInventory,
+      _assignOwnerToInventory_uint256_uint256_uint256.assignOwnerToInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     self.from == address(0)
@@ -141,7 +143,7 @@ library OwnershipSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function annulFromInventory(
+  function removeOwnerFromInventory(
     CallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
@@ -151,7 +153,7 @@ library OwnershipSystemLib {
     if (address(_world()) == address(this)) revert OwnershipSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _annulFromInventory_uint256_uint256_uint256.annulFromInventory,
+      _removeOwnerFromInventory_uint256_uint256_uint256.removeOwnerFromInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     self.from == address(0)
@@ -166,37 +168,37 @@ library OwnershipSystemLib {
     return abi.decode(result, (address));
   }
 
-  function ascribeToAccount(RootCallWrapper memory self, uint256 smartObjectId, address to) internal {
-    bytes memory systemCall = abi.encodeCall(_ascribeToAccount_uint256_address.ascribeToAccount, (smartObjectId, to));
+  function assignOwner(RootCallWrapper memory self, uint256 smartObjectId, address to) internal {
+    bytes memory systemCall = abi.encodeCall(_assignOwner_uint256_address.assignOwner, (smartObjectId, to));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function annulFromAccount(RootCallWrapper memory self, uint256 smartObjectId, address from) internal {
-    bytes memory systemCall = abi.encodeCall(_annulFromAccount_uint256_address.annulFromAccount, (smartObjectId, from));
+  function removeOwner(RootCallWrapper memory self, uint256 smartObjectId, address from) internal {
+    bytes memory systemCall = abi.encodeCall(_removeOwner_uint256_address.removeOwner, (smartObjectId, from));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function ascribeToInventory(
+  function assignOwnerToInventory(
     RootCallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _ascribeToInventory_uint256_uint256_uint256.ascribeToInventory,
+      _assignOwnerToInventory_uint256_uint256_uint256.assignOwnerToInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function annulFromInventory(
+  function removeOwnerFromInventory(
     RootCallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _annulFromInventory_uint256_uint256_uint256.annulFromInventory,
+      _removeOwnerFromInventory_uint256_uint256_uint256.removeOwnerFromInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -244,20 +246,20 @@ interface _owner_uint256 {
   function owner(uint256 smartObjectId) external;
 }
 
-interface _ascribeToAccount_uint256_address {
-  function ascribeToAccount(uint256 smartObjectId, address to) external;
+interface _assignOwner_uint256_address {
+  function assignOwner(uint256 smartObjectId, address to) external;
 }
 
-interface _annulFromAccount_uint256_address {
-  function annulFromAccount(uint256 smartObjectId, address from) external;
+interface _removeOwner_uint256_address {
+  function removeOwner(uint256 smartObjectId, address from) external;
 }
 
-interface _ascribeToInventory_uint256_uint256_uint256 {
-  function ascribeToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
+interface _assignOwnerToInventory_uint256_uint256_uint256 {
+  function assignOwnerToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 }
 
-interface _annulFromInventory_uint256_uint256_uint256 {
-  function annulFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
+interface _removeOwnerFromInventory_uint256_uint256_uint256 {
+  function removeOwnerFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 }
 
 using OwnershipSystemLib for OwnershipSystemType global;
