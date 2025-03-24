@@ -131,40 +131,40 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       true
     );
 
-    bytes4[2] memory entityRecordOnlyAdminOrOwnerSelectors = [
+    bytes4[2] memory entityRecordOnlyAdminOrOwnerAccessSelectors = [
       EntityRecordSystem.setDappURL.selector,
       EntityRecordSystem.setDescription.selector
     ];
 
-    for (uint256 i = 0; i < entityRecordOnlyAdminOrOwnerSelectors.length; i++) {
+    for (uint256 i = 0; i < entityRecordOnlyAdminOrOwnerAccessSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         entityRecordSystem.toResourceId(),
-        entityRecordOnlyAdminOrOwnerSelectors[i],
+        entityRecordOnlyAdminOrOwnerAccessSelectors[i],
         accessSystem.toResourceId(),
         AccessSystem.onlyAdminOrOwnerAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         entityRecordSystem.toResourceId(),
-        entityRecordOnlyAdminOrOwnerSelectors[i],
+        entityRecordOnlyAdminOrOwnerAccessSelectors[i],
         true
       );
     }
 
-    bytes4[2] memory entityRecordOnlyAdminForCharactersOtherwiseAlsoOwnerSelectors = [
+    bytes4[2] memory entityRecordOnlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerSelectors = [
       EntityRecordSystem.createMetadata.selector,
       EntityRecordSystem.setName.selector
     ];
 
-    for (uint256 i = 0; i < entityRecordOnlyAdminForCharactersOtherwiseAlsoOwnerSelectors.length; i++) {
+    for (uint256 i = 0; i < entityRecordOnlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         entityRecordSystem.toResourceId(),
-        entityRecordOnlyAdminForCharactersOtherwiseAlsoOwnerSelectors[i],
+        entityRecordOnlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyAdminForCharactersOtherwiseAlsoOwnerAccess.selector
+        AccessSystem.onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
         entityRecordSystem.toResourceId(),
-        entityRecordOnlyAdminForCharactersOtherwiseAlsoOwnerSelectors[i],
+        entityRecordOnlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerSelectors[i],
         true
       );
     }
@@ -209,10 +209,10 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   // Configure access for OwnershipSystem
   function configureOwnershipAccess() public {
     bytes4[4] memory ownershipOnlyCallAccessWithScopeEnforcedSelectors = [
-      OwnershipSystem.ascribeToAccount.selector,
-      OwnershipSystem.ascribeToInventory.selector,
-      OwnershipSystem.annulFromAccount.selector,
-      OwnershipSystem.annulFromInventory.selector
+      OwnershipSystem.assignToAccount.selector,
+      OwnershipSystem.assignToInventory.selector,
+      OwnershipSystem.removeFromAccount.selector,
+      OwnershipSystem.removeFromInventory.selector
     ];
 
     for (uint256 i = 0; i < ownershipOnlyCallAccessWithScopeEnforcedSelectors.length; i++) {

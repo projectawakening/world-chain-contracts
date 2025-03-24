@@ -19,8 +19,8 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 struct EntityRecordData {
   bool exists;
   bytes32 tenantId;
-  uint256 itemId;
   uint256 typeId;
+  uint256 itemId;
   uint256 volume;
 }
 
@@ -53,8 +53,8 @@ library EntityRecord {
     fieldNames = new string[](5);
     fieldNames[0] = "exists";
     fieldNames[1] = "tenantId";
-    fieldNames[2] = "itemId";
-    fieldNames[3] = "typeId";
+    fieldNames[2] = "typeId";
+    fieldNames[3] = "itemId";
     fieldNames[4] = "volume";
   }
 
@@ -157,55 +157,13 @@ library EntityRecord {
   }
 
   /**
-   * @notice Get itemId.
-   */
-  function getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get itemId.
-   */
-  function _getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Set itemId.
-   */
-  function setItemId(uint256 smartObjectId, uint256 itemId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((itemId)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set itemId.
-   */
-  function _setItemId(uint256 smartObjectId, uint256 itemId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((itemId)), _fieldLayout);
-  }
-
-  /**
    * @notice Get typeId.
    */
   function getTypeId(uint256 smartObjectId) internal view returns (uint256 typeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -216,7 +174,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -227,7 +185,7 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((typeId)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((typeId)), _fieldLayout);
   }
 
   /**
@@ -237,7 +195,49 @@ library EntityRecord {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((typeId)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((typeId)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get itemId.
+   */
+  function getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get itemId.
+   */
+  function _getItemId(uint256 smartObjectId) internal view returns (uint256 itemId) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set itemId.
+   */
+  function setItemId(uint256 smartObjectId, uint256 itemId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((itemId)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set itemId.
+   */
+  function _setItemId(uint256 smartObjectId, uint256 itemId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((itemId)), _fieldLayout);
   }
 
   /**
@@ -319,11 +319,11 @@ library EntityRecord {
     uint256 smartObjectId,
     bool exists,
     bytes32 tenantId,
-    uint256 itemId,
     uint256 typeId,
+    uint256 itemId,
     uint256 volume
   ) internal {
-    bytes memory _staticData = encodeStatic(exists, tenantId, itemId, typeId, volume);
+    bytes memory _staticData = encodeStatic(exists, tenantId, typeId, itemId, volume);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -341,11 +341,11 @@ library EntityRecord {
     uint256 smartObjectId,
     bool exists,
     bytes32 tenantId,
-    uint256 itemId,
     uint256 typeId,
+    uint256 itemId,
     uint256 volume
   ) internal {
-    bytes memory _staticData = encodeStatic(exists, tenantId, itemId, typeId, volume);
+    bytes memory _staticData = encodeStatic(exists, tenantId, typeId, itemId, volume);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -363,8 +363,8 @@ library EntityRecord {
     bytes memory _staticData = encodeStatic(
       _table.exists,
       _table.tenantId,
-      _table.itemId,
       _table.typeId,
+      _table.itemId,
       _table.volume
     );
 
@@ -384,8 +384,8 @@ library EntityRecord {
     bytes memory _staticData = encodeStatic(
       _table.exists,
       _table.tenantId,
-      _table.itemId,
       _table.typeId,
+      _table.itemId,
       _table.volume
     );
 
@@ -403,14 +403,14 @@ library EntityRecord {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (bool exists, bytes32 tenantId, uint256 itemId, uint256 typeId, uint256 volume) {
+  ) internal pure returns (bool exists, bytes32 tenantId, uint256 typeId, uint256 itemId, uint256 volume) {
     exists = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
 
     tenantId = (Bytes.getBytes32(_blob, 1));
 
-    itemId = (uint256(Bytes.getBytes32(_blob, 33)));
+    typeId = (uint256(Bytes.getBytes32(_blob, 33)));
 
-    typeId = (uint256(Bytes.getBytes32(_blob, 65)));
+    itemId = (uint256(Bytes.getBytes32(_blob, 65)));
 
     volume = (uint256(Bytes.getBytes32(_blob, 97)));
   }
@@ -426,7 +426,7 @@ library EntityRecord {
     EncodedLengths,
     bytes memory
   ) internal pure returns (EntityRecordData memory _table) {
-    (_table.exists, _table.tenantId, _table.itemId, _table.typeId, _table.volume) = decodeStatic(_staticData);
+    (_table.exists, _table.tenantId, _table.typeId, _table.itemId, _table.volume) = decodeStatic(_staticData);
   }
 
   /**
@@ -456,11 +456,11 @@ library EntityRecord {
   function encodeStatic(
     bool exists,
     bytes32 tenantId,
-    uint256 itemId,
     uint256 typeId,
+    uint256 itemId,
     uint256 volume
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(exists, tenantId, itemId, typeId, volume);
+    return abi.encodePacked(exists, tenantId, typeId, itemId, volume);
   }
 
   /**
@@ -472,11 +472,11 @@ library EntityRecord {
   function encode(
     bool exists,
     bytes32 tenantId,
-    uint256 itemId,
     uint256 typeId,
+    uint256 itemId,
     uint256 volume
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(exists, tenantId, itemId, typeId, volume);
+    bytes memory _staticData = encodeStatic(exists, tenantId, typeId, itemId, volume);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

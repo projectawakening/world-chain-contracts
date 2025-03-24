@@ -153,18 +153,29 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyAdminForCharactersOtherwiseAlsoOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
-    if (isAdmin(_callMsgSender(1))) {
+  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    address caller = msgSender;
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
       return;
     }
 
-    if (_callMsgSender() != smartCharacterSystem.getAddress()) {
-      if (isOwner(smartObjectId, _callMsgSender(1))) {
+    caller = _callMsgSender(1);
+
+    if (isAdmin(caller)) {
+      return;
+    }
+
+    if (msgSender != smartCharacterSystem.getAddress()) {
+      if (isOwner(smartObjectId, caller)) {
         return;
       }
     }
 
-    revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
+    revert Access_NotAdminOrOwner(caller, smartObjectId);
   }
 
   function onlyCallAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -325,7 +336,7 @@ contract AccessSystem is SmartObjectFramework {
 
   function onlyAdminOrClassScopedAccess(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
     uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
     if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
@@ -350,7 +361,7 @@ contract AccessSystem is SmartObjectFramework {
       return;
     }
 
-    revert Access_NotClassScoped(_callMsgSender(1), smartObjectId);
+    revert Access_NotClassScoped(msgSender, smartObjectId);
   }
 
   function isAdmin(address caller) public view returns (bool) {

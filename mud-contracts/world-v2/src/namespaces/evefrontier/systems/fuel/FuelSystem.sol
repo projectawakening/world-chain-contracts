@@ -277,8 +277,6 @@ contract FuelSystem is SmartObjectFramework {
 
     // Subtract any global offline fuel refund from the consumed fuel.
     fuelConsumed -= _globalOfflineFuelRefund(smartObjectId);
-    // truncate the last digit of the fuel consumed to avoid diffeence due to precision loss
-    fuelConsumed = (fuelConsumed / 10) * 10;
 
     // If the consumed fuel is greater than or equal to the current fuel amount, return 0.
     if (fuelConsumed >= fuelData.fuelAmount) {

@@ -150,10 +150,10 @@ contract DeployableTest is MudTest {
     tenantId = keccak256(abi.encodePacked("TEST"));
     
     // Setup smart object ID
-    smartObjectId = _calculateObjectId(SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, true);
+    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
     
     // Register class and setup smart object state
-    deployableObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
+    deployableObjectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
 
     // Create resource ID for the mock system using the proper format
     bytes14 namespace = bytes14("evefrontier");
@@ -295,7 +295,7 @@ contract DeployableTest is MudTest {
 
     // Setup entity record for the smart object
     vm.startPrank(deployer);
-    _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
     vm.stopPrank();
     
     // Verify initial states
@@ -377,7 +377,7 @@ contract DeployableTest is MudTest {
     // Check inventory setup
     assertEq(Inventory.getVersion(smartObjectId), 1, "Inventory version should be initialized to 1");
     
-    // Case 3: Creating deployable when state is not NULL should revert
+    // Creating deployable when state is not NULL should revert
     // Current state after first creation is UNANCHORED
     vm.prank(alice, deployer);
     vm.expectRevert(
@@ -390,7 +390,7 @@ contract DeployableTest is MudTest {
     // Try to destroy a deployable that's not in ANCHORED or ONLINE state
     // Create a deployable (puts it in UNANCHORED state)
     vm.startPrank(deployer);
-    _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
     vm.stopPrank();
     vm.prank(alice, deployer);
     deployableSystem.createDeployable(smartObjectId, alice, 100, 60, 100000000); // max amount is 1000000
@@ -447,7 +447,7 @@ contract DeployableTest is MudTest {
     // Test revert case: Attempt to anchor when state is not UNANCHORED
     // First, create and anchor a deployable
     vm.startPrank(deployer);
-    _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
     deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity); // max amount is 1000000
@@ -474,10 +474,10 @@ contract DeployableTest is MudTest {
     deployableSystem.anchor(smartObjectId, alice, location);
     
     // Create a new deployable for successful anchoring test
-    uint256 newSmartObjectId = _calculateObjectId(SMART_OBJECT_ID+3, SMART_OBJECT_TYPE_ID, true);
+    uint256 newSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID+3, true);
     vm.startPrank(deployer);
     entitySystem.instantiate(deployableObjectClassId, newSmartObjectId, alice);
-    _setupEntityRecord(newSmartObjectId, SMART_OBJECT_ID+3, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(newSmartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID+3, 1000);
     vm.stopPrank();
     
     // Initialize new deployable (puts it in UNANCHORED state)
@@ -524,10 +524,10 @@ contract DeployableTest is MudTest {
     assertEq(savedLocation.z, newLocation.z, "Z coordinate should match");
     
     // Test case where ownership doesn't change (current owner is already correct)
-    uint256 thirdSmartObjectId = _calculateObjectId(SMART_OBJECT_ID+4, SMART_OBJECT_TYPE_ID, true);
+    uint256 thirdSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID+4, true);
     vm.startPrank(deployer);
     entitySystem.instantiate(deployableObjectClassId, thirdSmartObjectId, alice);
-    _setupEntityRecord(thirdSmartObjectId, SMART_OBJECT_ID+4, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(thirdSmartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID+4, 1000);
     vm.stopPrank();
     
     // Initialize new deployable with alice as owner
@@ -557,7 +557,7 @@ contract DeployableTest is MudTest {
     
     // Test revert case: Attempt to unanchor when state is not ANCHORED
     vm.startPrank(deployer);
-    _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
     deployableSystem.createDeployable(smartObjectId, alice, 100, 60, 100000000); // max amount is 1000000
@@ -617,10 +617,10 @@ contract DeployableTest is MudTest {
     assertEq(location.z, 0, "Z coordinate should be reset to 0");
     
     // Test unanchoring from ONLINE state
-    uint256 onlineObjectId = _calculateObjectId(SMART_OBJECT_ID+6, SMART_OBJECT_TYPE_ID, true);
+    uint256 onlineObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID+6, true);
     vm.startPrank(deployer);
     entitySystem.instantiate(deployableObjectClassId, onlineObjectId, alice);
-    _setupEntityRecord(onlineObjectId, SMART_OBJECT_ID+6, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(onlineObjectId,  SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID+6, 1000);
     vm.stopPrank();
     
     // Create, anchor, and bring online
@@ -671,7 +671,7 @@ contract DeployableTest is MudTest {
  
     // Test revert case: Attempt to bring online when state is not UNANCHORED
     vm.startPrank(deployer);
-    _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
     deployableSystem.createDeployable(smartObjectId, alice, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity);
@@ -753,7 +753,7 @@ contract DeployableTest is MudTest {
 
     // Setup: Create a deployable
     vm.startPrank(deployer);
-    _setupEntityRecord(smartObjectId, SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, 1000);
+    _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
     vm.stopPrank();
     vm.startPrank(alice, deployer);
     deployableSystem.createDeployable(smartObjectId, alice, 100, 60, 100000000); // max amount is 1000000
@@ -839,17 +839,17 @@ contract DeployableTest is MudTest {
   }
 
   // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
     
     if (itemId != 0) { // For singleton items
-      EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
+      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
+        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
     } else { // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
+      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
     
     if (!Entity.getExists(classId)) {
@@ -858,7 +858,7 @@ contract DeployableTest is MudTest {
   }
 
   // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
     if (isSingleton) {
       // For singleton items: hash of tenantId and itemId
       return uint256(keccak256(abi.encodePacked(tenantId, itemId)));

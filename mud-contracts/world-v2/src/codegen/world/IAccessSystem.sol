@@ -58,7 +58,7 @@ interface IAccessSystem {
 
   function evefrontier__onlyAdminOrOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function evefrontier__onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
     uint256 smartObjectId,
     bytes memory data
   ) external view;

@@ -94,7 +94,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
     }
 
-    // Ensure the smartObjectId is an ascribed object
+    // Ensure the smartObjectId is an assigned object
     if (OwnershipByObject.getAccount(smartObjectId) == address(0)) {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
     }
@@ -237,7 +237,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
 
     // Adjust ownership/quantity data
      uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
-    ownershipSystem.ascribeToInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
+    ownershipSystem.assignToInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
 
     return usedCapacity + reqCapacity;
   }
@@ -252,7 +252,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
 
     // Adjust ownership and quantities
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
-    ownershipSystem.annulFromInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
+    ownershipSystem.removeFromInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
     
     // remove item if quantity is reduced to 0
     if (item.quantity == itemData.quantity) {

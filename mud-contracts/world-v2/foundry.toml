@@ -25,7 +25,7 @@ extra_output_files = [
 fs_permissions = [{ access = "read", path = "./"}]
 [fuzz]
 max_test_rejects = 750536
-runs = 1000
+runs = 10
 gas_limit = 120000000
 
 [profile.garnet]

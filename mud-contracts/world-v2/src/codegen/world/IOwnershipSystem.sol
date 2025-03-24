@@ -34,11 +34,11 @@ interface IOwnershipSystem {
 
   function evefrontier__owner(uint256 smartObjectId) external view returns (address);
 
-  function evefrontier__ascribeToAccount(uint256 smartObjectId, address to) external;
+  function evefrontier__assignToAccount(uint256 smartObjectId, address to) external;
 
-  function evefrontier__annulFromAccount(uint256 smartObjectId, address from) external;
+  function evefrontier__removeFromAccount(uint256 smartObjectId, address from) external;
 
-  function evefrontier__ascribeToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
+  function evefrontier__assignToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 
-  function evefrontier__annulFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
+  function evefrontier__removeFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 }

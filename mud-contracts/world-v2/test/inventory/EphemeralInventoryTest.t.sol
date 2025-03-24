@@ -150,7 +150,7 @@ contract EphemeralInventoryTest is MudTest {
     tenantId = keccak256(abi.encodePacked("TEST"));
     
     // Setup smart object IDs
-    inventoryObjectId = _calculateObjectId(SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, true);
+    inventoryObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
     // Create resource ID for the mock system using the proper format
     bytes14 namespace = bytes14("evefrontier");
@@ -229,14 +229,14 @@ contract EphemeralInventoryTest is MudTest {
     inventorySystem.setCapacity(inventoryObjectId, capacity);
 
     // Calculate itemObjectIds
-    item1ObjectId = _calculateObjectId(ITEM1_ID, ITEM_TYPE_ID, true); // Singleton item
-    item2ObjectId = _calculateObjectId(0, ITEM_TYPE_ID_NON_SINGLETON, false); // Non-singleton item
-    transferItemObjectId = _calculateObjectId(0, TRANSFER_ITEM_TYPE_ID, false); // Non-singleton item
+    item1ObjectId = _calculateObjectId(ITEM_TYPE_ID, ITEM1_ID, true); // Singleton item
+    item2ObjectId = _calculateObjectId(ITEM_TYPE_ID_NON_SINGLETON, 0, false); // Non-singleton item
+    transferItemObjectId = _calculateObjectId(TRANSFER_ITEM_TYPE_ID, 0, false); // Non-singleton item
     
     // Set up item records with the correct parameters
-    _setupEntityRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
-    _setupEntityRecord(item2ObjectId, 0, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
-    _setupEntityRecord(transferItemObjectId, 0, TRANSFER_ITEM_TYPE_ID, ITEM_VOLUME);
+    _setupEntityRecord(item1ObjectId, ITEM_TYPE_ID, ITEM1_ID, ITEM_VOLUME);
+    _setupEntityRecord(item2ObjectId, ITEM_TYPE_ID_NON_SINGLETON, 0, ITEM_VOLUME);
+    _setupEntityRecord(transferItemObjectId, TRANSFER_ITEM_TYPE_ID, 0, ITEM_VOLUME);
     
     // Set ephemeral capacity for the smart object
     uint256 ephemeralCapacity = 1000;
@@ -252,14 +252,14 @@ contract EphemeralInventoryTest is MudTest {
 
   // Test creating and depositing items to ephemeral inventory
   function testCreateAndDepositEphemeral() public {
-    // Create a valid entity without ascribing it
-    uint256 unascribedObjectId = _calculateObjectId(123456, 123457, true);
+    // Create a valid entity without assigning it
+    uint256 unassignedObjectId = _calculateObjectId(123457, 123456, true);
     vm.prank(deployer);
-    entitySystem.instantiate(inventoryObjectClassId, unascribedObjectId, alice);
+    entitySystem.instantiate(inventoryObjectClassId, unassignedObjectId, alice);
 
     // Calculate object IDs for the test items
-    uint256 singletonObjectId = _calculateObjectId(CREATE_SINGLETON_ITEM_ID, CREATE_SINGLETON_ITEM_TYPE_ID, true);
-    uint256 nonSingletonObjectId = _calculateObjectId(CREATE_NON_SINGLETON_ITEM_ID, CREATE_NON_SINGLETON_ITEM_TYPE_ID, false);
+    uint256 singletonObjectId = _calculateObjectId(CREATE_SINGLETON_ITEM_TYPE_ID, CREATE_SINGLETON_ITEM_ID, true);
+    uint256 nonSingletonObjectId = _calculateObjectId(CREATE_NON_SINGLETON_ITEM_TYPE_ID, CREATE_NON_SINGLETON_ITEM_ID, false);
 
     // Create a reusable parameter object for multiple test cases
     CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
@@ -289,13 +289,13 @@ contract EphemeralInventoryTest is MudTest {
     vm.stopPrank();
 
     vm.prank(bob, deployer);
-    // Try to call createAndDepositEphemeral with the unascribed object
+    // Try to call createAndDepositEphemeral with the unassigned object
     vm.expectRevert(abi.encodeWithSelector(
       EphemeralInventorySystem.EphemeralInventory_InvalidSmartObjectId.selector,
-      unascribedObjectId
+      unassignedObjectId
     ));
     ephemeralInventorySystem.createAndDepositEphemeral(
-      unascribedObjectId,
+      unassignedObjectId,
       bob,
       testItems
     );
@@ -1140,17 +1140,17 @@ contract EphemeralInventoryTest is MudTest {
   }
 
   // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
     
     if (itemId != 0) { // For singleton items
-      EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
+      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
     } else { // For non-singleton items
-      EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
     
     if (!Entity.getExists(classId)) {
@@ -1158,8 +1158,8 @@ contract EphemeralInventoryTest is MudTest {
     }
   }
 
-  // Helper function to calculate smart object ids
-  function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+  // Helper function to calculate itemObjectId
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
     if (isSingleton) {
       // For singleton items: hash of tenantId and itemId
       return uint256(keccak256(abi.encodePacked(tenantId, itemId)));

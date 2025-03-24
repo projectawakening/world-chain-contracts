@@ -53,11 +53,11 @@ contract SmartCharacterSystem is SmartObjectFramework {
     }
 
     // sanity checks
-    if (uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) != getSmartCharacterClassId()) {
-      revert SmartCharacter_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
-    }
     if (Tenant.get() != entityRecordParams.tenantId) {
       revert SmartCharacter_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
+    }
+    if (uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) != getSmartCharacterClassId()) {
+      revert SmartCharacter_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
     }
     if (smartObjectId!= uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
       revert SmartCharacter_InvalidObjectId(smartObjectId);
@@ -70,8 +70,8 @@ contract SmartCharacterSystem is SmartObjectFramework {
     entityRecordSystem.createMetadata(smartObjectId, entityRecordMetadata);
     // Save the character data in Characters Table
     Characters.set(smartObjectId, true, tribeId, createdAt);
-    // Ascribe the character ownership data - using the singleton version
-    ownershipSystem.ascribeToAccount(smartObjectId, owner);
+    // Assign the character ownership data - using the singleton version
+    ownershipSystem.assignToAccount(smartObjectId, owner);
     // Save the character reverse lookup in the CharactersByAccount Table
     CharactersByAccount.set(owner, smartObjectId);
   }
@@ -94,8 +94,8 @@ contract SmartCharacterSystem is SmartObjectFramework {
     // Delete the character reverse lookup in the CharactersByAccount Table
     CharactersByAccount.deleteRecord(owner);
     
-    // Annul the character ownership data using the singleton version
-    ownershipSystem.annulFromAccount(smartObjectId, owner);
+    // Remove the character ownership data using the singleton version
+    ownershipSystem.removeFromAccount(smartObjectId, owner);
     
     // Delete the character data in Characters Table
     Characters.deleteRecord(smartObjectId);

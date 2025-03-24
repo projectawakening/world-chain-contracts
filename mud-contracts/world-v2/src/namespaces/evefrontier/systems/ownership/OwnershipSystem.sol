@@ -5,6 +5,7 @@ pragma solidity >=0.8.0;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 
+// Local namespace tables
 import {
   CharactersByAccount,
   EntityRecord,
@@ -17,6 +18,9 @@ import {
   EphemeralInventory,
   EphemeralInvItem
 } from "../../codegen/index.sol";
+
+// Local namespace systems
+import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
 
 contract OwnershipSystem is SmartObjectFramework {
   // Custom errors
@@ -68,18 +72,18 @@ contract OwnershipSystem is SmartObjectFramework {
   }
 
     /**
-   * @notice Ascribe new ownership of a singleton smart object to an account
-   * @param smartObjectId The smart object id to ascribe ownership of
-   * @param to The owner account address to ascribe the smart object to
+   * @notice Assign new ownership of a singleton smart object to an account
+   * @param smartObjectId The smart object id to assign ownership of
+   * @param to The owner account address to assign the smart object to
    */
-  function ascribeToAccount(uint256 smartObjectId, address to) public access(smartObjectId) {
+  function assignToAccount(uint256 smartObjectId, address to) public access(smartObjectId) {
     // Check if the object exists
     if (!Entity.getExists(smartObjectId)) {
       revert Ownership_NonexistentObject(smartObjectId);
     }
 
     // Check if the account is valid
-    if (CharactersByAccount.get(to) == 0) {
+    if (_callMsgSender() != smartCharacterSystem.getAddress() && CharactersByAccount.get(to) == 0) {
       revert Ownership_InvalidAccount(to);
     }
 
@@ -88,22 +92,22 @@ contract OwnershipSystem is SmartObjectFramework {
       revert Ownership_InvalidSingleton(smartObjectId);
     }
 
-    // Check if the object is already ascribed to an account
+    // Check if the object is already assigned to an account
     address currentOwner = OwnershipByObject.get(smartObjectId);
     if (currentOwner != address(0)) {
       revert Ownership_AlreadyOwned(smartObjectId, currentOwner);
     }
 
-    // Ascribe ownership of the singleton smart object to the defined account
+    // Assign ownership of the singleton smart object to the defined account
     OwnershipByObject.set(smartObjectId, to);
   }
 
   /**
-   * @notice Annul ownership of a singleton smart object from an account
-   * @param smartObjectId The smart object id to annul ownership of
+   * @notice Remove ownership of a singleton smart object from an account
+   * @param smartObjectId The smart object id to remove ownership of
    * @param from The current owner account address
    */
-  function annulFromAccount(uint256 smartObjectId, address from) public access(smartObjectId) {
+  function removeFromAccount(uint256 smartObjectId, address from) public access(smartObjectId) {
     // Check if the object exists
     if (!Entity.getExists(smartObjectId)) {
       revert Ownership_NonexistentObject(smartObjectId);
@@ -125,12 +129,12 @@ contract OwnershipSystem is SmartObjectFramework {
 
 
   /**
-   * @notice Ascribe ownership of item(s) to an inventory associated with a specific smart object
+   * @notice Assign ownership of item(s) to an inventory associated with a specific smart object
    * @param inventoryObjectId The smart object id associated with the destination inventory
-   * @param itemObjectId The smart object id of the item to ascribe
-   * @param quantity The quantity to ascribe
+   * @param itemObjectId The smart object id of the item to assign
+   * @param quantity The quantity to assign
    */
-  function ascribeToInventory(
+  function assignToInventory(
     uint256 inventoryObjectId, 
     uint256 itemObjectId,
     uint256 quantity
@@ -188,12 +192,12 @@ contract OwnershipSystem is SmartObjectFramework {
   }
 
   /**
-   * @notice Annul ownership of item(s) from an inventory associated with a specific smart object.
+   * @notice Remove ownership of item(s) from an inventory associated with a specific smart object.
    * @param inventoryObjectId The smart object id associated with the source inventory
    * @param itemObjectId The smart object id of the item to remove
-   * @param quantity The quantity to annul
+   * @param quantity The quantity to remove
    */
-  function annulFromInventory(
+  function removeFromInventory(
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity

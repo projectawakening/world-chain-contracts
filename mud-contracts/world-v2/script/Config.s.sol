@@ -123,22 +123,22 @@ contract Config is Script {
 
     // OwnershipSystem.sol
     bytes4[2] memory ownershipInventoryFunctionSelectors = [
-      OwnershipSystem.ascribeToInventory.selector,
-      OwnershipSystem.annulFromInventory.selector
+      OwnershipSystem.assignToInventory.selector,
+      OwnershipSystem.removeFromInventory.selector
     ];
     for (uint i = 0; i < ownershipInventoryFunctionSelectors.length; i++) {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], inventorySystem.getAddress(), true);
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], ephemeralInventorySystem.getAddress(), true);
     }
     bytes4[2] memory ownershipAccountFunctionSelectors = [
-      OwnershipSystem.ascribeToAccount.selector,
-      OwnershipSystem.annulFromAccount.selector
+      OwnershipSystem.assignToAccount.selector,
+      OwnershipSystem.removeFromAccount.selector
     ];
     for (uint i = 0; i < ownershipAccountFunctionSelectors.length; i++) {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipAccountFunctionSelectors[i], deployableSystem.getAddress(), true);
       CallAccess.set(ownershipSystem.toResourceId(), ownershipAccountFunctionSelectors[i], smartCharacterSystem.getAddress(), true);
     }
-    CallAccess.set(ownershipSystem.toResourceId(), OwnershipSystem.ascribeToAccount.selector, ephemeralInventorySystem.getAddress(), true);
+    CallAccess.set(ownershipSystem.toResourceId(), OwnershipSystem.assignToAccount.selector, ephemeralInventorySystem.getAddress(), true);
 
 
     bytes32 adminRole = bytes32("admin");

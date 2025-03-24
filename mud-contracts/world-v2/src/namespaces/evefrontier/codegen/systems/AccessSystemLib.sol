@@ -119,13 +119,16 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrOwnerAccess(smartObjectId, data);
   }
 
-  function onlyAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     return
-      CallWrapper(self.toResourceId(), address(0)).onlyAdminForCharactersOtherwiseAlsoOwnerAccess(smartObjectId, data);
+      CallWrapper(self.toResourceId(), address(0)).onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
+        smartObjectId,
+        data
+      );
   }
 
   function onlyCallAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
@@ -421,7 +424,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -430,7 +433,8 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes.onlyAdminForCharactersOtherwiseAlsoOwnerAccess,
+      _onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes
+        .onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -915,13 +919,14 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes.onlyAdminForCharactersOtherwiseAlsoOwnerAccess,
+      _onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes
+        .onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
@@ -1230,8 +1235,11 @@ interface _onlyAdminOrOwnerAccess_uint256_bytes {
   function onlyAdminOrOwnerAccess(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes {
-  function onlyAdminForCharactersOtherwiseAlsoOwnerAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes {
+  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
+    uint256 smartObjectId,
+    bytes memory data
+  ) external;
 }
 
 interface _onlyCallAccess_uint256_bytes {
