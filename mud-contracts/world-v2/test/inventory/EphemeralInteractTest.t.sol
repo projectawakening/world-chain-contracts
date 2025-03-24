@@ -39,8 +39,8 @@ import {
   EphemeralInventory,
   EphemeralInvItem,
   EphemeralInvItemData,
-  ItemTransfer,
-  ItemTransferData
+  EphemeralItemTransfer,
+  EphemeralItemTransferData
 } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
@@ -296,7 +296,7 @@ contract EphemeralInteractTest is MudTest {
     assertEq(InventoryItem.getQuantity(inventoryObjectId, item2ObjectId), 3);
 
     // verify item transfer record is being populated (the last item to be transfered will be stored here)
-    ItemTransferData memory itemTransferData = ItemTransfer.get(inventoryObjectId, item2ObjectId);
+    EphemeralItemTransferData memory itemTransferData = EphemeralItemTransfer.get(inventoryObjectId, item2ObjectId);
     assertEq(itemTransferData.previousOwner, bob);
     assertEq(itemTransferData.currentOwner, alice);
     assertEq(itemTransferData.quantity, 3);
@@ -399,7 +399,7 @@ contract EphemeralInteractTest is MudTest {
     assertEq(EphemeralInvItem.getQuantity(inventoryObjectId, bob, item2ObjectId), 4); // 3+1=4
 
     // verify item transfer record is being populated (the last item to be transfered will be stored here)
-    ItemTransferData memory itemTransferData = ItemTransfer.get(inventoryObjectId, item2ObjectId);
+    EphemeralItemTransferData memory itemTransferData = EphemeralItemTransfer.get(inventoryObjectId, item2ObjectId);
     assertEq(itemTransferData.previousOwner, alice);
     assertEq(itemTransferData.currentOwner, bob);
     assertEq(itemTransferData.quantity, 1);
@@ -519,7 +519,7 @@ contract EphemeralInteractTest is MudTest {
     assertEq(Inventory.lengthItems(inventoryObjectId), 0);
 
     // verify item transfer record is being populated (the last item to be transfered will be stored here)
-    ItemTransferData memory itemTransferData = ItemTransfer.get(inventoryObjectId, item2ObjectId);
+    EphemeralItemTransferData memory itemTransferData = EphemeralItemTransfer.get(inventoryObjectId, item2ObjectId);
     assertEq(itemTransferData.previousOwner, bob);
     assertEq(itemTransferData.currentOwner, charlie);
     assertEq(itemTransferData.quantity, 1);

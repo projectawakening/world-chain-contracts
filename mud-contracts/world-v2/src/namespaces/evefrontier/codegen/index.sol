@@ -18,12 +18,12 @@ import { DeployableState, DeployableStateData } from "./tables/DeployableState.s
 import { Fuel, FuelData } from "./tables/Fuel.sol";
 import { Inventory, InventoryData } from "./tables/Inventory.sol";
 import { InventoryItem, InventoryItemData } from "./tables/InventoryItem.sol";
-import { ObjectItemTransfer, ObjectItemTransferData } from "./tables/ObjectItemTransfer.sol";
+import { InventoryItemTransfer, InventoryItemTransferData } from "./tables/InventoryItemTransfer.sol";
 import { EphemeralInvCapacity } from "./tables/EphemeralInvCapacity.sol";
 import { EphemeralInventory, EphemeralInventoryData } from "./tables/EphemeralInventory.sol";
 import { EphemeralInvItem, EphemeralInvItemData } from "./tables/EphemeralInvItem.sol";
 import { ObjectByEphemeral, ObjectByEphemeralData } from "./tables/ObjectByEphemeral.sol";
-import { ItemTransfer, ItemTransferData } from "./tables/ItemTransfer.sol";
+import { EphemeralItemTransfer, EphemeralItemTransferData } from "./tables/EphemeralItemTransfer.sol";
 import { SmartTurretConfig } from "./tables/SmartTurretConfig.sol";
 import { SmartGateConfig, SmartGateConfigData } from "./tables/SmartGateConfig.sol";
 import { SmartGateLink, SmartGateLinkData } from "./tables/SmartGateLink.sol";

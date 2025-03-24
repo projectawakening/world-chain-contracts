@@ -36,8 +36,8 @@ import {
   LocationData,
   ObjectByEphemeral,
   ObjectByEphemeralData,
-  ObjectItemTransfer,
-  ObjectItemTransferData
+  InventoryItemTransfer,
+  InventoryItemTransferData
 } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
@@ -329,11 +329,11 @@ contract EphemeralInteractTest is MudTest {
     assertEq(InventoryItem.getQuantity(inventoryObjectId2, item2ObjectId), 4); // 3+1=4
 
     // verify item transfer record is being populated (the last item to be transfered will be stored here)
-    ObjectItemTransferData memory objectItemTransferData = ObjectItemTransfer.get(inventoryObjectId, item2ObjectId);
-    assertEq(objectItemTransferData.previousOwner, alice);
-    assertEq(objectItemTransferData.currentOwner, bob);
-    assertEq(objectItemTransferData.quantity, 1);
-    assertEq(objectItemTransferData.updatedAt, block.timestamp);
+    InventoryItemTransferData memory inventoryItemTransferData = InventoryItemTransfer.get(inventoryObjectId, item2ObjectId);
+    assertEq(inventoryItemTransferData.previousOwner, alice);
+    assertEq(inventoryItemTransferData.currentOwner, bob);
+    assertEq(inventoryItemTransferData.quantity, 1);
+    assertEq(inventoryItemTransferData.updatedAt, block.timestamp);
   }
 
   function test_SetTransferToInventoryAccess() public {

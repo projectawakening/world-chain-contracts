@@ -7,7 +7,7 @@ import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/na
 import { HasRole, Role } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { ItemTransfer } from "../../codegen/tables/ItemTransfer.sol";
+import { EphemeralItemTransfer } from "../../codegen/tables/EphemeralItemTransfer.sol";
 
 // Local namespace systems
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
@@ -44,7 +44,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      ItemTransfer.set(smartObjectId, items[i].smartObjectId, ephemeralOwner, inventoryOwner, items[i].quantity, block.timestamp);
+      EphemeralItemTransfer.set(smartObjectId, items[i].smartObjectId, ephemeralOwner, inventoryOwner, items[i].quantity, block.timestamp);
     }
   }
 
@@ -69,7 +69,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      ItemTransfer.set(smartObjectId, items[i].smartObjectId, inventoryOwner, ephemeralOwner, items[i].quantity, block.timestamp);
+      EphemeralItemTransfer.set(smartObjectId, items[i].smartObjectId, inventoryOwner, ephemeralOwner, items[i].quantity, block.timestamp);
     }
   }
 
@@ -94,7 +94,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      ItemTransfer.set(smartObjectId, items[i].smartObjectId, fromEphemeralOwner, toEphemeralOwner, items[i].quantity, block.timestamp);
+      EphemeralItemTransfer.set(smartObjectId, items[i].smartObjectId, fromEphemeralOwner, toEphemeralOwner, items[i].quantity, block.timestamp);
     }
   }
 

@@ -40,8 +40,6 @@ import {
   LocationData,
   ObjectByEphemeral,
   ObjectByEphemeralData,
-  ObjectItemTransfer,
-  ObjectItemTransferData,
   SmartAssembly,
   SmartGateConfig,
   SmartGateConfigData,
