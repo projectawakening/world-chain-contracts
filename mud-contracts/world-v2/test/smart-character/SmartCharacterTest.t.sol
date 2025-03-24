@@ -46,7 +46,6 @@ import {
   EphemeralInvItem,
   ObjectByEphemeral,
   SmartAssembly,
-  SmartAssemblyData,
   Fuel,
   FuelData,
   Location,
@@ -72,33 +71,6 @@ import { SmartCharacterSystem, smartCharacterSystem } from "../../src/namespaces
 
 // Types and parameters
 import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-
-// // Create a mock system to properly test system-to-system calls
-// contract MockSmartCharacterInteractSystem is System {
-
-//   function callCreateCharacter(   
-//     uint256 smartObjectId,
-//     address owner,
-//     uint256 tribeId,
-//     EntityRecordParams memory entityRecordParams,
-//     EntityMetadataParams memory entityRecordMetadata
-//   ) public {
-//     smartCharacterSystem.createCharacter(smartObjectId, owner, tribeId, entityRecordParams, entityRecordMetadata);
-//   }
-
-//   function callUpdateTribe(
-//     uint256 smartObjectId,
-//     uint256 tribeId
-//   ) public {
-//     smartCharacterSystem.updateTribeId(smartObjectId, tribeId);
-//   }
-
-//   function callRemoveCharacter(
-//     uint256 smartObjectId
-//   ) public {
-//     smartCharacterSystem.removeCharacter(smartObjectId);
-//   }
-// }
 
 contract SmartCharacterTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
@@ -137,10 +109,6 @@ contract SmartCharacterTest is MudTest {
   address alice;
   address bob;
 
-  // // Mock system address
-  // MockSmartCharacterInteractSystem mockSystem;
-  // ResourceId mockSystemId;
-
   function setUp() public virtual override {
     vm.pauseGasMetering();
     super.setUp();
@@ -159,22 +127,6 @@ contract SmartCharacterTest is MudTest {
     
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
-    // // Create resource ID for the mock system using the proper format
-    // bytes14 namespace = bytes14("evefrontier");
-    // bytes16 name = bytes16("MockSmartCharact");
-    // mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
-    // // Deploy and register the mock system
-    // mockSystem = new MockSmartCharacterInteractSystem();
-    
-    // // Register the system with the world
-    // world.registerSystem(mockSystemId, mockSystem, true);
-
-    // ResourceId[] memory systemIds = new ResourceId[](3);
-    // systemIds[0] = smartCharacterSystem.toResourceId();
-    // systemIds[1] = entityRecordSystem.toResourceId();
-    // systemIds[2] = mockSystemId;
 
     smartCharacterClassId = _calculateObjectId(SMART_CHARACTER_TYPE_ID, 0, false);
     smartCharacterObjectId = _calculateObjectId(SMART_CHARACTER_TYPE_ID, SMART_CHARACTER_ITEM_ID, true);

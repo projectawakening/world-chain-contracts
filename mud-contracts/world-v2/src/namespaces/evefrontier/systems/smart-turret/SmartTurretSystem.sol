@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, SmartTurretConfig, Characters, Initialize } from "../../codegen/index.sol";
+import { DeployableState, SmartTurretConfig, Characters, CharactersByAccount, OwnershipByObject, Initialize } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -24,8 +24,6 @@ import { TargetPriority, Turret, SmartTurretTarget, AggressionParams } from "./t
 import { SMART_TURRET } from "../constants.sol";
 
 contract SmartTurretSystem is SmartObjectFramework {
-  error SmartTurret_NotConfigured(uint256 smartObjectId);
-
   /**
    * @notice Create and anchor a Smart Turret
    * @param params CreateAndAnchorDeployableParams
@@ -55,14 +53,12 @@ contract SmartTurretSystem is SmartObjectFramework {
   /**
    * @notice view function for turret logic based on proximity
    * @param smartObjectId is the is of the smart turret
-   * @param turretOwnerCharacterId is the character id of the owner of the smart turret
-   * @param priorityQueue is the queue of the SmartTurretTarget in proximity
+   * @param priorityQueue is the queue of existing SmartTurretTargets in proximity
    * @param turret is the Smart Turret object
-   * @param turretTarget is the player entering the zone
+   * @param turretTarget is the new SmartTurretTarget entering the zone
    */
   function inProximity(
     uint256 smartObjectId,
-    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -72,29 +68,30 @@ contract SmartTurretSystem is SmartObjectFramework {
       revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
     }
 
-    // Delegate the call to the implementation inProximity view function
+    // check if there is a configured implementation for the inProximity view function
     ResourceId systemId = SmartTurretConfig.get(smartObjectId);
 
     //If smart turret is not configured, then execute the default logic
     if (!ResourceIds.getExists(systemId)) {
-      //If the corp and the smart turret owner of the target turret are same, then the turret will not attack
-      uint256 smartTurretOwnerCorp = Characters.getTribeId(turretOwnerCharacterId);
-      uint256 turretTargetCorp = Characters.getTribeId(turretTarget.characterId);
-      if (smartTurretOwnerCorp != turretTargetCorp) {
+      // If the tribe of the smart turret owner and of the target are same, then the turret will not attack
+      address smartTurretOwner = OwnershipByObject.get(smartObjectId);
+      uint256 turretOwnerCharacterId = CharactersByAccount.getSmartObjectId(smartTurretOwner);
+      uint256 smartTurretOwnerTribe = Characters.getTribeId(turretOwnerCharacterId);
+      uint256 turretTargetTribe = Characters.getTribeId(turretTarget.characterId);
+      if (smartTurretOwnerTribe != turretTargetTribe) {
         updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
         for (uint256 i = 0; i < priorityQueue.length; i++) {
           updatedPriorityQueue[i] = priorityQueue[i];
         }
-
-        updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: turretTarget, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
+        updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: turretTarget, weight: 1 });
       } else {
-        //If the corp and the smart turret owner of the target turret are same, then do not add the target turret to the priority queue
+        // If the tribe of the smart turret owner and of the new target are same, then do not add the new target to the priority queue
         updatedPriorityQueue = priorityQueue;
       }
     } else {
       bytes memory returnData = getWorld().call(
         systemId,
-        abi.encodeCall(this.inProximity, (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, turretTarget))
+        abi.encodeCall(this.inProximity, (smartObjectId, priorityQueue, turret, turretTarget))
       );
 
       updatedPriorityQueue = abi.decode(returnData, (TargetPriority[]));
@@ -115,21 +112,23 @@ contract SmartTurretSystem is SmartObjectFramework {
       revert DeployableSystem.Deployable_IncorrectState(params.smartObjectId, currentState);
     }
 
-    // Delegate the call to the implementation aggression view function
+    // check if there is a configured implementation for the aggression view function
     ResourceId systemId = SmartTurretConfig.get(params.smartObjectId);
 
     if (!ResourceIds.getExists(systemId)) {
-      //If the corp of the smart turret owner of the aggressor are same, then the turret will not attack
-      uint256 turretOwnerCorp = Characters.getTribeId(params.turretOwnerCharacterId);
-      uint256 aggressorCorp = Characters.getTribeId(params.aggressor.characterId);
+      // If the tribe of the smart turret owner and of the aggressor are same, then the turret will not attack
+      address turretOwner = OwnershipByObject.get(params.smartObjectId);
+      uint256 turretOwnerCharacterId = CharactersByAccount.getSmartObjectId(turretOwner);
+      uint256 turretOwnerTribe = Characters.getTribeId(turretOwnerCharacterId);
+      uint256 aggressorTribe = Characters.getTribeId(params.aggressor.characterId);
 
-      if (turretOwnerCorp != aggressorCorp) {
+      if (turretOwnerTribe != aggressorTribe) {
         updatedPriorityQueue = new TargetPriority[](params.priorityQueue.length + 1);
         for (uint256 i = 0; i < params.priorityQueue.length; i++) {
           updatedPriorityQueue[i] = params.priorityQueue[i];
         }
 
-        updatedPriorityQueue[params.priorityQueue.length] = TargetPriority({ target: params.aggressor, weight: 1 }); //should the weight be 1? or the heighest of all weights in the array ?
+        updatedPriorityQueue[params.priorityQueue.length] = TargetPriority({ target: params.aggressor, weight: 1 });
       } else {
         updatedPriorityQueue = params.priorityQueue;
       }

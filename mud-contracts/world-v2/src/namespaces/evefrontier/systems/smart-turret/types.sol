@@ -23,7 +23,6 @@ struct Turret {
 
 struct AggressionParams {
   uint256 smartObjectId;
-  uint256 turretOwnerCharacterId;
   TargetPriority[] priorityQueue;
   Turret turret;
   SmartTurretTarget aggressor;

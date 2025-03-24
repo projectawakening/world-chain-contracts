@@ -580,6 +580,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for SmartGateSystem
   function configureSmartGateAccess() public {
+    // create and anchor gate - only admin supported
     accessConfigSystem.configureAccess(
       smartGateSystem.toResourceId(),
       SmartGateSystem.createAndAnchorGate.selector,
@@ -591,21 +592,32 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       SmartGateSystem.createAndAnchorGate.selector,
       true
     );
-
-    bytes4[3] memory smartGateOnlyOwnerSelectors = [
+    // configure gate - system supported or direct call by owner
+    accessConfigSystem.configureAccess(
+      smartGateSystem.toResourceId(),
       SmartGateSystem.configureGate.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.adminSupportOrDirectOwner.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      smartGateSystem.toResourceId(),
+      SmartGateSystem.configureGate.selector,
+      true
+    );
+    // link and unlink gates - admin supported or direct call by owner of both gates
+    bytes4[2] memory adminSupportedOrDirectOwnerGatesSelectors = [
       SmartGateSystem.linkGates.selector,
       SmartGateSystem.unlinkGates.selector
     ];
 
-    for (uint256 i = 0; i < smartGateOnlyOwnerSelectors.length; i++) {
+    for (uint256 i = 0; i < adminSupportedOrDirectOwnerGatesSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         smartGateSystem.toResourceId(),
-        smartGateOnlyOwnerSelectors[i],
+        adminSupportedOrDirectOwnerGatesSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerAccess.selector
+        AccessSystem.adminSupportOrDirectOwnerGates.selector
       );
-      accessConfigSystem.setAccessEnforcement(smartGateSystem.toResourceId(), smartGateOnlyOwnerSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(smartGateSystem.toResourceId(), adminSupportedOrDirectOwnerGatesSelectors[i], true);
     }
   }
 

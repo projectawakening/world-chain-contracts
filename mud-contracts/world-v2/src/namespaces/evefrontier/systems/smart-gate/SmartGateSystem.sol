@@ -29,7 +29,9 @@ contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
-
+  error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GateNotOnline(uint256 smartObjectId);
+  
   /**
    * @notice Create and anchor a Smart Gate
    * @param params CreateAndAnchorDeployableParams
@@ -57,7 +59,20 @@ contract SmartGateSystem is SmartObjectFramework {
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
-    if (isGateLinked(sourceGateId, destinationGateId)) {
+    
+    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
+    
+    if (sourceGateState == State.NULL || sourceGateState == State.DESTROYED) {
+      revert DeployableSystem.Deployable_IncorrectState(sourceGateId, sourceGateState);
+    }
+
+    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
+
+    if (destinationGateState == State.NULL || destinationGateState == State.DESTROYED) {
+      revert DeployableSystem.Deployable_IncorrectState(destinationGateId, destinationGateState);
+    }
+
+    if (isAnyGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateAlreadyLinked(sourceGateId, destinationGateId);
     }
 
@@ -65,12 +80,11 @@ contract SmartGateSystem is SmartObjectFramework {
       revert SmartGate_SameSourceAndDestination(sourceGateId, destinationGateId);
     }
 
-    //TODO: Check if the state is online for both the gates ??
     if (isWithinRange(sourceGateId, destinationGateId) == false) {
       revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
     }
 
-    //Create a 2 way link between the gates
+    // Create a 2 way link between the gates
     SmartGateLink.set(sourceGateId, destinationGateId, true);
     SmartGateLink.set(destinationGateId, sourceGateId, true);
   }
@@ -84,7 +98,7 @@ contract SmartGateSystem is SmartObjectFramework {
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
-    //Check if the gates are linked
+    // Check if the gates are linked
     if (!isGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }
@@ -101,6 +115,9 @@ contract SmartGateSystem is SmartObjectFramework {
     uint256 smartObjectId,
     ResourceId systemId
   ) public context access(smartObjectId) scope(smartObjectId) {
+    if (DeployableState.getCurrentState(smartObjectId) == State.NULL) {
+      revert DeployableSystem.Deployable_IncorrectState(smartObjectId, State.NULL);
+    }
     SmartGateConfig.setSystemId(smartObjectId, systemId);
   }
 
@@ -111,19 +128,17 @@ contract SmartGateSystem is SmartObjectFramework {
    * @param destinationGateId is the smartObjectId of the destination gate
    */
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
-    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
-
-    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
-
-    if (sourceGateState != State.ONLINE) {
-      revert DeployableSystem.Deployable_IncorrectState(sourceGateId, sourceGateState);
+    
+// Check if the gates are online
+    if (DeployableState.getCurrentState(sourceGateId) != State.ONLINE && DeployableState.getCurrentState(destinationGateId) != State.ONLINE) {
+      revert SmartGate_GatesNotOnline(sourceGateId, destinationGateId);
+    } else if (DeployableState.getCurrentState(sourceGateId) != State.ONLINE) {
+      revert SmartGate_GateNotOnline(sourceGateId);
+    } else if (DeployableState.getCurrentState(destinationGateId) != State.ONLINE) {
+      revert SmartGate_GateNotOnline(destinationGateId);
     }
 
-    if (destinationGateState != State.ONLINE) {
-      revert DeployableSystem.Deployable_IncorrectState(destinationGateId, destinationGateState);
-    }
-
-    //Check if the gates are linked
+    // Check if the gates are linked
     if (!isGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }
@@ -140,13 +155,45 @@ contract SmartGateSystem is SmartObjectFramework {
     return true;
   }
 
-  function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
-    SmartGateLinkData memory smartGateLinkData = SmartGateLink.get(sourceGateId);
-    bool isLinked = smartGateLinkData.isLinked && smartGateLinkData.destinationGateId == destinationGateId;
+  /**
+   * @notice view function to check if the gates are online
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if the gates are online
+   */
+  function areGatesOnline(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
+    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
 
-    return isLinked;
+    return sourceGateState == State.ONLINE && destinationGateState == State.ONLINE;
+  }
+  
+   /**
+   * @notice view function to check if the source gate is linked to the destination gate
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if the source gate is linked to the destination gate
+   */
+  function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    return SmartGateLink.getIsLinked(sourceGateId) && SmartGateLink.getDestinationGateId(sourceGateId) == destinationGateId;
   }
 
+  /**
+   * @notice view function to check if any gate is linked previously
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if any gate is linked previously
+   */
+  function isAnyGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    return (SmartGateLink.getIsLinked(sourceGateId) || SmartGateLink.getIsLinked(destinationGateId));
+  }
+
+  /**
+   * @notice view function to check if the source gate is within the range of the destination gate
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if the source gate is within the range of the destination gate
+   */
   function isWithinRange(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
     //Get the location of the source gate and destination gate
     LocationData memory sourceGateLocation = Location.get(sourceGateId);

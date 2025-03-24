@@ -16,22 +16,17 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct SmartAssemblyData {
-  uint256 assemblyId;
-  string assemblyType;
-}
-
 library SmartAssembly {
   // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "SmartAssembly", typeId: RESOURCE_TABLE });`
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000536d617274417373656d626c79000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0020010120000000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0000000100000000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, string)
-  Schema constant _valueSchema = Schema.wrap(0x002001011fc50000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (string)
+  Schema constant _valueSchema = Schema.wrap(0x00000001c5000000000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -47,9 +42,8 @@ library SmartAssembly {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
-    fieldNames[0] = "assemblyId";
-    fieldNames[1] = "assemblyType";
+    fieldNames = new string[](1);
+    fieldNames[0] = "assemblyType";
   }
 
   /**
@@ -67,48 +61,6 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get assemblyId.
-   */
-  function getAssemblyId(uint256 smartObjectId) internal view returns (uint256 assemblyId) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Get assemblyId.
-   */
-  function _getAssemblyId(uint256 smartObjectId) internal view returns (uint256 assemblyId) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
-    return (uint256(bytes32(_blob)));
-  }
-
-  /**
-   * @notice Set assemblyId.
-   */
-  function setAssemblyId(uint256 smartObjectId, uint256 assemblyId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((assemblyId)), _fieldLayout);
-  }
-
-  /**
-   * @notice Set assemblyId.
-   */
-  function _setAssemblyId(uint256 smartObjectId, uint256 assemblyId) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((assemblyId)), _fieldLayout);
-  }
-
-  /**
    * @notice Get assemblyType.
    */
   function getAssemblyType(uint256 smartObjectId) internal view returns (string memory assemblyType) {
@@ -123,6 +75,28 @@ library SmartAssembly {
    * @notice Get assemblyType.
    */
   function _getAssemblyType(uint256 smartObjectId) internal view returns (string memory assemblyType) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
+    return (string(_blob));
+  }
+
+  /**
+   * @notice Get assemblyType.
+   */
+  function get(uint256 smartObjectId) internal view returns (string memory assemblyType) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
+    return (string(_blob));
+  }
+
+  /**
+   * @notice Get assemblyType.
+   */
+  function _get(uint256 smartObjectId) internal view returns (string memory assemblyType) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -151,6 +125,26 @@ library SmartAssembly {
   }
 
   /**
+   * @notice Set assemblyType.
+   */
+  function set(uint256 smartObjectId, string memory assemblyType) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, bytes((assemblyType)));
+  }
+
+  /**
+   * @notice Set assemblyType.
+   */
+  function _set(uint256 smartObjectId, string memory assemblyType) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setDynamicField(_tableId, _keyTuple, 0, bytes((assemblyType)));
+  }
+
+  /**
    * @notice Get the length of assemblyType.
    */
   function lengthAssemblyType(uint256 smartObjectId) internal view returns (uint256) {
@@ -167,6 +161,32 @@ library SmartAssembly {
    * @notice Get the length of assemblyType.
    */
   function _lengthAssemblyType(uint256 smartObjectId) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
+    unchecked {
+      return _byteLength / 1;
+    }
+  }
+
+  /**
+   * @notice Get the length of assemblyType.
+   */
+  function length(uint256 smartObjectId) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
+    unchecked {
+      return _byteLength / 1;
+    }
+  }
+
+  /**
+   * @notice Get the length of assemblyType.
+   */
+  function _length(uint256 smartObjectId) internal view returns (uint256) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -205,6 +225,34 @@ library SmartAssembly {
   }
 
   /**
+   * @notice Get an item of assemblyType.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function getItem(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
+      return (string(_blob));
+    }
+  }
+
+  /**
+   * @notice Get an item of assemblyType.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function _getItem(uint256 smartObjectId, uint256 _index) internal view returns (string memory) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 1, (_index + 1) * 1);
+      return (string(_blob));
+    }
+  }
+
+  /**
    * @notice Push a slice to assemblyType.
    */
   function pushAssemblyType(uint256 smartObjectId, string memory _slice) internal {
@@ -225,6 +273,26 @@ library SmartAssembly {
   }
 
   /**
+   * @notice Push a slice to assemblyType.
+   */
+  function push(uint256 smartObjectId, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
+  }
+
+  /**
+   * @notice Push a slice to assemblyType.
+   */
+  function _push(uint256 smartObjectId, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, bytes((_slice)));
+  }
+
+  /**
    * @notice Pop a slice from assemblyType.
    */
   function popAssemblyType(uint256 smartObjectId) internal {
@@ -238,6 +306,26 @@ library SmartAssembly {
    * @notice Pop a slice from assemblyType.
    */
   function _popAssemblyType(uint256 smartObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 1);
+  }
+
+  /**
+   * @notice Pop a slice from assemblyType.
+   */
+  function pop(uint256 smartObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 1);
+  }
+
+  /**
+   * @notice Pop a slice from assemblyType.
+   */
+  function _pop(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -271,131 +359,29 @@ library SmartAssembly {
   }
 
   /**
-   * @notice Get the full data.
+   * @notice Update a slice of assemblyType at `_index`.
    */
-  function get(uint256 smartObjectId) internal view returns (SmartAssemblyData memory _table) {
+  function update(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
-      _tableId,
-      _keyTuple,
-      _fieldLayout
-    );
-    return decode(_staticData, _encodedLengths, _dynamicData);
-  }
-
-  /**
-   * @notice Get the full data.
-   */
-  function _get(uint256 smartObjectId) internal view returns (SmartAssemblyData memory _table) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
-      _tableId,
-      _keyTuple,
-      _fieldLayout
-    );
-    return decode(_staticData, _encodedLengths, _dynamicData);
-  }
-
-  /**
-   * @notice Set the full data using individual values.
-   */
-  function set(uint256 smartObjectId, uint256 assemblyId, string memory assemblyType) internal {
-    bytes memory _staticData = encodeStatic(assemblyId);
-
-    EncodedLengths _encodedLengths = encodeLengths(assemblyType);
-    bytes memory _dynamicData = encodeDynamic(assemblyType);
-
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
-  }
-
-  /**
-   * @notice Set the full data using individual values.
-   */
-  function _set(uint256 smartObjectId, uint256 assemblyId, string memory assemblyType) internal {
-    bytes memory _staticData = encodeStatic(assemblyId);
-
-    EncodedLengths _encodedLengths = encodeLengths(assemblyType);
-    bytes memory _dynamicData = encodeDynamic(assemblyType);
-
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
-  }
-
-  /**
-   * @notice Set the full data using the data struct.
-   */
-  function set(uint256 smartObjectId, SmartAssemblyData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.assemblyId);
-
-    EncodedLengths _encodedLengths = encodeLengths(_table.assemblyType);
-    bytes memory _dynamicData = encodeDynamic(_table.assemblyType);
-
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
-  }
-
-  /**
-   * @notice Set the full data using the data struct.
-   */
-  function _set(uint256 smartObjectId, SmartAssemblyData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.assemblyId);
-
-    EncodedLengths _encodedLengths = encodeLengths(_table.assemblyType);
-    bytes memory _dynamicData = encodeDynamic(_table.assemblyType);
-
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(smartObjectId));
-
-    StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
-  }
-
-  /**
-   * @notice Decode the tightly packed blob of static data using this table's field layout.
-   */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint256 assemblyId) {
-    assemblyId = (uint256(Bytes.getBytes32(_blob, 0)));
-  }
-
-  /**
-   * @notice Decode the tightly packed blob of dynamic data using the encoded lengths.
-   */
-  function decodeDynamic(
-    EncodedLengths _encodedLengths,
-    bytes memory _blob
-  ) internal pure returns (string memory assemblyType) {
-    uint256 _start;
-    uint256 _end;
     unchecked {
-      _end = _encodedLengths.atIndex(0);
+      bytes memory _encoded = bytes((_slice));
+      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
     }
-    assemblyType = (string(SliceLib.getSubslice(_blob, _start, _end).toBytes()));
   }
 
   /**
-   * @notice Decode the tightly packed blobs using this table's field layout.
-   * @param _staticData Tightly packed static fields.
-   * @param _encodedLengths Encoded lengths of dynamic fields.
-   * @param _dynamicData Tightly packed dynamic fields.
+   * @notice Update a slice of assemblyType at `_index`.
    */
-  function decode(
-    bytes memory _staticData,
-    EncodedLengths _encodedLengths,
-    bytes memory _dynamicData
-  ) internal pure returns (SmartAssemblyData memory _table) {
-    (_table.assemblyId) = decodeStatic(_staticData);
+  function _update(uint256 smartObjectId, uint256 _index, string memory _slice) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    (_table.assemblyType) = decodeDynamic(_encodedLengths, _dynamicData);
+    unchecked {
+      bytes memory _encoded = bytes((_slice));
+      StoreCore.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 1), uint40(_encoded.length), _encoded);
+    }
   }
 
   /**
@@ -416,14 +402,6 @@ library SmartAssembly {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
-  }
-
-  /**
-   * @notice Tightly pack static (fixed length) data using this table's schema.
-   * @return The static data, encoded into a sequence of bytes.
-   */
-  function encodeStatic(uint256 assemblyId) internal pure returns (bytes memory) {
-    return abi.encodePacked(assemblyId);
   }
 
   /**
@@ -451,12 +429,8 @@ library SmartAssembly {
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
-  function encode(
-    uint256 assemblyId,
-    string memory assemblyType
-  ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(assemblyId);
-
+  function encode(string memory assemblyType) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
+    bytes memory _staticData;
     EncodedLengths _encodedLengths = encodeLengths(assemblyType);
     bytes memory _dynamicData = encodeDynamic(assemblyType);
 

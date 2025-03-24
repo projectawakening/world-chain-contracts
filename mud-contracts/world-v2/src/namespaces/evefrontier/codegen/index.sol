@@ -9,7 +9,7 @@ import { OwnershipByObject } from "./tables/OwnershipByObject.sol";
 import { Tenant } from "./tables/Tenant.sol";
 import { EntityRecord, EntityRecordData } from "./tables/EntityRecord.sol";
 import { EntityRecordMetadata, EntityRecordMetadataData } from "./tables/EntityRecordMetadata.sol";
-import { SmartAssembly, SmartAssemblyData } from "./tables/SmartAssembly.sol";
+import { SmartAssembly } from "./tables/SmartAssembly.sol";
 import { Characters, CharactersData } from "./tables/Characters.sol";
 import { CharactersByAccount } from "./tables/CharactersByAccount.sol";
 import { Location, LocationData } from "./tables/Location.sol";

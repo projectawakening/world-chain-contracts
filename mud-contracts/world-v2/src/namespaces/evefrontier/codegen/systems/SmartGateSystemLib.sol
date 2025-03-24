@@ -42,6 +42,8 @@ library SmartGateSystemLib {
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GateNotOnline(uint256 smartObjectId);
 
   function createAndAnchorGate(
     SmartGateSystemType self,
@@ -72,12 +74,28 @@ library SmartGateSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).canJump(characterId, sourceGateId, destinationGateId);
   }
 
+  function areGatesOnline(
+    SmartGateSystemType self,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal view returns (bool) {
+    return CallWrapper(self.toResourceId(), address(0)).areGatesOnline(sourceGateId, destinationGateId);
+  }
+
   function isGateLinked(
     SmartGateSystemType self,
     uint256 sourceGateId,
     uint256 destinationGateId
   ) internal view returns (bool) {
     return CallWrapper(self.toResourceId(), address(0)).isGateLinked(sourceGateId, destinationGateId);
+  }
+
+  function isAnyGateLinked(
+    SmartGateSystemType self,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal view returns (bool) {
+    return CallWrapper(self.toResourceId(), address(0)).isAnyGateLinked(sourceGateId, destinationGateId);
   }
 
   function isWithinRange(
@@ -165,6 +183,28 @@ library SmartGateSystemLib {
     return abi.decode(result, (bool));
   }
 
+  function areGatesOnline(
+    CallWrapper memory self,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal view returns (bool) {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _areGatesOnline_uint256_uint256.areGatesOnline,
+      (sourceGateId, destinationGateId)
+    );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+
+    bytes memory result = abi.decode(returnData, (bytes));
+    return abi.decode(result, (bool));
+  }
+
   function isGateLinked(
     CallWrapper memory self,
     uint256 sourceGateId,
@@ -175,6 +215,28 @@ library SmartGateSystemLib {
 
     bytes memory systemCall = abi.encodeCall(
       _isGateLinked_uint256_uint256.isGateLinked,
+      (sourceGateId, destinationGateId)
+    );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+
+    bytes memory result = abi.decode(returnData, (bytes));
+    return abi.decode(result, (bool));
+  }
+
+  function isAnyGateLinked(
+    CallWrapper memory self,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal view returns (bool) {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _isAnyGateLinked_uint256_uint256.isAnyGateLinked,
       (sourceGateId, destinationGateId)
     );
     bytes memory worldCall = self.from == address(0)
@@ -272,6 +334,20 @@ library SmartGateSystemLib {
     return abi.decode(result, (bool));
   }
 
+  function areGatesOnline(
+    RootCallWrapper memory self,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal view returns (bool) {
+    bytes memory systemCall = abi.encodeCall(
+      _areGatesOnline_uint256_uint256.areGatesOnline,
+      (sourceGateId, destinationGateId)
+    );
+
+    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+    return abi.decode(result, (bool));
+  }
+
   function isGateLinked(
     RootCallWrapper memory self,
     uint256 sourceGateId,
@@ -279,6 +355,20 @@ library SmartGateSystemLib {
   ) internal view returns (bool) {
     bytes memory systemCall = abi.encodeCall(
       _isGateLinked_uint256_uint256.isGateLinked,
+      (sourceGateId, destinationGateId)
+    );
+
+    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+    return abi.decode(result, (bool));
+  }
+
+  function isAnyGateLinked(
+    RootCallWrapper memory self,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal view returns (bool) {
+    bytes memory systemCall = abi.encodeCall(
+      _isAnyGateLinked_uint256_uint256.isAnyGateLinked,
       (sourceGateId, destinationGateId)
     );
 
@@ -365,8 +455,16 @@ interface _canJump_uint256_uint256_uint256 {
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) external;
 }
 
+interface _areGatesOnline_uint256_uint256 {
+  function areGatesOnline(uint256 sourceGateId, uint256 destinationGateId) external;
+}
+
 interface _isGateLinked_uint256_uint256 {
   function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) external;
+}
+
+interface _isAnyGateLinked_uint256_uint256 {
+  function isAnyGateLinked(uint256 sourceGateId, uint256 destinationGateId) external;
 }
 
 interface _isWithinRange_uint256_uint256 {

@@ -38,7 +38,6 @@ import {
   EphemeralInvItem,
   ObjectByEphemeral,
   SmartAssembly,
-  SmartAssemblyData,
   Fuel,
   FuelData,
   Location,

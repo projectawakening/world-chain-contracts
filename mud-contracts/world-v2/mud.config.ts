@@ -93,7 +93,6 @@ export default defineWorld({
         SmartAssembly: {
           schema: {
             smartObjectId: "uint256",
-            assemblyId: "uint256",
             assemblyType: "string",
           },
           key: ["smartObjectId"],

@@ -42,7 +42,6 @@ import {
   EphemeralInvItem,
   ObjectByEphemeral,
   SmartAssembly,
-  SmartAssemblyData,
   Fuel,
   FuelData,
   Location,
@@ -60,6 +59,7 @@ import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/na
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+import { smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -122,6 +122,12 @@ contract DeployableTest is MudTest {
   uint256 constant SMART_OBJECT_ID = 1234;
   uint256 constant SMART_OBJECT_TYPE_ID = 1235;
 
+  uint256 smartGate1Id;
+  uint256 smartGate2Id;
+
+  uint256 constant GATE_1_ID = 1236;
+  uint256 constant GATE_2_ID = 1237;
+
   // Test addresses
   address deployer;
   address alice;
@@ -154,8 +160,11 @@ contract DeployableTest is MudTest {
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
     
-    // Setup smart object ID
+    // Setup smart object IDs
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
+
+    smartGate1Id = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), GATE_1_ID, true);
+    smartGate2Id = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), GATE_2_ID, true);
     
     // Register class and setup smart object state
     deployableObjectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
@@ -250,8 +259,7 @@ contract DeployableTest is MudTest {
     ));
     
     // Verify smart assembly was created correctly
-    SmartAssemblyData memory smartAssembly = SmartAssembly.get(smartObjectId);
-    assertEq(smartAssembly.assemblyType, expectedAssemblyType, "Assembly type should match");
+    assertEq(SmartAssembly.get(smartObjectId), expectedAssemblyType, "Assembly type should match");
     
     // Verify entity record was created
     EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
@@ -658,7 +666,7 @@ contract DeployableTest is MudTest {
   ) public {
     vm.assume(fuelUnitVolume < fuelMaxCapacity && fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
     vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1); 
-   vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+    vm.assume(fuelAmount > 1 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
     vm.assume(fuelMaxCapacity > fuelAmount * fuelUnitVolume && fuelMaxCapacity < type(uint256).max);
  
     // Test revert case: Attempt to bring online when state is not UNANCHORED
@@ -831,7 +839,7 @@ contract DeployableTest is MudTest {
   }
 
   function test_Inventory_interaction() public {
-    //add inventory to the class scope
+    // add inventory to the class scope
     TagParams memory inventoryTagParams = TagParams(
       TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId()))),
       abi.encode(
@@ -905,6 +913,82 @@ contract DeployableTest is MudTest {
     assertEq(Inventory.getVersion(smartObjectId), 3, "Inventory version should be 3");
     assertEq(Inventory.getUsedCapacity(smartObjectId), 0, "Inventory used capacity should be 0");
   }
+
+  function test_SmartGate_integration() public {
+    // create two deployable gates
+    vm.startPrank(alice, deployer);
+    smartGateSystem.createAndAnchorGate(CreateAndAnchorParams(
+      smartGate1Id,
+      "SG",
+      EntityRecordParams({
+        tenantId: tenantId,
+        typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+        itemId: GATE_1_ID,
+        volume: 1000
+      }),
+      alice,
+      10,
+      60,
+      100000000,
+      LocationData({
+        solarSystemId: 1,
+        x: 1,
+        y: 1,
+        z: 1
+      })),
+    100);
+
+    smartGateSystem.createAndAnchorGate(CreateAndAnchorParams(
+      smartGate2Id,
+      "SG",
+      EntityRecordParams({
+        tenantId: tenantId,
+        typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+        itemId: GATE_2_ID,
+        volume: 1000
+      }),
+      alice,
+      10,
+      60,
+      100000000,
+      LocationData({
+        solarSystemId: 1,
+        x: 2,
+        y: 2,
+        z: 2
+      })),
+    100);
+
+    // link the gates
+    smartGateSystem.linkGates(smartGate1Id, smartGate2Id);
+
+    // check if the gates are linked
+    assertEq(smartGateSystem.isGateLinked(smartGate1Id, smartGate2Id), true, "Gates should be linked");
+
+    // unanchor one of the gates
+    deployableSystem.unanchor(smartGate1Id);
+
+    // check if the gates are still linked
+    assertEq(smartGateSystem.isGateLinked(smartGate1Id, smartGate2Id), false, "Gates should not be linked");
+
+    // reanchor the gate
+    deployableSystem.anchor(smartGate1Id, alice, LocationData({solarSystemId: 1, x: 1, y: 1, z: 1}));
+
+    // re link the gates
+    smartGateSystem.linkGates(smartGate1Id, smartGate2Id);
+
+    // check if the gates are linked
+    assertEq(smartGateSystem.isGateLinked(smartGate1Id, smartGate2Id), true, "Gates should be linked");
+    vm.stopPrank();
+
+    // destroy the destination gate
+    vm.prank(deployer);
+    deployableSystem.destroyDeployable(smartGate2Id);
+
+    // check if the gates are linked
+    assertEq(smartGateSystem.isGateLinked(smartGate1Id, smartGate2Id), false, "Gates should not be linked");
+  }
+
 
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {

@@ -76,13 +76,10 @@ contract SmartAssemblySystem is SmartObjectFramework {
       revert SmartAssembly_TypeCannotBeEmpty(smartObjectId);
     }
 
-    uint256 assemblyEnumId = SmartAssembly.getAssemblyId(smartObjectId);
-    assemblyEnumId = assemblyEnumId + 1;
-
     if (
       keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))
     ) {
-      SmartAssembly.set(smartObjectId, assemblyEnumId, assemblyType);
+      SmartAssembly.set(smartObjectId, assemblyType);
     }
   }
 
@@ -101,7 +98,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
     ) {
       revert SmartAssembly_DoesNotExist(smartObjectId);
     }
-    uint256 assemblyEnumId = SmartAssembly.getAssemblyId(smartObjectId);
-    SmartAssembly.set(smartObjectId, assemblyEnumId, assemblyType);
+    
+    SmartAssembly.set(smartObjectId, assemblyType);
   }
 }

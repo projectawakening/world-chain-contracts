@@ -45,7 +45,8 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
- 
+  error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
+  error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
   
 
   function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -139,6 +140,32 @@ contract AccessSystem is SmartObjectFramework {
     }
 
     revert Access_NotAdminSupported(_callMsgSender(1), smartObjectId);
+  }
+
+  function adminSupportOrDirectOwner(uint256 smartObjectId, bytes memory data) public view {
+    if (isOwner(smartObjectId, _callMsgSender(1)) || isAdmin(tx.origin)) {
+      return;
+    }
+
+    revert Access_NotAdminSupportedOrDirectOwner(_callMsgSender(1), smartObjectId);
+  }
+
+  function adminSupportOrDirectOwnerGates(uint256 smartObjectId, bytes memory data) public view {
+    address caller = _callMsgSender(1);
+    if (isOwnerOfBothGates(_callMsgSender(1), data) && isAdmin(tx.origin)) {
+      return;
+    }
+
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    ResourceId callingSystemId = SystemRegistry.get(msgSender);
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    if (isClassScoped(classId, callingSystemId)) {
+      return;
+    }
+    caller = msgSender;
+
+    revert Access_NotAdminSupportedOrDirectOwnerGates(caller, smartObjectId);
   }
 
   function onlyAdminOrOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
@@ -392,6 +419,14 @@ contract AccessSystem is SmartObjectFramework {
       if (EntityTagMap.getHasTag(classId, systemTagId)) {
         return true;
       }
+    }
+    return false;
+  }
+
+  function isOwnerOfBothGates(address caller, bytes memory data) public view returns (bool) {
+    (uint256 sourceGateId, uint256 destinationGateId) = abi.decode(data, (uint256, uint256));
+    if (isOwner(sourceGateId, caller) && isOwner(destinationGateId, caller)) {
+      return true;
     }
     return false;
   }

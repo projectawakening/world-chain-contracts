@@ -44,7 +44,6 @@ import {
   EphemeralInvItem,
   ObjectByEphemeral,
   SmartAssembly,
-  SmartAssemblyData,
   Fuel,
   FuelData,
   Location,
@@ -206,10 +205,7 @@ contract SmartAssemblyTest is MudTest {
     assertEq(entityRecordData.itemId, 0);
     assertEq(entityRecordData.volume, 0);
 
-    SmartAssemblyData memory smartAssemblyData = SmartAssembly.get(smartObjectId);
-
-    assertEq(smartAssemblyData.assemblyId, 0);
-    assertEq(smartAssemblyData.assemblyType, "");
+    assertEq(SmartAssembly.get(smartObjectId), "");
     
     vm.startPrank(deployer);
     world.call(
@@ -228,10 +224,7 @@ contract SmartAssemblyTest is MudTest {
     assertEq(entityRecordData.itemId, SMART_OBJECT_ID);
     assertEq(entityRecordData.volume, 1000);
 
-    smartAssemblyData = SmartAssembly.get(smartObjectId);
-
-    assertEq(smartAssemblyData.assemblyId, 1);
-    assertEq(smartAssemblyData.assemblyType, "ASSEMBLY");
+    assertEq(SmartAssembly.get(smartObjectId), "ASSEMBLY");
   }
 
   function test_Deployable_interaction() public {
@@ -254,10 +247,7 @@ contract SmartAssemblyTest is MudTest {
     assertEq(entityRecordData.itemId, 0);
     assertEq(entityRecordData.volume, 0);
 
-    SmartAssemblyData memory smartAssemblyData = SmartAssembly.get(deployableSmartObjectId);
-
-    assertEq(smartAssemblyData.assemblyId, 0);
-    assertEq(smartAssemblyData.assemblyType, "");
+    assertEq(SmartAssembly.get(deployableSmartObjectId), "");
 
     vm.startPrank(alice, deployer);
     world.call(
@@ -276,10 +266,7 @@ contract SmartAssemblyTest is MudTest {
     assertEq(entityRecordData.itemId, DEPLOYABLE_OBJECT_ID);
     assertEq(entityRecordData.volume, 1000);
 
-    smartAssemblyData = SmartAssembly.get(deployableSmartObjectId);
-
-    assertEq(smartAssemblyData.assemblyId, 1);
-    assertEq(smartAssemblyData.assemblyType, "Deployable");
+    assertEq(SmartAssembly.get(deployableSmartObjectId), "Deployable");
   }
 
   // Helper function to setup item records
