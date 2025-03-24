@@ -9,27 +9,10 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IOwnershipSystem {
-  error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
-  error Ownership_ZeroQuantity(uint256 itemObjectId);
-  error Inventory_InsufficientQuantity(
-    uint256 inventoryObjectId,
-    uint256 itemObjectId,
-    uint256 providedQuantity,
-    uint256 availableQuantity
-  );
-  error EphemeralInventory_InsufficientQuantity(
-    uint256 inventoryObjectId,
-    address ephemeralOwner,
-    uint256 itemObjectId,
-    uint256 providedQuantity,
-    uint256 availableQuantity
-  );
   error Ownership_InvalidSingleton(uint256 smartObjectId);
   error Ownership_InvalidAccount(address account);
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
-  error Ownership_NonexistentItemRecord(uint256 itemObjectId);
   error Ownership_NonexistentObject(uint256 smartObjectId);
-  error Ownership_InvalidInventory(uint256 itemObjectId, uint256 inventoryObjectId);
   error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
 
   function evefrontier__owner(uint256 smartObjectId) external view returns (address);
@@ -38,15 +21,13 @@ interface IOwnershipSystem {
 
   function evefrontier__removeOwner(uint256 smartObjectId, address from) external;
 
-  function evefrontier__assignOwnerToInventory(
+  function evefrontier__getEphemeralOwner(
     uint256 inventoryObjectId,
-    uint256 itemObjectId,
-    uint256 quantity
-  ) external;
+    uint256 itemObjectId
+  ) external view returns (address);
 
-  function evefrontier__removeOwnerFromInventory(
+  function evefrontier__getInventoryOwner(
     uint256 inventoryObjectId,
-    uint256 itemObjectId,
-    uint256 quantity
-  ) external;
+    uint256 itemObjectId
+  ) external view returns (address);
 }

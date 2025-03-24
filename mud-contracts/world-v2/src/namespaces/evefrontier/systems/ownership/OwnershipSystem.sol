@@ -18,18 +18,18 @@ import {
   EphemeralInvItem
 } from "../../codegen/index.sol";
 
+
+/**
+ * @title OwnershipSystem
+ * @notice Core system for managing ownership of smart objects
+ * @dev Handles direct ownership assignment and removal
+ */
 contract OwnershipSystem is SmartObjectFramework {
   // Custom errors
-  error Ownership_InvalidQuantity(uint256 itemObjectId, uint256 providedQuantity, uint256 expectedQuantity);
-  error Ownership_ZeroQuantity(uint256 itemObjectId);
-  error Inventory_InsufficientQuantity(uint256 inventoryObjectId, uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
-  error EphemeralInventory_InsufficientQuantity(uint256 inventoryObjectId, address ephemeralOwner, uint256 itemObjectId, uint256 providedQuantity, uint256 availableQuantity);
   error Ownership_InvalidSingleton(uint256 smartObjectId);
   error Ownership_InvalidAccount(address account);
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
-  error Ownership_NonexistentItemRecord(uint256 itemObjectId);
   error Ownership_NonexistentObject(uint256 smartObjectId);
-  error Ownership_InvalidInventory(uint256 itemObjectId, uint256 inventoryObjectId);
   error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
 
   /**
@@ -44,24 +44,17 @@ contract OwnershipSystem is SmartObjectFramework {
       return directOwner;
     }
 
+    // Check inventory ownership
     uint256 inventoryObjectId = InventoryByItem.get(smartObjectId);
+    if (inventoryObjectId == 0) {
+      return address(0);
+    }
 
-    // Check if the inventoryObjectId is an ephemeral inventory object
-    uint256 currentVersion;
-    uint256 recordedVersion;
-    if (InventoryByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
-      InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
-      currentVersion = EphemeralInventory.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner);
-      recordedVersion = EphemeralInvItem.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, smartObjectId);
-      if (currentVersion == recordedVersion) {
-        return inventoryByEphemeralData.ephemeralOwner;
-      }
-    } else { // no, it is not an ephemeral inventory
-      currentVersion = Inventory.getVersion(inventoryObjectId);
-      recordedVersion = InventoryItem.getVersion(inventoryObjectId, smartObjectId);
-      if (currentVersion == recordedVersion) {
-        return OwnershipByObject.get(inventoryObjectId);
-      }
+    // Handle different inventory types
+    if (InventoryByEphemeral.getExists(inventoryObjectId)) {
+      return getEphemeralOwner(inventoryObjectId, smartObjectId);
+    } else {
+      return getInventoryOwner(inventoryObjectId, smartObjectId);
     }
 
     return address(0);
@@ -125,127 +118,48 @@ contract OwnershipSystem is SmartObjectFramework {
 
 
   /**
-   * @notice assign ownership of item(s) to an inventory associated with a specific smart object
-   * @param inventoryObjectId The smart object id associated with the destination inventory
-   * @param itemObjectId The smart object id of the item to assign
-   * @param quantity The quantity to assign
+   * @notice Get the owner of an ephemeral inventory
+   * @param inventoryObjectId The id of the inventory
+   * @param itemObjectId The id of the item
+   * @return The owner of the item
    */
-  function assignOwnerToInventory(
-    uint256 inventoryObjectId, 
-    uint256 itemObjectId,
-    uint256 quantity
-  ) public access(inventoryObjectId) {
-    // sanity checks
-    if (!EntityRecord.getExists(itemObjectId)) {
-      revert Ownership_NonexistentItemRecord(itemObjectId);
+  function getEphemeralOwner(uint256 inventoryObjectId, uint256 itemObjectId) public view returns (address) {
+    // Get the ephemeral inventory data
+    InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
+
+    uint256 currentVersion = EphemeralInventory.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner);    
+    uint256 recordedVersion = EphemeralInvItem.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId);
+
+    // If the current version is the same as the recorded version, return the ephemeral owner
+    if (currentVersion == recordedVersion) {
+      return inventoryByEphemeralData.ephemeralOwner;
     }
 
-    if (!(Entity.getExists(inventoryObjectId) || InventoryByEphemeral.getExists(inventoryObjectId))) {
-      revert Ownership_NonexistentObject(inventoryObjectId);
-    }
-    
-    if (_isSingleton(itemObjectId)) {
-      if (quantity != 1) {
-        revert Ownership_InvalidQuantity(itemObjectId, quantity, 1);
-      }
-      if (InventoryByItem.get(itemObjectId) != inventoryObjectId) {
-        InventoryByItem.set(itemObjectId, inventoryObjectId);
-      }
-    } else {
-      if (quantity == 0) {
-        revert Ownership_ZeroQuantity(itemObjectId);
-      }
-    }
-    uint256 existingItemQuantity;
-    uint256 currentVersion;
-    uint256 recordedVersion;
-    bool versionChanged;
-    if (InventoryByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
-      InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
-      existingItemQuantity = EphemeralInvItem.getQuantity(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId);
-      currentVersion = EphemeralInventory.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner);
-      recordedVersion = EphemeralInvItem.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId);
-      versionChanged = currentVersion > recordedVersion;
-      
-      // Update ephemeral inventory quantity for this item
-      EphemeralInvItem.setQuantity(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
-      if (versionChanged) { // if the version has changed, update the version
-        EphemeralInvItem.setVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId, currentVersion);
-      }
-
-    } else { // no, it is not an ephemeral inventory
-      existingItemQuantity = InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
-      currentVersion = Inventory.getVersion(inventoryObjectId);
-      recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
-      versionChanged = currentVersion > recordedVersion;
-
-      // Update inventory quantity for this item
-      InventoryItem.setQuantity(inventoryObjectId, itemObjectId, uint256(versionChanged ? quantity : existingItemQuantity + quantity));
-      if (versionChanged) { // if the version has changed, update the version
-        InventoryItem.setVersion(inventoryObjectId, itemObjectId, currentVersion);
-      }
-    }
+    return address(0);
   }
 
-  /**
-   * @notice remove ownership of item(s) from an inventory associated with a specific smart object.
-   * @param inventoryObjectId The smart object id associated with the source inventory
-   * @param itemObjectId The smart object id of the item to remove
-   * @param quantity The quantity to remove
+
+  /** 
+   * @notice Get the owner of a standard inventory
+   * @param inventoryObjectId The id of the inventory
+   * @param itemObjectId The id of the item
+   * @return The owner of the item
    */
-  function removeOwnerFromInventory(
-    uint256 inventoryObjectId,
-    uint256 itemObjectId,
-    uint256 quantity
-  ) public access(inventoryObjectId) {
-    // sanity checks
-    if (_isSingleton(itemObjectId)) {
-      if (InventoryByItem.get(itemObjectId) != inventoryObjectId) {
-        revert Ownership_InvalidInventory(itemObjectId, inventoryObjectId);
-      } else {
-        InventoryByItem.deleteRecord(itemObjectId);
-      }
-      if (quantity != 1) {
-        revert Ownership_InvalidQuantity(itemObjectId, quantity, 1);
-      }
-    } else {
-      if (quantity == 0) {
-        revert Ownership_ZeroQuantity(itemObjectId);
-      }
+  function getInventoryOwner(uint256 inventoryObjectId, uint256 itemObjectId) public view returns (address) {
+    // Get the ephemeral inventory data
+    InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
+
+    // Get the current version of the inventory
+    uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
+    uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
+
+    // If the current version is the same as the recorded version, return the owner of the inventory
+    if (currentVersion == recordedVersion) {
+      return OwnershipByObject.get(inventoryObjectId);
     }
 
-    if (InventoryByEphemeral.getExists(inventoryObjectId)) { // yes, it is an ephemeral inventory
-      InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
-      uint256 currentVersion = EphemeralInventory.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner);
-      uint256 recordedVersion = EphemeralInvItem.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId);
-      uint256 existingItemQuantity = currentVersion > recordedVersion ? 0: EphemeralInvItem.getQuantity(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId);
-
-      // safety check
-      if (existingItemQuantity < quantity) {
-        revert EphemeralInventory_InsufficientQuantity(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId, quantity, existingItemQuantity);
-      }
-
-      // Update inventory quantity for this item
-      EphemeralInvItem.setQuantity(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId, existingItemQuantity - quantity);
-
-    } else { // no, it is not an ephemeral inventory
-      uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
-      uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);
-      uint256 existingItemQuantity = currentVersion > recordedVersion ? 0: InventoryItem.getQuantity(inventoryObjectId, itemObjectId);
-
-      // safety check
-      if (existingItemQuantity < quantity) {
-        revert Inventory_InsufficientQuantity(inventoryObjectId, itemObjectId, quantity, existingItemQuantity);
-      }
-
-      // Update inventory quantity for this item
-      InventoryItem.setQuantity(inventoryObjectId, itemObjectId, existingItemQuantity - quantity);
-    }
-
-
-
-
-  }
+    return address(0);
+  }   
 
   /**
    * @notice Internal function to check if a smart object is a singleton

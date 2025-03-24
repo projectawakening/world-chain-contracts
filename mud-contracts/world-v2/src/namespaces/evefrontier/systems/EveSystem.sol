@@ -38,7 +38,10 @@ import { smartTurretSystem } from "../codegen/systems/SmartTurretSystemLib.sol";
 import { SmartGateSystem } from "./smart-gate/SmartGateSystem.sol";
 import { smartGateSystem } from "../codegen/systems/SmartGateSystemLib.sol";
 import { OwnershipSystem } from "./ownership/OwnershipSystem.sol";
+import { InventoryOwnershipSystem } from "./ownership/InventoryOwnershipSystem.sol";
 import { ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
+import { inventoryOwnershipSystem } from "../codegen/systems/InventoryOwnershipSystemLib.sol";
+
 import { Initialize } from "../codegen/index.sol";
 import { IEveSystem } from "../interfaces/IEveSystem.sol";
 import { EphemeralInteractSystem } from "./inventory/EphemeralInteractSystem.sol";
@@ -210,9 +213,9 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   function configureOwnershipAccess() public {
     bytes4[4] memory ownershipOnlyCallAccessWithScopeEnforcedSelectors = [
       OwnershipSystem.assignOwner.selector,
-      OwnershipSystem.assignOwnerToInventory.selector,
       OwnershipSystem.removeOwner.selector,
-      OwnershipSystem.removeOwnerFromInventory.selector
+      InventoryOwnershipSystem.assignOwnerToInventory.selector,
+      InventoryOwnershipSystem.removeOwnerFromInventory.selector
     ];
 
     for (uint256 i = 0; i < ownershipOnlyCallAccessWithScopeEnforcedSelectors.length; i++) {

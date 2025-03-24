@@ -22,6 +22,7 @@ import { eveSystem } from "../src/namespaces/evefrontier/codegen/systems/EveSyst
 import { InventorySystem, inventorySystem } from "../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { OwnershipSystem, ownershipSystem } from "../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../src/namespaces/evefrontier/codegen/systems/InventoryOwnershipSystemLib.sol";
 import { deployableSystem } from "../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { smartCharacterSystem } from "../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { inventoryInteractSystem } from "../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
@@ -123,8 +124,8 @@ contract Config is Script {
 
     // OwnershipSystem.sol
     bytes4[2] memory ownershipInventoryFunctionSelectors = [
-      OwnershipSystem.assignOwnerToInventory.selector,
-      OwnershipSystem.removeOwnerFromInventory.selector
+      InventoryOwnershipSystem.assignOwnerToInventory.selector,
+      InventoryOwnershipSystem.removeOwnerFromInventory.selector
     ];
     for (uint i = 0; i < ownershipInventoryFunctionSelectors.length; i++) {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], inventorySystem.getAddress(), true);
