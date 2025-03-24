@@ -228,27 +228,27 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for SmartCharacterSystem
   function configureSmartCharacterAccess() public {
-    bytes4[2] memory onlyDirectAdminSelectors = [
-      SmartCharacterSystem.updateTribeId.selector,
-      SmartCharacterSystem.removeCharacter.selector
+    bytes4[2] memory onlyAdminSupportedSelectors = [
+      SmartCharacterSystem.createCharacter.selector,
+      SmartCharacterSystem.updateTribeId.selector
     ];
 
-    for (uint256 i = 0; i < onlyDirectAdminSelectors.length; i++) {
+    for (uint256 i = 0; i < onlyAdminSupportedSelectors.length; i++) {
       accessConfigSystem.configureAccess(
         smartCharacterSystem.toResourceId(),
-        onlyDirectAdminSelectors[i],
+        onlyAdminSupportedSelectors[i],
         accessSystem.toResourceId(),
-        AccessSystem.onlyDirectAdminAccess.selector
+        AccessSystem.onlyAdminSupportedAccess.selector
       );
-      accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), onlyAdminSupportedSelectors[i], true);
     }
     accessConfigSystem.configureAccess(
       smartCharacterSystem.toResourceId(),
-      SmartCharacterSystem.createCharacter.selector,
+      SmartCharacterSystem.removeCharacter.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyAdminSupportedAccess.selector
+      AccessSystem.onlyDirectAdminAccess.selector
     );
-    accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), SmartCharacterSystem.createCharacter.selector, true);
+    accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), SmartCharacterSystem.removeCharacter.selector, true);
   
   }
 
