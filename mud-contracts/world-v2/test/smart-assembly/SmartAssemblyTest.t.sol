@@ -101,10 +101,12 @@ contract SmartAssemblyTest is MudTest {
   uint256 constant SMART_OBJECT_ID = 1234;
   uint256 constant DEPLOYABLE_OBJECT_ID = 1236;
 
-  CreateAndAnchorParams createAndAnchorParams;
+  EntityRecordParams entityRecordParams;
+
   EntityRecordParams deployableEntityRecordParams;
   LocationData locationDataParams;
-
+  CreateAndAnchorParams createAndAnchorParams;
+  
   // Test addresses
   address deployer;
   address alice;
@@ -115,158 +117,198 @@ contract SmartAssemblyTest is MudTest {
   ResourceId mockSystemId;
   TagParams mockTagParams;
 
-  // function setUp() public virtual override {
-  //   vm.pauseGasMetering();
-  //   super.setUp();
-  //   // Deploy a new World
-  //   worldAddress = vm.envAddress("WORLD_ADDRESS");
-  //   world = IWorldWithContext(worldAddress);
-  //   StoreSwitch.setStoreAddress(worldAddress);
+  function setUp() public virtual override {
+    vm.pauseGasMetering();
+    super.setUp();
+    // Deploy a new World
+    worldAddress = vm.envAddress("WORLD_ADDRESS");
+    world = IWorldWithContext(worldAddress);
+    StoreSwitch.setStoreAddress(worldAddress);
     
-  //   // Initialize addresses
-  //   string memory mnemonic = "test test test test test test test test test test test junk";
-  //   deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-  //   alice = vm.addr(vm.deriveKey(mnemonic, 2));
-  //   bob = vm.addr(vm.deriveKey(mnemonic, 3));
+    // Initialize addresses
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
+    alice = vm.addr(vm.deriveKey(mnemonic, 2));
+    bob = vm.addr(vm.deriveKey(mnemonic, 3));
     
-  //   vm.startPrank(deployer, deployer);
+    vm.startPrank(deployer, deployer);
 
-  //   // Mock smart character data for alice
-  //   CharactersByAccount.set(alice, 1);
+    // Mock smart character data for alice
+    CharactersByAccount.set(alice, 1);
     
-  //   // Setup tenant
-  //   tenantId = keccak256(abi.encodePacked("TEST"));
+    // Setup tenant
+    tenantId = keccak256(abi.encodePacked("TEST"));
     
-  //   // Setup smart object ID
-  //   smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
-  //   deployableSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, true);
-  //   // setup smart object class id
-  //   objectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
+    // Setup smart object ID
+    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
+    deployableSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, true);
+    // setup smart object class id
+    objectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
 
-  //   // Create resource ID for the mock system using the proper format
-  //   bytes14 namespace = bytes14("evefrontier");
-  //   bytes16 name = bytes16("MockSmartAssembl");
-  //   mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
+    // Create resource ID for the mock system using the proper format
+    bytes14 namespace = bytes14("evefrontier");
+    bytes16 name = bytes16("MockSmartAssembl");
+    mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
     
-  //   // Deploy and register the mock system
-  //   mockSystem = new MockSmartAssemblyInteractSystem();
+    // Deploy and register the mock system
+    mockSystem = new MockSmartAssemblyInteractSystem();
     
-  //   // Register the system with the world
-  //   world.registerSystem(mockSystemId, mockSystem, true);
+    // Register the system with the world
+    world.registerSystem(mockSystemId, mockSystem, true);
 
-  //   ResourceId[] memory systemIds = new ResourceId[](7);
-  //   systemIds[0] = deployableSystem.toResourceId();
-  //   systemIds[1] = smartAssemblySystem.toResourceId();
-  //   systemIds[2] = entityRecordSystem.toResourceId();
-  //   systemIds[3] = locationSystem.toResourceId();
-  //   systemIds[4] = fuelSystem.toResourceId();
-  //   systemIds[5] = ownershipSystem.toResourceId();
-  //   systemIds[6] = mockSystemId;
+    ResourceId[] memory systemIds = new ResourceId[](7);
+    systemIds[0] = deployableSystem.toResourceId();
+    systemIds[1] = smartAssemblySystem.toResourceId();
+    systemIds[2] = entityRecordSystem.toResourceId();
+    systemIds[3] = locationSystem.toResourceId();
+    systemIds[4] = fuelSystem.toResourceId();
+    systemIds[5] = ownershipSystem.toResourceId();
+    systemIds[6] = mockSystemId;
 
+    entitySystem.registerClass(objectClassId, systemIds); // tags the systems to this class for scoping
+    _setupEntityRecord(objectClassId, SMART_OBJECT_TYPE_ID, 0, 1000);
 
-  //   entitySystem.registerClass(objectClassId, systemIds); // tags the systems to this class for scoping
-  //   _setupEntityRecord(objectClassId, SMART_OBJECT_TYPE_ID, 0, 1000);
+    // instantiate the mock smart object
+    entitySystem.instantiate(objectClassId, smartObjectId, alice);
 
-  //   // instantiate the mock smart object
-  //   entitySystem.instantiate(objectClassId, smartObjectId, alice);
-  //   _setupEntityRecord(smartObjectId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
+    // instantiate the deployable smart object
+    entitySystem.instantiate(objectClassId, deployableSmartObjectId, alice);
 
-  //   // instantiate the deployable smart object
-  //   entitySystem.instantiate(objectClassId, deployableSmartObjectId, alice);
-
-  //   // set test parameters
-  //   locationDataParams = LocationData(1, 1001, 1002, 1003);
-
-  //   // deployable entity record params
-  //   deployableEntityRecordParams = EntityRecordParams(tenantId, SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, 1000);
-
-  //   // mock Deployable state UNANCHORED for raw location system testing
-  //   DeployableState.set(smartObjectId, block.timestamp, State.NULL, State.UNANCHORED, true, 0, block.number, block.timestamp);
-  //   vm.stopPrank();
-
-  //   vm.startPrank(alice, deployer);
-  //   // create and anchor deploybale for interaction testing
-  //   createAndAnchorParams = CreateAndAnchorParams(
-  //     deployableSmartObjectId,
-  //     "Deployable",
-  //     deployableEntityRecordParams,
-  //     alice,
-  //     10,
-  //     60,
-  //     100000000,
-  //     locationDataParams
-  //   );
-  //   vm.stopPrank();
-  // }
-
-  // function test_createSmartAssembly() public {
+    // set test parameters
+    // generic
+    entityRecordParams = EntityRecordParams(tenantId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 1000);
+    // deploable interaction specific
+    deployableEntityRecordParams = EntityRecordParams(tenantId, SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, 1000);
+    locationDataParams = LocationData(1, 1001, 1002, 1003);
+    createAndAnchorParams = CreateAndAnchorParams(
+      deployableSmartObjectId,
+      "Deployable",
+      deployableEntityRecordParams,
+      alice,
+      10,
+      60,
+      100000000,
+      locationDataParams
+    );
     
-  //   EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
 
-  //   assertEq(entityRecord.tenantId, tenantId);
-  //   assertEq(entityRecord.typeId, SMART_OBJECT_TYPE_ID);
-  //   assertEq(entityRecord.itemId, SMART_OBJECT_ID);
-  //   assertEq(entityRecord.owner, alice);
+    vm.stopPrank();
+  }
 
-  //   SmartAssemblyData memory smartAssemblyData = SmartAssembly.get(smartObjectId);
+  function test_createSmartAssembly() public {
 
-  //   assertEq(smartAssemblyData.assemblyId, 0);
-  //   assertEq(smartAssemblyData.assemblyType, "Deployable");
+    // sanity check reverts are being handled in the EntityRecordTest SmartAssembly interaction test
     
-  //   vm.startPrank(deployer);
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       mockSystem.callCreateSmartAssembly,
-  //       (smartObjectId, "Deployable", deployableEntityRecordParams)
-  //     )
-  //   );
-  //   vm.stopPrank();
+    EntityRecordData memory entityRecordData = EntityRecord.get(smartObjectId);
 
-  //   smartAssemblyData = SmartAssembly.get(smartObjectId);
+    assertEq(entityRecordData.tenantId, 0);
+    assertEq(entityRecordData.typeId, 0);
+    assertEq(entityRecordData.itemId, 0);
+    assertEq(entityRecordData.volume, 0);
 
-  //   assertEq(smartAssemblyData.assemblyId, 1);
-  //   assertEq(smartAssemblyData.assemblyType, "Deployable");
-  // }
+    SmartAssemblyData memory smartAssemblyData = SmartAssembly.get(smartObjectId);
 
-  // function test_deployable_interaction() public {
+    assertEq(smartAssemblyData.assemblyId, 0);
+    assertEq(smartAssemblyData.assemblyType, "");
+    
+    vm.startPrank(deployer);
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        mockSystem.callCreateSmartAssembly,
+        (smartObjectId, "ASSEMBLY", entityRecordParams) 
+      )
+    );
+    vm.stopPrank();
 
-  //   LocationData memory locationData = Location.get(deployableSmartObjectId);
-  //   assertEq(locationData.solarSystemId, 0);
-  //   assertEq(locationData.x, 0);
-  //   assertEq(locationData.y, 0);
-  //   assertEq(locationData.z, 0);
+    entityRecordData = EntityRecord.get(smartObjectId);
 
-  //   vm.startPrank(alice, deployer);
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       mockSystem.callCreateAndAnchor,
-  //       (createAndAnchorParams)
-  //     )
-  //   );
-  //   vm.stopPrank();
+    assertEq(entityRecordData.tenantId, tenantId);
+    assertEq(entityRecordData.typeId, SMART_OBJECT_TYPE_ID);
+    assertEq(entityRecordData.itemId, SMART_OBJECT_ID);
+    assertEq(entityRecordData.volume, 1000);
 
-  //   locationData = Location.get(deployableSmartObjectId);
-  //   assertEq(locationData.solarSystemId, locationDataParams.solarSystemId);
-  //   assertEq(locationData.x, locationDataParams.x);
-  //   assertEq(locationData.y, locationDataParams.y);
-  //   assertEq(locationData.z, locationDataParams.z);
+    smartAssemblyData = SmartAssembly.get(smartObjectId);
 
-  //   vm.startPrank(alice, deployer);
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       mockSystem.callUnanchor,
-  //       (deployableSmartObjectId)
-  //     )
-  //   );
-  //   vm.stopPrank();
+    assertEq(smartAssemblyData.assemblyId, 1);
+    assertEq(smartAssemblyData.assemblyType, "ASSEMBLY");
+  }
 
-  //   locationData = Location.get(deployableSmartObjectId);
-  //   assertEq(locationData.solarSystemId, 0);
-  //   assertEq(locationData.x, 0);
-  //   assertEq(locationData.y, 0);
-  //   assertEq(locationData.z, 0);
-  // }
+  function test_Deployable_interaction() public {
+    // to test that smart assembly data is tracked independently pre smart object currently let's call createAssembly for our defualt object first
+    vm.startPrank(deployer);
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        mockSystem.callCreateSmartAssembly,
+        (smartObjectId, "ASSEMBLY", entityRecordParams) 
+      )
+    );
+    vm.stopPrank();
+
+    // check data for our deployable smart object (not the generic smart object)
+    EntityRecordData memory entityRecordData = EntityRecord.get(deployableSmartObjectId);
+
+    assertEq(entityRecordData.tenantId, 0);
+    assertEq(entityRecordData.typeId, 0);
+    assertEq(entityRecordData.itemId, 0);
+    assertEq(entityRecordData.volume, 0);
+
+    SmartAssemblyData memory smartAssemblyData = SmartAssembly.get(deployableSmartObjectId);
+
+    assertEq(smartAssemblyData.assemblyId, 0);
+    assertEq(smartAssemblyData.assemblyType, "");
+
+    vm.startPrank(alice, deployer);
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        mockSystem.callCreateAndAnchor,
+        (createAndAnchorParams)
+      )
+    );
+    vm.stopPrank();
+
+    entityRecordData = EntityRecord.get(deployableSmartObjectId);
+
+    assertEq(entityRecordData.tenantId, tenantId);
+    assertEq(entityRecordData.typeId, SMART_OBJECT_TYPE_ID);
+    assertEq(entityRecordData.itemId, DEPLOYABLE_OBJECT_ID);
+    assertEq(entityRecordData.volume, 1000);
+
+    smartAssemblyData = SmartAssembly.get(deployableSmartObjectId);
+
+    assertEq(smartAssemblyData.assemblyId, 1);
+    assertEq(smartAssemblyData.assemblyType, "Deployable");
+  }
+
+  // Helper function to setup item records
+  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
+    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+    
+    if (itemId != 0) { // For singleton items
+      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
+
+      if (!EntityRecord.getExists(classId)) {
+        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
+      }
+    } else { // For non-singleton items
+      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
+    }
+    
+    if (!Entity.getExists(classId)) {
+      entitySystem.registerClass(classId, new ResourceId[](0));
+    }
+  }
+
+  // Helper function to calculate itemObjectId
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
+    if (isSingleton) {
+      // For singleton items: hash of tenantId and itemId
+      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
+    } else {
+      // For non-singleton items: hash of typeId
+      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+    }
+  }
 }
