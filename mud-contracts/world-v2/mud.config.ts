@@ -56,7 +56,7 @@ export default defineWorld({
         Tenant: {
           schema: {
             tenantId: "bytes32",
-          }, 
+          },
           key: [],
         },
         /**

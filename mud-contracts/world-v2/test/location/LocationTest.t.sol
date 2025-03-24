@@ -12,7 +12,6 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
@@ -23,35 +22,7 @@ import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol
 import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord, 
-  EntityRecordData,
-  EntityRecordMetadata,
-  EntityRecordMetadataData,
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  EphemeralInventory,
-  EphemeralInvItem,
-  ObjectByEphemeral,
-  SmartAssembly,
-  Fuel,
-  FuelData,
-  Location,
-  LocationData,
-  ObjectByEphemeral,
-  InventoryByItem,
-  OwnershipByObject
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData, ObjectByEphemeral, InventoryByItem, OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -75,7 +46,6 @@ import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/
 
 // Create a mock system to properly test system-to-system calls
 contract MockLocationInteractSystem is System {
-
   function callSaveLocation(uint256 smartObjectId, LocationData memory location) public {
     locationSystem.saveLocation(smartObjectId, location);
   }
@@ -83,8 +53,8 @@ contract MockLocationInteractSystem is System {
   function callCreateAndAnchor(CreateAndAnchorParams memory params) public {
     deployableSystem.createAndAnchor(params);
   }
-  
-  function callAnchor(uint256 smartObjectId,address owner, LocationData memory location) public {
+
+  function callAnchor(uint256 smartObjectId, address owner, LocationData memory location) public {
     deployableSystem.anchor(smartObjectId, owner, location);
   }
 
@@ -129,21 +99,21 @@ contract LocationTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
     alice = vm.addr(vm.deriveKey(mnemonic, 2));
     bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    
+
     vm.startPrank(deployer, deployer);
 
     // Mock smart character data for alice
     CharactersByAccount.set(alice, 1);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
+
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
     deployableSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, true);
@@ -154,10 +124,10 @@ contract LocationTest is MudTest {
     bytes14 namespace = bytes14("evefrontier");
     bytes16 name = bytes16("MockLocationInte");
     mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
+
     // Deploy and register the mock system
     mockSystem = new MockLocationInteractSystem();
-    
+
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
@@ -169,7 +139,6 @@ contract LocationTest is MudTest {
     systemIds[4] = fuelSystem.toResourceId();
     systemIds[5] = ownershipSystem.toResourceId();
     systemIds[6] = mockSystemId;
-
 
     entitySystem.registerClass(objectClassId, systemIds); // tags the system to this class for scoping
     _setupEntityRecord(objectClassId, SMART_OBJECT_TYPE_ID, 0, 1000);
@@ -184,7 +153,16 @@ contract LocationTest is MudTest {
     locationDataParams = LocationData(1, 1001, 1002, 1003);
 
     // mock Deployable state UNANCHORED for raw location system testing
-    DeployableState.set(smartObjectId, block.timestamp, State.NULL, State.UNANCHORED, true, 0, block.number, block.timestamp);
+    DeployableState.set(
+      smartObjectId,
+      block.timestamp,
+      State.NULL,
+      State.UNANCHORED,
+      true,
+      0,
+      block.number,
+      block.timestamp
+    );
     vm.stopPrank();
 
     vm.startPrank(alice, deployer);
@@ -203,22 +181,15 @@ contract LocationTest is MudTest {
   }
 
   function test_saveLocation() public {
-    
     LocationData memory locationData = Location.get(smartObjectId);
 
     assertEq(locationData.solarSystemId, 0);
     assertEq(locationData.x, 0);
     assertEq(locationData.y, 0);
     assertEq(locationData.z, 0);
-    
+
     vm.startPrank(deployer);
-    world.call(
-      mockSystemId,
-      abi.encodeCall(
-        mockSystem.callSaveLocation,
-        (smartObjectId, locationDataParams)
-      )
-    );
+    world.call(mockSystemId, abi.encodeCall(mockSystem.callSaveLocation, (smartObjectId, locationDataParams)));
     vm.stopPrank();
 
     locationData = Location.get(smartObjectId);
@@ -230,7 +201,6 @@ contract LocationTest is MudTest {
   }
 
   function test_deployable_interaction() public {
-
     LocationData memory locationData = Location.get(deployableSmartObjectId);
     assertEq(locationData.solarSystemId, 0);
     assertEq(locationData.x, 0);
@@ -238,13 +208,7 @@ contract LocationTest is MudTest {
     assertEq(locationData.z, 0);
 
     vm.startPrank(alice, deployer);
-    world.call(
-      mockSystemId,
-      abi.encodeCall(
-        mockSystem.callCreateAndAnchor,
-        (createAndAnchorParams)
-      )
-    );
+    world.call(mockSystemId, abi.encodeCall(mockSystem.callCreateAndAnchor, (createAndAnchorParams)));
     vm.stopPrank();
 
     locationData = Location.get(deployableSmartObjectId);
@@ -254,13 +218,7 @@ contract LocationTest is MudTest {
     assertEq(locationData.z, locationDataParams.z);
 
     vm.startPrank(alice, deployer);
-    world.call(
-      mockSystemId,
-      abi.encodeCall(
-        mockSystem.callUnanchor,
-        (deployableSmartObjectId)
-      )
-    );
+    world.call(mockSystemId, abi.encodeCall(mockSystem.callUnanchor, (deployableSmartObjectId)));
     vm.stopPrank();
 
     locationData = Location.get(deployableSmartObjectId);
@@ -273,17 +231,19 @@ contract LocationTest is MudTest {
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    
-    if (itemId != 0) { // For singleton items
+
+    if (itemId != 0) {
+      // For singleton items
       EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
         EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
-    } else { // For non-singleton items
+    } else {
+      // For non-singleton items
       EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
-    
+
     if (!Entity.getExists(classId)) {
       entitySystem.registerClass(classId, new ResourceId[](0));
     }

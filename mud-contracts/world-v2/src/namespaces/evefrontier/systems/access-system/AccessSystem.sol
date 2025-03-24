@@ -47,7 +47,6 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
-  
 
   function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
@@ -65,14 +64,17 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotDirectOwnerOrCanTransferToEphemeral(caller, smartObjectId);
   }
 
-  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+    uint256 smartObjectId,
+    bytes memory data
+  ) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     address caller = _callMsgSender(1);
     (, address fromEphemeralOwner, , ) = abi.decode(data, (uint256, address, address, bytes));
     if (callCount == 1 && caller == fromEphemeralOwner) {
       return;
     }
-    
+
     if (canCrossTransferToEphemeral(smartObjectId, _callMsgSender())) {
       return;
     } else {
@@ -159,7 +161,9 @@ contract AccessSystem is SmartObjectFramework {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
     if (isClassScoped(classId, callingSystemId)) {
       return;
     }
@@ -180,12 +184,17 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(uint256 smartObjectId, bytes memory data) public view {
+  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
+    uint256 smartObjectId,
+    bytes memory data
+  ) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     address caller = msgSender;
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
     if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
       return;
     }
@@ -206,9 +215,10 @@ contract AccessSystem is SmartObjectFramework {
   }
 
   function onlyCallAccess(uint256 smartObjectId, bytes memory data) public view {
-
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     if (callCount > 1 && CallAccess.get(systemId, functionId, msgSender)) {
       return;
     }
@@ -239,7 +249,9 @@ contract AccessSystem is SmartObjectFramework {
       return;
     }
 
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     if (CallAccess.get(systemId, functionId, msgSender)) {
       return;
     } else {
@@ -249,14 +261,19 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotEphemeralOwnerOrCallAccess(caller, smartObjectId);
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(uint256 smartObjectId, bytes memory data) public view {
+  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
+    uint256 smartObjectId,
+    bytes memory data
+  ) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     address caller = _callMsgSender(1);
     if (callCount == 1 && isEphemeralOwner(smartObjectId, caller, data) && isAdmin(tx.origin)) {
       return;
     }
 
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     if (CallAccess.get(systemId, functionId, msgSender) && isEphemeralOwner(smartObjectId, caller, data)) {
       return;
     } else {
@@ -272,7 +289,9 @@ contract AccessSystem is SmartObjectFramework {
       return;
     }
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     if (CallAccess.get(systemId, functionId, msgSender)) {
       return;
     } else {
@@ -283,7 +302,9 @@ contract AccessSystem is SmartObjectFramework {
 
   function onlyCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     uint256 associatedObject = ObjectByEphemeral.getSmartObjectId(smartObjectId);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
     if (associatedObject == 0) {
@@ -302,7 +323,9 @@ contract AccessSystem is SmartObjectFramework {
   function onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) public view {
     uint256 associatedObject = ObjectByEphemeral.getSmartObjectId(smartObjectId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
     if (associatedObject == 0) {
       _scope(smartObjectId, callingSystemId);
@@ -331,7 +354,9 @@ contract AccessSystem is SmartObjectFramework {
       return;
     }
 
-    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
+    (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
+      callCount
+    );
     if (CallAccess.get(systemId, functionId, msgSender)) {
       return;
     } else {
@@ -353,7 +378,9 @@ contract AccessSystem is SmartObjectFramework {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (ResourceId systemId, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
     if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
       return;
     }
@@ -365,7 +392,9 @@ contract AccessSystem is SmartObjectFramework {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
     if (callCount > 1 && isClassScoped(classId, callingSystemId)) {
       return;
     }
@@ -401,13 +430,15 @@ contract AccessSystem is SmartObjectFramework {
       IWorldWithContext(_world()).callStatic(
         ownershipSystem.toResourceId(),
         abi.encodeWithSelector(OwnershipSystem.owner.selector, smartObjectId)
-      ), (address));
+      ),
+      (address)
+    );
     return caller == owner;
   }
 
   function isEphemeralOwner(uint256 smartObjectId, address caller, bytes memory data) public view returns (bool) {
     (, address ephemeralOwner, ) = abi.decode(data, (uint256, address, bytes));
-    if ( caller == ephemeralOwner) {
+    if (caller == ephemeralOwner) {
       return true;
     }
     return false;

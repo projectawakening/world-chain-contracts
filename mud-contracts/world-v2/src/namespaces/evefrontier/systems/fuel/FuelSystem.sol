@@ -5,13 +5,7 @@ pragma solidity >=0.8.24;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 // Local namespace tables
-import { 
-  Fuel, 
-  FuelData,
-  DeployableState, 
-  GlobalDeployableState, 
-  GlobalDeployableStateData 
-} from "../../codegen/index.sol";
+import { Fuel, FuelData, DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
 
 // Types and parameters
 import { State } from "../../../../codegen/common.sol";
@@ -24,10 +18,20 @@ import { ONE_UNIT_IN_WEI } from "./../constants.sol";
  */
 contract FuelSystem is SmartObjectFramework {
   error Fuel_InvalidFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume, uint256 min, uint256 max);
-  error Fuel_InvalidFuelConsumptionInterval(uint256 smartObjectId, uint256 fuelConsumptionIntervalInSeconds, uint256 min, uint256 max);
+  error Fuel_InvalidFuelConsumptionInterval(
+    uint256 smartObjectId,
+    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 min,
+    uint256 max
+  );
   error Fuel_InvalidFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity, uint256 min, uint256 max);
   error Fuel_InvalidFuelAmount(uint256 smartObjectId, uint256 fuelAmount, uint256 min, uint256 max);
-  error Fuel_ExceedsMaxCapacity(uint256 smartObjectId, uint256 fuelAmount, uint256 totalProjectedCapacity, uint256 maxCapacity);
+  error Fuel_ExceedsMaxCapacity(
+    uint256 smartObjectId,
+    uint256 fuelAmount,
+    uint256 totalProjectedCapacity,
+    uint256 maxCapacity
+  );
   error Fuel_InsufficientFuel(uint256 smartObjectId, uint256 fuelAmount, uint256 availableFuel);
 
   /**
@@ -49,14 +53,26 @@ contract FuelSystem is SmartObjectFramework {
     if (fuelUnitVolume == 0 || fuelUnitVolume > uint256(type(uint128).max)) {
       revert Fuel_InvalidFuelUnitVolume(smartObjectId, fuelUnitVolume, 1, uint256(type(uint128).max));
     }
-    if (fuelConsumptionIntervalInSeconds <= 1 || fuelConsumptionIntervalInSeconds > (type(uint256).max / ONE_UNIT_IN_WEI)) {
-      revert Fuel_InvalidFuelConsumptionInterval(smartObjectId, fuelConsumptionIntervalInSeconds, 1, (type(uint256).max / ONE_UNIT_IN_WEI));
+    if (
+      fuelConsumptionIntervalInSeconds <= 1 || fuelConsumptionIntervalInSeconds > (type(uint256).max / ONE_UNIT_IN_WEI)
+    ) {
+      revert Fuel_InvalidFuelConsumptionInterval(
+        smartObjectId,
+        fuelConsumptionIntervalInSeconds,
+        1,
+        (type(uint256).max / ONE_UNIT_IN_WEI)
+      );
     }
     if (fuelAmount > uint256(type(uint128).max) / ONE_UNIT_IN_WEI) {
       revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 0, uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
     }
     if (fuelMaxCapacity < fuelAmount * fuelUnitVolume || fuelMaxCapacity <= fuelUnitVolume) {
-      revert Fuel_InvalidFuelMaxCapacity(smartObjectId, fuelMaxCapacity, fuelAmount == 0 ? fuelUnitVolume + 1 : fuelAmount * fuelUnitVolume, uint256(type(uint256).max));
+      revert Fuel_InvalidFuelMaxCapacity(
+        smartObjectId,
+        fuelMaxCapacity,
+        fuelAmount == 0 ? fuelUnitVolume + 1 : fuelAmount * fuelUnitVolume,
+        uint256(type(uint256).max)
+      );
     }
 
     Fuel.set(
@@ -81,9 +97,13 @@ contract FuelSystem is SmartObjectFramework {
     // max settable fuel unit volume is current maxCapacity / current fuel amount, must increase the max capacity or decrease the fuel amount for higher values
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     if (fuelUnitVolume == 0 || fuelUnitVolume * currentFuelAmount > Fuel.getFuelMaxCapacity(smartObjectId)) {
-      
       if (currentFuelAmount != 0) {
-        revert Fuel_InvalidFuelUnitVolume(smartObjectId, fuelUnitVolume, 1, Fuel.getFuelMaxCapacity(smartObjectId) / currentFuelAmount);
+        revert Fuel_InvalidFuelUnitVolume(
+          smartObjectId,
+          fuelUnitVolume,
+          1,
+          Fuel.getFuelMaxCapacity(smartObjectId) / currentFuelAmount
+        );
       } else {
         revert Fuel_InvalidFuelUnitVolume(smartObjectId, fuelUnitVolume, 1, Fuel.getFuelMaxCapacity(smartObjectId));
       }
@@ -107,8 +127,15 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelConsumptionIntervalInSeconds
   ) public context access(smartObjectId) scope(smartObjectId) {
     // consistent range enforcement
-    if (fuelConsumptionIntervalInSeconds <= 1 || fuelConsumptionIntervalInSeconds > (type(uint256).max / ONE_UNIT_IN_WEI)) {
-      revert Fuel_InvalidFuelConsumptionInterval(smartObjectId, fuelConsumptionIntervalInSeconds, 1, (type(uint256).max / ONE_UNIT_IN_WEI));
+    if (
+      fuelConsumptionIntervalInSeconds <= 1 || fuelConsumptionIntervalInSeconds > (type(uint256).max / ONE_UNIT_IN_WEI)
+    ) {
+      revert Fuel_InvalidFuelConsumptionInterval(
+        smartObjectId,
+        fuelConsumptionIntervalInSeconds,
+        1,
+        (type(uint256).max / ONE_UNIT_IN_WEI)
+      );
     }
     Fuel.setFuelConsumptionIntervalInSeconds(smartObjectId, fuelConsumptionIntervalInSeconds);
   }
@@ -144,10 +171,24 @@ contract FuelSystem is SmartObjectFramework {
     // fuelAmountInWei is fine grained value setting in the base of (fuelAmount * ONE_UNIT_IN_WEI)
     // max settable fuel amount is the minimum of our two restrictions
     if ((fuelAmountInWei / ONE_UNIT_IN_WEI) * currentVolume > currentMaxCapacity) {
-      revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmountInWei, 0, (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume > uint256(type(uint128).max) ? uint256(type(uint128).max) : (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume);
+      revert Fuel_InvalidFuelAmount(
+        smartObjectId,
+        fuelAmountInWei,
+        0,
+        (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume > uint256(type(uint128).max)
+          ? uint256(type(uint128).max)
+          : (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume
+      );
     }
     if (fuelAmountInWei > uint256(type(uint128).max)) {
-      revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmountInWei, 0, (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume > uint256(type(uint128).max) ? uint256(type(uint128).max) : (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume);
+      revert Fuel_InvalidFuelAmount(
+        smartObjectId,
+        fuelAmountInWei,
+        0,
+        (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume > uint256(type(uint128).max)
+          ? uint256(type(uint128).max)
+          : (currentMaxCapacity * ONE_UNIT_IN_WEI) / currentVolume
+      );
     }
 
     _updateFuel(smartObjectId);
@@ -168,20 +209,24 @@ contract FuelSystem is SmartObjectFramework {
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 currentVolume = Fuel.getFuelUnitVolume(smartObjectId);
     uint256 currentMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
-    
-    if (((fuelAmount * ONE_UNIT_IN_WEI) + currentFuelAmount) * currentVolume / ONE_UNIT_IN_WEI > currentMaxCapacity) {
-      revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 1, (currentMaxCapacity / currentVolume) - currentFuelAmount / ONE_UNIT_IN_WEI > uint256(type(uint128).max) / ONE_UNIT_IN_WEI ? uint256(type(uint128).max) / ONE_UNIT_IN_WEI : (currentMaxCapacity / currentVolume) - currentFuelAmount / ONE_UNIT_IN_WEI);
-    }
-    
-    uint256 totalProjectedCapacity = ((currentFuelAmount + (fuelAmount * ONE_UNIT_IN_WEI)) * currentVolume) / ONE_UNIT_IN_WEI;
 
-    if (totalProjectedCapacity > currentMaxCapacity) {
-      revert Fuel_ExceedsMaxCapacity(
+    if ((((fuelAmount * ONE_UNIT_IN_WEI) + currentFuelAmount) * currentVolume) / ONE_UNIT_IN_WEI > currentMaxCapacity) {
+      revert Fuel_InvalidFuelAmount(
         smartObjectId,
         fuelAmount,
-        totalProjectedCapacity,
-        currentMaxCapacity
+        1,
+        (currentMaxCapacity / currentVolume) - currentFuelAmount / ONE_UNIT_IN_WEI >
+          uint256(type(uint128).max) / ONE_UNIT_IN_WEI
+          ? uint256(type(uint128).max) / ONE_UNIT_IN_WEI
+          : (currentMaxCapacity / currentVolume) - currentFuelAmount / ONE_UNIT_IN_WEI
       );
+    }
+
+    uint256 totalProjectedCapacity = ((currentFuelAmount + (fuelAmount * ONE_UNIT_IN_WEI)) * currentVolume) /
+      ONE_UNIT_IN_WEI;
+
+    if (totalProjectedCapacity > currentMaxCapacity) {
+      revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, totalProjectedCapacity, currentMaxCapacity);
     }
 
     Fuel.setFuelAmount(smartObjectId, currentFuelAmount + (fuelAmount * ONE_UNIT_IN_WEI));
@@ -298,7 +343,7 @@ contract FuelSystem is SmartObjectFramework {
 
     if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
     if (DeployableState.getCurrentState(smartObjectId) != State.ONLINE) return 0; // no refunds if it's not running
-   
+
     uint256 bringOnlineTimestamp = DeployableState.getUpdatedBlockTime(smartObjectId);
     if (bringOnlineTimestamp <= globalData.lastGlobalOffline) {
       bringOnlineTimestamp = globalData.lastGlobalOffline;

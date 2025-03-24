@@ -12,7 +12,6 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
@@ -23,35 +22,7 @@ import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol
 import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord, 
-  EntityRecordData,
-  EntityRecordMetadata,
-  EntityRecordMetadataData,
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  EphemeralInventory,
-  EphemeralInvItem,
-  ObjectByEphemeral,
-  SmartAssembly,
-  Fuel,
-  FuelData,
-  Location,
-  LocationData,
-  ObjectByEphemeral,
-  InventoryByItem,
-  OwnershipByObject
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData, ObjectByEphemeral, InventoryByItem, OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -75,7 +46,11 @@ import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/
 
 // Create a mock system to properly test system-to-system calls
 contract MockSmartAssemblyInteractSystem is System {
-  function callCreateSmartAssembly(uint256 smartObjectId, string memory assemblyType, EntityRecordParams memory entityRecordParams) public {
+  function callCreateSmartAssembly(
+    uint256 smartObjectId,
+    string memory assemblyType,
+    EntityRecordParams memory entityRecordParams
+  ) public {
     smartAssemblySystem.createAssembly(smartObjectId, assemblyType, entityRecordParams);
   }
 
@@ -105,7 +80,7 @@ contract SmartAssemblyTest is MudTest {
   EntityRecordParams deployableEntityRecordParams;
   LocationData locationDataParams;
   CreateAndAnchorParams createAndAnchorParams;
-  
+
   // Test addresses
   address deployer;
   address alice;
@@ -123,21 +98,21 @@ contract SmartAssemblyTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
     alice = vm.addr(vm.deriveKey(mnemonic, 2));
     bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    
+
     vm.startPrank(deployer, deployer);
 
     // Mock smart character data for alice
     CharactersByAccount.set(alice, 1);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
+
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
     deployableSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, true);
@@ -148,10 +123,10 @@ contract SmartAssemblyTest is MudTest {
     bytes14 namespace = bytes14("evefrontier");
     bytes16 name = bytes16("MockSmartAssembl");
     mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
+
     // Deploy and register the mock system
     mockSystem = new MockSmartAssemblyInteractSystem();
-    
+
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
@@ -189,15 +164,13 @@ contract SmartAssemblyTest is MudTest {
       100000000,
       locationDataParams
     );
-    
 
     vm.stopPrank();
   }
 
   function test_createSmartAssembly() public {
-
     // sanity check reverts are being handled in the EntityRecordTest SmartAssembly interaction test
-    
+
     EntityRecordData memory entityRecordData = EntityRecord.get(smartObjectId);
 
     assertEq(entityRecordData.tenantId, 0);
@@ -206,14 +179,11 @@ contract SmartAssemblyTest is MudTest {
     assertEq(entityRecordData.volume, 0);
 
     assertEq(SmartAssembly.get(smartObjectId), "");
-    
+
     vm.startPrank(deployer);
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        mockSystem.callCreateSmartAssembly,
-        (smartObjectId, "ASSEMBLY", entityRecordParams) 
-      )
+      abi.encodeCall(mockSystem.callCreateSmartAssembly, (smartObjectId, "ASSEMBLY", entityRecordParams))
     );
     vm.stopPrank();
 
@@ -232,10 +202,7 @@ contract SmartAssemblyTest is MudTest {
     vm.startPrank(deployer);
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        mockSystem.callCreateSmartAssembly,
-        (smartObjectId, "ASSEMBLY", entityRecordParams) 
-      )
+      abi.encodeCall(mockSystem.callCreateSmartAssembly, (smartObjectId, "ASSEMBLY", entityRecordParams))
     );
     vm.stopPrank();
 
@@ -250,13 +217,7 @@ contract SmartAssemblyTest is MudTest {
     assertEq(SmartAssembly.get(deployableSmartObjectId), "");
 
     vm.startPrank(alice, deployer);
-    world.call(
-      mockSystemId,
-      abi.encodeCall(
-        mockSystem.callCreateAndAnchor,
-        (createAndAnchorParams)
-      )
-    );
+    world.call(mockSystemId, abi.encodeCall(mockSystem.callCreateAndAnchor, (createAndAnchorParams)));
     vm.stopPrank();
 
     entityRecordData = EntityRecord.get(deployableSmartObjectId);
@@ -272,17 +233,19 @@ contract SmartAssemblyTest is MudTest {
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    
-    if (itemId != 0) { // For singleton items
+
+    if (itemId != 0) {
+      // For singleton items
       EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
         EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
-    } else { // For non-singleton items
+    } else {
+      // For non-singleton items
       EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
-    
+
     if (!Entity.getExists(classId)) {
       entitySystem.registerClass(classId, new ResourceId[](0));
     }

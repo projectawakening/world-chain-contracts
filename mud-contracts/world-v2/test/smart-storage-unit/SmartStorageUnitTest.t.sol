@@ -20,35 +20,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory,
-  InventoryData,
-  Tenant, 
-  EntityRecord,
-  EntityRecordData,
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  ObjectByEphemeral,
-  ObjectByEphemeralData,
-  SmartAssembly,
-  SmartGateConfig,
-  SmartGateConfigData,
-  SmartGateLink,
-  SmartGateLinkData,
-  Fuel,
-  FuelData,
-  SmartAssembly,
-  Location,
-  LocationData
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, InventoryData, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, SmartGateConfig, SmartGateConfigData, SmartGateLink, SmartGateLinkData, Fuel, FuelData, SmartAssembly, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -60,7 +32,7 @@ import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namesp
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
-import { SmartGateSystem,smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
+import { SmartGateSystem, smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 import { ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
 
 // Types and parameters
@@ -95,14 +67,13 @@ contract SmartStorageUnitTest is MudTest {
   uint256 fuelConsumptionIntervalInSeconds = 60;
   uint256 fuelMaxCapacity = 1000000;
 
-
   function setUp() public virtual override {
     vm.pauseGasMetering();
     // Deploy a new World
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
@@ -112,19 +83,18 @@ contract SmartStorageUnitTest is MudTest {
 
     // Mock smart character data for alice and bob
     CharactersByAccount.set(alice, 1);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
-    // Setup smart object IDs
-    smartObjectId = _calculateObjectId(EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()), SMART_OBJECT_ID, true);
 
-    locationParams = LocationData({
-      solarSystemId: 1,
-      x: 1001,
-      y: 1001,
-      z: 1001
-    });
+    // Setup smart object IDs
+    smartObjectId = _calculateObjectId(
+      EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+      SMART_OBJECT_ID,
+      true
+    );
+
+    locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -141,7 +111,7 @@ contract SmartStorageUnitTest is MudTest {
     vm.resumeGasMetering();
   }
 
-    // all internal system checks, behavior and revert tests are done in DeployableTest, SmartAssemblyTest, FuelTest, EntityRecordTest, and InventoryTest
+  // all internal system checks, behavior and revert tests are done in DeployableTest, SmartAssemblyTest, FuelTest, EntityRecordTest, and InventoryTest
 
   function test_createAndAncorStorageUnit() public {
     vm.pauseGasMetering();
@@ -149,7 +119,10 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(EntityRecord.getExists(smartObjectId), false);
 
     // smart assembly data before creating and anchoring
-    assertEq(keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))), keccak256(abi.encodePacked("")));
+    assertEq(
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))),
+      keccak256(abi.encodePacked(""))
+    );
 
     // check deployable data before creating and anchoring
     DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
@@ -183,7 +156,7 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(inventoryData.capacity, 0);
     assertEq(inventoryData.version, 0);
     assertEq(EphemeralInvCapacity.get(smartObjectId), 0);
-  
+
     vm.startPrank(alice, deployer);
     // create and anchor source gate
     world.call(
@@ -218,7 +191,10 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(entityRecordData.volume, 1000);
 
     // smart assembly data before creating and anchoring
-    assertEq(keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))), keccak256(abi.encodePacked("SSU")));
+    assertEq(
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))),
+      keccak256(abi.encodePacked("SSU"))
+    );
 
     // check deployable data before creating and anchoring
     deployableStateData = DeployableState.get(smartObjectId);

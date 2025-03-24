@@ -44,7 +44,14 @@ contract EphemeralInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      EphemeralItemTransfer.set(smartObjectId, items[i].smartObjectId, ephemeralOwner, inventoryOwner, items[i].quantity, block.timestamp);
+      EphemeralItemTransfer.set(
+        smartObjectId,
+        items[i].smartObjectId,
+        ephemeralOwner,
+        inventoryOwner,
+        items[i].quantity,
+        block.timestamp
+      );
     }
   }
 
@@ -69,7 +76,14 @@ contract EphemeralInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      EphemeralItemTransfer.set(smartObjectId, items[i].smartObjectId, inventoryOwner, ephemeralOwner, items[i].quantity, block.timestamp);
+      EphemeralItemTransfer.set(
+        smartObjectId,
+        items[i].smartObjectId,
+        inventoryOwner,
+        ephemeralOwner,
+        items[i].quantity,
+        block.timestamp
+      );
     }
   }
 
@@ -94,10 +108,16 @@ contract EphemeralInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      EphemeralItemTransfer.set(smartObjectId, items[i].smartObjectId, fromEphemeralOwner, toEphemeralOwner, items[i].quantity, block.timestamp);
+      EphemeralItemTransfer.set(
+        smartObjectId,
+        items[i].smartObjectId,
+        fromEphemeralOwner,
+        toEphemeralOwner,
+        items[i].quantity,
+        block.timestamp
+      );
     }
   }
-
 
   function setTransferFromEphemeralAccess(
     uint256 smartObjectId,
@@ -105,7 +125,7 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     bool isAllowed
   ) public context access(smartObjectId) {
     bytes32 accessRole = keccak256(abi.encodePacked("TRANSFER_FROM_EPHEMERAL_ROLE", smartObjectId));
-    
+
     // Create the role if it doesn't exist
     if (!Role.getExists(accessRole)) {
       roleManagementSystem.scopedCreateRole(smartObjectId, accessRole, accessRole, accessAddress);

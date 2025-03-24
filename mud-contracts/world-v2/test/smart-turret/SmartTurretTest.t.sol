@@ -21,37 +21,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord,
-  EntityRecordData,
-  DeployableState,
-  Characters,
-  CharactersData, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  ObjectByEphemeral,
-  ObjectByEphemeralData,
-  SmartAssembly,
-  SmartGateConfig,
-  SmartGateConfigData,
-  SmartGateLink,
-  SmartGateLinkData,
-  Fuel,
-  FuelData,
-  SmartAssembly,
-  Location,
-  LocationData,
-  SmartTurretConfig
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, SmartGateConfig, SmartGateConfigData, SmartGateLink, SmartGateLinkData, Fuel, FuelData, SmartAssembly, Location, LocationData, SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -69,11 +39,10 @@ import { State } from "../../src/namespaces/evefrontier/systems/deployable/types
 import { TargetPriority, AggressionParams, Turret, SmartTurretTarget } from "../../src/namespaces/evefrontier/systems/smart-turret/types.sol";
 
 // Create a mock custom system to call when inProximity or aggression is called
-// This fits the expected builder pattern -  
-//   - create a custom contract that handles the inProximity or aggression logic, and 
+// This fits the expected builder pattern -
+//   - create a custom contract that handles the inProximity or aggression logic, and
 //   - then configure the smart turret to use this custom system
 contract MockSmartTurretInteractSystem is System {
-
   // don't shoot your owner, but everyone else is fair game
   function inProximity(
     uint256 smartTurretId,
@@ -84,9 +53,11 @@ contract MockSmartTurretInteractSystem is System {
     CharactersData memory characterData = Characters.get(turretTarget.characterId);
     address owner = ownershipSystem.owner(smartTurretId);
     uint256 turretOwnerCharacterId = CharactersByAccount.getSmartObjectId(owner);
-    if (turretTarget.characterId == turretOwnerCharacterId) { // don't bite the hand that feeds you
+    if (turretTarget.characterId == turretOwnerCharacterId) {
+      // don't bite the hand that feeds you
       return priorityQueue;
-    } else { // shoot to kill
+    } else {
+      // shoot to kill
       updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
       for (uint256 i = 0; i < priorityQueue.length; i++) {
         updatedPriorityQueue[i] = priorityQueue[i];
@@ -127,7 +98,7 @@ contract SmartGateTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
 
   IWorldWithContext public world;
-  
+
   // custom smart turret interact system variables
   ResourceId customSystemId;
   MockSmartTurretInteractSystem customSystem;
@@ -172,7 +143,7 @@ contract SmartGateTest is MudTest {
   EntityMetadataParams aliceEntityMetadataParams;
   EntityMetadataParams bobEntityMetadataParams;
   EntityMetadataParams charlieEntityMetadataParams;
-  
+
   EntityRecordParams entityRecordParams;
 
   // fuel params
@@ -186,14 +157,14 @@ contract SmartGateTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
     alice = vm.addr(vm.deriveKey(mnemonic, 2));
     bob = vm.addr(vm.deriveKey(mnemonic, 3));
     charlie = vm.addr(vm.deriveKey(mnemonic, 4));
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
 
@@ -202,7 +173,7 @@ contract SmartGateTest is MudTest {
     aliceCharacterId = _calculateObjectId(smartCharacterTypeId, OWNER_CHARACTER_ID, true);
     bobCharacterId = _calculateObjectId(smartCharacterTypeId, FRIENDLY_CHARACTER_ID, true);
     charlieCharacterId = _calculateObjectId(smartCharacterTypeId, ENEMY_CHARACTER_ID, true);
-    
+
     aliceEntityRecordParams = EntityRecordParams({
       tenantId: tenantId,
       typeId: smartCharacterTypeId,
@@ -238,24 +209,41 @@ contract SmartGateTest is MudTest {
       dappURL: "https://charlie.dapp.com",
       description: "Charlie bit me. Enemy of the state."
     });
-    
+
     // smart character data for alice and bob and charlie
     vm.prank(alice, deployer);
-    smartCharacterSystem.createCharacter(aliceCharacterId, alice, FRIENDLY_TRIBE_ID, aliceEntityRecordParams, aliceEntityMetadataParams);
+    smartCharacterSystem.createCharacter(
+      aliceCharacterId,
+      alice,
+      FRIENDLY_TRIBE_ID,
+      aliceEntityRecordParams,
+      aliceEntityMetadataParams
+    );
     vm.prank(bob, deployer);
-    smartCharacterSystem.createCharacter(bobCharacterId, bob, FRIENDLY_TRIBE_ID, bobEntityRecordParams, bobEntityMetadataParams);
+    smartCharacterSystem.createCharacter(
+      bobCharacterId,
+      bob,
+      FRIENDLY_TRIBE_ID,
+      bobEntityRecordParams,
+      bobEntityMetadataParams
+    );
     vm.prank(charlie, deployer);
-    smartCharacterSystem.createCharacter(charlieCharacterId, charlie, ENEMY_TRIBE_ID, charlieEntityRecordParams, charlieEntityMetadataParams);
-    
-    // Setup smart object ID for this turret
-    smartObjectId = _calculateObjectId(EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()), SMART_OBJECT_ID, true);
+    smartCharacterSystem.createCharacter(
+      charlieCharacterId,
+      charlie,
+      ENEMY_TRIBE_ID,
+      charlieEntityRecordParams,
+      charlieEntityMetadataParams
+    );
 
-    locationParams = LocationData({
-      solarSystemId: 1,
-      x: 1001,
-      y: 1002,
-      z: 1003
-    });
+    // Setup smart object ID for this turret
+    smartObjectId = _calculateObjectId(
+      EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
+      SMART_OBJECT_ID,
+      true
+    );
+
+    locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1002, z: 1003 });
 
     entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -266,15 +254,15 @@ contract SmartGateTest is MudTest {
 
     // Mock builder deployment of custom canJumpsystem
     bytes14 namespace = bytes14("spaceforalice");
-    bytes16 name = bytes16("MockSmartTurretI"); 
+    bytes16 name = bytes16("MockSmartTurretI");
     // Create resource ID for the mock system using the proper format
     customSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
+
     vm.startPrank(alice);
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Deploy and register the mock system
     customSystem = new MockSmartTurretInteractSystem();
-    
+
     // Register the system with the world
     world.registerSystem(customSystemId, customSystem, true);
 
@@ -293,7 +281,10 @@ contract SmartGateTest is MudTest {
     assertEq(EntityRecord.getExists(smartObjectId), false);
 
     // smart assembly data before creating and anchoring
-    assertEq(keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))), keccak256(abi.encodePacked("")));
+    assertEq(
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))),
+      keccak256(abi.encodePacked(""))
+    );
 
     // check deployable data before creating and anchoring
     DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
@@ -322,7 +313,7 @@ contract SmartGateTest is MudTest {
     assertEq(locationData.x, 0);
     assertEq(locationData.y, 0);
     assertEq(locationData.z, 0);
-    
+
     vm.startPrank(alice, deployer);
     // create and anchor smart turret
     world.call(
@@ -355,7 +346,10 @@ contract SmartGateTest is MudTest {
     assertEq(entityRecordData.volume, 10000);
 
     // smart assembly data after creating and anchoring
-    assertEq(keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))), keccak256(abi.encodePacked("ST")));
+    assertEq(
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))),
+      keccak256(abi.encodePacked("ST"))
+    );
 
     // check deployable data after creating and anchoring
     deployableStateData = DeployableState.get(smartObjectId);
@@ -449,17 +443,12 @@ contract SmartGateTest is MudTest {
       armorRatio: 100
     });
 
-    returnTargetQueue = smartTurretSystem.inProximity(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      turretTarget
-    );
+    returnTargetQueue = smartTurretSystem.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
 
     assertEq(returnTargetQueue.length, 1);
     assertEq(returnTargetQueue[0].target.characterId, charlieCharacterId);
 
-    // configure custom mock 
+    // configure custom mock
     vm.startPrank(alice);
     smartTurretSystem.configureTurret(smartObjectId, customSystemId);
     vm.stopPrank();
@@ -474,12 +463,7 @@ contract SmartGateTest is MudTest {
       armorRatio: 100
     });
 
-    returnTargetQueue = smartTurretSystem.inProximity(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      turretTarget
-    );
+    returnTargetQueue = smartTurretSystem.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
 
     assertEq(returnTargetQueue.length, 0);
 
@@ -493,12 +477,7 @@ contract SmartGateTest is MudTest {
       armorRatio: 100
     });
 
-    returnTargetQueue = smartTurretSystem.inProximity(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      turretTarget
-    );
+    returnTargetQueue = smartTurretSystem.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
 
     assertEq(returnTargetQueue.length, 1);
     assertEq(returnTargetQueue[0].target.characterId, bobCharacterId);
@@ -513,12 +492,7 @@ contract SmartGateTest is MudTest {
       armorRatio: 100
     });
 
-    returnTargetQueue = smartTurretSystem.inProximity(
-      smartObjectId,
-      priorityQueue,
-      turret,
-      turretTarget
-    );
+    returnTargetQueue = smartTurretSystem.inProximity(smartObjectId, priorityQueue, turret, turretTarget);
 
     assertEq(returnTargetQueue.length, 1);
     assertEq(returnTargetQueue[0].target.characterId, charlieCharacterId);
@@ -545,7 +519,7 @@ contract SmartGateTest is MudTest {
       armorRatio: 50
     });
     priorityQueue[0] = TargetPriority({ target: currentTarget, weight: 100 });
-    
+
     SmartTurretTarget memory aggressor = SmartTurretTarget({
       shipId: FRIENDLY_SHIP_ID,
       shipTypeId: 1,
@@ -678,7 +652,7 @@ contract SmartGateTest is MudTest {
     assertEq(returnTargetQueue.length, 2);
     assertEq(returnTargetQueue[0].target.characterId, 77777);
     assertEq(returnTargetQueue[1].target.characterId, charlieCharacterId);
-    
+
     // otherwise no change to the priority queue
     aggressor = SmartTurretTarget({
       shipId: OWNER_SHIP_ID,

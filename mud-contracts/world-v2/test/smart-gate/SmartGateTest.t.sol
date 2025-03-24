@@ -21,34 +21,7 @@ import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/name
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord,
-  EntityRecordData,
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  ObjectByEphemeral,
-  ObjectByEphemeralData,
-  SmartAssembly,
-  SmartGateConfig,
-  SmartGateConfigData,
-  SmartGateLink,
-  SmartGateLinkData,
-  Fuel,
-  FuelData,
-  SmartAssembly,
-  Location,
-  LocationData
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, SmartGateConfig, SmartGateConfigData, SmartGateLink, SmartGateLinkData, Fuel, FuelData, SmartAssembly, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -60,7 +33,7 @@ import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namesp
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
-import { SmartGateSystem,smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
+import { SmartGateSystem, smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 import { ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
 
 // Types and parameters
@@ -70,8 +43,8 @@ import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
 // Create a mock custom system to call when canJump is called
-// This fits the expected builder pattern -  
-//   - create a custom contract that handles the canJump logic, and 
+// This fits the expected builder pattern -
+//   - create a custom contract that handles the canJump logic, and
 //   - then configure the smart gate to use this custom system
 contract MockCanJumpCustomSystem is System {
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
@@ -83,7 +56,7 @@ contract SmartGateTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
 
   IWorldWithContext public world;
-  
+
   // custom canJump system variables
   ResourceId customSystemId;
   MockCanJumpCustomSystem customSystem;
@@ -128,7 +101,7 @@ contract SmartGateTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
@@ -141,32 +114,38 @@ contract SmartGateTest is MudTest {
     // Mock smart character data for alice and bob
     CharactersByAccount.set(alice, 1);
     CharactersByAccount.set(bob, 2);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
+
     // Setup smart object IDs
-    sourceGateId = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), SOURCE_GATE_ID, true);
-    destinationGateId = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), DESTINATION_GATE_ID, true);
-    
-    invalidSourceGateId = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), INVALID_SOURCE_GATE_ID, true);
+    sourceGateId = _calculateObjectId(
+      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+      SOURCE_GATE_ID,
+      true
+    );
+    destinationGateId = _calculateObjectId(
+      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+      DESTINATION_GATE_ID,
+      true
+    );
+
+    invalidSourceGateId = _calculateObjectId(
+      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+      INVALID_SOURCE_GATE_ID,
+      true
+    );
     entitySystem.instantiate(smartGateSystem.getSmartGateClassId(), invalidSourceGateId, alice);
-    invalidDestinationGateId = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), INVALID_DESTINATION_GATE_ID, true);
+    invalidDestinationGateId = _calculateObjectId(
+      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+      INVALID_DESTINATION_GATE_ID,
+      true
+    );
     entitySystem.instantiate(smartGateSystem.getSmartGateClassId(), invalidDestinationGateId, alice);
 
-    sourceLocationParams = LocationData({
-      solarSystemId: 1,
-      x: 1,
-      y: 1,
-      z: 1
-    });
+    sourceLocationParams = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
 
-    destinationLocationParams = LocationData({
-      solarSystemId: 2,
-      x: 2,
-      y: 2,
-      z: 2
-    });
+    destinationLocationParams = LocationData({ solarSystemId: 2, x: 2, y: 2, z: 2 });
 
     sourceEntityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -189,15 +168,15 @@ contract SmartGateTest is MudTest {
 
     // Mock builder deployment of custom canJumpsystem
     bytes14 namespace = bytes14("spaceforalice");
-    bytes16 name = bytes16("MockCanJumpCusto"); 
+    bytes16 name = bytes16("MockCanJumpCusto");
     // Create resource ID for the mock system using the proper format
     customSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
+
     vm.startPrank(alice);
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     // Deploy and register the mock system
     customSystem = new MockCanJumpCustomSystem();
-    
+
     // Register the system with the world
     world.registerSystem(customSystemId, customSystem, true);
 
@@ -245,7 +224,7 @@ contract SmartGateTest is MudTest {
     assertEq(locationData.x, 0);
     assertEq(locationData.y, 0);
     assertEq(locationData.z, 0);
-    
+
     vm.startPrank(alice, deployer);
     // create and anchor source gate
     world.call(
@@ -279,7 +258,10 @@ contract SmartGateTest is MudTest {
     assertEq(entityRecordData.volume, 10000);
 
     // smart assembly data after creating and anchoring
-    assertEq(keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(sourceGateId))), keccak256(abi.encodePacked("SG")));
+    assertEq(
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(sourceGateId))),
+      keccak256(abi.encodePacked("SG"))
+    );
 
     // check deployable data after creating and anchoring
     deployableStateData = DeployableState.get(sourceGateId);
@@ -314,20 +296,12 @@ contract SmartGateTest is MudTest {
   function test_linkGates() public {
     // turn off access control for testing
     vm.startPrank(deployer);
-    accessConfigSystem.setAccessEnforcement(
-      smartGateSystem.toResourceId(),
-      SmartGateSystem.linkGates.selector,
-      false
-    );
+    accessConfigSystem.setAccessEnforcement(smartGateSystem.toResourceId(), SmartGateSystem.linkGates.selector, false);
     vm.stopPrank();
 
     // expect revert if source gate is not created
     vm.expectRevert(
-      abi.encodeWithSelector(
-        DeployableSystem.Deployable_IncorrectState.selector,
-        invalidSourceGateId,
-        State.NULL
-      )
+      abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, invalidSourceGateId, State.NULL)
     );
     vm.startPrank(alice, deployer);
     smartGateSystem.linkGates(invalidSourceGateId, destinationGateId);
@@ -355,11 +329,7 @@ contract SmartGateTest is MudTest {
 
     // expect revert if destination gate is not created
     vm.expectRevert(
-      abi.encodeWithSelector(
-        DeployableSystem.Deployable_IncorrectState.selector,
-        invalidDestinationGateId,
-        State.NULL
-      )
+      abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, invalidDestinationGateId, State.NULL)
     );
     smartGateSystem.linkGates(sourceGateId, invalidDestinationGateId);
 
@@ -386,21 +356,13 @@ contract SmartGateTest is MudTest {
 
     // turn access control on
     vm.startPrank(deployer);
-    accessConfigSystem.setAccessEnforcement(
-      smartGateSystem.toResourceId(),
-      SmartGateSystem.linkGates.selector,
-      true
-    );
+    accessConfigSystem.setAccessEnforcement(smartGateSystem.toResourceId(), SmartGateSystem.linkGates.selector, true);
     vm.stopPrank();
 
     // revert access if gates are not both owned by the same caller
     vm.startPrank(alice, deployer);
     vm.expectRevert(
-      abi.encodeWithSelector(
-        AccessSystem.Access_NotAdminSupportedOrDirectOwnerGates.selector,
-        alice,
-        sourceGateId
-      )
+      abi.encodeWithSelector(AccessSystem.Access_NotAdminSupportedOrDirectOwnerGates.selector, alice, sourceGateId)
     );
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
     vm.stopPrank();
@@ -412,11 +374,7 @@ contract SmartGateTest is MudTest {
 
     // expect revert when source and destination are the same
     vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_SameSourceAndDestination.selector,
-        sourceGateId,
-        sourceGateId
-      )
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_SameSourceAndDestination.selector, sourceGateId, sourceGateId)
     );
     vm.prank(alice, deployer);
     smartGateSystem.linkGates(sourceGateId, sourceGateId);
@@ -424,11 +382,7 @@ contract SmartGateTest is MudTest {
     // expect revert when gates are not within range
     vm.startPrank(alice, deployer);
     vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_NotWithtinRange.selector,
-        sourceGateId,
-        destinationGateId
-      )
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_NotWithtinRange.selector, sourceGateId, destinationGateId)
     );
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
     vm.stopPrank();
@@ -446,29 +400,21 @@ contract SmartGateTest is MudTest {
     // expect revert when source gate is destroyed
     vm.startPrank(alice, deployer);
     vm.expectRevert(
-      abi.encodeWithSelector(
-        DeployableSystem.Deployable_IncorrectState.selector,
-        sourceGateId,
-        State.DESTROYED
-      )
+      abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, sourceGateId, State.DESTROYED)
     );
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
     vm.stopPrank();
 
     // reset source gate state and set the destination state to destroyed
     vm.startPrank(deployer);
-    DeployableState.setCurrentState(sourceGateId, State.ANCHORED);  
+    DeployableState.setCurrentState(sourceGateId, State.ANCHORED);
     DeployableState.setCurrentState(destinationGateId, State.DESTROYED);
     vm.stopPrank();
 
     // expect revert when destination gate is destroyed
     vm.startPrank(alice, deployer);
     vm.expectRevert(
-      abi.encodeWithSelector(
-        DeployableSystem.Deployable_IncorrectState.selector,
-        destinationGateId,
-        State.DESTROYED
-      )
+      abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, destinationGateId, State.DESTROYED)
     );
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
     vm.stopPrank();
@@ -482,14 +428,10 @@ contract SmartGateTest is MudTest {
     vm.startPrank(alice, deployer);
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
     vm.stopPrank();
-    
+
     // revert if either gate is already linked
     vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_GateAlreadyLinked.selector,
-        sourceGateId,
-        destinationGateId
-      )
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_GateAlreadyLinked.selector, sourceGateId, destinationGateId)
     );
     vm.startPrank(alice, deployer);
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
@@ -526,10 +468,7 @@ contract SmartGateTest is MudTest {
     vm.startPrank(alice, deployer);
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(
-        SmartGateSystem.unlinkGates,
-        (sourceGateId, destinationGateId)
-      )
+      abi.encodeCall(SmartGateSystem.unlinkGates, (sourceGateId, destinationGateId))
     );
     vm.stopPrank();
   }
@@ -542,37 +481,22 @@ contract SmartGateTest is MudTest {
     // Test revert when gates are not online
     // Try to jump, expecting a revert
     vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_GatesNotOnline.selector,
-        sourceGateId,
-        destinationGateId
-      )
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_GatesNotOnline.selector, sourceGateId, destinationGateId)
     );
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(
-        SmartGateSystem.canJump,
-        (characterId, sourceGateId, destinationGateId)
-      )
+      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
     );
 
     vm.startPrank(alice, deployer);
     fuelSystem.depositFuel(sourceGateId, 1000);
     deployableSystem.bringOnline(sourceGateId);
     vm.stopPrank();
-  
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_GateNotOnline.selector,
-        destinationGateId
-      )
-    );
+
+    vm.expectRevert(abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotOnline.selector, destinationGateId));
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(
-        SmartGateSystem.canJump,
-        (characterId, sourceGateId, destinationGateId)
-      )
+      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
     );
 
     vm.startPrank(alice, deployer);
@@ -583,18 +507,10 @@ contract SmartGateTest is MudTest {
     vm.prank(deployer);
     DeployableState.setCurrentState(sourceGateId, State.ANCHORED);
 
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_GateNotOnline.selector,
-        sourceGateId
-      )
-    );
+    vm.expectRevert(abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotOnline.selector, sourceGateId));
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(
-        SmartGateSystem.canJump,
-        (characterId, sourceGateId, destinationGateId)
-      )
+      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
     );
 
     vm.startPrank(deployer);
@@ -605,19 +521,12 @@ contract SmartGateTest is MudTest {
 
     // Try to jump between unlinked gates, expecting a revert
     vm.expectRevert(
-      abi.encodeWithSelector(
-        SmartGateSystem.SmartGate_GateNotLinked.selector,
-        sourceGateId, 
-        invalidDestinationGateId
-      )
+      abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotLinked.selector, sourceGateId, invalidDestinationGateId)
     );
-  world.call(
-    smartGateSystem.toResourceId(),
-    abi.encodeCall(
-      SmartGateSystem.canJump,
-      (characterId, sourceGateId, invalidDestinationGateId)
-    )
-  );
+    world.call(
+      smartGateSystem.toResourceId(),
+      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, invalidDestinationGateId))
+    );
 
     // successfully jump
     bool canJump = smartGateSystem.canJump(characterId, sourceGateId, destinationGateId);
@@ -635,14 +544,13 @@ contract SmartGateTest is MudTest {
     OwnershipByObject.set(invalidSourceGateId, alice);
 
     // test revert configure in wrong state
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, invalidSourceGateId, State.NULL));
+    vm.expectRevert(
+      abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, invalidSourceGateId, State.NULL)
+    );
     vm.startPrank(alice);
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(
-        SmartGateSystem.configureGate,
-        (invalidSourceGateId, customSystemId)
-      )
+      abi.encodeCall(SmartGateSystem.configureGate, (invalidSourceGateId, customSystemId))
     );
     vm.stopPrank();
 
@@ -670,16 +578,14 @@ contract SmartGateTest is MudTest {
   function test_DeployerCannotLinkSmartGates() public {
     test_createAndAnchorSmartGate();
 
-    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdminSupportedOrDirectOwnerGates.selector, deployer, sourceGateId));
+    vm.expectRevert(
+      abi.encodeWithSelector(AccessSystem.Access_NotAdminSupportedOrDirectOwnerGates.selector, deployer, sourceGateId)
+    );
     vm.startPrank(deployer);
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(
-        SmartGateSystem.linkGates,
-        (sourceGateId, destinationGateId)
-      )
+      abi.encodeCall(SmartGateSystem.linkGates, (sourceGateId, destinationGateId))
     );
     vm.stopPrank();
   }
-
 }

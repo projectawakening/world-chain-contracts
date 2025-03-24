@@ -10,21 +10,7 @@ import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/Ta
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState,
-  GlobalDeployableStateData,
-  DeployableState, 
-  DeployableStateData,
-  CharactersByAccount,
-  Fuel, 
-  FuelData,
-  Location, 
-  LocationData,
-  Inventory,
-  InventoryItem,
-  EntityRecord,
-  SmartGateLink
-} from "../../codegen/index.sol";
+import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Fuel, FuelData, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { FuelSystem } from "../fuel/FuelSystem.sol";
@@ -71,7 +57,6 @@ contract DeployableSystem is SmartObjectFramework {
   function createAndAnchor(
     CreateAndAnchorParams memory params
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
-
     // Create the smart assembly object
     smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
@@ -122,12 +107,17 @@ contract DeployableSystem is SmartObjectFramework {
 
     // TODO: the following is a candidate for hook logic
     // check if this deploybale has inventory scoped to itset the initial inventory data version to 1
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
-    TagId systemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId())));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
+    TagId systemTagId = TagIdLib.encode(
+      TAG_TYPE_RESOURCE_RELATION,
+      bytes30(ResourceId.unwrap(inventorySystem.toResourceId()))
+    );
     if (EntityTagMap.getHasTag(classId, systemTagId)) {
       Inventory.setVersion(smartObjectId, 1);
     }
-    
+
     // Use OwnershipSystem to track ownership
     ownershipSystem.assignToAccount(smartObjectId, owner);
 
@@ -165,8 +155,13 @@ contract DeployableSystem is SmartObjectFramework {
     // increment the inventory data version (this will make ALL previous inventory item data stale)
     // reset the used capacity to 0
     // TODO: the following is a candidate for hook logic and optimization
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
-    TagId systemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId())));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
+    TagId systemTagId = TagIdLib.encode(
+      TAG_TYPE_RESOURCE_RELATION,
+      bytes30(ResourceId.unwrap(inventorySystem.toResourceId()))
+    );
     if (EntityTagMap.getHasTag(classId, systemTagId)) {
       Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
       Inventory.setUsedCapacity(smartObjectId, 0);
@@ -174,19 +169,19 @@ contract DeployableSystem is SmartObjectFramework {
 
     // check if the deploybale is a smart gate and unlink it
     // TODO : move this to hook logic
-    TagId gateSystemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(smartGateSystem.toResourceId())));
+    TagId gateSystemTagId = TagIdLib.encode(
+      TAG_TYPE_RESOURCE_RELATION,
+      bytes30(ResourceId.unwrap(smartGateSystem.toResourceId()))
+    );
     if (EntityTagMap.getHasTag(classId, gateSystemTagId) && SmartGateLink.getIsLinked(smartObjectId)) {
-        uint256 destinationGateId = SmartGateLink.getDestinationGateId(smartObjectId);
-      smartGateSystem.unlinkGates(
-        smartObjectId,
-        destinationGateId
-      );
+      uint256 destinationGateId = SmartGateLink.getDestinationGateId(smartObjectId);
+      smartGateSystem.unlinkGates(smartObjectId, destinationGateId);
     }
-    
+
     // Remove ownership tracking of the deployable smart object
     address owner = ownershipSystem.owner(smartObjectId);
     ownershipSystem.removeFromAccount(smartObjectId, owner);
-    
+
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
   }
@@ -270,21 +265,26 @@ contract DeployableSystem is SmartObjectFramework {
     // increment the inventory data version (this will make ALL previous inventory item data stale)
     // reset the used capacity to 0
     // TODO: the following is a candidate for hook logic and optimization
-    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
-    TagId inventorySystemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId())));
+    uint256 classId = uint256(
+      keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId)))
+    );
+    TagId inventorySystemTagId = TagIdLib.encode(
+      TAG_TYPE_RESOURCE_RELATION,
+      bytes30(ResourceId.unwrap(inventorySystem.toResourceId()))
+    );
     if (EntityTagMap.getHasTag(classId, inventorySystemTagId)) {
       Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
       Inventory.setUsedCapacity(smartObjectId, 0);
     }
     // check if the deploybale is a smart gate and unlink it
     // TODO : move this to hook logic
-    TagId gateSystemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(smartGateSystem.toResourceId())));
+    TagId gateSystemTagId = TagIdLib.encode(
+      TAG_TYPE_RESOURCE_RELATION,
+      bytes30(ResourceId.unwrap(smartGateSystem.toResourceId()))
+    );
     if (EntityTagMap.getHasTag(classId, gateSystemTagId) && SmartGateLink.getIsLinked(smartObjectId)) {
-        uint256 destinationGateId = SmartGateLink.getDestinationGateId(smartObjectId);
-      smartGateSystem.unlinkGates(
-        smartObjectId,
-        destinationGateId
-      );
+      uint256 destinationGateId = SmartGateLink.getDestinationGateId(smartObjectId);
+      smartGateSystem.unlinkGates(smartObjectId, destinationGateId);
     }
 
     // Remove ownership tracking through OwnershipSystem

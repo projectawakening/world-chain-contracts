@@ -12,7 +12,6 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
@@ -23,37 +22,7 @@ import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol
 import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord, 
-  EntityRecordData,
-  EntityRecordMetadata,
-  EntityRecordMetadataData,
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  Characters,
-  CharactersData,
-  LocationData,
-  EphemeralInventory,
-  EphemeralInvItem,
-  ObjectByEphemeral,
-  SmartAssembly,
-  Fuel,
-  FuelData,
-  Location,
-  LocationData,
-  ObjectByEphemeral,
-  InventoryByItem,
-  OwnershipByObject
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, Characters, CharactersData, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData, ObjectByEphemeral, InventoryByItem, OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -116,15 +85,15 @@ contract SmartCharacterTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
     alice = vm.addr(vm.deriveKey(mnemonic, 2));
     bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    
+
     vm.startPrank(deployer, deployer);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
 
@@ -136,12 +105,8 @@ contract SmartCharacterTest is MudTest {
       itemId: SMART_CHARACTER_ITEM_ID,
       volume: 0
     });
-    entityMetadataParams = EntityMetadataParams({
-      name: NAME,
-      dappURL: DAPP_URL,
-      description: DESCRIPTION
-    });
-    
+    entityMetadataParams = EntityMetadataParams({ name: NAME, dappURL: DAPP_URL, description: DESCRIPTION });
+
     vm.stopPrank();
   }
 
@@ -155,7 +120,13 @@ contract SmartCharacterTest is MudTest {
     address owner = ownershipSystem.owner(smartCharacterObjectId);
     assertEq(owner, address(0));
 
-    smartCharacterSystem.createCharacter(smartCharacterObjectId, alice, tribeId, entityRecordParams, entityMetadataParams);
+    smartCharacterSystem.createCharacter(
+      smartCharacterObjectId,
+      alice,
+      tribeId,
+      entityRecordParams,
+      entityMetadataParams
+    );
 
     EntityRecordData memory entityRecord = EntityRecord.get(smartCharacterObjectId);
 
@@ -187,7 +158,13 @@ contract SmartCharacterTest is MudTest {
 
   function test_updateTribe() public {
     vm.startPrank(alice, deployer);
-    smartCharacterSystem.createCharacter(smartCharacterObjectId, alice, tribeId, entityRecordParams, entityMetadataParams);
+    smartCharacterSystem.createCharacter(
+      smartCharacterObjectId,
+      alice,
+      tribeId,
+      entityRecordParams,
+      entityMetadataParams
+    );
 
     assertEq(Characters.getTribeId(smartCharacterObjectId), tribeId);
     uint256 newTribeId = 102;
@@ -200,10 +177,15 @@ contract SmartCharacterTest is MudTest {
 
   function test_removeCharacter() public {
     vm.startPrank(alice, deployer);
-    smartCharacterSystem.createCharacter(smartCharacterObjectId, alice, tribeId, entityRecordParams, entityMetadataParams);
+    smartCharacterSystem.createCharacter(
+      smartCharacterObjectId,
+      alice,
+      tribeId,
+      entityRecordParams,
+      entityMetadataParams
+    );
     vm.stopPrank();
 
-    
     address owner = ownershipSystem.owner(smartCharacterObjectId);
     assertEq(owner, alice);
 
@@ -220,17 +202,19 @@ contract SmartCharacterTest is MudTest {
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    
-    if (itemId != 0) { // For singleton items
+
+    if (itemId != 0) {
+      // For singleton items
       EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
         EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
-    } else { // For non-singleton items
+    } else {
+      // For non-singleton items
       EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
-    
+
     if (!Entity.getExists(classId)) {
       entitySystem.registerClass(classId, new ResourceId[](0));
     }

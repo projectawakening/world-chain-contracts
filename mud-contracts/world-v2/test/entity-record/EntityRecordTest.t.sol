@@ -12,7 +12,6 @@ import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
-
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
@@ -23,35 +22,7 @@ import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol
 import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord, 
-  EntityRecordData,
-  EntityRecordMetadata,
-  EntityRecordMetadataData,
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  EphemeralInventory,
-  EphemeralInvItem,
-  ObjectByEphemeral,
-  SmartAssembly,
-  Fuel,
-  FuelData,
-  Location,
-  LocationData,
-  ObjectByEphemeral,
-  InventoryByItem,
-  OwnershipByObject
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData, ObjectByEphemeral, InventoryByItem, OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -77,7 +48,7 @@ contract MockEntityRecordInteractSystem is System {
   function callCreateRecord(uint256 smartObjectId, EntityRecordParams memory params) public {
     entityRecordSystem.createRecord(smartObjectId, params);
   }
-  
+
   function callCreateMetadata(uint256 smartObjectId, EntityMetadataParams memory params) public {
     entityRecordSystem.createMetadata(smartObjectId, params);
   }
@@ -102,7 +73,7 @@ contract MockEntityRecordInteractSystem is System {
     smartAssemblySystem.createAssembly(smartObjectId, assemblyType, entityRecordParams);
   }
 
-  function callCreateCharacter(   
+  function callCreateCharacter(
     uint256 smartObjectId,
     address owner,
     uint256 tribeId,
@@ -112,10 +83,7 @@ contract MockEntityRecordInteractSystem is System {
     smartCharacterSystem.createCharacter(smartObjectId, owner, tribeId, entityRecordParams, entityRecordMetadata);
   }
 
-  function callCreateAndDepositInventory(
-    uint256 smartObjectId,
-    CreateInventoryItemParams[] memory items
-  ) public {
+  function callCreateAndDepositInventory(uint256 smartObjectId, CreateInventoryItemParams[] memory items) public {
     inventorySystem.createAndDepositInventory(smartObjectId, items);
   }
 
@@ -187,24 +155,24 @@ contract EntityRecordTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
     alice = vm.addr(vm.deriveKey(mnemonic, 2));
     bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    
+
     vm.startPrank(deployer, deployer);
 
     // Mock smart character data for alice and bob
     CharactersByAccount.set(alice, 1);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
+
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
-    
+
     // setup smart object class id
     objectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
 
@@ -212,10 +180,10 @@ contract EntityRecordTest is MudTest {
     bytes14 namespace = bytes14("evefrontier");
     bytes16 name = bytes16("MockEntityRecord");
     mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
+
     // Deploy and register the mock system
     mockSystem = new MockEntityRecordInteractSystem();
-    
+
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
@@ -243,11 +211,31 @@ contract EntityRecordTest is MudTest {
     tagSystem.setTag(smartCharacterClassId, mockTagParams);
 
     // add our mock system to the entity record system call access for all functions (because EntityRecord requires CallAccess permissions currently)
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, address(mockSystem), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createMetadata.selector, address(mockSystem), true);
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createRecord.selector,
+      address(mockSystem),
+      true
+    );
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createMetadata.selector,
+      address(mockSystem),
+      true
+    );
     CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.setName.selector, address(mockSystem), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.setDappURL.selector, address(mockSystem), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.setDescription.selector, address(mockSystem), true);
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.setDappURL.selector,
+      address(mockSystem),
+      true
+    );
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.setDescription.selector,
+      address(mockSystem),
+      true
+    );
 
     entitySystem.registerClass(objectClassId, systemIds); // tags the system to this class for scoping
 
@@ -279,7 +267,16 @@ contract EntityRecordTest is MudTest {
     entityMetadataParams = EntityMetadataParams({ name: NAME, dappURL: DAPP_URL, description: DESCRIPTION });
 
     // mock Deployable state ONLINE
-    DeployableState.set(smartObjectId, block.timestamp, State.ANCHORED, State.ONLINE, true, 0, block.number, block.timestamp);
+    DeployableState.set(
+      smartObjectId,
+      block.timestamp,
+      State.ANCHORED,
+      State.ONLINE,
+      true,
+      0,
+      block.number,
+      block.timestamp
+    );
 
     vm.stopPrank();
   }
@@ -291,10 +288,7 @@ contract EntityRecordTest is MudTest {
 
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateRecord,
-        (smartObjectId, entityRecordParams)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateRecord, (smartObjectId, entityRecordParams))
     );
 
     EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
@@ -319,10 +313,7 @@ contract EntityRecordTest is MudTest {
 
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateMetadata,
-        (smartObjectId, entityMetadataParams)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateMetadata, (smartObjectId, entityMetadataParams))
     );
 
     entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
@@ -340,13 +331,7 @@ contract EntityRecordTest is MudTest {
 
     assertEq(entityRecordMetaData.name, "");
 
-    world.call(
-      mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callSetName,
-        (smartObjectId, NAME)
-      )
-    );
+    world.call(mockSystemId, abi.encodeCall(MockEntityRecordInteractSystem.callSetName, (smartObjectId, NAME)));
 
     entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
 
@@ -361,13 +346,7 @@ contract EntityRecordTest is MudTest {
 
     assertEq(entityRecordMetaData.dappURL, "");
 
-    world.call(
-      mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callSetDappURL,
-        (smartObjectId, DAPP_URL)
-      )
-    );
+    world.call(mockSystemId, abi.encodeCall(MockEntityRecordInteractSystem.callSetDappURL, (smartObjectId, DAPP_URL)));
 
     entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
 
@@ -383,10 +362,7 @@ contract EntityRecordTest is MudTest {
 
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callSetDescription,
-        (smartObjectId, DESCRIPTION)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callSetDescription, (smartObjectId, DESCRIPTION))
     );
 
     entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
@@ -405,16 +381,15 @@ contract EntityRecordTest is MudTest {
       itemId: SMART_OBJECT_ID,
       volume: 100
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotClassScoped.selector, address(mockSystem), smartObjectId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(AccessSystem.Access_NotClassScoped.selector, address(mockSystem), smartObjectId)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAssembly,
-        (smartObjectId, "SSU", invalidParams)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAssembly, (smartObjectId, "SSU", invalidParams))
     );
-    
+
     // Test InvalidTenantId
     bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
     invalidParams = EntityRecordParams({
@@ -423,18 +398,19 @@ contract EntityRecordTest is MudTest {
       itemId: SMART_OBJECT_ID,
       volume: 100
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotClassScoped.selector, address(mockSystem), smartObjectId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(AccessSystem.Access_NotClassScoped.selector, address(mockSystem), smartObjectId)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAssembly,
-        (smartObjectId, "SSU", invalidParams)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAssembly, (smartObjectId, "SSU", invalidParams))
     );
-    
+
     // Test InvalidObjectId
-    vm.expectRevert(abi.encodeWithSelector(SmartAssemblySystem.SmartAssembly_InvalidObjectId.selector, invalidSmartObjectId));
+    vm.expectRevert(
+      abi.encodeWithSelector(SmartAssemblySystem.SmartAssembly_InvalidObjectId.selector, invalidSmartObjectId)
+    );
     world.call(
       mockSystemId,
       abi.encodeCall(
@@ -449,10 +425,7 @@ contract EntityRecordTest is MudTest {
 
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAssembly,
-        (smartObjectId, "SSU", entityRecordParams)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAssembly, (smartObjectId, "SSU", entityRecordParams))
     );
 
     // check that the record was created and values are correct
@@ -468,7 +441,7 @@ contract EntityRecordTest is MudTest {
   function test_SmartCharacter_interaction() public {
     vm.startPrank(bob, deployer);
     // First test revert cases for invalid parameters
-    
+
     // Test InvalidTenantId
     bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
     EntityRecordParams memory invalidParams = EntityRecordParams({
@@ -477,8 +450,14 @@ contract EntityRecordTest is MudTest {
       itemId: SMART_CHARACTER_ITEM_ID,
       volume: 0
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(SmartCharacterSystem.SmartCharacter_InvalidTenantId.selector, smartCharacterObjectId, invalidParams.tenantId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartCharacterSystem.SmartCharacter_InvalidTenantId.selector,
+        smartCharacterObjectId,
+        invalidParams.tenantId
+      )
+    );
     world.call(
       mockSystemId,
       abi.encodeCall(
@@ -494,8 +473,14 @@ contract EntityRecordTest is MudTest {
       itemId: SMART_CHARACTER_ITEM_ID,
       volume: 0
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(SmartCharacterSystem.SmartCharacter_InvalidTypeId.selector, smartCharacterObjectId, invalidParams.typeId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartCharacterSystem.SmartCharacter_InvalidTypeId.selector,
+        smartCharacterObjectId,
+        invalidParams.typeId
+      )
+    );
     world.call(
       mockSystemId,
       abi.encodeCall(
@@ -503,7 +488,7 @@ contract EntityRecordTest is MudTest {
         (smartCharacterObjectId, bob, tribeId, invalidParams, entityMetadataParams)
       )
     );
-    
+
     // Test InvalidObjectId
     // acutally valid now contrary to its name
     invalidParams = EntityRecordParams({
@@ -512,8 +497,13 @@ contract EntityRecordTest is MudTest {
       itemId: SMART_CHARACTER_ITEM_ID,
       volume: 0
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(SmartCharacterSystem.SmartCharacter_InvalidObjectId.selector, invalidSmartCharacterObjectId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartCharacterSystem.SmartCharacter_InvalidObjectId.selector,
+        invalidSmartCharacterObjectId
+      )
+    );
     world.call(
       mockSystemId,
       abi.encodeCall(
@@ -563,10 +553,10 @@ contract EntityRecordTest is MudTest {
   //   singletonObjectId = _calculateObjectId(SINGLETON_TYPE_ID, SINGLETON_ITEM_ID, true);
   //   singletonClassId = _calculateObjectId(SINGLETON_TYPE_ID, 0, false);
   //   nonSingletonObjectId = _calculateObjectId(NON_SINGLETON_TYPE_ID, 0, false);
-    
+
   //   // Create a single reusable item array for revert tests
   //   CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
-    
+
   //   // Initial valid values
   //   testItems[0] = CreateInventoryItemParams({
   //     smartObjectId: singletonObjectId,
@@ -576,13 +566,13 @@ contract EntityRecordTest is MudTest {
   //     volume: 10,
   //     quantity: 1
   //   });
-    
+
   //   // Test failure cases
-    
+
   //   // 1. Invalid tenant ID for singleton
   //   bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
   //   testItems[0].tenantId = wrongTenantId;
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, singletonObjectId, wrongTenantId));
   //   world.call(
   //     mockSystemId,
@@ -591,14 +581,14 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, testItems)
   //     )
   //   );
-    
+
   //   // Reset tenant ID to valid value
   //   testItems[0].tenantId = tenantId;
-    
+
   //   // 2. Invalid object ID for singleton
   //   uint256 incorrectSingletonObjectId = singletonObjectId + 1;
   //   testItems[0].smartObjectId = incorrectSingletonObjectId;
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
   //   world.call(
   //     mockSystemId,
@@ -607,13 +597,13 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, testItems)
   //     )
   //   );
-    
+
   //   // Reset to valid object ID
   //   testItems[0].smartObjectId = singletonObjectId;
-    
+
   //   // 3. Invalid quantity for singleton
   //   testItems[0].quantity = 2; // Should be 1 for singleton
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, singletonObjectId, 2));
   //   world.call(
   //     mockSystemId,
@@ -622,16 +612,16 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, testItems)
   //     )
   //   );
-    
+
   //   // Reset to valid quantity
   //   testItems[0].quantity = 1;
-    
+
   //   // 4. Invalid object ID for non-singleton
   //   uint256 incorrectNonSingletonObjectId = nonSingletonObjectId + 1;
   //   testItems[0].smartObjectId = incorrectNonSingletonObjectId;
   //   testItems[0].typeId = NON_SINGLETON_TYPE_ID;
   //   testItems[0].itemId = 0;
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
   //   world.call(
   //     mockSystemId,
@@ -640,13 +630,13 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, testItems)
   //     )
   //   );
-    
+
   //   // Reset to valid non-singleton values
   //   testItems[0].smartObjectId = nonSingletonObjectId;
-    
+
   //   // 5. Invalid quantity (zero) for non-singleton
   //   testItems[0].quantity = 0; // Should be > 0 for non-singleton
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
   //   world.call(
   //     mockSystemId,
@@ -655,10 +645,10 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, testItems)
   //     )
   //   );
-    
+
   //   // Setup for successful test case
   //   CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
-    
+
   //   // Singleton item
   //   items[0] = CreateInventoryItemParams({
   //     smartObjectId: singletonObjectId,
@@ -668,7 +658,7 @@ contract EntityRecordTest is MudTest {
   //     volume: 10,
   //     quantity: 1
   //   });
-    
+
   //   // Non-singleton item
   //   items[1] = CreateInventoryItemParams({
   //     smartObjectId: nonSingletonObjectId,
@@ -678,11 +668,11 @@ contract EntityRecordTest is MudTest {
   //     volume: 5,
   //     quantity: 5
   //   });
-    
+
   //   // Check initial state - records should not exist
   //   assertEq(EntityRecord.getExists(singletonObjectId), false);
   //   assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
-    
+
   //   // Create and deposit inventory items
   //   world.call(
   //     mockSystemId,
@@ -691,7 +681,7 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, items)
   //     )
   //   );
-    
+
   //   // Verify records were created with correct values
   //   // Singleton item
   //   assertEq(EntityRecord.getExists(singletonObjectId), true);
@@ -706,14 +696,14 @@ contract EntityRecordTest is MudTest {
   //   assertEq(EntityRecord.getTypeId(singletonClassId), SINGLETON_TYPE_ID);
   //   assertEq(EntityRecord.getItemId(singletonClassId), 0);
   //   assertEq(EntityRecord.getVolume(singletonClassId), 10);
-    
+
   //   // Non-singleton item
   //   assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
   //   assertEq(EntityRecord.getTenantId(nonSingletonObjectId), tenantId);
   //   assertEq(EntityRecord.getTypeId(nonSingletonObjectId), NON_SINGLETON_TYPE_ID);
   //   assertEq(EntityRecord.getItemId(nonSingletonObjectId), 0);
   //   assertEq(EntityRecord.getVolume(nonSingletonObjectId), 5);
-  
+
   //   vm.stopPrank();
   // }
 
@@ -724,10 +714,10 @@ contract EntityRecordTest is MudTest {
   //   ephemeralSingletonObjectId = _calculateObjectId(SINGLETON_TYPE_ID, EPHEMERAL_ITEM_ID, true);
   //   ephemeralSingletonClassId = _calculateObjectId(SINGLETON_TYPE_ID, 0, false);
   //   nonSingletonObjectId = _calculateObjectId(NON_SINGLETON_TYPE_ID, 0, false);
-    
+
   //   // Create a single reusable item array for revert tests
   //   CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
-    
+
   //   // Initial valid values
   //   testItems[0] = CreateInventoryItemParams({
   //     smartObjectId: ephemeralSingletonObjectId,
@@ -737,13 +727,13 @@ contract EntityRecordTest is MudTest {
   //     volume: 10,
   //     quantity: 1
   //   });
-    
+
   //   // Test failure cases
-    
+
   //   // 1. Invalid tenant ID for singleton
   //   bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
   //   testItems[0].tenantId = wrongTenantId;
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, ephemeralSingletonObjectId, wrongTenantId));
   //   world.call(
   //     mockSystemId,
@@ -752,14 +742,14 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, bob, testItems)
   //     )
   //   );
-    
+
   //   // Reset tenant ID to valid value
   //   testItems[0].tenantId = tenantId;
-    
+
   //   // 2. Invalid object ID for singleton
   //   uint256 incorrectSingletonObjectId = ephemeralSingletonObjectId + 1;
   //   testItems[0].smartObjectId = incorrectSingletonObjectId;
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
   //   world.call(
   //     mockSystemId,
@@ -768,13 +758,13 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, bob,testItems)
   //     )
   //   );
-    
+
   //   // Reset to valid object ID
   //   testItems[0].smartObjectId = ephemeralSingletonObjectId;
-    
+
   //   // 3. Invalid quantity for singleton
   //   testItems[0].quantity = 2; // Should be 1 for singleton
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, ephemeralSingletonObjectId, 2));
   //   world.call(
   //     mockSystemId,
@@ -783,16 +773,16 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, bob, testItems)
   //     )
   //   );
-    
+
   //   // Reset to valid quantity
   //   testItems[0].quantity = 1;
-    
+
   //   // 4. Invalid object ID for non-singleton
   //   uint256 incorrectNonSingletonObjectId = nonSingletonObjectId + 1;
   //   testItems[0].smartObjectId = incorrectNonSingletonObjectId;
   //   testItems[0].typeId = NON_SINGLETON_TYPE_ID;
   //   testItems[0].itemId = 0;
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
   //   world.call(
   //     mockSystemId,
@@ -801,13 +791,13 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, bob, testItems)
   //     )
   //   );
-    
+
   //   // Reset to valid non-singleton values
   //   testItems[0].smartObjectId = nonSingletonObjectId;
-    
+
   //   // 5. Invalid quantity (zero) for non-singleton
   //   testItems[0].quantity = 0; // Should be > 0 for non-singleton
-    
+
   //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
   //   world.call(
   //     mockSystemId,
@@ -816,10 +806,10 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, bob, testItems)
   //     )
   //   );
-    
+
   //   // Setup for successful test case
   //   CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
-    
+
   //   // Singleton item
   //   items[0] = CreateInventoryItemParams({
   //     smartObjectId: ephemeralSingletonObjectId,
@@ -829,7 +819,7 @@ contract EntityRecordTest is MudTest {
   //     volume: 10,
   //     quantity: 1
   //   });
-    
+
   //   // Non-singleton item
   //   items[1] = CreateInventoryItemParams({
   //     smartObjectId: nonSingletonObjectId,
@@ -839,11 +829,11 @@ contract EntityRecordTest is MudTest {
   //     volume: 5,
   //     quantity: 5
   //   });
-    
+
   //   // Check initial state - records should not exist
   //   assertEq(EntityRecord.getExists(ephemeralSingletonObjectId), false);
   //   assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
-    
+
   //   // Create and deposit ephemeral inventory items
   //   world.call(
   //     mockSystemId,
@@ -852,7 +842,7 @@ contract EntityRecordTest is MudTest {
   //       (smartObjectId, bob, items)
   //     )
   //   );
-    
+
   //   // Verify records were created with correct values
   //   // Singleton item
   //   assertEq(EntityRecord.getExists(ephemeralSingletonObjectId), true);
@@ -867,31 +857,33 @@ contract EntityRecordTest is MudTest {
   //   assertEq(EntityRecord.getTypeId(ephemeralSingletonClassId), SINGLETON_TYPE_ID);
   //   assertEq(EntityRecord.getItemId(ephemeralSingletonClassId), 0);
   //   assertEq(EntityRecord.getVolume(ephemeralSingletonClassId), 10);
-    
+
   //   // Non-singleton item
   //   assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
   //   assertEq(EntityRecord.getTenantId(nonSingletonObjectId), tenantId);
   //   assertEq(EntityRecord.getTypeId(nonSingletonObjectId), NON_SINGLETON_TYPE_ID);
   //   assertEq(EntityRecord.getItemId(nonSingletonObjectId), 0);
   //   assertEq(EntityRecord.getVolume(nonSingletonObjectId), 5);
-  
+
   //   vm.stopPrank();
   // }
 
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    
-    if (itemId != 0) { // For singleton items
+
+    if (itemId != 0) {
+      // For singleton items
       EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
         EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
-    } else { // For non-singleton items
+    } else {
+      // For non-singleton items
       EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
-    
+
     if (!Entity.getExists(classId)) {
       entitySystem.registerClass(classId, new ResourceId[](0));
     }
