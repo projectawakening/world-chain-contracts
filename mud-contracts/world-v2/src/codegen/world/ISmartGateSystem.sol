@@ -18,6 +18,7 @@ interface ISmartGateSystem {
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
 
   function evefrontier__createAndAnchorGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
 
@@ -33,7 +34,11 @@ interface ISmartGateSystem {
     uint256 destinationGateId
   ) external returns (bool);
 
+  function evefrontier__areGatesOnline(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
+
   function evefrontier__isGateLinked(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
+
+  function evefrontier__isAnyGateLinked(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
 
   function evefrontier__isWithinRange(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
 
