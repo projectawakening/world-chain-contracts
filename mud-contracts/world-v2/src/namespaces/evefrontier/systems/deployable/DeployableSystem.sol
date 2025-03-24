@@ -6,6 +6,8 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
+import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
 
 // Local namespace tables
 import { 
@@ -19,7 +21,8 @@ import {
   Location, 
   LocationData,
   Inventory,
-  InventoryItem
+  InventoryItem,
+  EntityRecord
 } from "../../codegen/index.sol";
 
 // Local namespace systems
@@ -29,10 +32,12 @@ import { locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
 import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLib.sol";
 import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
+import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 /**
  * @title DeployableSystem
@@ -114,8 +119,10 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     // TODO: the following is a candidate for hook logic
-    // set the initial inventory data version to 1
-    if (Inventory.getVersion(smartObjectId) == 0) {
+    // check if this deploybale has inventory scoped to itset the initial inventory data version to 1
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    TagId systemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId())));
+    if (EntityTagMap.getHasTag(classId, systemTagId)) {
       Inventory.setVersion(smartObjectId, 1);
     }
     
@@ -156,7 +163,9 @@ contract DeployableSystem is SmartObjectFramework {
     // increment the inventory data version (this will make ALL previous inventory item data stale)
     // reset the used capacity to 0
     // TODO: the following is a candidate for hook logic and optimization
-    if (Inventory.getVersion(smartObjectId) != 0) {
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    TagId systemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId())));
+    if (EntityTagMap.getHasTag(classId, systemTagId)) {
       Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
       Inventory.setUsedCapacity(smartObjectId, 0);
     }
@@ -247,7 +256,9 @@ contract DeployableSystem is SmartObjectFramework {
     // increment the inventory data version (this will make ALL previous inventory item data stale)
     // reset the used capacity to 0
     // TODO: the following is a candidate for hook logic and optimization
-    if (Inventory.getVersion(smartObjectId) != 0) {
+    uint256 classId = uint256(keccak256(abi.encodePacked(EntityRecord.getTenantId(smartObjectId), EntityRecord.getTypeId(smartObjectId))));
+    TagId systemTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId())));
+    if (EntityTagMap.getHasTag(classId, systemTagId)) {
       Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
       Inventory.setUsedCapacity(smartObjectId, 0);
     }

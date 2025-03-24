@@ -9,6 +9,7 @@ import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.s
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
+import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 
@@ -16,7 +17,10 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { tagSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/TagSystemLib.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
+import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
+import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
 import { 
@@ -63,6 +67,7 @@ import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/in
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
+
 
 // Create a mock system to properly test system-to-system calls
 contract MockDeployableInteractSystem is System {
@@ -278,8 +283,8 @@ contract DeployableTest is MudTest {
     assertEq(location.y, 1001, "Y coordinate should match");
     assertEq(location.z, 1002, "Z coordinate should match");
     
-    // Verify inventory was initialized
-    assertEq(Inventory.getVersion(smartObjectId), 1, "Inventory version should be 1");
+    // // Verify inventory was initialized
+    // assertEq(Inventory.getVersion(smartObjectId), 1, "Inventory version should be 1");
   }
 
   function test_CreateDeployable(
@@ -374,9 +379,6 @@ contract DeployableTest is MudTest {
     assertEq(fuel.fuelMaxCapacity, fuelMaxCapacity, "Fuel max capacity should be set correctly");
     assertEq(fuel.fuelAmount, 0, "Initial fuel amount should be zero");
     
-    // Check inventory setup
-    assertEq(Inventory.getVersion(smartObjectId), 1, "Inventory version should be initialized to 1");
-    
     // Creating deployable when state is not NULL should revert
     // Current state after first creation is UNANCHORED
     vm.prank(alice, deployer);
@@ -419,7 +421,7 @@ contract DeployableTest is MudTest {
     assertEq(uint8(DeployableState.getCurrentState(smartObjectId)), uint8(State.ANCHORED), "Initial state should be ANCHORED");
     assertTrue(DeployableState.getIsValid(smartObjectId), "Deployable should be valid initially");
     assertEq(ownershipSystem.owner(smartObjectId), alice, "Owner should be alice");
-    uint256 inventoryVersionBefore = Inventory.getVersion(smartObjectId);
+    // uint256 inventoryVersionBefore = Inventory.getVersion(smartObjectId);
     
     // Test successful case: Destroy the ANCHORED deployable
     vm.prank(deployer);
@@ -430,7 +432,6 @@ contract DeployableTest is MudTest {
     assertEq(uint8(DeployableState.getPreviousState(smartObjectId)), uint8(State.ANCHORED), "Previous state should be ANCHORED");
 
     assertEq(ownershipSystem.owner(smartObjectId), address(0), "Owner should be removed");
-    assertEq(Inventory.getVersion(smartObjectId), inventoryVersionBefore + 1, "Inventory version should be incremented");
   }
 
   function test_Anchor(
@@ -584,12 +585,7 @@ contract DeployableTest is MudTest {
     assertTrue(DeployableState.getIsValid(smartObjectId), "Deployable should be valid when anchored");
     assertEq(uint8(DeployableState.getCurrentState(smartObjectId)), uint8(State.ANCHORED), "State should be ANCHORED");
     assertEq(ownershipSystem.owner(smartObjectId), alice, "Owner should be alice before unanchoring");
-    uint256 inventoryVersionBefore = Inventory.getVersion(smartObjectId);
-    
-    // Add some used capacity to verify it gets reset
-    vm.prank(deployer);
-    Inventory.setUsedCapacity(smartObjectId, 500);
-    
+
     // UNANCHOR the deployable
     vm.prank(alice, deployer);
     deployableSystem.unanchor(smartObjectId);
@@ -601,10 +597,6 @@ contract DeployableTest is MudTest {
     
     // Validity flag
     assertFalse(DeployableState.getIsValid(smartObjectId), "Deployable should not be valid after unanchoring");
-    
-    // Inventory version incremented and capacity reset
-    assertEq(Inventory.getVersion(smartObjectId), inventoryVersionBefore + 1, "Inventory version should be incremented");
-    assertEq(Inventory.getUsedCapacity(smartObjectId), 0, "Used capacity should be reset to 0");
     
     // Ownership removed
     assertEq(ownershipSystem.owner(smartObjectId), address(0), "Ownership should be removed");
@@ -836,6 +828,82 @@ contract DeployableTest is MudTest {
     assertEq(GlobalDeployableState.getIsPaused(), false, "Deployables should be resumed");
     assertEq(GlobalDeployableState.getUpdatedBlockNumber(), block.number, "Updated block number should be set");
     assertEq(GlobalDeployableState.getLastGlobalOnline(), block.timestamp, "Last global online should be set");
+  }
+
+  function test_Inventory_interaction() public {
+    //add inventory to the class scope
+    TagParams memory inventoryTagParams = TagParams(
+      TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(inventorySystem.toResourceId()))),
+      abi.encode(
+        ResourceRelationValue("COMPOSITION", RESOURCE_SYSTEM, ResourceIdInstance.getResourceName(inventorySystem.toResourceId()))
+      )
+    );
+
+    vm.prank(deployer);
+    // tag the smart character class with the mock system
+    tagSystem.setTag(deployableObjectClassId, inventoryTagParams);
+
+    // check inventory version
+    assertEq(Inventory.getVersion(smartObjectId), 0, "Inventory version should be 0");
+
+    // create a deployable
+    vm.prank(alice, deployer);
+    deployableSystem.createAndAnchor(CreateAndAnchorParams(
+      smartObjectId,
+      "SSU",
+      EntityRecordParams({
+        tenantId: tenantId,
+        typeId: SMART_OBJECT_TYPE_ID,
+        itemId: SMART_OBJECT_ID,
+        volume: 1000
+      }),
+      alice,
+      10,
+      60,
+      100000000,
+      LocationData({
+        solarSystemId: 1,
+        x: 1000,
+        y: 1001,
+        z: 1002
+      })
+    ));
+
+    // check inventory was initialized
+    assertEq(Inventory.getVersion(smartObjectId), 1, "Inventory version should be 1");
+    
+    // mock Inventory used capacity
+    vm.prank(deployer);
+    Inventory.setUsedCapacity(smartObjectId, 500);
+
+    // unanchor the deployable
+    vm.startPrank(alice, deployer);
+    deployableSystem.unanchor(smartObjectId);
+
+    // check inventory state
+    assertEq(Inventory.getVersion(smartObjectId), 2, "Inventory version should be 2");
+    assertEq(Inventory.getUsedCapacity(smartObjectId), 0, "Inventory used capacity should be 0");
+
+    // anchor the deployable
+    
+    deployableSystem.anchor(
+      smartObjectId,
+      alice,
+      LocationData({solarSystemId: 1, x: 100, y: 200, z: 300})
+    );
+    vm.stopPrank();
+
+    // mock Inventory capacity again
+    vm.prank(deployer);
+    Inventory.setUsedCapacity(smartObjectId, 500);
+
+    // destroy the deployable
+    vm.prank(deployer);
+    deployableSystem.destroyDeployable(smartObjectId);
+
+    // check inventory state
+    assertEq(Inventory.getVersion(smartObjectId), 3, "Inventory version should be 3");
+    assertEq(Inventory.getUsedCapacity(smartObjectId), 0, "Inventory used capacity should be 0");
   }
 
   // Helper function to setup item records
