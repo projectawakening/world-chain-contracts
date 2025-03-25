@@ -359,11 +359,11 @@ contract OwnershipTest is MudTest {
   }
 
   // Helper function to simulate a proper system-to-system call to removeOwner
-  function _simulateRemoveOwnerCall(uint256 releaseObjectId, address from) internal {
+  function _simulateRemoveOwnerCall(uint256 removeObjectId, address from) internal {
     // Call the ownership system through our mock system to get callCount > 1
     world.call(
       mockSystemId,
-      abi.encodeWithSelector(MockOwnershipInteractSystem.callRemoveOwner.selector, releaseObjectId, from)
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callRemoveOwner.selector, removeObjectId, from)
     );
   }
 }
