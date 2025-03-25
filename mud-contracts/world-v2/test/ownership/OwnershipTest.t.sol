@@ -281,7 +281,7 @@ contract OwnershipTest is MudTest {
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
 
     // Setup entity record to make it a singleton
-     _setupEntityRecord(newSmartObjectId, testObjectTypeId, testObjectItemId, 100);
+    _setupEntityRecord(newSmartObjectId, testObjectTypeId, testObjectItemId, 100);
 
     // assign ownership to alice
     ownershipSystem.assignOwner(newSmartObjectId, alice);
@@ -316,8 +316,6 @@ contract OwnershipTest is MudTest {
     ownershipSystem.assignOwner(newSmartObjectId, bob);
     assertEq(ownershipSystem.owner(newSmartObjectId), bob, "Smart object should be owned by Bob after re-assigning");
   }
-
-
 
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {

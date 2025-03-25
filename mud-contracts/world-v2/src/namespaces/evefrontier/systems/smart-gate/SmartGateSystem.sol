@@ -188,7 +188,6 @@ contract SmartGateSystem is SmartObjectFramework {
     return sourceGateState == State.ONLINE && destinationGateState == State.ONLINE;
   }
 
-
   /**
    * @notice view function to check if the source gate is linked to the destination gate
    * @param sourceGateId is the smartObjectId of the source gate

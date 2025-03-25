@@ -145,11 +145,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyAdminOrOwner.selector
       );
-      accessConfigSystem.setAccessEnforcement(
-        entityRecordSystem.toResourceId(),
-        onlyAdminOrOwnerSelectors[i],
-        true
-      );
+      accessConfigSystem.setAccessEnforcement(entityRecordSystem.toResourceId(), onlyAdminOrOwnerSelectors[i], true);
     }
 
     bytes4[2] memory onlyClassScopedOrCharAdminOrOwnerSelectors = [
@@ -319,16 +315,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyDirectAdmin.selector
       );
-      accessConfigSystem.setAccessEnforcement(
-        deployableSystem.toResourceId(),
-        onlyDirectAdminSelectors[i],
-        true
-      );
-      accessConfigSystem.setAccessEnforcement(
-        deployableSystem.toResourceId(),
-        onlyDirectAdminSelectors[i],
-        true
-      );
+      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
     }
 
     bytes4[3] memory onlyAdminSupportedSelectors = [
@@ -344,11 +332,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyAdminSupportedAccess.selector
       );
-      accessConfigSystem.setAccessEnforcement(
-        deployableSystem.toResourceId(),
-        onlyAdminSupportedSelectors[i],
-        true
-      );
+      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyAdminSupportedSelectors[i], true);
     }
 
     bytes4[1] memory deployableOnlyOwnerWithAdminSupportAccessSelectors = [DeployableSystem.unanchor.selector];
@@ -406,11 +390,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyAdminOrClassScopedAccess.selector
       );
-      accessConfigSystem.setAccessEnforcement(
-        inventorySystem.toResourceId(),
-        onlyAdminOrClassScopedSelectors[i],
-        true
-      );
+      accessConfigSystem.setAccessEnforcement(inventorySystem.toResourceId(), onlyAdminOrClassScopedSelectors[i], true);
     }
 
     bytes4[3] memory inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors = [

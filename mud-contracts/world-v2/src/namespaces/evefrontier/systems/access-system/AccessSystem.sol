@@ -181,10 +181,7 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
   }
 
-  function onlyClassScopedOrCharAdminOrOwner( 
-    uint256 smartObjectId,
-    bytes memory data
-  ) public view {
+  function onlyClassScopedOrCharAdminOrOwner(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     address caller = msgSender;
