@@ -118,8 +118,8 @@ contract InventoryTest is MudTest {
     tenantId = keccak256(abi.encodePacked("TEST"));
 
     // Setup smart object IDs
-    smartObjectId = _calculateObjectId(SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, true);
-    secondObjectId = _calculateObjectId(SECOND_OBJECT_ID, SMART_OBJECT_TYPE_ID, true);
+    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
+    secondObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SECOND_OBJECT_ID, true);
 
     // Create resource ID for the mock system using the proper format
     bytes14 namespace = bytes14("evefrontier");
@@ -203,14 +203,14 @@ contract InventoryTest is MudTest {
     inventorySystem.setCapacity(secondObjectId, capacity);
 
     // Calculate itemObjectIds
-    item1ObjectId = _calculateObjectId(ITEM1_ID, ITEM_TYPE_ID, true); // Singleton item
-    item2ObjectId = _calculateObjectId(0, ITEM_TYPE_ID_NON_SINGLETON, false); // Non-singleton item
-    transferItemObjectId = _calculateObjectId(0, TRANSFER_ITEM_TYPE_ID, false); // Non-singleton item
+    item1ObjectId = _calculateObjectId(ITEM_TYPE_ID, ITEM1_ID, true); // Singleton item
+    item2ObjectId = _calculateObjectId(ITEM_TYPE_ID_NON_SINGLETON, 0, false); // Non-singleton item
+    transferItemObjectId = _calculateObjectId(TRANSFER_ITEM_TYPE_ID, 0, false); // Non-singleton item
 
     // Set up item records with the correct parameters
-    _setupEntityRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
-    _setupEntityRecord(item2ObjectId, 0, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
-    _setupEntityRecord(transferItemObjectId, 0, TRANSFER_ITEM_TYPE_ID, ITEM_VOLUME);
+    _setupEntityRecord(item1ObjectId, ITEM_TYPE_ID, ITEM1_ID, ITEM_VOLUME);
+    _setupEntityRecord(item2ObjectId, ITEM_TYPE_ID_NON_SINGLETON, 0, ITEM_VOLUME);
+    _setupEntityRecord(transferItemObjectId, TRANSFER_ITEM_TYPE_ID, 0, ITEM_VOLUME);
     vm.stopPrank();
     vm.resumeGasMetering();
   }
@@ -258,10 +258,10 @@ contract InventoryTest is MudTest {
   // Test creating and depositing inventory items
   function test_createAndDepositInventory() public {
     // Calculate object IDs for the new items
-    uint256 singletonObjectId = _calculateObjectId(CREATE_SINGLETON_ITEM_ID, CREATE_SINGLETON_ITEM_TYPE_ID, true);
+    uint256 singletonObjectId = _calculateObjectId(CREATE_SINGLETON_ITEM_TYPE_ID, CREATE_SINGLETON_ITEM_ID, true);
     uint256 nonSingletonObjectId = _calculateObjectId(
-      CREATE_NON_SINGLETON_ITEM_ID,
       CREATE_NON_SINGLETON_ITEM_TYPE_ID,
+      CREATE_NON_SINGLETON_ITEM_ID,
       false
     );
 
@@ -508,7 +508,7 @@ contract InventoryTest is MudTest {
     // Verify ownership was assigned to inventory for singleton item
     assertEq(InventoryByItem.getInventoryObjectId(item1ObjectId), smartObjectId);
 
-    // Test system-to-system call behavior (callCount > 1)
+    // Test system-to-system call behavior
     // First deposit the transfer item into the first inventory
     InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
     transferItems[0] = InventoryItemParams({ smartObjectId: transferItemObjectId, quantity: 7 });
@@ -589,7 +589,6 @@ contract InventoryTest is MudTest {
     vm.warp(block.timestamp + 20 minutes);
     deployableSystem.unanchor(smartObjectId);
     deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 30000142, x: 100, y: 100, z: 100 }));
-    // fuelSystem.depositFuel(smartObjectId, 100000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
 
@@ -896,7 +895,7 @@ contract InventoryTest is MudTest {
       uint256 itemVolume = 5 + i;
 
       // Calculate object ID
-      uint256 objectId = _calculateObjectId(itemId, typeId, makeSingleton);
+      uint256 objectId = _calculateObjectId(typeId, itemId, makeSingleton);
 
       // Store item data
       testItemIds[i] = itemId;
@@ -907,7 +906,7 @@ contract InventoryTest is MudTest {
 
       // Setup entity record for the item
       vm.startPrank(deployer);
-      _setupEntityRecord(objectId, itemId, typeId, itemVolume);
+      _setupEntityRecord(objectId, typeId, itemId, itemVolume);
       vm.stopPrank();
     }
 
@@ -1053,19 +1052,19 @@ contract InventoryTest is MudTest {
   }
 
   // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
 
     if (itemId != 0) {
       // For singleton items
-      EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
+      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
+        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
     } else {
       // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
+      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
 
     if (!Entity.getExists(classId)) {
@@ -1073,8 +1072,8 @@ contract InventoryTest is MudTest {
     }
   }
 
-  // Add a helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+  // Helper function to calculate itemObjectId
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
     if (isSingleton) {
       // For singleton items: hash of tenantId and itemId
       return uint256(keccak256(abi.encodePacked(tenantId, itemId)));

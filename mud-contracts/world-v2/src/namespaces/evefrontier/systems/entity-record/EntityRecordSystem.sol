@@ -30,8 +30,8 @@ contract EntityRecordSystem is SmartObjectFramework {
       smartObjectId,
       true,
       entityRecordParams.tenantId,
-      entityRecordParams.itemId,
       entityRecordParams.typeId,
+      entityRecordParams.itemId,
       entityRecordParams.volume
     );
   }

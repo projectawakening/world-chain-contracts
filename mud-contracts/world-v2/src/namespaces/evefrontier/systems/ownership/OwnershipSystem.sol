@@ -7,6 +7,8 @@ import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefr
 
 import { CharactersByAccount, EntityRecord, Inventory, InventoryByItem, InventoryItem, OwnershipByObject, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem } from "../../codegen/index.sol";
 
+import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
+
 /**
  * @title OwnershipSystem
  * @notice Core system for managing ownership of smart objects
@@ -52,13 +54,13 @@ contract OwnershipSystem is SmartObjectFramework {
    * @param to The owner account address to assign the smart object to
    */
   function assignOwner(uint256 smartObjectId, address to) public access(smartObjectId) {
-    // Check if the object exists
+    /// Check if the object exists
     if (!Entity.getExists(smartObjectId)) {
       revert Ownership_NonexistentObject(smartObjectId);
     }
 
     // Check if the account is valid
-    if (CharactersByAccount.get(to) == 0) {
+    if (_callMsgSender() != smartCharacterSystem.getAddress() && CharactersByAccount.get(to) == 0) {
       revert Ownership_InvalidAccount(to);
     }
 
@@ -73,7 +75,7 @@ contract OwnershipSystem is SmartObjectFramework {
       revert Ownership_AlreadyOwned(smartObjectId, currentOwner);
     }
 
-    // assign ownership of the singleton smart object to the defined account
+    // Assign ownership of the singleton smart object to the defined account
     OwnershipByObject.set(smartObjectId, to);
   }
 

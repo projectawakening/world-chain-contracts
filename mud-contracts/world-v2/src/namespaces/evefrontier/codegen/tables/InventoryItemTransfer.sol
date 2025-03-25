@@ -16,24 +16,25 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct ItemTransferData {
+struct InventoryItemTransferData {
+  uint256 toObjectId;
   address previousOwner;
   address currentOwner;
   uint256 quantity;
   uint256 updatedAt;
 }
 
-library ItemTransfer {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "ItemTransfer", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004974656d5472616e7366657200000000);
+library InventoryItemTransfer {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "InventoryItemTra", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000496e76656e746f72794974656d547261);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0068040014142020000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0088050020141420200000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256, uint256)
   Schema constant _keySchema = Schema.wrap(0x004002001f1f0000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (address, address, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x0068040061611f1f000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, address, address, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x008805001f61611f1f0000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -50,11 +51,12 @@ library ItemTransfer {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](4);
-    fieldNames[0] = "previousOwner";
-    fieldNames[1] = "currentOwner";
-    fieldNames[2] = "quantity";
-    fieldNames[3] = "updatedAt";
+    fieldNames = new string[](5);
+    fieldNames[0] = "toObjectId";
+    fieldNames[1] = "previousOwner";
+    fieldNames[2] = "currentOwner";
+    fieldNames[3] = "quantity";
+    fieldNames[4] = "updatedAt";
   }
 
   /**
@@ -72,6 +74,52 @@ library ItemTransfer {
   }
 
   /**
+   * @notice Get toObjectId.
+   */
+  function getToObjectId(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 toObjectId) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get toObjectId.
+   */
+  function _getToObjectId(uint256 smartObjectId, uint256 itemObjectId) internal view returns (uint256 toObjectId) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set toObjectId.
+   */
+  function setToObjectId(uint256 smartObjectId, uint256 itemObjectId, uint256 toObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((toObjectId)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set toObjectId.
+   */
+  function _setToObjectId(uint256 smartObjectId, uint256 itemObjectId, uint256 toObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+    _keyTuple[1] = bytes32(uint256(itemObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((toObjectId)), _fieldLayout);
+  }
+
+  /**
    * @notice Get previousOwner.
    */
   function getPreviousOwner(uint256 smartObjectId, uint256 itemObjectId) internal view returns (address previousOwner) {
@@ -79,7 +127,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (address(bytes20(_blob)));
   }
 
@@ -94,7 +142,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (address(bytes20(_blob)));
   }
 
@@ -106,7 +154,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((previousOwner)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((previousOwner)), _fieldLayout);
   }
 
   /**
@@ -117,7 +165,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((previousOwner)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((previousOwner)), _fieldLayout);
   }
 
   /**
@@ -128,7 +176,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (address(bytes20(_blob)));
   }
 
@@ -140,7 +188,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (address(bytes20(_blob)));
   }
 
@@ -152,7 +200,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((currentOwner)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((currentOwner)), _fieldLayout);
   }
 
   /**
@@ -163,7 +211,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((currentOwner)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((currentOwner)), _fieldLayout);
   }
 
   /**
@@ -174,7 +222,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -186,7 +234,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -198,7 +246,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((quantity)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((quantity)), _fieldLayout);
   }
 
   /**
@@ -209,7 +257,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((quantity)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((quantity)), _fieldLayout);
   }
 
   /**
@@ -220,7 +268,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -232,7 +280,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -244,7 +292,7 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((updatedAt)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((updatedAt)), _fieldLayout);
   }
 
   /**
@@ -255,13 +303,16 @@ library ItemTransfer {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((updatedAt)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((updatedAt)), _fieldLayout);
   }
 
   /**
    * @notice Get the full data.
    */
-  function get(uint256 smartObjectId, uint256 itemObjectId) internal view returns (ItemTransferData memory _table) {
+  function get(
+    uint256 smartObjectId,
+    uint256 itemObjectId
+  ) internal view returns (InventoryItemTransferData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
@@ -277,7 +328,10 @@ library ItemTransfer {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 smartObjectId, uint256 itemObjectId) internal view returns (ItemTransferData memory _table) {
+  function _get(
+    uint256 smartObjectId,
+    uint256 itemObjectId
+  ) internal view returns (InventoryItemTransferData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](2);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
     _keyTuple[1] = bytes32(uint256(itemObjectId));
@@ -296,12 +350,13 @@ library ItemTransfer {
   function set(
     uint256 smartObjectId,
     uint256 itemObjectId,
+    uint256 toObjectId,
     address previousOwner,
     address currentOwner,
     uint256 quantity,
     uint256 updatedAt
   ) internal {
-    bytes memory _staticData = encodeStatic(previousOwner, currentOwner, quantity, updatedAt);
+    bytes memory _staticData = encodeStatic(toObjectId, previousOwner, currentOwner, quantity, updatedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -319,12 +374,13 @@ library ItemTransfer {
   function _set(
     uint256 smartObjectId,
     uint256 itemObjectId,
+    uint256 toObjectId,
     address previousOwner,
     address currentOwner,
     uint256 quantity,
     uint256 updatedAt
   ) internal {
-    bytes memory _staticData = encodeStatic(previousOwner, currentOwner, quantity, updatedAt);
+    bytes memory _staticData = encodeStatic(toObjectId, previousOwner, currentOwner, quantity, updatedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -339,8 +395,9 @@ library ItemTransfer {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 smartObjectId, uint256 itemObjectId, ItemTransferData memory _table) internal {
+  function set(uint256 smartObjectId, uint256 itemObjectId, InventoryItemTransferData memory _table) internal {
     bytes memory _staticData = encodeStatic(
+      _table.toObjectId,
       _table.previousOwner,
       _table.currentOwner,
       _table.quantity,
@@ -360,8 +417,9 @@ library ItemTransfer {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 smartObjectId, uint256 itemObjectId, ItemTransferData memory _table) internal {
+  function _set(uint256 smartObjectId, uint256 itemObjectId, InventoryItemTransferData memory _table) internal {
     bytes memory _staticData = encodeStatic(
+      _table.toObjectId,
       _table.previousOwner,
       _table.currentOwner,
       _table.quantity,
@@ -383,14 +441,20 @@ library ItemTransfer {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (address previousOwner, address currentOwner, uint256 quantity, uint256 updatedAt) {
-    previousOwner = (address(Bytes.getBytes20(_blob, 0)));
+  )
+    internal
+    pure
+    returns (uint256 toObjectId, address previousOwner, address currentOwner, uint256 quantity, uint256 updatedAt)
+  {
+    toObjectId = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    currentOwner = (address(Bytes.getBytes20(_blob, 20)));
+    previousOwner = (address(Bytes.getBytes20(_blob, 32)));
 
-    quantity = (uint256(Bytes.getBytes32(_blob, 40)));
+    currentOwner = (address(Bytes.getBytes20(_blob, 52)));
 
-    updatedAt = (uint256(Bytes.getBytes32(_blob, 72)));
+    quantity = (uint256(Bytes.getBytes32(_blob, 72)));
+
+    updatedAt = (uint256(Bytes.getBytes32(_blob, 104)));
   }
 
   /**
@@ -403,8 +467,10 @@ library ItemTransfer {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (ItemTransferData memory _table) {
-    (_table.previousOwner, _table.currentOwner, _table.quantity, _table.updatedAt) = decodeStatic(_staticData);
+  ) internal pure returns (InventoryItemTransferData memory _table) {
+    (_table.toObjectId, _table.previousOwner, _table.currentOwner, _table.quantity, _table.updatedAt) = decodeStatic(
+      _staticData
+    );
   }
 
   /**
@@ -434,12 +500,13 @@ library ItemTransfer {
    * @return The static data, encoded into a sequence of bytes.
    */
   function encodeStatic(
+    uint256 toObjectId,
     address previousOwner,
     address currentOwner,
     uint256 quantity,
     uint256 updatedAt
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(previousOwner, currentOwner, quantity, updatedAt);
+    return abi.encodePacked(toObjectId, previousOwner, currentOwner, quantity, updatedAt);
   }
 
   /**
@@ -449,12 +516,13 @@ library ItemTransfer {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
+    uint256 toObjectId,
     address previousOwner,
     address currentOwner,
     uint256 quantity,
     uint256 updatedAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(previousOwner, currentOwner, quantity, updatedAt);
+    bytes memory _staticData = encodeStatic(toObjectId, previousOwner, currentOwner, quantity, updatedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

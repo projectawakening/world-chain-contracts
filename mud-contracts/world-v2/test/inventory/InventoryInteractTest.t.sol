@@ -20,16 +20,13 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, ObjectItemTransfer, ObjectItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
-import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { EphemeralInteractSystem, ephemeralInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
 import { InventoryInteractSystem, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
-import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
@@ -111,13 +108,13 @@ contract EphemeralInteractTest is MudTest {
 
     // Setup smart object IDs
     inventoryObjectId = _calculateObjectId(
-      SMART_OBJECT_ITEM_ID,
       EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+      SMART_OBJECT_ITEM_ID,
       true
     );
     inventoryObjectId2 = _calculateObjectId(
-      SMART_OBJECT_ITEM_ID_2,
       EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+      SMART_OBJECT_ITEM_ID_2,
       true
     );
 
@@ -185,12 +182,12 @@ contract EphemeralInteractTest is MudTest {
     );
 
     // Calculate itemObjectIds
-    item1ObjectId = _calculateObjectId(ITEM1_ID, ITEM_TYPE_ID, true); // Singleton item
-    item2ObjectId = _calculateObjectId(0, ITEM_TYPE_ID_NON_SINGLETON, false); // Non-singleton item
+    item1ObjectId = _calculateObjectId(ITEM_TYPE_ID, ITEM1_ID, true); // Singleton item
+    item2ObjectId = _calculateObjectId(ITEM_TYPE_ID_NON_SINGLETON, 0, false); // Non-singleton item
 
     // Set up item records with the correct parameters
-    _setupEntityRecord(item1ObjectId, ITEM1_ID, ITEM_TYPE_ID, ITEM_VOLUME);
-    _setupEntityRecord(item2ObjectId, 0, ITEM_TYPE_ID_NON_SINGLETON, ITEM_VOLUME);
+    _setupEntityRecord(item1ObjectId, ITEM_TYPE_ID, ITEM1_ID, ITEM_VOLUME);
+    _setupEntityRecord(item2ObjectId, ITEM_TYPE_ID_NON_SINGLETON, 0, ITEM_VOLUME);
     vm.stopPrank();
 
     // Bring Alice's SSU online
@@ -319,11 +316,14 @@ contract EphemeralInteractTest is MudTest {
     assertEq(InventoryItem.getQuantity(inventoryObjectId2, item2ObjectId), 4); // 3+1=4
 
     // verify item transfer record is being populated (the last item to be transfered will be stored here)
-    ObjectItemTransferData memory objectItemTransferData = ObjectItemTransfer.get(inventoryObjectId, item2ObjectId);
-    assertEq(objectItemTransferData.previousOwner, alice);
-    assertEq(objectItemTransferData.currentOwner, bob);
-    assertEq(objectItemTransferData.quantity, 1);
-    assertEq(objectItemTransferData.updatedAt, block.timestamp);
+    InventoryItemTransferData memory inventoryItemTransferData = InventoryItemTransfer.get(
+      inventoryObjectId,
+      item2ObjectId
+    );
+    assertEq(inventoryItemTransferData.previousOwner, alice);
+    assertEq(inventoryItemTransferData.currentOwner, bob);
+    assertEq(inventoryItemTransferData.quantity, 1);
+    assertEq(inventoryItemTransferData.updatedAt, block.timestamp);
   }
 
   function test_SetTransferToInventoryAccess() public {
@@ -357,19 +357,19 @@ contract EphemeralInteractTest is MudTest {
   }
 
   // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
 
     if (itemId != 0) {
       // For singleton items
-      EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
+      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
     } else {
       // For non-singleton items
-      EntityRecord.set(classId, true, bytes32(0), 0, typeId, volume);
+      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
 
     if (!Entity.getExists(classId)) {
@@ -377,7 +377,8 @@ contract EphemeralInteractTest is MudTest {
     }
   }
 
-  function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+  // Helper function to calculate itemObjectId
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
     if (isSingleton) {
       // For singleton items: hash of tenantId and itemId
       return uint256(keccak256(abi.encodePacked(tenantId, itemId)));

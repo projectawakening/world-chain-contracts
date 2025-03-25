@@ -7,7 +7,7 @@ import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/na
 import { HasRole, Role } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { ObjectItemTransfer } from "../../codegen/tables/ObjectItemTransfer.sol";
+import { InventoryItemTransfer } from "../../codegen/tables/InventoryItemTransfer.sol";
 
 // Local namespace systems
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
@@ -44,7 +44,7 @@ contract InventoryInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      ObjectItemTransfer.set(
+      InventoryItemTransfer.set(
         smartObjectId,
         items[i].smartObjectId,
         toObjectId,

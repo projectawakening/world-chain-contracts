@@ -292,7 +292,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    */
   function _grantRole(bytes32 role, address account) internal virtual {
     uint256 lengthMembers = Role.lengthMembers(role);
-    
+
     if (!HasRole.getIsMember(role, account)) {
       HasRole.set(role, account, true, lengthMembers);
       Role.pushMembers(role, account);

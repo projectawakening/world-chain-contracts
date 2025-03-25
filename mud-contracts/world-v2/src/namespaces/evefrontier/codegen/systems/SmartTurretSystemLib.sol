@@ -37,7 +37,6 @@ struct RootCallWrapper {
  */
 library SmartTurretSystemLib {
   error SmartTurretSystemLib_CallingFromRootSystem();
-  error SmartTurret_NotConfigured(uint256 smartObjectId);
 
   function createAndAnchorTurret(SmartTurretSystemType self, CreateAndAnchorParams memory params) internal {
     return CallWrapper(self.toResourceId(), address(0)).createAndAnchorTurret(params);
@@ -50,19 +49,11 @@ library SmartTurretSystemLib {
   function inProximity(
     SmartTurretSystemType self,
     uint256 smartObjectId,
-    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
   ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
-    return
-      CallWrapper(self.toResourceId(), address(0)).inProximity(
-        smartObjectId,
-        turretOwnerCharacterId,
-        priorityQueue,
-        turret,
-        turretTarget
-      );
+    return CallWrapper(self.toResourceId(), address(0)).inProximity(smartObjectId, priorityQueue, turret, turretTarget);
   }
 
   function aggression(
@@ -105,7 +96,6 @@ library SmartTurretSystemLib {
   function inProximity(
     CallWrapper memory self,
     uint256 smartObjectId,
-    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
@@ -114,8 +104,8 @@ library SmartTurretSystemLib {
     if (address(_world()) == address(this)) revert SmartTurretSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _inProximity_uint256_uint256_TargetPriorityArray_Turret_SmartTurretTarget.inProximity,
-      (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, turretTarget)
+      _inProximity_uint256_TargetPriorityArray_Turret_SmartTurretTarget.inProximity,
+      (smartObjectId, priorityQueue, turret, turretTarget)
     );
 
     bytes memory result = self.from == address(0)
@@ -173,14 +163,13 @@ library SmartTurretSystemLib {
   function inProximity(
     RootCallWrapper memory self,
     uint256 smartObjectId,
-    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
   ) internal returns (TargetPriority[] memory updatedPriorityQueue) {
     bytes memory systemCall = abi.encodeCall(
-      _inProximity_uint256_uint256_TargetPriorityArray_Turret_SmartTurretTarget.inProximity,
-      (smartObjectId, turretOwnerCharacterId, priorityQueue, turret, turretTarget)
+      _inProximity_uint256_TargetPriorityArray_Turret_SmartTurretTarget.inProximity,
+      (smartObjectId, priorityQueue, turret, turretTarget)
     );
 
     bytes memory result = SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -250,10 +239,9 @@ interface _configureTurret_uint256_ResourceId {
   function configureTurret(uint256 smartObjectId, ResourceId systemId) external;
 }
 
-interface _inProximity_uint256_uint256_TargetPriorityArray_Turret_SmartTurretTarget {
+interface _inProximity_uint256_TargetPriorityArray_Turret_SmartTurretTarget {
   function inProximity(
     uint256 smartObjectId,
-    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget

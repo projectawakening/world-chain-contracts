@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-// MUD core imports
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
@@ -18,7 +15,6 @@ import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.
 
 // Types and parameters
 import { EntityRecordParams } from "../entity-record/types.sol";
-import { DEPLOYMENT_NAMESPACE } from "../constants.sol";
 
 /**
  * @title SmartAssemblySystem
@@ -49,14 +45,14 @@ contract SmartAssemblySystem is SmartObjectFramework {
       (EntityRelationValue)
     );
     // sanity checks
+    if (Tenant.get() != entityRecordParams.tenantId) {
+      revert SmartAssembly_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
+    }
     if (
       uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) !=
       entityRelationValue.relatedEntityId
     ) {
       revert SmartAssembly_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
-    }
-    if (Tenant.get() != entityRecordParams.tenantId) {
-      revert SmartAssembly_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
     }
     if (smartObjectId != uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
       revert SmartAssembly_InvalidObjectId(smartObjectId);
@@ -79,11 +75,8 @@ contract SmartAssemblySystem is SmartObjectFramework {
       revert SmartAssembly_TypeCannotBeEmpty(smartObjectId);
     }
 
-    uint256 assemblyEnumId = SmartAssembly.getAssemblyId(smartObjectId);
-    assemblyEnumId = assemblyEnumId + 1;
-
     if (keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))) {
-      SmartAssembly.set(smartObjectId, assemblyEnumId, assemblyType);
+      SmartAssembly.set(smartObjectId, assemblyType);
     }
   }
 
@@ -100,7 +93,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
     if (keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))) {
       revert SmartAssembly_DoesNotExist(smartObjectId);
     }
-    uint256 assemblyEnumId = SmartAssembly.getAssemblyId(smartObjectId);
-    SmartAssembly.set(smartObjectId, assemblyEnumId, assemblyType);
+
+    SmartAssembly.set(smartObjectId, assemblyType);
   }
 }

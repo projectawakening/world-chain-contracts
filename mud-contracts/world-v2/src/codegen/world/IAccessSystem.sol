@@ -30,6 +30,8 @@ interface IAccessSystem {
   error Access_NotAdminOrClassScoped(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccess(address caller, uint256 smartObjectId);
   error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
+  error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
+  error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
 
   function evefrontier__onlyOwnerOrEphemeralTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
@@ -47,15 +49,19 @@ interface IAccessSystem {
 
   function evefrontier__onlyAdminSupportedAccess(uint256 smartObjectId, bytes memory data) external view;
 
+  function evefrontier__adminSupportOrDirectOwner(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__adminSupportOrDirectOwnerGates(uint256 smartObjectId, bytes memory data) external view;
+
   function evefrontier__onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminForCharOrOwner(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyClassScopedOrCharAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminSupportedOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminSupportedOwnerOrCall(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectEphemeralOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyDirectEphemeralOwnerOrCall(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyCallAccessOrDirectEphemeralOwner(uint256 smartObjectId, bytes memory data) external view;
 
@@ -63,7 +69,7 @@ interface IAccessSystem {
 
   function evefrontier__onlyCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminOrScopeEnforcedCallAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminOrScopeEnforcedCall(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyDirectAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
@@ -86,6 +92,8 @@ interface IAccessSystem {
   ) external view returns (bool);
 
   function evefrontier__isClassScoped(uint256 classId, ResourceId systemId) external view returns (bool);
+
+  function evefrontier__isOwnerOfBothGates(address caller, bytes memory data) external view returns (bool);
 
   function evefrontier__canTransferFromEphemeral(uint256 smartObjectId, address caller) external view returns (bool);
 

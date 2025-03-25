@@ -19,6 +19,7 @@ interface ISmartGateSystem {
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GateNotOnline(uint256 smartObjectId);
 
   function evefrontier__createAndAnchorGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
 

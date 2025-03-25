@@ -43,6 +43,7 @@ library SmartGateSystemLib {
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GateNotOnline(uint256 smartObjectId);
 
   function createAndAnchorGate(
     SmartGateSystemType self,

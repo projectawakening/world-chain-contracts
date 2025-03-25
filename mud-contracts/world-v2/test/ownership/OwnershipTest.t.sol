@@ -19,7 +19,6 @@ import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/e
 
 // Local namespace tables
 import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -34,7 +33,6 @@ import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
@@ -105,10 +103,10 @@ contract OwnershipTest is MudTest {
     tenantId = keccak256(abi.encodePacked("TEST"));
 
     // Setup smart object ID
-    smartObjectId = _calculateObjectId(SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, true);
+    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
     // Register class and setup smart object state
-    uint256 inventoryObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
+    uint256 inventoryObjectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
 
     // Create resource ID for the mock system using the proper format
     bytes14 namespace = bytes14("evefrontier");
@@ -161,12 +159,12 @@ contract OwnershipTest is MudTest {
     inventorySystem.setCapacity(smartObjectId, capacity);
 
     // Calculate itemObjectIds
-    singletonItemObjectId = _calculateObjectId(SINGLETON_ITEM_ID, SINGLETON_ITEM_TYPE_ID, true);
-    nonSingletonItemObjectId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
+    singletonItemObjectId = _calculateObjectId(SINGLETON_ITEM_TYPE_ID, SINGLETON_ITEM_ID, true);
+    nonSingletonItemObjectId = _calculateObjectId(NON_SINGLETON_ITEM_TYPE_ID, 0, false);
 
     // Set up item records with the correct parameters
-    _setupEntityRecord(singletonItemObjectId, SINGLETON_ITEM_ID, SINGLETON_ITEM_TYPE_ID, ITEM_VOLUME);
-    _setupEntityRecord(nonSingletonItemObjectId, 0, NON_SINGLETON_ITEM_TYPE_ID, ITEM_VOLUME);
+    _setupEntityRecord(singletonItemObjectId, SINGLETON_ITEM_TYPE_ID, SINGLETON_ITEM_ID, ITEM_VOLUME);
+    _setupEntityRecord(nonSingletonItemObjectId, NON_SINGLETON_ITEM_TYPE_ID, 0, ITEM_VOLUME);
 
     // Configure access control to allow the mock system to call ownership systems
     ResourceId ownershipSystemId = ownershipSystem.toResourceId();
@@ -208,7 +206,7 @@ contract OwnershipTest is MudTest {
     // Create a simple singleton object
     uint256 testObjectItemId = 7777;
     uint256 testObjectTypeId = 8888;
-    uint256 newSmartObjectId = _calculateObjectId(testObjectItemId, testObjectTypeId, true);
+    uint256 newSmartObjectId = _calculateObjectId(testObjectTypeId, testObjectItemId, true);
 
     // Register a minimal class and instantiate the object
     vm.startPrank(deployer);
@@ -222,7 +220,7 @@ contract OwnershipTest is MudTest {
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
 
     // Setup entity record to make it a singleton
-    _setupEntityRecord(newSmartObjectId, testObjectItemId, testObjectTypeId, 100);
+    _setupEntityRecord(newSmartObjectId, testObjectTypeId, testObjectItemId, 100);
     vm.stopPrank();
 
     // Verify no assigned owner initially
@@ -241,12 +239,12 @@ contract OwnershipTest is MudTest {
     ownershipSystem.assignOwner(newSmartObjectId, invalidAccount);
 
     // Test non-singleton object
-    uint256 nonSingletonId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
+    uint256 nonSingletonId = _calculateObjectId(NON_SINGLETON_ITEM_TYPE_ID, 0, false);
 
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, nonSingletonId));
     ownershipSystem.assignOwner(nonSingletonId, alice);
 
-    // Check state before ascribing
+    // Check state before assigning
     address currentOwner = ownershipSystem.owner(newSmartObjectId);
     assertEq(currentOwner, address(0), "Smart object should initially have no owner");
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "OwnershipByObject table should show no owner");
@@ -269,7 +267,7 @@ contract OwnershipTest is MudTest {
     // Create a simple singleton object for testing
     uint256 testObjectItemId = 7777;
     uint256 testObjectTypeId = 8888;
-    uint256 newSmartObjectId = _calculateObjectId(testObjectItemId, testObjectTypeId, true);
+    uint256 newSmartObjectId = _calculateObjectId(testObjectTypeId, testObjectItemId, true);
 
     // Register a minimal class and instantiate the object
     vm.startPrank(deployer);
@@ -283,7 +281,7 @@ contract OwnershipTest is MudTest {
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
 
     // Setup entity record to make it a singleton
-    _setupEntityRecord(newSmartObjectId, testObjectItemId, testObjectTypeId, 100);
+     _setupEntityRecord(newSmartObjectId, testObjectTypeId, testObjectItemId, 100);
 
     // assign ownership to alice
     ownershipSystem.assignOwner(newSmartObjectId, alice);
@@ -299,7 +297,7 @@ contract OwnershipTest is MudTest {
     ownershipSystem.removeOwner(nonExistentObjectId, alice);
 
     // Try removing a non-singleton object
-    uint256 nonSingletonId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
+    uint256 nonSingletonId = _calculateObjectId(NON_SINGLETON_ITEM_TYPE_ID, 0, false);
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, nonSingletonId));
     ownershipSystem.removeOwner(nonSingletonId, alice);
 
@@ -311,28 +309,30 @@ contract OwnershipTest is MudTest {
     ownershipSystem.removeOwner(newSmartObjectId, alice);
 
     // Verify the state after removement
-    assertEq(ownershipSystem.owner(newSmartObjectId), address(0), "Smart object should have no owner after removement");
+    assertEq(ownershipSystem.owner(newSmartObjectId), address(0), "Smart object should have no owner after removal");
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "OwnershipByObject table should show no owner");
 
     // After removement, we should be able to assign ownership again
     ownershipSystem.assignOwner(newSmartObjectId, bob);
-    assertEq(ownershipSystem.owner(newSmartObjectId), bob, "Smart object should be owned by Bob after re-ascribing");
+    assertEq(ownershipSystem.owner(newSmartObjectId), bob, "Smart object should be owned by Bob after re-assigning");
   }
 
+
+
   // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
+  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
 
     if (itemId != 0) {
       // For singleton items
-      EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
+      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
 
       if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
+        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
       }
     } else {
       // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
+      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
     }
 
     if (!Entity.getExists(classId)) {
@@ -341,7 +341,7 @@ contract OwnershipTest is MudTest {
   }
 
   // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 itemId, uint256 typeId, bool isSingleton) internal view returns (uint256) {
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
     if (isSingleton) {
       // For singleton items: hash of tenantId and itemId
       return uint256(keccak256(abi.encodePacked(tenantId, itemId)));

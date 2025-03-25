@@ -69,8 +69,8 @@ export default defineWorld({
             smartObjectId: "uint256",
             exists: "bool",
             tenantId: "bytes32",
-            itemId: "uint256",
             typeId: "uint256",
+            itemId: "uint256",
             volume: "uint256",
           },
           key: ["smartObjectId"],
@@ -93,7 +93,6 @@ export default defineWorld({
         SmartAssembly: {
           schema: {
             smartObjectId: "uint256",
-            assemblyId: "uint256",
             assemblyType: "string",
           },
           key: ["smartObjectId"],
@@ -211,7 +210,7 @@ export default defineWorld({
         /**
          * Used to signal the transfer details when a item is exchanged between its primary inventory and another smart object's primary inventory
          */
-        ObjectItemTransfer: {
+        InventoryItemTransfer: {
           schema: {
             smartObjectId: "uint256",
             itemObjectId: "uint256",
@@ -274,7 +273,7 @@ export default defineWorld({
         /**
          * Used to signal the transfer details when a item is exchanged between it's primary inventory and an associated ephemeral inventory or two ehpemeral inventories
          */
-        ItemTransfer: {
+        EphemeralItemTransfer: {
           schema: {
             smartObjectId: "uint256",
             itemObjectId: "uint256",
