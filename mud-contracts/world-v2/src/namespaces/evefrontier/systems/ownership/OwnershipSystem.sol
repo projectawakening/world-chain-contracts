@@ -56,8 +56,6 @@ contract OwnershipSystem is SmartObjectFramework {
     } else {
       return getInventoryOwner(inventoryObjectId, smartObjectId);
     }
-
-    return address(0);
   }
 
     /**
@@ -120,7 +118,7 @@ contract OwnershipSystem is SmartObjectFramework {
   /**
    * @notice Get the owner of an ephemeral inventory
    * @param inventoryObjectId The id of the inventory
-   * @param itemObjectId The id of the item
+   * @param itemObjectId The id of the ephemeral object item
    * @return The owner of the item
    */
   function getEphemeralOwner(uint256 inventoryObjectId, uint256 itemObjectId) public view returns (address) {
@@ -142,13 +140,10 @@ contract OwnershipSystem is SmartObjectFramework {
   /** 
    * @notice Get the owner of a standard inventory
    * @param inventoryObjectId The id of the inventory
-   * @param itemObjectId The id of the item
+   * @param itemObjectId The id of the inventory item
    * @return The owner of the item
    */
   function getInventoryOwner(uint256 inventoryObjectId, uint256 itemObjectId) public view returns (address) {
-    // Get the ephemeral inventory data
-    InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
-
     // Get the current version of the inventory
     uint256 currentVersion = Inventory.getVersion(inventoryObjectId);
     uint256 recordedVersion = InventoryItem.getVersion(inventoryObjectId, itemObjectId);

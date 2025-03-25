@@ -516,7 +516,7 @@ contract InventoryOwnershipTest is MudTest {
     vm.stopPrank();
     
     // Try to remove - should fail because the item version doesn't match inventory version
-    vm.expectRevert(abi.encodeWithSelector(InventoryOwnershipSystem.InventoryOwnership_Ephemeral_InsufficientQuantity.selector, 
+    vm.expectRevert(abi.encodeWithSelector(InventoryOwnershipSystem.InventoryOwnership_InsufficientQuantity.selector, 
         smartObjectId, singletonItemObjectId, 1, 0));
     inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, singletonItemObjectId, 1);
     assertEq(ownershipSystem.owner(singletonItemObjectId), address(0), "Singleton item should have no owner after version bump");
