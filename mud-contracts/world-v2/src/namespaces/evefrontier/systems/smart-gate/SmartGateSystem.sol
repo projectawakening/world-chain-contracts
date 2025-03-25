@@ -224,22 +224,6 @@ contract SmartGateSystem is SmartObjectFramework {
     return distanceSquaredMeters <= (maxDistance * maxDistance);
   }
 
-  /**
-   * @notice delete the existing record if there exists a link for either source or destination gates
-   * @param sourceGateId is the smartObjectId of the source gate
-   */
-  function _deleteExistingLink(uint256 sourceGateId) internal {
-    uint256 destinationGateId;
-    //delete the source gate record
-    SmartGateLinkData memory linkData = SmartGateLink.get(sourceGateId);
-    if (linkData.isLinked) {
-      destinationGateId = linkData.destinationGateId;
-
-      SmartGateLink.deleteRecord(sourceGateId);
-      SmartGateLink.deleteRecord(destinationGateId);
-    }
-  }
-
   function getSmartGateClassId() public view returns (uint256) {
     return Initialize.get(smartGateSystem.toResourceId());
   }
