@@ -94,20 +94,6 @@ contract SmartGateSystem is SmartObjectFramework {
   }
 
   /**
-   * @notice unlink the gates if any of the gates are in invalid state
-   * @param sourceGateId is the smartObjectId of the source gate
-   * @param destinationGateId is the smartObjectId of the destination gate
-   */
-  function unlinkInvalidGates(uint256 sourceGateId, uint256 destinationGateId) internal {
-    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
-    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
-
-    if (sourceGateState == State.DESTROYED || destinationGateState == State.DESTROYED) {
-      unlinkGates(sourceGateId, destinationGateId);
-    }
-  }
-
-  /**
    * @notice Unlink Smart Gates
    * @param sourceGateId is the id of the source gate
    * @param destinationGateId is the id of the destination gate
