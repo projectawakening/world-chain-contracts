@@ -395,9 +395,6 @@ importers:
 
   mud-contracts/world-v2:
     dependencies:
-      '@eveworld/common-constants':
-        specifier: 0.0.13
-        version: link:../common/constants
       '@eveworld/smart-object-framework-v2':
         specifier: link:../smart-object-framework-v2
         version: link:../smart-object-framework-v2
