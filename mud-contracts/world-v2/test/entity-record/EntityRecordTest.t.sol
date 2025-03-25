@@ -21,10 +21,8 @@ contract EntityRecordTest is MudTest {
   // string dappURL = "dappURL";
   // string description = "description";
   // uint256 testClassId = uint256(bytes32("TEST"));
-
   // string mnemonic = "test test test test test test test test test test test junk";
   // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-
   // function setUp() public virtual override {
   //   super.setUp();
   //   vm.startPrank(deployer);
@@ -33,7 +31,6 @@ contract EntityRecordTest is MudTest {
   //   entitySystem.registerClass(testClassId, systemIds);
   //   vm.stopPrank();
   // }
-
   // function testWorldExists() public {
   //   uint256 codeSize;
   //   address addr = worldAddress;
@@ -42,43 +39,33 @@ contract EntityRecordTest is MudTest {
   //   }
   //   assertTrue(codeSize > 0);
   // }
-
   // function testEntityRecord(uint256 itemId, uint256 typeId, uint256 volume) public {
   //   vm.startPrank(deployer);
   //   entitySystem.instantiate(testClassId, smartObjectId, deployer);
   //   EntityRecordParams memory entityRecordParams = EntityRecordParams({ typeId: typeId, itemId: itemId, volume: volume });
-
   //   entityRecordSystem.createEntityRecord(smartObjectId, entityRecordParams);
   //   EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
-
   //   assertEq(itemId, entityRecord.itemId);
   //   assertEq(typeId, entityRecord.typeId);
   //   assertEq(volume, entityRecord.volume);
   //   vm.stopPrank();
   // }
-
   // function testEntityRecordMetadata() public {
   //   vm.startPrank(deployer);
   //   entitySystem.instantiate(testClassId, smartObjectId, deployer);
   //   EntityMetadata memory entityMetadata = EntityMetadata({ name: name, dappURL: dappURL, description: description });
-
   //   entityRecordSystem.createEntityRecordMetadata(smartObjectId, entityMetadata);
-
   //   EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
-
   //   assertEq(name, entityRecordMetaData.name);
   //   assertEq(dappURL, entityRecordMetaData.dappURL);
   //   assertEq(description, entityRecordMetaData.description);
   //   vm.stopPrank();
   // }
-
   // function testSetName() public {
   //   vm.startPrank(deployer);
   //   entitySystem.instantiate(testClassId, smartObjectId, deployer);
   //   entityRecordSystem.setName(smartObjectId, name);
-
   //   EntityRecordMetadataData memory entityRecordMetaData = EntityRecordMetadata.get(smartObjectId);
-
   //   assertEq(name, entityRecordMetaData.name);
   //   vm.stopPrank();
   // }

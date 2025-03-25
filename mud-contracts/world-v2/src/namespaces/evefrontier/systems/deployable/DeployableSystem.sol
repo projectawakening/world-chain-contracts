@@ -8,19 +8,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState,
-  GlobalDeployableStateData,
-  DeployableState, 
-  DeployableStateData,
-  CharactersByAccount,
-  Fuel, 
-  FuelData,
-  Location, 
-  LocationData,
-  Inventory,
-  InventoryItem
-} from "../../codegen/index.sol";
+import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Fuel, FuelData, Location, LocationData, Inventory, InventoryItem } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { FuelSystem } from "../fuel/FuelSystem.sol";
@@ -64,7 +52,6 @@ contract DeployableSystem is SmartObjectFramework {
   function createAndAnchor(
     CreateAndAnchorParams memory params
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
-
     // Create the smart assembly object
     smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
@@ -118,7 +105,7 @@ contract DeployableSystem is SmartObjectFramework {
     if (Inventory.getVersion(smartObjectId) == 0) {
       Inventory.setVersion(smartObjectId, 1);
     }
-    
+
     // Use OwnershipSystem to track ownership
     ownershipSystem.assignOwner(smartObjectId, owner);
 
@@ -160,11 +147,11 @@ contract DeployableSystem is SmartObjectFramework {
       Inventory.setVersion(smartObjectId, Inventory.getVersion(smartObjectId) + 1);
       Inventory.setUsedCapacity(smartObjectId, 0);
     }
-    
+
     // Remove ownership tracking of the deployable smart object
     address owner = ownershipSystem.owner(smartObjectId);
     ownershipSystem.removeOwner(smartObjectId, owner);
-    
+
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
   }

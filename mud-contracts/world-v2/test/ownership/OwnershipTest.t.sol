@@ -18,24 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState, 
-  Inventory, 
-  Tenant, 
-  EntityRecord, 
-  DeployableState, 
-  DeployableStateData, 
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  OwnershipByObject,
-  EphemeralInvCapacity,
-  CharactersByAccount,
-  LocationData,
-  EphemeralInventory,
-  EphemeralInvItem,
-  InventoryByEphemeral
-} from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -64,7 +47,6 @@ contract MockOwnershipInteractSystem is System {
   function callRemoveOwner(uint256 smartObjectId, address from) public {
     ownershipSystem.removeOwner(smartObjectId, from);
   }
-
 }
 
 contract OwnershipTest is MudTest {
@@ -106,36 +88,36 @@ contract OwnershipTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
-    
+
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
     deployer = vm.addr(vm.deriveKey(mnemonic, 0));
     alice = vm.addr(vm.deriveKey(mnemonic, 2));
     bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    
+
     vm.startPrank(deployer, deployer);
 
     // Mock smart character data for alice and bob
     CharactersByAccount.set(alice, 1);
     CharactersByAccount.set(bob, 2);
-    
+
     // Setup tenant
     tenantId = keccak256(abi.encodePacked("TEST"));
-    
+
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_ID, SMART_OBJECT_TYPE_ID, true);
-    
+
     // Register class and setup smart object state
     uint256 inventoryObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
 
     // Create resource ID for the mock system using the proper format
     bytes14 namespace = bytes14("evefrontier");
-    bytes16 name = bytes16("MockOwnershipInt"); 
+    bytes16 name = bytes16("MockOwnershipInt");
     mockSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
-    
+
     // Deploy and register the mock system
     mockSystem = new MockOwnershipInteractSystem();
-    
+
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
@@ -159,26 +141,18 @@ contract OwnershipTest is MudTest {
     GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for inventory
-    deployableSystem.createAndAnchor(CreateAndAnchorParams(
-      smartObjectId,
-      "SSU",
-      EntityRecordParams({
-        tenantId: tenantId,
-        typeId: SMART_OBJECT_TYPE_ID,
-        itemId: SMART_OBJECT_ID,
-        volume: 1000
-      }),
-      alice,
-      1,
-      10,
-      100000,
-      LocationData({
-        solarSystemId: 1,
-        x: 1000,
-        y: 1001,
-        z: 1002
-      })
-    ));
+    deployableSystem.createAndAnchor(
+      CreateAndAnchorParams(
+        smartObjectId,
+        "SSU",
+        EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
+        alice,
+        1,
+        10,
+        100000,
+        LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
+      )
+    );
 
     // Set capacity for inventory
     uint256 capacity = 1000;
@@ -189,23 +163,23 @@ contract OwnershipTest is MudTest {
     // Calculate itemObjectIds
     singletonItemObjectId = _calculateObjectId(SINGLETON_ITEM_ID, SINGLETON_ITEM_TYPE_ID, true);
     nonSingletonItemObjectId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
-    
+
     // Set up item records with the correct parameters
     _setupEntityRecord(singletonItemObjectId, SINGLETON_ITEM_ID, SINGLETON_ITEM_TYPE_ID, ITEM_VOLUME);
     _setupEntityRecord(nonSingletonItemObjectId, 0, NON_SINGLETON_ITEM_TYPE_ID, ITEM_VOLUME);
 
     // Configure access control to allow the mock system to call ownership systems
     ResourceId ownershipSystemId = ownershipSystem.toResourceId();
-    
+
     bytes4[2] memory ownershipFunctionSelectors = [
       OwnershipSystem.assignOwner.selector,
       OwnershipSystem.removeOwner.selector
     ];
-    
+
     for (uint i = 0; i < ownershipFunctionSelectors.length; i++) {
       CallAccess.set(ownershipSystemId, ownershipFunctionSelectors[i], address(mockSystem), true);
     }
-    
+
     vm.stopPrank();
 
     // Bring deployable online
@@ -221,8 +195,12 @@ contract OwnershipTest is MudTest {
     // Verify the smart object is owned by Alice
     address fetchedOwner = ownershipSystem.owner(smartObjectId);
     assertEq(fetchedOwner, alice, "Smart object should be owned by Alice");
-    
-    assertEq(OwnershipByObject.get(smartObjectId), alice, "Smart object should be marked as owned by Alice in OwnershipByObject table");
+
+    assertEq(
+      OwnershipByObject.get(smartObjectId),
+      alice,
+      "Smart object should be marked as owned by Alice in OwnershipByObject table"
+    );
   }
 
   function test_assignOwner() public {
@@ -231,37 +209,37 @@ contract OwnershipTest is MudTest {
     uint256 testObjectItemId = 7777;
     uint256 testObjectTypeId = 8888;
     uint256 newSmartObjectId = _calculateObjectId(testObjectItemId, testObjectTypeId, true);
-    
+
     // Register a minimal class and instantiate the object
     vm.startPrank(deployer);
     uint256 newClassId = uint256(keccak256(abi.encodePacked(tenantId, testObjectTypeId)));
-    
+
     // Create with minimal systems
     ResourceId[] memory systemIds = new ResourceId[](1);
     systemIds[0] = entityRecordSystem.toResourceId();
-    
+
     entitySystem.registerClass(newClassId, systemIds);
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
-    
+
     // Setup entity record to make it a singleton
     _setupEntityRecord(newSmartObjectId, testObjectItemId, testObjectTypeId, 100);
     vm.stopPrank();
-    
+
     // Verify no assigned owner initially
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "Smart object should initially have no owner");
-    
+
     // Test non-existent object
     uint256 nonExistentObjectId = 99999;
 
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_NonexistentObject.selector, nonExistentObjectId));
     ownershipSystem.assignOwner(nonExistentObjectId, alice);
-    
+
     // Test invalid account (account without a character)
     address invalidAccount = address(0x123);
 
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidAccount.selector, invalidAccount));
     ownershipSystem.assignOwner(newSmartObjectId, invalidAccount);
-    
+
     // Test non-singleton object
     uint256 nonSingletonId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
 
@@ -272,15 +250,15 @@ contract OwnershipTest is MudTest {
     address currentOwner = ownershipSystem.owner(newSmartObjectId);
     assertEq(currentOwner, address(0), "Smart object should initially have no owner");
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "OwnershipByObject table should show no owner");
-    
+
     // Successful assignment
     ownershipSystem.assignOwner(newSmartObjectId, alice);
-    
+
     // Check the owner after assigning
     address ownerAfterAssign = ownershipSystem.owner(newSmartObjectId);
     assertEq(ownerAfterAssign, alice, "Smart object should now be owned by Alice");
     assertEq(OwnershipByObject.get(newSmartObjectId), alice, "OwnershipByObject table should show Alice as owner");
-    
+
     // Verify the object cannot be re-assigned directly to another account
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_AlreadyOwned.selector, newSmartObjectId, alice));
     ownershipSystem.assignOwner(newSmartObjectId, bob);
@@ -292,50 +270,50 @@ contract OwnershipTest is MudTest {
     uint256 testObjectItemId = 7777;
     uint256 testObjectTypeId = 8888;
     uint256 newSmartObjectId = _calculateObjectId(testObjectItemId, testObjectTypeId, true);
-    
+
     // Register a minimal class and instantiate the object
     vm.startPrank(deployer);
     uint256 newClassId = uint256(keccak256(abi.encodePacked(tenantId, testObjectTypeId)));
-    
+
     // Create with minimal systems
     ResourceId[] memory systemIds = new ResourceId[](1);
     systemIds[0] = entityRecordSystem.toResourceId();
-    
+
     entitySystem.registerClass(newClassId, systemIds);
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
-    
+
     // Setup entity record to make it a singleton
     _setupEntityRecord(newSmartObjectId, testObjectItemId, testObjectTypeId, 100);
-    
+
     // assign ownership to alice
     ownershipSystem.assignOwner(newSmartObjectId, alice);
     vm.stopPrank();
-    
+
     // Verify initial state - alice should own the object
     assertEq(ownershipSystem.owner(newSmartObjectId), alice, "Smart object should be owned by Alice initially");
     assertEq(OwnershipByObject.get(newSmartObjectId), alice, "OwnershipByObject table should show Alice as owner");
-    
+
     // Test removing a non-existent object
     uint256 nonExistentObjectId = 99999;
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_NonexistentObject.selector, nonExistentObjectId));
     ownershipSystem.removeOwner(nonExistentObjectId, alice);
-    
+
     // Try removing a non-singleton object
     uint256 nonSingletonId = _calculateObjectId(0, NON_SINGLETON_ITEM_TYPE_ID, false);
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, nonSingletonId));
     ownershipSystem.removeOwner(nonSingletonId, alice);
-    
+
     // Try to remove with wrong owner
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidOwner.selector, newSmartObjectId, bob));
     ownershipSystem.removeOwner(newSmartObjectId, bob);
-    
+
     // Successful case: remove ownership properly
     ownershipSystem.removeOwner(newSmartObjectId, alice);
-    
+
     // Verify the state after removement
     assertEq(ownershipSystem.owner(newSmartObjectId), address(0), "Smart object should have no owner after removement");
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "OwnershipByObject table should show no owner");
-    
+
     // After removement, we should be able to assign ownership again
     ownershipSystem.assignOwner(newSmartObjectId, bob);
     assertEq(ownershipSystem.owner(newSmartObjectId), bob, "Smart object should be owned by Bob after re-ascribing");
@@ -344,17 +322,19 @@ contract OwnershipTest is MudTest {
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 itemId, uint256 typeId, uint256 volume) internal {
     uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    
-    if (itemId != 0) { // For singleton items
+
+    if (itemId != 0) {
+      // For singleton items
       EntityRecord.set(entityId, true, tenantId, itemId, typeId, volume);
 
       if (!EntityRecord.getExists(classId)) {
         EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
       }
-    } else { // For non-singleton items
+    } else {
+      // For non-singleton items
       EntityRecord.set(classId, true, tenantId, 0, typeId, volume);
     }
-    
+
     if (!Entity.getExists(classId)) {
       entitySystem.registerClass(classId, new ResourceId[](0));
     }
@@ -376,24 +356,16 @@ contract OwnershipTest is MudTest {
     // Call the ownership system through our mock system to get callCount > 1
     world.call(
       mockSystemId,
-      abi.encodeWithSelector(
-          MockOwnershipInteractSystem.callAssignOwner.selector,
-        assignOwnerObjectId,
-        to
-      )
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, assignOwnerObjectId, to)
     );
   }
-  
+
   // Helper function to simulate a proper system-to-system call to removeOwner
   function _simulateRemoveOwnerCall(uint256 releaseObjectId, address from) internal {
     // Call the ownership system through our mock system to get callCount > 1
     world.call(
       mockSystemId,
-      abi.encodeWithSelector(
-          MockOwnershipInteractSystem.callRemoveOwner.selector,
-        releaseObjectId,
-        from
-      )
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callRemoveOwner.selector, releaseObjectId, from)
     );
   }
 }

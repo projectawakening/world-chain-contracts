@@ -53,13 +53,16 @@ contract SmartCharacterSystem is SmartObjectFramework {
     }
 
     // sanity checks
-    if (uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) != getSmartCharacterClassId()) {
+    if (
+      uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) !=
+      getSmartCharacterClassId()
+    ) {
       revert SmartCharacter_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
     }
     if (Tenant.get() != entityRecordParams.tenantId) {
       revert SmartCharacter_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
     }
-    if (smartObjectId!= uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
+    if (smartObjectId != uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
       revert SmartCharacter_InvalidObjectId(smartObjectId);
     }
 
@@ -76,7 +79,10 @@ contract SmartCharacterSystem is SmartObjectFramework {
     CharactersByAccount.set(owner, smartObjectId);
   }
 
-  function updateTribeId(uint256 smartObjectId, uint256 tribeId) public context access(smartObjectId) scope(smartObjectId) {
+  function updateTribeId(
+    uint256 smartObjectId,
+    uint256 tribeId
+  ) public context access(smartObjectId) scope(smartObjectId) {
     if (Characters.getTribeId(smartObjectId) == 0) {
       revert SmartCharacterDoesNotExist(smartObjectId);
     }
@@ -87,19 +93,19 @@ contract SmartCharacterSystem is SmartObjectFramework {
     if (!Characters.getExists(smartObjectId)) {
       revert SmartCharacterDoesNotExist(smartObjectId);
     }
-    
+
     // Get the current owner before we delete records
     address owner = ownershipSystem.owner(smartObjectId);
-    
+
     // Delete the character reverse lookup in the CharactersByAccount Table
     CharactersByAccount.deleteRecord(owner);
-    
+
     // remove the character ownership data using the singleton version
     ownershipSystem.removeOwner(smartObjectId, owner);
-    
+
     // Delete the character data in Characters Table
     Characters.deleteRecord(smartObjectId);
-    
+
     // Delete the character object
     entitySystem.deleteObject(smartObjectId);
   }

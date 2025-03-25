@@ -14,19 +14,7 @@ import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefr
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { 
-  GlobalDeployableState,
-  Tenant, 
-  EntityRecord, 
-  DeployableState, 
-  DeployableStateData,
-    Inventory,
-  InventoryData,
-  InventoryItemData, 
-  InventoryItem,
-  InventoryByItem,
-  EphemeralInvCapacity
-} from "../../codegen/index.sol";
+import { GlobalDeployableState, Tenant, EntityRecord, DeployableState, DeployableStateData, Inventory, InventoryData, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -123,7 +111,8 @@ contract InventorySystem is SmartObjectFramework {
     // Validate state (uses the primary inventory's associated smart object state)
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (currentState == State.NULL || currentState != State.ONLINE) { // NOTE: NULL can never be the state of a createdDeployable smart object, so we are using it to pass non-Deployable smart objects
+      if (currentState == State.NULL || currentState != State.ONLINE) {
+        // NOTE: NULL can never be the state of a createdDeployable smart object, so we are using it to pass non-Deployable smart objects
         revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
       }
     }
@@ -132,11 +121,9 @@ contract InventorySystem is SmartObjectFramework {
     uint256 maxCapacity = Inventory.getCapacity(smartObjectId);
 
     for (uint256 i = 0; i < items.length; i++) {
-        if (!EntityRecord.getExists(items[i].smartObjectId)) { // we expect all items to have an EntityRecord. If not, then they should be called via createAndDeposit first
-        revert Inventory_NonExistentEntityRecord(
-          "InventorySystem: non-existent entity record",
-          items[i].smartObjectId
-        );
+      if (!EntityRecord.getExists(items[i].smartObjectId)) {
+        // we expect all items to have an EntityRecord. If not, then they should be called via createAndDeposit first
+        revert Inventory_NonExistentEntityRecord("InventorySystem: non-existent entity record", items[i].smartObjectId);
       }
       // Process the item deposit (returning the updated used capacity after processing the item)
       usedCapacity = _processItemDeposit(smartObjectId, items[i], usedCapacity, maxCapacity);
@@ -159,7 +146,8 @@ contract InventorySystem is SmartObjectFramework {
     // Validate state (uses the primary inventory's associated smart object state)
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
-      if (!(currentState == State.NULL || currentState == State.ANCHORED || currentState == State.ONLINE)) { // NOTE: NULL can never be the state of a Deployable smart object, so we are using it to pass non-Deployable smart objects
+      if (!(currentState == State.NULL || currentState == State.ANCHORED || currentState == State.ONLINE)) {
+        // NOTE: NULL can never be the state of a Deployable smart object, so we are using it to pass non-Deployable smart objects
         revert DeployableSystem.Deployable_IncorrectState(smartObjectId, currentState);
       }
     }
@@ -212,10 +200,10 @@ contract InventorySystem is SmartObjectFramework {
     InventoryItemData memory itemData = InventoryItem.get(smartObjectId, item.smartObjectId);
 
     uint256 existingItemQuantity = InventoryItem.getQuantity(smartObjectId, item.smartObjectId);
-    
+
     // Adjust ownership and quantities
     inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, item.smartObjectId, item.quantity);
-    
+
     // remove item if quantity is reduced to 0
     if (item.quantity == existingItemQuantity) {
       _removeItem(smartObjectId, item, itemData);
@@ -236,7 +224,7 @@ contract InventorySystem is SmartObjectFramework {
       Inventory.updateItems(smartObjectId, itemData.index, lastElement);
       InventoryItem.setIndex(smartObjectId, lastElement, itemData.index);
     }
-    
+
     Inventory.popItems(smartObjectId);
     InventoryItem.deleteRecord(smartObjectId, item.smartObjectId);
   }
@@ -246,49 +234,51 @@ contract InventorySystem is SmartObjectFramework {
   ) internal returns (InventoryItemParams[] memory) {
     InventoryItemParams[] memory inventoryItems = new InventoryItemParams[](items.length);
     bytes32 currentTenantId = Tenant.get(); // Cache tenant ID - only read once
-    
+
     for (uint256 i = 0; i < items.length; i++) {
       // only create entity records for items that don't already exist
       if (!EntityRecord.getExists(items[i].smartObjectId)) {
         // item sanity checks
-        if (items[i].itemId != 0) { // singleton item case
+        if (items[i].itemId != 0) {
+          // singleton item case
           if (currentTenantId != items[i].tenantId) {
             revert Inventory_InvalidTenantId(items[i].smartObjectId, items[i].tenantId);
           }
-          
+
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].itemId)))) {
             revert Inventory_InvalidItemObjectId(items[i].smartObjectId);
           }
-          
+
           if (items[i].quantity != 1) {
             revert Inventory_InvalidItemDepositQuantity(items[i].smartObjectId, items[i].quantity);
           }
 
           uint256 classId = uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].typeId)));
           _ensureClassIdExists(classId, items[i].typeId, items[i].volume);
-        } else { // non-singleton item case
+        } else {
+          // non-singleton item case
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].typeId)))) {
             revert Inventory_InvalidItemObjectId(items[i].smartObjectId);
           }
-          
+
           if (items[i].quantity == 0) {
             revert Inventory_InvalidItemDepositQuantity(items[i].smartObjectId, items[i].quantity);
           }
         }
 
-        entityRecordSystem.createRecord(items[i].smartObjectId, EntityRecordParams({
-          tenantId: items[i].tenantId,
-          typeId: items[i].typeId,
-          itemId: items[i].itemId,
-          volume: items[i].volume
-        }));
+        entityRecordSystem.createRecord(
+          items[i].smartObjectId,
+          EntityRecordParams({
+            tenantId: items[i].tenantId,
+            typeId: items[i].typeId,
+            itemId: items[i].itemId,
+            volume: items[i].volume
+          })
+        );
       }
-      
+
       // Always populate the output array
-      inventoryItems[i] = InventoryItemParams({
-        smartObjectId: items[i].smartObjectId,
-        quantity: items[i].quantity
-      });
+      inventoryItems[i] = InventoryItemParams({ smartObjectId: items[i].smartObjectId, quantity: items[i].quantity });
     }
     return inventoryItems;
   }
@@ -300,7 +290,8 @@ contract InventorySystem is SmartObjectFramework {
    * @param volume The volume to use if creating the class record
    */
   function _ensureClassIdExists(uint256 classId, uint256 typeId, uint256 volume) internal {
-    if (!EntityRecord.getExists(classId)) { // the classId EntityRecord is not created
+    if (!EntityRecord.getExists(classId)) {
+      // the classId EntityRecord is not created
       if (!Entity.getExists(classId)) {
         // register the classId with the namespace owner as the default CLASS_ACCESS_ROLE member
         // TODO: after data validation implementation, revisit this:
@@ -308,19 +299,17 @@ contract InventorySystem is SmartObjectFramework {
         // - alternatively we could setup a specifc role and member for this purpose
         // - alternatively, we could block this call with a revert unless classId is already registered, and thereby requiring all classes to be pre-configured
         entitySystem.scopedRegisterClass(
-          classId, 
-          NamespaceOwner.getOwner(SystemRegistry.get(address(this)).getNamespaceId()), 
+          classId,
+          NamespaceOwner.getOwner(SystemRegistry.get(address(this)).getNamespaceId()),
           new ResourceId[](0)
         );
       }
-      
+
       // Create an EntityRecord for the classId
-      entityRecordSystem.createRecord(classId, EntityRecordParams({
-        tenantId: 0,
-        typeId: typeId,
-        itemId: 0,
-        volume: volume
-      }));
+      entityRecordSystem.createRecord(
+        classId,
+        EntityRecordParams({ tenantId: 0, typeId: typeId, itemId: 0, volume: volume })
+      );
     }
   }
 }

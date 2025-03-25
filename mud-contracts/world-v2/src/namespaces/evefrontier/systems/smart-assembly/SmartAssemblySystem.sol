@@ -49,13 +49,16 @@ contract SmartAssemblySystem is SmartObjectFramework {
       (EntityRelationValue)
     );
     // sanity checks
-    if (uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) != entityRelationValue.relatedEntityId) {
+    if (
+      uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) !=
+      entityRelationValue.relatedEntityId
+    ) {
       revert SmartAssembly_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
     }
     if (Tenant.get() != entityRecordParams.tenantId) {
       revert SmartAssembly_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
     }
-    if (smartObjectId!= uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
+    if (smartObjectId != uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
       revert SmartAssembly_InvalidObjectId(smartObjectId);
     }
     entityRecordSystem.createRecord(smartObjectId, entityRecordParams);
@@ -79,9 +82,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
     uint256 assemblyEnumId = SmartAssembly.getAssemblyId(smartObjectId);
     assemblyEnumId = assemblyEnumId + 1;
 
-    if (
-      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))
-    ) {
+    if (keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))) {
       SmartAssembly.set(smartObjectId, assemblyEnumId, assemblyType);
     }
   }
@@ -96,9 +97,7 @@ contract SmartAssemblySystem is SmartObjectFramework {
     uint256 smartObjectId,
     string memory assemblyType
   ) public context access(smartObjectId) scope(smartObjectId) {
-    if (
-      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))
-    ) {
+    if (keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) == keccak256(abi.encodePacked(""))) {
       revert SmartAssembly_DoesNotExist(smartObjectId);
     }
     uint256 assemblyEnumId = SmartAssembly.getAssemblyId(smartObjectId);

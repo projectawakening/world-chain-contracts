@@ -57,7 +57,6 @@ contract SmartGateSystem is SmartObjectFramework {
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
-
     //Unlink if any of the gates are in invalid state
     unlinkInvalidGates(sourceGateId, destinationGateId);
 
@@ -69,7 +68,7 @@ contract SmartGateSystem is SmartObjectFramework {
       revert SmartGate_SameSourceAndDestination(sourceGateId, destinationGateId);
     }
 
-    //Check if the gates are online 
+    //Check if the gates are online
     //Check if the gates are online
     if (!areGatesOnline(sourceGateId, destinationGateId)) {
       revert SmartGate_GatesNotOnline(sourceGateId, destinationGateId);
@@ -94,7 +93,7 @@ contract SmartGateSystem is SmartObjectFramework {
    * @param sourceGateId is the smartObjectId of the source gate
    * @param destinationGateId is the smartObjectId of the destination gate
    */
-  function unlinkInvalidGates(uint256 sourceGateId, uint256 destinationGateId) internal { 
+  function unlinkInvalidGates(uint256 sourceGateId, uint256 destinationGateId) internal {
     State sourceGateState = DeployableState.getCurrentState(sourceGateId);
     State destinationGateState = DeployableState.getCurrentState(destinationGateId);
 
@@ -173,8 +172,8 @@ contract SmartGateSystem is SmartObjectFramework {
 
     return sourceGateState == State.ONLINE && destinationGateState == State.ONLINE;
   }
-  
-   /**
+
+  /**
    * @notice view function to check if the source gate is linked to the destination gate
    * @param sourceGateId is the smartObjectId of the source gate
    * @param destinationGateId is the smartObjectId of the destination gate
@@ -247,7 +246,6 @@ contract SmartGateSystem is SmartObjectFramework {
       SmartGateLink.deleteRecord(destinationGateId);
     }
   }
-
 
   function getSmartGateClassId() public view returns (uint256) {
     return Initialize.get(smartGateSystem.toResourceId());

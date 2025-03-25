@@ -5,19 +5,7 @@ pragma solidity >=0.8.0;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 
-import {
-  CharactersByAccount,
-  EntityRecord,
-  Inventory,
-  InventoryByItem,
-  InventoryItem,
-  OwnershipByObject,
-  InventoryByEphemeral,
-  InventoryByEphemeralData,
-  EphemeralInventory,
-  EphemeralInvItem
-} from "../../codegen/index.sol";
-
+import { CharactersByAccount, EntityRecord, Inventory, InventoryByItem, InventoryItem, OwnershipByObject, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem } from "../../codegen/index.sol";
 
 /**
  * @title OwnershipSystem
@@ -58,9 +46,9 @@ contract OwnershipSystem is SmartObjectFramework {
     }
   }
 
-    /**
+  /**
    * @notice assign new ownership of a singleton smart object to an account
-   * @param smartObjectId The smart object id to assign ownership 
+   * @param smartObjectId The smart object id to assign ownership
    * @param to The owner account address to assign the smart object to
    */
   function assignOwner(uint256 smartObjectId, address to) public access(smartObjectId) {
@@ -99,12 +87,12 @@ contract OwnershipSystem is SmartObjectFramework {
     if (!Entity.getExists(smartObjectId)) {
       revert Ownership_NonexistentObject(smartObjectId);
     }
-    
+
     // Check if the object is a singleton
     if (!_isSingleton(smartObjectId)) {
       revert Ownership_InvalidSingleton(smartObjectId);
     }
-    
+
     // Check if account owns the singleton object
     if (OwnershipByObject.get(smartObjectId) != from) {
       revert Ownership_InvalidOwner(smartObjectId, from);
@@ -113,7 +101,6 @@ contract OwnershipSystem is SmartObjectFramework {
     // Remove direct ownership reference
     OwnershipByObject.deleteRecord(smartObjectId);
   }
-
 
   /**
    * @notice Get the owner of an ephemeral inventory
@@ -125,8 +112,15 @@ contract OwnershipSystem is SmartObjectFramework {
     // Get the ephemeral inventory data
     InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
 
-    uint256 currentVersion = EphemeralInventory.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner);    
-    uint256 recordedVersion = EphemeralInvItem.getVersion(inventoryByEphemeralData.smartObjectId, inventoryByEphemeralData.ephemeralOwner, itemObjectId);
+    uint256 currentVersion = EphemeralInventory.getVersion(
+      inventoryByEphemeralData.smartObjectId,
+      inventoryByEphemeralData.ephemeralOwner
+    );
+    uint256 recordedVersion = EphemeralInvItem.getVersion(
+      inventoryByEphemeralData.smartObjectId,
+      inventoryByEphemeralData.ephemeralOwner,
+      itemObjectId
+    );
 
     // If the current version is the same as the recorded version, return the ephemeral owner
     if (currentVersion == recordedVersion) {
@@ -136,8 +130,7 @@ contract OwnershipSystem is SmartObjectFramework {
     return address(0);
   }
 
-
-  /** 
+  /**
    * @notice Get the owner of a standard inventory
    * @param inventoryObjectId The id of the inventory
    * @param itemObjectId The id of the inventory item
@@ -154,7 +147,7 @@ contract OwnershipSystem is SmartObjectFramework {
     }
 
     return address(0);
-  }   
+  }
 
   /**
    * @notice Internal function to check if a smart object is a singleton

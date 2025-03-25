@@ -16,19 +16,14 @@ import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 // import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 // import { smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 
-
 contract SmartCharacterTest is MudTest {
   // string mnemonic = "test test test test test test test test test test test junk";
   // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-
   // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
-
   // uint256 testClassId = uint256(bytes32("characterClassId"));
-
   // function setUp() public virtual override {
   //   super.setUp();
   // }
-
   // function testWorldExists() public {
   //   uint256 codeSize;
   //   address addr = worldAddress;
@@ -37,7 +32,6 @@ contract SmartCharacterTest is MudTest {
   //   }
   //   assertTrue(codeSize > 0);
   // }
-
   // /// forge-config: default.fuzz.runs = 100
   // function testSmartCharacter() public {
   //   vm.startPrank(deployer);
@@ -45,18 +39,14 @@ contract SmartCharacterTest is MudTest {
   //   address characterAddress = address(0x123);
   //   uint256 tribeId = 100;
   //   EntityRecordParams memory entityRecord = EntityRecordParams({ typeId: 123, itemId: 234, volume: 100 });
-
   //   EntityMetadata memory entityRecordMetadata = EntityMetadata({
   //     name: "name",
   //     dappURL: "dappURL",
   //     description: "description"
   //   });
-
   //   smartCharacterSystem.createCharacter(characterId, characterAddress, tribeId, entityRecord, entityRecordMetadata);
-
   //   CharactersData memory character = Characters.get(characterId);
   //   assertEq(characterAddress, character.characterAddress);
-
   //   EntityRecordData memory storedEntityRecord = EntityRecord.get(characterId);
   //   assertEq(entityRecord.typeId, storedEntityRecord.typeId);
   //   assertEq(entityRecord.itemId, storedEntityRecord.itemId);

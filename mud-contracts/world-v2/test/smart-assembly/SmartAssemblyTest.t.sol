@@ -18,10 +18,8 @@ contract SmartAssemblyTest is MudTest {
   // uint256 testClassId = uint256(bytes32("TEST"));
   // uint256 smartObjectId = 1234;
   // string smartAssemblyType = "SSU";
-
   // string mnemonic = "test test test test test test test test test test test junk";
   // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-
   // function setUp() public virtual override {
   //   super.setUp();
   //   vm.startPrank(deployer);
@@ -32,7 +30,6 @@ contract SmartAssemblyTest is MudTest {
   //   entitySystem.instantiate(testClassId, smartObjectId, deployer);
   //   vm.stopPrank();
   // }
-
   // function testWorldExists() public {
   //   uint256 codeSize;
   //   address addr = worldAddress;
@@ -41,50 +38,37 @@ contract SmartAssemblyTest is MudTest {
   //   }
   //   assertTrue(codeSize > 0);
   // }
-
   // function testCreateSmartAssembly(uint256 itemId, uint256 typeId, uint256 volume) public {
   //   vm.startPrank(deployer);
   //   EntityRecordParams memory entityRecordInput = EntityRecordParams({ typeId: typeId, itemId: itemId, volume: volume });
-
   //   smartAssemblySystem.createSmartAssembly(smartObjectId, smartAssemblyType, entityRecordInput);
-
   //   EntityRecordData memory entityRecord = EntityRecord.get(smartObjectId);
-
   //   assertEq(itemId, entityRecord.itemId);
   //   assertEq(typeId, entityRecord.typeId);
   //   assertEq(volume, entityRecord.volume);
-
   //   assertEq(smartAssemblyType, SmartAssembly.getSmartAssemblyType(smartObjectId));
   //   vm.stopPrank();
   // }
-
   // function testUpdateSmartAssemblyType(uint256 itemId, uint256 typeId, uint256 volume) public {
   //   vm.startPrank(deployer);
   //   EntityRecordParams memory entityRecordInput = EntityRecordParams({ typeId: typeId, itemId: itemId, volume: volume });
-
   //   smartAssemblySystem.createSmartAssembly(smartObjectId, smartAssemblyType, entityRecordInput);
   //   smartAssemblySystem.updateSmartAssemblyType(smartObjectId, smartAssemblyType);
-
   //   assertEq("SSU", SmartAssembly.getSmartAssemblyType(smartObjectId));
   //   vm.stopPrank();
   // }
-
   // function testRevertEmptyAssemblyType(uint256 itemId, uint256 typeId, uint256 volume) public {
   //   vm.startPrank(deployer);
   //   EntityRecordParams memory entityRecordInput = EntityRecordParams({ typeId: typeId, itemId: itemId, volume: volume });
-
   //   vm.expectRevert(
   //     abi.encodeWithSelector(SmartAssemblySystemLib.SmartAssemblyTypeCannotBeEmpty.selector, smartObjectId)
   //   );
-
   //   smartAssemblySystem.createSmartAssembly(smartObjectId, "", entityRecordInput);
   //   vm.stopPrank();
   // }
-
   // function testRevertAssemblyDoesNotExist(uint256 itemId, uint256 typeId, uint256 volume) public {
   //   vm.startPrank(deployer);
   //   vm.expectRevert(abi.encodeWithSelector(SmartAssemblySystemLib.SmartAssemblyDoesNotExist.selector, smartObjectId));
-
   //   smartAssemblySystem.updateSmartAssemblyType(smartObjectId, smartAssemblyType);
   //   vm.stopPrank();
   // }

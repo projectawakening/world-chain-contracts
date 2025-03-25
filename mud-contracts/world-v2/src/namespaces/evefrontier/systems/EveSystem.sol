@@ -80,7 +80,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[8] = ephemeralInventorySystem.toResourceId();
     systemIds[9] = inventoryInteractSystem.toResourceId();
     systemIds[10] = ephemeralInteractSystem.toResourceId();
-    
+
     uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartStorageUnitSystemId = smartStorageUnitSystem.toResourceId();
@@ -96,7 +96,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
-    
+
     uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartTurretSystemId = smartTurretSystem.toResourceId();
@@ -112,7 +112,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
-    
+
     uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartGateSystemId = smartGateSystem.toResourceId();
@@ -188,8 +188,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         AccessSystem.onlySmartAssemblyClassScopedAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
-        smartAssemblySystem.toResourceId(), 
-        smartAssemblyOnlyClassScopedSelectors[i], 
+        smartAssemblySystem.toResourceId(),
+        smartAssemblyOnlyClassScopedSelectors[i],
         true
       );
     }
@@ -201,12 +201,10 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       AccessSystem.onlyDirectAdmin.selector
     );
     accessConfigSystem.setAccessEnforcement(
-      smartAssemblySystem.toResourceId(), 
-      SmartAssemblySystem.updateAssemblyType.selector, 
+      smartAssemblySystem.toResourceId(),
+      SmartAssemblySystem.updateAssemblyType.selector,
       true
     );
-
-    
   }
 
   // Configure access for OwnershipSystem
@@ -225,7 +223,11 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyCallAccessWithScopeEnforced.selector
       );
-      accessConfigSystem.setAccessEnforcement(ownershipSystem.toResourceId(), ownershipOnlyCallAccessWithScopeEnforcedSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(
+        ownershipSystem.toResourceId(),
+        ownershipOnlyCallAccessWithScopeEnforcedSelectors[i],
+        true
+      );
     }
   }
 
@@ -251,8 +253,11 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       accessSystem.toResourceId(),
       AccessSystem.onlyAdminSupportedAccess.selector
     );
-    accessConfigSystem.setAccessEnforcement(smartCharacterSystem.toResourceId(), SmartCharacterSystem.createCharacter.selector, true);
-  
+    accessConfigSystem.setAccessEnforcement(
+      smartCharacterSystem.toResourceId(),
+      SmartCharacterSystem.createCharacter.selector,
+      true
+    );
   }
 
   // Configure access for LocationSystem
@@ -302,7 +307,6 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       DeployableSystem.destroyDeployable.selector,
       DeployableSystem.globalPause.selector,
       DeployableSystem.globalResume.selector
-      
     ];
 
     for (uint256 i = 0; i < deployableOnlyDirectAdminSelectors.length; i++) {
@@ -312,7 +316,11 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyDirectAdmin.selector
       );
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), deployableOnlyDirectAdminSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(
+        deployableSystem.toResourceId(),
+        deployableOnlyDirectAdminSelectors[i],
+        true
+      );
     }
 
     bytes4[3] memory deployableOnlyAdminSupportedSelectors = [
@@ -328,12 +336,14 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         accessSystem.toResourceId(),
         AccessSystem.onlyAdminSupportedAccess.selector
       );
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), deployableOnlyAdminSupportedSelectors[i], true);
+      accessConfigSystem.setAccessEnforcement(
+        deployableSystem.toResourceId(),
+        deployableOnlyAdminSupportedSelectors[i],
+        true
+      );
     }
 
-    bytes4[1] memory deployableOnlyOwnerWithAdminSupportAccessSelectors = [
-      DeployableSystem.unanchor.selector
-    ];
+    bytes4[1] memory deployableOnlyOwnerWithAdminSupportAccessSelectors = [DeployableSystem.unanchor.selector];
 
     for (uint256 i = 0; i < deployableOnlyOwnerWithAdminSupportAccessSelectors.length; i++) {
       accessConfigSystem.configureAccess(
@@ -343,8 +353,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         AccessSystem.onlyOwnerWithAdminSupportAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
-        deployableSystem.toResourceId(), 
-        deployableOnlyOwnerWithAdminSupportAccessSelectors[i], 
+        deployableSystem.toResourceId(),
+        deployableOnlyOwnerWithAdminSupportAccessSelectors[i],
         true
       );
     }
@@ -389,8 +399,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         AccessSystem.onlyAdminOrClassScopedAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
-        inventorySystem.toResourceId(), 
-        inventoryOnlyAdminOrClassScopedSelectors[i], 
+        inventorySystem.toResourceId(),
+        inventoryOnlyAdminOrClassScopedSelectors[i],
         true
       );
     }
@@ -409,8 +419,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         AccessSystem.onlyAdminSupportedOwnerOrCallAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
-        inventorySystem.toResourceId(), 
-        inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors[i], 
+        inventorySystem.toResourceId(),
+        inventoryOnlyAdminSupportedOwnerOrCallAccessSelectors[i],
         true
       );
     }
@@ -431,8 +441,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         AccessSystem.onlyDirectEphemeralOwnerOrCallAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(
-        ephemeralInventorySystem.toResourceId(), 
-        ephemeralInventoryOnlyDirectEphemeralOwnerOrCallAccessSelectors[i], 
+        ephemeralInventorySystem.toResourceId(),
+        ephemeralInventoryOnlyDirectEphemeralOwnerOrCallAccessSelectors[i],
         true
       );
     }
@@ -443,28 +453,25 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       AccessSystem.onlyCallAccessOrDirectEphemeralOwner.selector
     );
     accessConfigSystem.setAccessEnforcement(
-      ephemeralInventorySystem.toResourceId(), 
-      EphemeralInventorySystem.withdrawEphemeral.selector, 
+      ephemeralInventorySystem.toResourceId(),
+      EphemeralInventorySystem.withdrawEphemeral.selector,
       true
     );
-
-    
   }
 
   // Configure access for EphemralInteractSystem
   function configureEphemeralInteractAccess() public {
-
-      accessConfigSystem.configureAccess(
-        ephemeralInteractSystem.toResourceId(),
-        EphemeralInteractSystem.transferToEphemeral.selector,
-        accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerOrEphemeralTransferRole.selector
-      );
-      accessConfigSystem.setAccessEnforcement(
-        ephemeralInteractSystem.toResourceId(),
-        EphemeralInteractSystem.transferToEphemeral.selector,
-        true
-      );
+    accessConfigSystem.configureAccess(
+      ephemeralInteractSystem.toResourceId(),
+      EphemeralInteractSystem.transferToEphemeral.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyOwnerOrEphemeralTransferRole.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      ephemeralInteractSystem.toResourceId(),
+      EphemeralInteractSystem.transferToEphemeral.selector,
+      true
+    );
 
     accessConfigSystem.configureAccess(
       ephemeralInteractSystem.toResourceId(),
@@ -489,7 +496,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       EphemeralInteractSystem.crossTransferToEphemeral.selector,
       true
     );
-    
+
     bytes4[3] memory ephemeralInteractOnlyOwnerSelectors = [
       EphemeralInteractSystem.setTransferFromEphemeralAccess.selector,
       EphemeralInteractSystem.setTransferToEphemeralAccess.selector,
@@ -621,12 +628,10 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     if (typeId == 0) revert("Invalid typeId");
     uint256 classId = uint256(keccak256(abi.encodePacked(Tenant.get(), typeId)));
     entitySystem.scopedRegisterClass(classId, _callMsgSender(1), systemIds);
-    entityRecordSystem.createRecord(classId, EntityRecordParams({
-      tenantId: Tenant.get(),
-      itemId: 0,
-      typeId: typeId,
-      volume: volume
-    }));
+    entityRecordSystem.createRecord(
+      classId,
+      EntityRecordParams({ tenantId: Tenant.get(), itemId: 0, typeId: typeId, volume: volume })
+    );
     return classId;
   }
 }

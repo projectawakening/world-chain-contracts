@@ -44,7 +44,15 @@ contract InventoryInteractSystem is SmartObjectFramework {
 
     // record each item transfer
     for (uint i = 0; i < items.length; i++) {
-      ObjectItemTransfer.set(smartObjectId, items[i].smartObjectId, toObjectId, inventoryOwner, toInventoryOwner, items[i].quantity, block.timestamp);
+      ObjectItemTransfer.set(
+        smartObjectId,
+        items[i].smartObjectId,
+        toObjectId,
+        inventoryOwner,
+        toInventoryOwner,
+        items[i].quantity,
+        block.timestamp
+      );
     }
   }
 

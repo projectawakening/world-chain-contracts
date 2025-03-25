@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 // import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 // import { World } from "@latticexyz/world/src/World.sol";
@@ -31,37 +30,28 @@ contract SmartTurretTest is MudTest {
   // IWorldWithContext world;
   // SmartTurretCustomMock smartTurretCustomMock;
   // bytes14 constant CUSTOM_NAMESPACE = "custom-namespa";
-
   // ResourceId SMART_TURRET_CUSTOM_MOCK_SYSTEM_ID;
-
   // uint256 smartObjectId = 1234;
   // uint256 characterId = 11111;
   // uint256 tribeId = 100;
-
   // SmartObjectData smartObjectData;
   // EntityRecordData entityRecord;
   // WorldPosition worldPosition;
-
   // string mnemonic = "test test test test test test test test test test test junk";
   // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
   // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
-
   // function setUp() public virtual override {
   //   super.setUp();
   //   worldAddress = vm.envAddress("WORLD_ADDRESS");
   //   world = IWorldWithContext(worldAddress);
-
   //   entityRecord = EntityRecordParams({ typeId: 123, itemId: 234, volume: 100 });
-
   //   EntityMetadata memory entityRecordMetadata = EntityMetadata({
   //     name: "name",
   //     dappURL: "dappURL",
   //     description: "description"
   //   });
-
   //   Coord memory position = Coord({ x: 1, y: 1, z: 1 });
   //   worldPosition = WorldPosition({ solarSystemId: 1, position: position });
-
   //   // BUILDER register a custom namespace
   //   vm.startPrank(alice);
   //   world.registerNamespace(WorldResourceIdLib.encodeNamespace(CUSTOM_NAMESPACE));
@@ -80,18 +70,15 @@ contract SmartTurretTest is MudTest {
   //     "aggression((uint256,uint256,((uint256,uint256,uint256,uint256,uint256,uint256),uint256)[],(uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256)))"
   //   );
   //   vm.stopPrank();
-
   //   vm.startPrank(deployer);
   //   deployableSystem.globalResume();
   //   smartCharacterSystem.createCharacter(characterId, alice, tribeId, entityRecord, entityRecordMetadata);
   //   vm.stopPrank();
   // }
-
   // function testAnchorSmartTurret() public {
   //   uint256 fuelUnitVolume = 100;
   //   uint256 fuelConsumptionIntervalInSeconds = 100;
   //   uint256 fuelMaxCapacity = 100;
-
   //   vm.startPrank(deployer);
   //   smartTurretSystem.createAndAnchorSmartTurret(
   //     CreateAndAnchorDeployableParams({
@@ -110,28 +97,23 @@ contract SmartTurretTest is MudTest {
   //       })
   //     })
   //   );
-
   //   fuelSystem.depositFuel(smartObjectId, 1);
   //   deployableSystem.bringOnline(smartObjectId);
   //   vm.stopPrank();
   //   assertEq(SmartAssembly.getSmartAssemblyType(smartObjectId), SMART_TURRET);
   // }
-
   // function testConfigureSmartTurret() public {
   //   testAnchorSmartTurret();
   //   vm.startPrank(alice);
   //   smartTurretSystem.configureSmartTurret(smartObjectId, SMART_TURRET_CUSTOM_MOCK_SYSTEM_ID);
   //   vm.stopPrank();
-
   //   ResourceId systemId = SmartTurretConfig.get(smartObjectId);
   //   assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(SMART_TURRET_CUSTOM_MOCK_SYSTEM_ID));
   // }
-
   // function testInProximity() public {
   //   testConfigureSmartTurret();
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
   //   Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-
   //   SmartTurretTarget memory turretTarget = SmartTurretTarget({
   //     shipId: 1,
   //     shipTypeId: 1,
@@ -141,7 +123,6 @@ contract SmartTurretTest is MudTest {
   //     armorRatio: 100
   //   });
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   TargetPriority[] memory returnTargetQueue = smartTurretSystem.inProximity(
   //     smartObjectId,
   //     characterId,
@@ -149,16 +130,13 @@ contract SmartTurretTest is MudTest {
   //     turret,
   //     turretTarget
   //   );
-
   //   assertEq(returnTargetQueue.length, 1);
   //   assertEq(returnTargetQueue[0].weight, 100);
   // }
-
   // function testInProximityDefaultLogic() public {
   //   testAnchorSmartTurret();
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
   //   Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-
   //   SmartTurretTarget memory turretTarget = SmartTurretTarget({
   //     shipId: 1,
   //     shipTypeId: 1,
@@ -168,7 +146,6 @@ contract SmartTurretTest is MudTest {
   //     armorRatio: 100
   //   });
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   TargetPriority[] memory returnTargetQueue = smartTurretSystem.inProximity(
   //     smartObjectId,
   //     characterId,
@@ -176,10 +153,8 @@ contract SmartTurretTest is MudTest {
   //     turret,
   //     turretTarget
   //   );
-
   //   assertEq(returnTargetQueue.length, 2);
   // }
-
   // function testInProximityWrongCorpId() public {
   //   testConfigureSmartTurret();
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
@@ -193,7 +168,6 @@ contract SmartTurretTest is MudTest {
   //     armorRatio: 100
   //   });
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   TargetPriority[] memory returnTargetQueue = smartTurretSystem.inProximity(
   //     smartObjectId,
   //     characterId,
@@ -201,10 +175,8 @@ contract SmartTurretTest is MudTest {
   //     turret,
   //     turretTarget
   //   );
-
   //   assertEq(returnTargetQueue.length, 0);
   // }
-
   // function testAggression() public {
   //   testConfigureSmartTurret();
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
@@ -233,9 +205,7 @@ contract SmartTurretTest is MudTest {
   //     shieldRatio: 100,
   //     armorRatio: 100
   //   });
-
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   TargetPriority[] memory returnTargetQueue = smartTurretSystem.aggression(
   //     AggressionParams({
   //       smartObjectId: smartObjectId,
@@ -246,11 +216,9 @@ contract SmartTurretTest is MudTest {
   //       victim: victim
   //     })
   //   );
-
   //   assertEq(returnTargetQueue.length, 1, "returnTargetQueue.length incorrect");
   //   assertEq(returnTargetQueue[0].weight, 100, "returnTargetQueue[0].weight incorrect");
   // }
-
   // function testAggressionDefaultLogic() public {
   //   testAnchorSmartTurret();
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
@@ -279,9 +247,7 @@ contract SmartTurretTest is MudTest {
   //     shieldRatio: 100,
   //     armorRatio: 100
   //   });
-
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   TargetPriority[] memory returnTargetQueue = smartTurretSystem.aggression(
   //     AggressionParams({
   //       smartObjectId: smartObjectId,
@@ -292,11 +258,9 @@ contract SmartTurretTest is MudTest {
   //       victim: victim
   //     })
   //   );
-
   //   assertEq(returnTargetQueue.length, 2);
   //   assertEq(returnTargetQueue[1].weight, 1);
   // }
-
   // function revertInProximity() public {
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
   //   Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
@@ -309,12 +273,9 @@ contract SmartTurretTest is MudTest {
   //     armorRatio: 100
   //   });
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   vm.expectRevert(abi.encodeWithSelector(SmartTurretSystem.SmartTurret_NotConfigured.selector, smartObjectId));
-
   //   smartTurretSystem.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   // }
-
   // function revertInProximityIncorrectState() public {
   //   TargetPriority[] memory priorityQueue = new TargetPriority[](1);
   //   Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
@@ -327,17 +288,13 @@ contract SmartTurretTest is MudTest {
   //     armorRatio: 100
   //   });
   //   priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
-
   //   vm.expectRevert(
   //     abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, smartObjectId, State.UNANCHORED)
   //   );
-
   //   smartTurretSystem.inProximity(smartObjectId, characterId, priorityQueue, turret, turretTarget);
   // }
-
   // function testAdminCannotConfigureSmartTurret() public {
   //   testAnchorSmartTurret();
-
   //   vm.startPrank(deployer);
   //   vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotDeployableOwner.selector, deployer, smartObjectId));
   //   smartTurretSystem.configureSmartTurret(smartObjectId, SMART_TURRET_CUSTOM_MOCK_SYSTEM_ID);

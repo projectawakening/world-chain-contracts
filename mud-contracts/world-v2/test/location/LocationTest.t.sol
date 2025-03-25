@@ -14,54 +14,41 @@ import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 
 contract LocationTest is MudTest {
   // uint256 smartObjectId = 1234;
-
   // string mnemonic = "test test test test test test test test test test test junk";
   // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
   // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
-
   // function setUp() public virtual override {
   //   super.setUp();
-
   //   vm.startPrank(deployer);
   //   uint256 locationTestClassId = uint256(bytes32("LOCATION_TEST"));
   //   ResourceId[] memory locationTestSystemIds = new ResourceId[](1);
   //   locationTestSystemIds[0] = locationSystem.toResourceId();
   //   entitySystem.registerClass(locationTestClassId, locationTestSystemIds);
-
   //   entitySystem.instantiate(locationTestClassId, smartObjectId, deployer);
   //   vm.stopPrank();
   // }
-
   // function testSaveLocation(uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
   //   vm.assume(smartObjectId != 0);
-
   //   vm.startPrank(deployer);
   //   locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }));
   //   vm.stopPrank();
-
   //   LocationData memory location = Location.get(smartObjectId);
-
   //   assertEq(solarSystemId, location.solarSystemId);
   //   assertEq(x, location.x);
   //   assertEq(y, location.y);
   //   assertEq(z, location.z);
   // }
-
   // function testGetLocation(uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
   //   vm.assume(smartObjectId != 0);
-
   //   vm.startPrank(deployer);
   //   locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: solarSystemId, x: x, y: y, z: z }));
   //   vm.stopPrank();
-
   //   LocationData memory location = Location.get(smartObjectId);
-
   //   assertEq(solarSystemId, location.solarSystemId);
   //   assertEq(x, location.x);
   //   assertEq(y, location.y);
   //   assertEq(z, location.z);
   // }
-
   // function testMustBeAdminToSetLocation(uint256 solarSystemId, uint256 x, uint256 y, uint256 z) public {
   //   vm.startPrank(alice);
   //   vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NotAdmin.selector, alice));

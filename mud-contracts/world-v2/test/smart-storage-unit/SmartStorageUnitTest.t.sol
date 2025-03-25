@@ -39,7 +39,6 @@ contract SmartStorageUnitTest is MudTest {
   // address deployer = vm.addr(vm.deriveKey(mnemonic, 0));
   // address alice = vm.addr(vm.deriveKey(mnemonic, 2));
   // address bob = vm.addr(vm.deriveKey(mnemonic, 3));
-
   // uint256 smartObjectId = 6666666;
   // uint256 characterId = 123;
   // uint256 diffCharacterId = 9999;
@@ -48,32 +47,24 @@ contract SmartStorageUnitTest is MudTest {
   // WorldPosition worldPosition;
   // EntityRecordData entityRecord;
   // uint256 fuelMaxCapacity = 1000000000;
-
   // uint256 inventoryItemId = 1233333;
   // uint256 diffInventoryItemId = 9999999;
   // uint256 ephemeralInventoryItemId = 4566666;
   // uint256 diffEphemeralInventoryItemId = 7899999;
-
   // function setUp() public virtual override {
   //   super.setUp();
-
   //   vm.startPrank(deployer);
   //   deployableSystem.globalResume();
-
   //   entityRecord = EntityRecordParams({ typeId: 123, itemId: 234, volume: 100 });
-
   //   EntityMetadata memory entityRecordMetadata = EntityMetadata({
   //     name: "name",
   //     dappURL: "dappURL",
   //     description: "description"
   //   });
-
   //   Coord memory position = Coord({ x: 1, y: 1, z: 1 });
   //   worldPosition = WorldPosition({ solarSystemId: 1, position: position });
-
   //   smartCharacterSystem.createCharacter(characterId, alice, tribeId, entityRecord, entityRecordMetadata);
   //   smartCharacterSystem.createCharacter(diffCharacterId, bob, tribeId, entityRecord, entityRecordMetadata);
-
   //   uint256 inventoryItemClassId = uint256(bytes32("INVENTORY_ITEM"));
   //   ResourceId[] memory inventoryTestSystemIds = new ResourceId[](5);
   //   inventoryTestSystemIds[0] = inventorySystem.toResourceId();
@@ -84,7 +75,6 @@ contract SmartStorageUnitTest is MudTest {
   //   entitySystem.registerClass(inventoryItemClassId, inventoryTestSystemIds);
   //   vm.stopPrank();
   // }
-
   // function testcreateAndAnchorSmartStorageUnit(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -94,7 +84,6 @@ contract SmartStorageUnitTest is MudTest {
   //   vm.assume(storageCapacity > 0);
   //   vm.assume(ephemeralStorageCapacity > 0);
   //   vm.assume(fuelConsumptionIntervalInSeconds > 1);
-
   //   vm.startPrank(deployer);
   //   smartStorageUnitSystem.createAndAnchorSmartStorageUnit(
   //     CreateAndAnchorDeployableParams({
@@ -117,7 +106,6 @@ contract SmartStorageUnitTest is MudTest {
   //   );
   //   vm.stopPrank();
   // }
-
   // function testSetDeployableStateToValid() public {
   //   vm.startPrank(deployer);
   //   DeployableState.set(
@@ -134,7 +122,6 @@ contract SmartStorageUnitTest is MudTest {
   //   );
   //   vm.stopPrank();
   // }
-
   // function testCreateAndDepositItemsToInventory(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -144,16 +131,13 @@ contract SmartStorageUnitTest is MudTest {
   //   vm.assume(fuelConsumptionIntervalInSeconds > 1);
   //   vm.assume(storageCapacity > 500);
   //   vm.assume(ephemeralStorageCapacity > 1000);
-
   //   testcreateAndAnchorSmartStorageUnit(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
   //     storageCapacity,
   //     ephemeralStorageCapacity
   //   );
-
   //   testSetDeployableStateToValid();
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: inventoryItemId,
@@ -163,23 +147,17 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   vm.startPrank(deployer);
   //   inventorySystem.createAndDepositItemsToInventory(smartObjectId, items);
   //   vm.stopPrank();
-
   //   InventoryData memory inventoryData = Inventory.get(smartObjectId);
   //   uint256 useCapacity = items[0].volume * items[0].quantity;
-
   //   assertEq(inventoryData.capacity, storageCapacity);
   //   assertEq(inventoryData.usedCapacity, useCapacity);
-
   //   InventoryItemData memory inventoryItemData = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-
   //   assertEq(inventoryItemData.quantity, items[0].quantity);
   //   assertEq(inventoryItemData.index, 0);
   // }
-
   // function testCreateAndDepositItemsToEphemeralInventory(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -190,7 +168,6 @@ contract SmartStorageUnitTest is MudTest {
   //   vm.assume(fuelConsumptionIntervalInSeconds > 1);
   //   vm.assume(storageCapacity > 500);
   //   vm.assume(ephemeralStorageCapacity > 1000);
-
   //   testcreateAndAnchorSmartStorageUnit(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
@@ -198,7 +175,6 @@ contract SmartStorageUnitTest is MudTest {
   //     ephemeralStorageCapacity
   //   );
   //   testSetDeployableStateToValid();
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: ephemeralInventoryItemId,
@@ -208,27 +184,21 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   vm.startPrank(deployer);
   //   ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, items);
   //   vm.stopPrank();
-
   //   EphemeralInvData memory ephemeralInvData = EphemeralInv.get(smartObjectId, bob);
-
   //   uint256 useCapacity = items[0].volume * items[0].quantity;
   //   assertEq(EphemeralInvCapacity.getCapacity(smartObjectId), ephemeralStorageCapacity);
   //   assertEq(ephemeralInvData.usedCapacity, useCapacity);
-
   //   EphemeralInvItemData memory ephemeralInvItemData = EphemeralInvItem.get(
   //     smartObjectId,
   //     items[0].inventoryItemId,
   //     items[0].owner
   //   );
-
   //   assertEq(ephemeralInvItemData.quantity, items[0].quantity);
   //   assertEq(ephemeralInvItemData.index, 0);
   // }
-
   // function testUnanchorAndreAnchor(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -238,7 +208,6 @@ contract SmartStorageUnitTest is MudTest {
   //   vm.assume(storageCapacity > 0);
   //   vm.assume(ephemeralStorageCapacity > 0);
   //   vm.assume(fuelConsumptionIntervalInSeconds > 1);
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: inventoryItemId,
@@ -248,7 +217,6 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   InventoryItemParams[] memory ephemeralItems = new InventoryItemParams[](1);
   //   ephemeralItems[0] = InventoryItemParams({
   //     inventoryItemId: ephemeralInventoryItemId,
@@ -258,47 +226,36 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   testCreateAndDepositItemsToInventory(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
   //     storageCapacity,
   //     ephemeralStorageCapacity
   //   );
-
   //   vm.startPrank(deployer);
   //   ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
-
   //   deployableSystem.bringOffline(smartObjectId);
   //   deployableSystem.unanchor(smartObjectId);
   //   vm.stopPrank();
-
   //   DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-
   //   assertEq(uint8(deployableStateData.currentState), uint8(State.UNANCHORED));
   //   assertEq(deployableStateData.isValid, false);
-
   //   InventoryItemData memory inventoryItemData = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
   //   assertEq(inventoryItemData.quantity, items[0].quantity, "inventoryItemData.quantity");
   //   assertEq(deployableStateData.anchoredAt >= inventoryItemData.stateUpdate, true, "deployableStateData.anchoredAt");
-
   //   EphemeralInvItemData memory ephemeralInvItemData = EphemeralInvItem.get(
   //     smartObjectId,
   //     ephemeralItems[0].inventoryItemId,
   //     ephemeralItems[0].owner
   //   );
-
   //   assertEq(ephemeralInvItemData.quantity, ephemeralItems[0].quantity, "ephemeralInvItemData.quantity");
   //   assertEq(
   //     deployableStateData.anchoredAt >= ephemeralInvItemData.stateUpdate,
   //     true,
   //     "deployableStateData.anchoredAt"
   //   );
-
   //   vm.warp(block.timestamp + 10);
-
   //   testSetDeployableStateToValid();
-
   //   items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: diffInventoryItemId,
@@ -308,7 +265,6 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   ephemeralItems = new InventoryItemParams[](1);
   //   ephemeralItems[0] = InventoryItemParams({
   //     inventoryItemId: diffEphemeralInventoryItemId,
@@ -318,29 +274,22 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   vm.startPrank(deployer);
   //   inventorySystem.createAndDepositItemsToInventory(smartObjectId, items);
   //   ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
   //   vm.stopPrank();
-
   //   deployableStateData = DeployableState.get(smartObjectId);
-
   //   assertEq(uint8(deployableStateData.currentState), uint8(State.ONLINE), "deployableStateData.currentState");
   //   assertEq(deployableStateData.isValid, true, "deployableStateData.isValid");
-
   //   inventoryItemData = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
   //   assertEq(inventoryItemData.quantity, items[0].quantity, "inventoryItemData.quantity 2");
-
   //   ephemeralInvItemData = EphemeralInvItem.get(
   //     smartObjectId,
   //     ephemeralItems[0].inventoryItemId,
   //     ephemeralItems[0].owner
   //   );
-
   //   assertEq(ephemeralInvItemData.quantity, ephemeralItems[0].quantity, "ephemeralInvItemData.quantity 2");
   // }
-
   // function testUnanchorDepositRevert(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -350,7 +299,6 @@ contract SmartStorageUnitTest is MudTest {
   //   vm.assume(fuelConsumptionIntervalInSeconds > 1);
   //   vm.assume(storageCapacity > 500);
   //   vm.assume(ephemeralStorageCapacity > 1000);
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: inventoryItemId,
@@ -360,7 +308,6 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   InventoryItemParams[] memory ephemeralItems = new InventoryItemParams[](1);
   //   ephemeralItems[0] = InventoryItemParams({
   //     inventoryItemId: ephemeralInventoryItemId,
@@ -370,7 +317,6 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   testcreateAndAnchorSmartStorageUnit(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
@@ -378,22 +324,16 @@ contract SmartStorageUnitTest is MudTest {
   //     ephemeralStorageCapacity
   //   );
   //   testSetDeployableStateToValid();
-
   //   vm.startPrank(deployer);
   //   inventorySystem.createAndDepositItemsToInventory(smartObjectId, items);
   //   ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
-
   //   deployableSystem.bringOffline(smartObjectId);
   //   deployableSystem.unanchor(smartObjectId);
   //   vm.stopPrank();
-
   //   DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-
   //   assertEq(uint8(deployableStateData.currentState), uint8(State.UNANCHORED));
   //   assertEq(deployableStateData.isValid, false);
-
   //   vm.warp(block.timestamp + 10);
-
   //   vm.startPrank(deployer);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: diffInventoryItemId,
@@ -407,7 +347,6 @@ contract SmartStorageUnitTest is MudTest {
   //     abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, smartObjectId, State.UNANCHORED)
   //   );
   //   inventorySystem.createAndDepositItemsToInventory(smartObjectId, items);
-
   //   ephemeralItems[0] = InventoryItemParams({
   //     inventoryItemId: diffEphemeralInventoryItemId,
   //     owner: bob,
@@ -422,7 +361,6 @@ contract SmartStorageUnitTest is MudTest {
   //   ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
   //   vm.stopPrank();
   // }
-
   // function testUnanchorWithdrawRevert(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -432,7 +370,6 @@ contract SmartStorageUnitTest is MudTest {
   //   vm.assume(fuelConsumptionIntervalInSeconds > 1);
   //   vm.assume(storageCapacity > 500);
   //   vm.assume(ephemeralStorageCapacity > 1000);
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: inventoryItemId,
@@ -451,7 +388,6 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   testcreateAndAnchorSmartStorageUnit(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
@@ -459,23 +395,18 @@ contract SmartStorageUnitTest is MudTest {
   //     ephemeralStorageCapacity
   //   );
   //   testSetDeployableStateToValid();
-
   //   vm.startPrank(deployer);
   //   inventorySystem.createAndDepositItemsToInventory(smartObjectId, items);
   //   ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, bob, ephemeralItems);
-
   //   deployableSystem.bringOffline(smartObjectId);
   //   deployableSystem.unanchor(smartObjectId);
   //   vm.stopPrank();
-
   //   vm.warp(block.timestamp + 10);
   //   LocationData memory location = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
-
   //   vm.startPrank(deployer);
   //   deployableSystem.anchor(smartObjectId, location);
   //   vm.stopPrank();
   //   testSetDeployableStateToValid();
-
   //   vm.expectRevert(
   //     abi.encodeWithSelector(
   //       InventorySystem.Inventory_InvalidItemQuantity.selector,
@@ -484,7 +415,6 @@ contract SmartStorageUnitTest is MudTest {
   //       items[0].quantity
   //     )
   //   );
-
   //   vm.startPrank(alice);
   //   inventorySystem.withdrawFromInventory(smartObjectId, items);
   //   vm.expectRevert(
@@ -496,10 +426,8 @@ contract SmartStorageUnitTest is MudTest {
   //     )
   //   );
   //   ephemeralInventorySystem.withdrawFromEphemeralInventory(smartObjectId, bob, ephemeralItems);
-
   //   vm.stopPrank();
   // }
-
   // function testDestroyAndRevertDepositItems(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -508,7 +436,6 @@ contract SmartStorageUnitTest is MudTest {
   // ) public {
   //   vm.assume(storageCapacity > 0);
   //   vm.assume(ephemeralStorageCapacity > 0);
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: inventoryItemId,
@@ -518,28 +445,22 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   testCreateAndDepositItemsToInventory(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
   //     storageCapacity,
   //     ephemeralStorageCapacity
   //   );
-
   //   vm.startPrank(deployer);
   //   deployableSystem.bringOffline(smartObjectId);
   //   deployableSystem.destroyDeployable(smartObjectId);
   //   vm.stopPrank();
   //   DeployableStateData memory deployableStateData = DeployableState.get(smartObjectId);
-
   //   assertEq(uint8(deployableStateData.currentState), uint8(State.DESTROYED));
   //   assertEq(deployableStateData.isValid, false);
-
   //   InventoryItemData memory inventoryItemData = InventoryItem.get(smartObjectId, items[0].inventoryItemId);
-
   //   assertEq(inventoryItemData.stateUpdate >= block.timestamp, true);
   //   assertEq(inventoryItemData.quantity, items[0].quantity);
-
   //   vm.expectRevert(
   //     abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, smartObjectId, State.DESTROYED)
   //   );
@@ -548,7 +469,6 @@ contract SmartStorageUnitTest is MudTest {
   //   deployableSystem.anchor(smartObjectId, location);
   //   vm.stopPrank();
   // }
-
   // function testDestroyAndRevertWithdrawItems(
   //   uint256 fuelUnitVolume,
   //   uint256 fuelConsumptionIntervalInSeconds,
@@ -557,7 +477,6 @@ contract SmartStorageUnitTest is MudTest {
   // ) public {
   //   vm.assume(storageCapacity > 0);
   //   vm.assume(ephemeralStorageCapacity > 0);
-
   //   InventoryItemParams[] memory items = new InventoryItemParams[](1);
   //   items[0] = InventoryItemParams({
   //     inventoryItemId: inventoryItemId,
@@ -567,19 +486,16 @@ contract SmartStorageUnitTest is MudTest {
   //     volume: 10,
   //     quantity: 5
   //   });
-
   //   testCreateAndDepositItemsToInventory(
   //     fuelUnitVolume,
   //     fuelConsumptionIntervalInSeconds,
   //     storageCapacity,
   //     ephemeralStorageCapacity
   //   );
-
   //   vm.startPrank(deployer);
   //   deployableSystem.bringOffline(smartObjectId);
   //   deployableSystem.destroyDeployable(smartObjectId);
   //   vm.stopPrank();
-
   //   vm.expectRevert(
   //     abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, smartObjectId, State.DESTROYED)
   //   );

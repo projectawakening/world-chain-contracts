@@ -19,10 +19,8 @@ contract SmartTurretCustomMock is System {
   //   if (characterData.tribeId == 100) {
   //     return priorityQueue;
   //   }
-
   //   return updatedPriorityQueue;
   // }
-
   // function aggression(AggressionParams memory params) public returns (TargetPriority[] memory updatedPriorityQueue) {
   //   return params.priorityQueue;
   // }

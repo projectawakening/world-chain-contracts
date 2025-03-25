@@ -26,7 +26,14 @@ contract EntityRecordSystem is SmartObjectFramework {
     uint256 smartObjectId,
     EntityRecordParams memory entityRecordParams
   ) public context access(smartObjectId) {
-    EntityRecord.set(smartObjectId, true, entityRecordParams.tenantId, entityRecordParams.itemId, entityRecordParams.typeId, entityRecordParams.volume);
+    EntityRecord.set(
+      smartObjectId,
+      true,
+      entityRecordParams.tenantId,
+      entityRecordParams.itemId,
+      entityRecordParams.typeId,
+      entityRecordParams.volume
+    );
   }
 
   /**
