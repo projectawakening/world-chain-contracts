@@ -8,15 +8,13 @@ import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegis
 
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, DeployableState, DeployableStateData, Inventory, EphemeralInvCapacity, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EntityRecord, ObjectByEphemeral, InventoryItem, InventoryItemData, Tenant, OwnershipByObject } from "../../codegen/index.sol";
+import { GlobalDeployableState, DeployableState, Inventory, EphemeralInvCapacity, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EntityRecord, ObjectByEphemeral, Tenant, OwnershipByObject } from "../../codegen/index.sol";
 
 // Local namespace systems
-import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";

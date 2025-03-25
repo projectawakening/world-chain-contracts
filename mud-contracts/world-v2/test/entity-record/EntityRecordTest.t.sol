@@ -4,25 +4,23 @@ pragma solidity >=0.8.24;
 import "forge-std/Test.sol";
 
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
-import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
-import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
-import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { System } from "@latticexyz/world/src/System.sol";
+import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 // Smart Object Framework imports
-import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { tagSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/TagSystemLib.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
 import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData, ObjectByEphemeral, InventoryByItem, OwnershipByObject } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -41,7 +39,6 @@ import { SmartCharacterSystem, smartCharacterSystem } from "../../src/namespaces
 // Types and parameters
 import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { CreateInventoryItemParams, InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
-import { State } from "../../src/codegen/common.sol";
 
 // Create a mock system to properly test system-to-system calls
 contract MockEntityRecordInteractSystem is System {
@@ -97,7 +94,7 @@ contract MockEntityRecordInteractSystem is System {
 }
 
 contract EntityRecordTest is MudTest {
-  using WorldResourceIdInstance for ResourceId;
+  using WorldResourceIdLib for ResourceId;
 
   IWorldWithContext public world;
 
@@ -154,7 +151,6 @@ contract EntityRecordTest is MudTest {
     // Deploy a new World
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
 
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";

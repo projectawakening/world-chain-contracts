@@ -15,12 +15,12 @@ import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/e
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
-import { ObjectByEphemeral } from "../../codegen/tables/ObjectByEphemeral.sol";
 import { EntityRecord } from "../../codegen/tables/EntityRecord.sol";
+import { ObjectByEphemeral } from "../../codegen/tables/ObjectByEphemeral.sol";
 
 // Local namespace system imports
 import { OwnershipSystem, ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
-import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
+import { SmartCharacterSystem, smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
 
 // params
 import { EntityRecordParams } from "../entity-record/types.sol";

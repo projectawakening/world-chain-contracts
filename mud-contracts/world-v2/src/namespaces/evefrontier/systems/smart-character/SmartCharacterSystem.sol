@@ -7,9 +7,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
-import { EntityRelationValue, TAG_TYPE_ENTITY_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
-import { EntityTagMap, Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables

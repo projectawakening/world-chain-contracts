@@ -337,24 +337,16 @@ contract SOFAccessSystemTest is MudTest {
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callRemoveTag, (classId, CLASS_SCOPED_SYSTEM_TAG)));
 
     // success, via the EntitySystem call (all tags removed through deleteClass->removeSystemTags->removeSystemTag)
-    
+
     // temporarily disable access control for deleteClass
     vm.prank(deployer);
-    accessConfigSystem.setAccessEnforcement(
-      entitySystem.toResourceId(),
-      IEntitySystem.deleteClass.selector,
-      false
-    );
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, false);
     vm.prank(deployer);
     entitySystem.deleteClass(classId);
 
     // re-enable access control for deleteClass
     vm.prank(deployer);
-    accessConfigSystem.setAccessEnforcement(
-      entitySystem.toResourceId(),
-      IEntitySystem.deleteClass.selector,
-      true
-    );
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, true);
 
     // re-register Class (with classScopedSystem tag)
     vm.prank(deployer);

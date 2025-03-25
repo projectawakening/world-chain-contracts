@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-// MUD core imports
-import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
-
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
@@ -18,7 +15,6 @@ import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.
 
 // Types and parameters
 import { EntityRecordParams } from "../entity-record/types.sol";
-import { DEPLOYMENT_NAMESPACE } from "../constants.sol";
 
 /**
  * @title SmartAssemblySystem

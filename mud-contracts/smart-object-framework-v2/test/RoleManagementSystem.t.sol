@@ -156,9 +156,8 @@ contract RoleManagementSystemTest is MudTest {
     assertEq(afterNewHasRole, true);
     assertEq(afterNewMembers.length, beforeNewMembers.length + 1);
     assertEq(afterNewMembers[afterNewMembers.length - 1], alice);
-    
-    vm.stopPrank();
 
+    vm.stopPrank();
 
     // revert, if caller is not an admin role member
     vm.expectRevert(
