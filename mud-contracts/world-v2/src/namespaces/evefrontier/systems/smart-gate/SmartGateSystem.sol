@@ -83,12 +83,12 @@ contract SmartGateSystem is SmartObjectFramework {
       revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
     }
 
-    //Delete the existing records for the source and destination gate before creating a new link to avoid replacing the record
-    //The invalid records are not deleted during unlink because the external services are subscribed to the unlink events. If the record is deleted then the external services will not be able to notify the game
+    // Delete the existing records for the source and destination gate before creating a new link to avoid replacing the record
+    // The invalid records are not deleted during unlink because the external services are subscribed to the unlink events. If the record is deleted then the external services will not be able to notify the game
     _deleteExistingLink(sourceGateId);
     _deleteExistingLink(destinationGateId);
 
-    //Create a 2 way link between the gates
+    // Create a 2 way link between the gates
     SmartGateLink.set(sourceGateId, destinationGateId, true);
     SmartGateLink.set(destinationGateId, sourceGateId, true);
   }
@@ -261,5 +261,21 @@ contract SmartGateSystem is SmartObjectFramework {
 
   function getWorld() internal view returns (IWorldWithContext) {
     return IWorldWithContext(_world());
+  }
+
+  /**
+   * @notice delete the existing record if there exists a link for either source or destination gates
+   * @param sourceGateId is the smartObjectId of the source gate
+   */
+  function _deleteExistingLink(uint256 sourceGateId) internal {
+    uint256 destinationGateId;
+    //delete the source gate record
+    SmartGateLinkData memory linkData = SmartGateLink.get(sourceGateId);
+    if (linkData.isLinked) {
+      destinationGateId = linkData.destinationGateId;
+
+      SmartGateLink.deleteRecord(sourceGateId);
+      SmartGateLink.deleteRecord(destinationGateId);
+    }
   }
 }
