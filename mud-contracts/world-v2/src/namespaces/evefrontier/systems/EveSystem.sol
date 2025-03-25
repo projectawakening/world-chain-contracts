@@ -2,54 +2,46 @@
 
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
-import { Tenant } from "../codegen/tables/Tenant.sol";
+// Local namespace tables
+import { Initialize, Tenant } from "../codegen/index.sol";
 
-import { AccessSystem } from "./access-system/AccessSystem.sol";
-import { accessSystem } from "../codegen/systems/AccessSystemLib.sol";
-
+// Local namespace system imports
+import { AccessSystem, accessSystem } from "../codegen/systems/AccessSystemLib.sol";
 import { EntityRecordSystem } from "./entity-record/EntityRecordSystem.sol";
 import { entityRecordSystem } from "../codegen/systems/EntityRecordSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "../codegen/systems/DeployableSystemLib.sol";
-import { FuelSystem } from "./fuel/FuelSystem.sol";
-import { fuelSystem } from "../codegen/systems/FuelSystemLib.sol";
-import { LocationSystem } from "./location/LocationSystem.sol";
-import { locationSystem } from "../codegen/systems/LocationSystemLib.sol";
-import { InventorySystem } from "./inventory/InventorySystem.sol";
-import { inventorySystem } from "../codegen/systems/InventorySystemLib.sol";
-import { EphemeralInventorySystem } from "./inventory/EphemeralInventorySystem.sol";
-import { ephemeralInventorySystem } from "../codegen/systems/EphemeralInventorySystemLib.sol";
-import { InventoryInteractSystem } from "./inventory/InventoryInteractSystem.sol";
-import { inventoryInteractSystem } from "../codegen/systems/InventoryInteractSystemLib.sol";
-import { SmartAssemblySystem } from "./smart-assembly/SmartAssemblySystem.sol";
-import { smartAssemblySystem } from "../codegen/systems/SmartAssemblySystemLib.sol";
-import { SmartCharacterSystem } from "./smart-character/SmartCharacterSystem.sol";
-import { smartCharacterSystem } from "../codegen/systems/SmartCharacterSystemLib.sol";
-import { SmartStorageUnitSystem } from "./smart-storage-unit/SmartStorageUnitSystem.sol";
-import { smartStorageUnitSystem } from "../codegen/systems/SmartStorageUnitSystemLib.sol";
-import { SmartTurretSystem } from "./smart-turret/SmartTurretSystem.sol";
-import { smartTurretSystem } from "../codegen/systems/SmartTurretSystemLib.sol";
-import { SmartGateSystem } from "./smart-gate/SmartGateSystem.sol";
-import { smartGateSystem } from "../codegen/systems/SmartGateSystemLib.sol";
-import { OwnershipSystem } from "./ownership/OwnershipSystem.sol";
-import { ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
-import { Initialize } from "../codegen/index.sol";
-import { IEveSystem } from "../interfaces/IEveSystem.sol";
-import { EphemeralInteractSystem } from "./inventory/EphemeralInteractSystem.sol";
-import { ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSystemLib.sol";
+import { FuelSystem, fuelSystem } from "../codegen/systems/FuelSystemLib.sol";
+import { LocationSystem, locationSystem } from "../codegen/systems/LocationSystemLib.sol";
+import { InventorySystem, inventorySystem } from "../codegen/systems/InventorySystemLib.sol";
+import { EphemeralInventorySystem, ephemeralInventorySystem } from "../codegen/systems/EphemeralInventorySystemLib.sol";
+import { InventoryInteractSystem, inventoryInteractSystem } from "../codegen/systems/InventoryInteractSystemLib.sol";
+import { SmartAssemblySystem, smartAssemblySystem } from "../codegen/systems/SmartAssemblySystemLib.sol";
+import { SmartCharacterSystem, smartCharacterSystem } from "../codegen/systems/SmartCharacterSystemLib.sol";
+import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../codegen/systems/SmartStorageUnitSystemLib.sol";
+import { SmartTurretSystem, smartTurretSystem } from "../codegen/systems/SmartTurretSystemLib.sol";
+import { SmartGateSystem, smartGateSystem } from "../codegen/systems/SmartGateSystemLib.sol";
+import { OwnershipSystem, ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
+import { EphemeralInteractSystem, ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSystemLib.sol";
+import { KillMailSystem, killMailSystem } from "../codegen/systems/KillMailSystemLib.sol";
 
+// Local interfaces
+import { IEveSystem } from "../interfaces/IEveSystem.sol";
+
+// Local namespace types
 import { EntityRecordParams } from "./entity-record/types.sol";
 
 /**
  * @title EveSystem
  * @author CCP Games
- * @notice This is the base system to be inherited by all other systems.
- * @dev Consider combining this with the SmartObjectSystem which is extended by all systems.
+ * @notice This is the base configuration system for the evefrontier namespace.
  */
 contract EveSystem is IEveSystem, SmartObjectFramework {
   function registerSmartCharacterClass(uint256 typeId, uint256 volume) public {
@@ -633,6 +625,22 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         true
       );
     }
+  }
+
+  // Configure access for KillMailSystem
+  function configureKillMailAccess() public {
+    accessConfigSystem.configureAccess(
+      killMailSystem.toResourceId(),
+      KillMailSystem.reportKill.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyAdminSupportedAccess.selector
+    );
+
+    accessConfigSystem.setAccessEnforcement(
+      killMailSystem.toResourceId(),
+      KillMailSystem.reportKill.selector,
+      true
+    );
   }
 
   /**

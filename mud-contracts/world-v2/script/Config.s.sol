@@ -158,5 +158,6 @@ contract Config is Script {
     eveSystem.configureSmartGateAccess();
     eveSystem.configureEphemeralInteractAccess();
     eveSystem.configureInventoryInteractAccess();
+    eveSystem.configureKillMailAccess();
   }
 }
