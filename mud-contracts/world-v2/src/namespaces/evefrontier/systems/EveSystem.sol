@@ -207,8 +207,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     bytes4[4] memory onlyCallAccessWithScopeEnforcedSelectors = [
       OwnershipSystem.assignOwner.selector,
       OwnershipSystem.removeOwner.selector,
-      InventoryOwnershipSystem.assignOwnerToInventory.selector,
-      InventoryOwnershipSystem.removeOwnerFromInventory.selector
+      InventoryOwnershipSystem.assignItemToInventory.selector,
+      InventoryOwnershipSystem.removeItemFromInventory.selector
     ];
 
     for (uint256 i = 0; i < onlyCallAccessWithScopeEnforcedSelectors.length; i++) {

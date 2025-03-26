@@ -29,13 +29,13 @@ interface IInventoryOwnershipSystem {
   error InventoryOwnership_NonexistentObject(uint256 objectId);
   error InventoryOwnership_InvalidOperation(string message);
 
-  function evefrontier__assignOwnerToInventory(
+  function evefrontier__assignItemToInventory(
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) external;
 
-  function evefrontier__removeOwnerFromInventory(
+  function evefrontier__removeItemFromInventory(
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity

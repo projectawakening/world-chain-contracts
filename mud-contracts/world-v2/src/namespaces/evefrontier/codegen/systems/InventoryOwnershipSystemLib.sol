@@ -55,27 +55,27 @@ library InventoryOwnershipSystemLib {
   error InventoryOwnership_NonexistentObject(uint256 objectId);
   error InventoryOwnership_InvalidOperation(string message);
 
-  function assignOwnerToInventory(
+  function assignItemToInventory(
     InventoryOwnershipSystemType self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
     return
-      CallWrapper(self.toResourceId(), address(0)).assignOwnerToInventory(inventoryObjectId, itemObjectId, quantity);
+      CallWrapper(self.toResourceId(), address(0)).assignItemToInventory(inventoryObjectId, itemObjectId, quantity);
   }
 
-  function removeOwnerFromInventory(
+  function removeItemFromInventory(
     InventoryOwnershipSystemType self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
     return
-      CallWrapper(self.toResourceId(), address(0)).removeOwnerFromInventory(inventoryObjectId, itemObjectId, quantity);
+      CallWrapper(self.toResourceId(), address(0)).removeItemFromInventory(inventoryObjectId, itemObjectId, quantity);
   }
 
-  function assignOwnerToInventory(
+  function assignItemToInventory(
     CallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
@@ -85,7 +85,7 @@ library InventoryOwnershipSystemLib {
     if (address(_world()) == address(this)) revert InventoryOwnershipSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _assignOwnerToInventory_uint256_uint256_uint256.assignOwnerToInventory,
+      _assignItemToInventory_uint256_uint256_uint256.assignItemToInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     self.from == address(0)
@@ -93,7 +93,7 @@ library InventoryOwnershipSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function removeOwnerFromInventory(
+  function removeItemFromInventory(
     CallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
@@ -103,7 +103,7 @@ library InventoryOwnershipSystemLib {
     if (address(_world()) == address(this)) revert InventoryOwnershipSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _removeOwnerFromInventory_uint256_uint256_uint256.removeOwnerFromInventory,
+      _removeItemFromInventory_uint256_uint256_uint256.removeItemFromInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     self.from == address(0)
@@ -111,27 +111,27 @@ library InventoryOwnershipSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function assignOwnerToInventory(
+  function assignItemToInventory(
     RootCallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _assignOwnerToInventory_uint256_uint256_uint256.assignOwnerToInventory,
+      _assignItemToInventory_uint256_uint256_uint256.assignItemToInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function removeOwnerFromInventory(
+  function removeItemFromInventory(
     RootCallWrapper memory self,
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _removeOwnerFromInventory_uint256_uint256_uint256.removeOwnerFromInventory,
+      _removeItemFromInventory_uint256_uint256_uint256.removeItemFromInventory,
       (inventoryObjectId, itemObjectId, quantity)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -178,12 +178,12 @@ library InventoryOwnershipSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _assignOwnerToInventory_uint256_uint256_uint256 {
-  function assignOwnerToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
+interface _assignItemToInventory_uint256_uint256_uint256 {
+  function assignItemToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 }
 
-interface _removeOwnerFromInventory_uint256_uint256_uint256 {
-  function removeOwnerFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
+interface _removeItemFromInventory_uint256_uint256_uint256 {
+  function removeItemFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) external;
 }
 
 using InventoryOwnershipSystemLib for InventoryOwnershipSystemType global;

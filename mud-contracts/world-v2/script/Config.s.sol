@@ -124,8 +124,8 @@ contract Config is Script {
 
     // OwnershipSystem.sol
     bytes4[2] memory ownershipInventoryFunctionSelectors = [
-      InventoryOwnershipSystem.assignOwnerToInventory.selector,
-      InventoryOwnershipSystem.removeOwnerFromInventory.selector
+      InventoryOwnershipSystem.assignItemToInventory.selector,
+      InventoryOwnershipSystem.removeItemFromInventory.selector
     ];
     for (uint i = 0; i < ownershipInventoryFunctionSelectors.length; i++) {
       CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], inventorySystem.getAddress(), true);

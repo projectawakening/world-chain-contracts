@@ -20,7 +20,7 @@ import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@e
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
-import { Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, EphemeralInventory, InventoryByEphemeral, SmartAssembly, Fuel, Location } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, EphemeralInventory, InventoryByEphemeral, SmartAssembly } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems

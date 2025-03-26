@@ -41,11 +41,11 @@ import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/
 // Create a mock system to properly test system-to-system calls
 contract MockInventoryOwnershipInteractSystem is System {
   function callAssignOwnerToInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) public {
-    inventoryOwnershipSystem.assignOwnerToInventory(inventoryObjectId, itemObjectId, quantity);
+    inventoryOwnershipSystem.assignItemToInventory(inventoryObjectId, itemObjectId, quantity);
   }
 
   function callRemoveOwnerFromInventory(uint256 inventoryObjectId, uint256 itemObjectId, uint256 quantity) public {
-    inventoryOwnershipSystem.removeOwnerFromInventory(inventoryObjectId, itemObjectId, quantity);
+    inventoryOwnershipSystem.removeItemFromInventory(inventoryObjectId, itemObjectId, quantity);
   }
 }
 
@@ -102,7 +102,7 @@ contract InventoryOwnershipTest is MudTest {
     CharactersByAccount.set(bob, 2);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
@@ -174,8 +174,8 @@ contract InventoryOwnershipTest is MudTest {
     bytes4[4] memory ownershipFunctionSelectors = [
       OwnershipSystem.assignOwner.selector,
       OwnershipSystem.removeOwner.selector,
-      InventoryOwnershipSystem.assignOwnerToInventory.selector,
-      InventoryOwnershipSystem.removeOwnerFromInventory.selector
+      InventoryOwnershipSystem.assignItemToInventory.selector,
+      InventoryOwnershipSystem.removeItemFromInventory.selector
     ];
 
     for (uint i = 0; i < ownershipFunctionSelectors.length; i++) {
@@ -191,8 +191,8 @@ contract InventoryOwnershipTest is MudTest {
     vm.resumeGasMetering();
   }
 
-  function test_assignOwnerToInventory() public {
-    // Test assigning ownership to an inventory using the smartObjectId and singletonItemObjectId/nonSingletonItemObjectId from setUp
+  function test_assignItemToInventory() public {
+    // Test assigning item ownership to an inventory using the smartObjectId and singletonItemObjectId/nonSingletonItemObjectId from setUp
     vm.pauseGasMetering();
     // Verify initial state - should have no inventory items initially
     assertEq(
@@ -215,7 +215,7 @@ contract InventoryOwnershipTest is MudTest {
         nonExistentItemId
       )
     );
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonExistentItemId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonExistentItemId, 1);
 
     // Test revert case 2: Non-existent inventory object
     uint256 nonExistentInventoryId = 8888888;
@@ -225,7 +225,7 @@ contract InventoryOwnershipTest is MudTest {
         nonExistentInventoryId
       )
     );
-    inventoryOwnershipSystem.assignOwnerToInventory(nonExistentInventoryId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(nonExistentInventoryId, singletonItemObjectId, 1);
 
     // Test revert case 3: Invalid quantity for singleton item (should be exactly 1)
     vm.expectRevert(
@@ -236,7 +236,7 @@ contract InventoryOwnershipTest is MudTest {
         1
       )
     );
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, singletonItemObjectId, 2);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, singletonItemObjectId, 2);
 
     // Test revert case 4: Zero quantity for non-singleton item
     vm.expectRevert(
@@ -245,10 +245,10 @@ contract InventoryOwnershipTest is MudTest {
         nonSingletonItemObjectId
       )
     );
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonSingletonItemObjectId, 0);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonSingletonItemObjectId, 0);
 
     // Test successful case 1: Add singleton item to inventory
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, singletonItemObjectId, 1);
 
     // Verify state changes for singleton item
     assertEq(
@@ -271,7 +271,7 @@ contract InventoryOwnershipTest is MudTest {
 
     // Test successful case 2: Add non-singleton item to inventory
     uint256 nonSingletonQuantity = 5;
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonSingletonItemObjectId, nonSingletonQuantity);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonSingletonItemObjectId, nonSingletonQuantity);
 
     // Verify state changes for non-singleton item
     assertEq(
@@ -288,7 +288,7 @@ contract InventoryOwnershipTest is MudTest {
 
     // Test adding more of the non-singleton item (should add to existing quantity)
     uint256 additionalQuantity = 3;
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonSingletonItemObjectId, additionalQuantity);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonSingletonItemObjectId, additionalQuantity);
 
     // Verify incremented quantity
     assertEq(
@@ -302,12 +302,12 @@ contract InventoryOwnershipTest is MudTest {
     // We use the existing nonSingletonItemObjectId that was already set up
     uint256 currentQuantity = InventoryItem.getQuantity(smartObjectId, nonSingletonItemObjectId);
     if (currentQuantity > 0) {
-      inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, nonSingletonItemObjectId, currentQuantity);
+      inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, nonSingletonItemObjectId, currentQuantity);
     }
 
     // Add items to the inventory
     uint256 testQuantityBefore = 5;
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonSingletonItemObjectId, testQuantityBefore);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonSingletonItemObjectId, testQuantityBefore);
 
     // Verify initial quantity
     assertEq(
@@ -324,7 +324,7 @@ contract InventoryOwnershipTest is MudTest {
 
     // Add items after version bump - this should REPLACE the quantity instead of adding to it
     uint256 testQuantityAfter = 3;
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonSingletonItemObjectId, testQuantityAfter);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonSingletonItemObjectId, testQuantityAfter);
 
     // Verify the quantity is replaced, not added
     assertEq(
@@ -348,7 +348,7 @@ contract InventoryOwnershipTest is MudTest {
     vm.stopPrank();
 
     // Add it to the ephemeral inventory
-    inventoryOwnershipSystem.assignOwnerToInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
 
     // Verify state changes for singleton item in ephemeral inventory
     assertEq(
@@ -377,7 +377,7 @@ contract InventoryOwnershipTest is MudTest {
     uint256 ephemeralNonSingletonQuantity = 10;
 
     // Add it to the ephemeral inventory
-    inventoryOwnershipSystem.assignOwnerToInventory(
+    inventoryOwnershipSystem.assignItemToInventory(
       ephemeralSmartObjectId,
       nonSingletonItemObjectId,
       ephemeralNonSingletonQuantity
@@ -392,7 +392,7 @@ contract InventoryOwnershipTest is MudTest {
 
     // Test adding more of the non-singleton item to ephemeral inventory
     uint256 additionalEphemeralQuantity = 7;
-    inventoryOwnershipSystem.assignOwnerToInventory(
+    inventoryOwnershipSystem.assignItemToInventory(
       ephemeralSmartObjectId,
       nonSingletonItemObjectId,
       additionalEphemeralQuantity
@@ -409,7 +409,7 @@ contract InventoryOwnershipTest is MudTest {
     // First clear out existing items for clean test
     currentQuantity = EphemeralInvItem.getQuantity(smartObjectId, bob, nonSingletonItemObjectId);
     if (currentQuantity > 0) {
-      inventoryOwnershipSystem.removeOwnerFromInventory(
+      inventoryOwnershipSystem.removeItemFromInventory(
         ephemeralSmartObjectId,
         nonSingletonItemObjectId,
         currentQuantity
@@ -417,7 +417,7 @@ contract InventoryOwnershipTest is MudTest {
     }
 
     // Add items to ephemeral inventory
-    inventoryOwnershipSystem.assignOwnerToInventory(
+    inventoryOwnershipSystem.assignItemToInventory(
       ephemeralSmartObjectId,
       nonSingletonItemObjectId,
       testQuantityBefore
@@ -437,11 +437,7 @@ contract InventoryOwnershipTest is MudTest {
     vm.stopPrank();
 
     // Add items after version bump - should REPLACE the quantity
-    inventoryOwnershipSystem.assignOwnerToInventory(
-      ephemeralSmartObjectId,
-      nonSingletonItemObjectId,
-      testQuantityAfter
-    );
+    inventoryOwnershipSystem.assignItemToInventory(ephemeralSmartObjectId, nonSingletonItemObjectId, testQuantityAfter);
 
     // Verify the quantity is replaced, not added
     assertEq(
@@ -477,11 +473,11 @@ contract InventoryOwnershipTest is MudTest {
     // First, setup inventory with items so we can test removing them
 
     // Add singleton item to regular inventory
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, singletonItemObjectId, 1);
 
     // Add non-singleton items to regular inventory
     uint256 nonSingletonQuantity = 10;
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, nonSingletonItemObjectId, nonSingletonQuantity);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, nonSingletonItemObjectId, nonSingletonQuantity);
 
     // Setup ephemeral inventory for testing
     vm.startPrank(deployer);
@@ -495,11 +491,11 @@ contract InventoryOwnershipTest is MudTest {
     vm.stopPrank();
 
     // Add the singleton item to ephemeral inventory
-    inventoryOwnershipSystem.assignOwnerToInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
 
     // Add non-singleton items to ephemeral inventory
     uint256 ephemeralNonSingletonQuantity = 7;
-    inventoryOwnershipSystem.assignOwnerToInventory(
+    inventoryOwnershipSystem.assignItemToInventory(
       ephemeralSmartObjectId,
       nonSingletonItemObjectId,
       ephemeralNonSingletonQuantity
@@ -548,7 +544,7 @@ contract InventoryOwnershipTest is MudTest {
         nonExistentInventoryId
       )
     );
-    inventoryOwnershipSystem.removeOwnerFromInventory(nonExistentInventoryId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.removeItemFromInventory(nonExistentInventoryId, singletonItemObjectId, 1);
 
     // Test revert case 2: Invalid quantity for singleton item (should be exactly 1)
     vm.expectRevert(
@@ -559,7 +555,7 @@ contract InventoryOwnershipTest is MudTest {
         1
       )
     );
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, singletonItemObjectId, 2);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, singletonItemObjectId, 2);
 
     // Test revert case 3: Zero quantity for non-singleton item
     vm.expectRevert(
@@ -568,7 +564,7 @@ contract InventoryOwnershipTest is MudTest {
         nonSingletonItemObjectId
       )
     );
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, nonSingletonItemObjectId, 0);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, nonSingletonItemObjectId, 0);
 
     // Test revert case 4: Not enough items in inventory
     vm.expectRevert(
@@ -580,14 +576,10 @@ contract InventoryOwnershipTest is MudTest {
         nonSingletonQuantity
       )
     );
-    inventoryOwnershipSystem.removeOwnerFromInventory(
-      smartObjectId,
-      nonSingletonItemObjectId,
-      nonSingletonQuantity + 1
-    );
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, nonSingletonItemObjectId, nonSingletonQuantity + 1);
 
     // Test successful case 1: Remove a singleton item from regular inventory
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, singletonItemObjectId, 1);
 
     // Verify state changes for singleton item
     assertEq(
@@ -601,7 +593,7 @@ contract InventoryOwnershipTest is MudTest {
     // Test successful case 2: Partial remove of non-singleton item from regular inventory
     uint256 partialQuantity = 3;
     uint256 remainingQuantity = nonSingletonQuantity - partialQuantity;
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, nonSingletonItemObjectId, partialQuantity);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, nonSingletonItemObjectId, partialQuantity);
 
     // Verify partial removal of non-singleton item
     assertEq(
@@ -611,7 +603,7 @@ contract InventoryOwnershipTest is MudTest {
     );
 
     // Test successful case 3: Complete remove of remaining non-singleton items
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, nonSingletonItemObjectId, remainingQuantity);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, nonSingletonItemObjectId, remainingQuantity);
 
     // Verify complete removal of non-singleton item
     assertEq(
@@ -621,7 +613,7 @@ contract InventoryOwnershipTest is MudTest {
     );
 
     // Test successful case 4: Remove a singleton item from ephemeral inventory
-    inventoryOwnershipSystem.removeOwnerFromInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
+    inventoryOwnershipSystem.removeItemFromInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
 
     // Verify state changes for ephemeral singleton item
     assertEq(
@@ -643,7 +635,7 @@ contract InventoryOwnershipTest is MudTest {
     // Test successful case 5: Partial remove of non-singleton item from ephemeral inventory
     uint256 ephemeralPartialQuantity = 2;
     uint256 ephemeralRemainingQuantity = ephemeralNonSingletonQuantity - ephemeralPartialQuantity;
-    inventoryOwnershipSystem.removeOwnerFromInventory(
+    inventoryOwnershipSystem.removeItemFromInventory(
       ephemeralSmartObjectId,
       nonSingletonItemObjectId,
       ephemeralPartialQuantity
@@ -657,7 +649,7 @@ contract InventoryOwnershipTest is MudTest {
     );
 
     // Test successful case 6: Complete remove of remaining non-singleton items from ephemeral inventory
-    inventoryOwnershipSystem.removeOwnerFromInventory(
+    inventoryOwnershipSystem.removeItemFromInventory(
       ephemeralSmartObjectId,
       nonSingletonItemObjectId,
       ephemeralRemainingQuantity
@@ -673,7 +665,7 @@ contract InventoryOwnershipTest is MudTest {
     // Test version mismatch behavior with a new item
 
     // Add an item to test with
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, singletonItemObjectId, 1);
 
     // Bump the inventory version
     vm.startPrank(deployer);
@@ -691,7 +683,7 @@ contract InventoryOwnershipTest is MudTest {
         0
       )
     );
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, singletonItemObjectId, 1);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, singletonItemObjectId, 1);
     assertEq(
       ownershipSystem.owner(singletonItemObjectId),
       address(0),
@@ -699,7 +691,7 @@ contract InventoryOwnershipTest is MudTest {
     );
 
     // Add an item to ephermal inventory test with
-    inventoryOwnershipSystem.assignOwnerToInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
+    inventoryOwnershipSystem.assignItemToInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
 
     // bump the ephemeral inventory version
     vm.startPrank(deployer);
@@ -718,7 +710,7 @@ contract InventoryOwnershipTest is MudTest {
         0
       )
     );
-    inventoryOwnershipSystem.removeOwnerFromInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
+    inventoryOwnershipSystem.removeItemFromInventory(ephemeralSmartObjectId, ephemeralSingletonItemId, 1);
     assertEq(
       ownershipSystem.owner(ephemeralSingletonItemId),
       address(0),

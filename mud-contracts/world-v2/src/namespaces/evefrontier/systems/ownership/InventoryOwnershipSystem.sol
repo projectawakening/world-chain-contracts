@@ -45,7 +45,7 @@ contract InventoryOwnershipSystem is SmartObjectFramework {
    * @param quantity The quantity to assign
    * @dev This function handles both regular and ephemeral inventories
    */
-  function assignOwnerToInventory(
+  function assignItemToInventory(
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity
@@ -90,7 +90,7 @@ contract InventoryOwnershipSystem is SmartObjectFramework {
    * @param quantity The quantity to remove
    * @dev This function handles both regular and ephemeral inventories
    */
-  function removeOwnerFromInventory(
+  function removeItemFromInventory(
     uint256 inventoryObjectId,
     uint256 itemObjectId,
     uint256 quantity

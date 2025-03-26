@@ -185,7 +185,7 @@ contract InventorySystem is SmartObjectFramework {
     }
 
     // Adjust ownership/quantity data
-    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, item.smartObjectId, item.quantity);
+    inventoryOwnershipSystem.assignItemToInventory(smartObjectId, item.smartObjectId, item.quantity);
 
     return usedCapacity + reqCapacity;
   }
@@ -200,7 +200,7 @@ contract InventorySystem is SmartObjectFramework {
     uint256 existingItemQuantity = InventoryItem.getQuantity(smartObjectId, item.smartObjectId);
 
     // Adjust ownership and quantities
-    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, item.smartObjectId, item.quantity);
+    inventoryOwnershipSystem.removeItemFromInventory(smartObjectId, item.smartObjectId, item.quantity);
 
     // remove item if quantity is reduced to 0
     if (item.quantity == existingItemQuantity) {
