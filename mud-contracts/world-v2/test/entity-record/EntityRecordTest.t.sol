@@ -577,13 +577,12 @@ contract EntityRecordTest is MudTest {
     bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
     testItems[0].tenantId = wrongTenantId;
 
-    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, singletonObjectId, wrongTenantId));
+    vm.expectRevert(
+      abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, singletonObjectId, wrongTenantId)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-        (smartObjectId, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositInventory, (smartObjectId, testItems))
     );
 
     // Reset tenant ID to valid value
@@ -593,13 +592,12 @@ contract EntityRecordTest is MudTest {
     uint256 incorrectSingletonObjectId = singletonObjectId + 1;
     testItems[0].smartObjectId = incorrectSingletonObjectId;
 
-    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
+    vm.expectRevert(
+      abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-        (smartObjectId, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositInventory, (smartObjectId, testItems))
     );
 
     // Reset to valid object ID
@@ -608,13 +606,12 @@ contract EntityRecordTest is MudTest {
     // 3. Invalid quantity for singleton
     testItems[0].quantity = 2; // Should be 1 for singleton
 
-    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, singletonObjectId, 2));
+    vm.expectRevert(
+      abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, singletonObjectId, 2)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-        (smartObjectId, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositInventory, (smartObjectId, testItems))
     );
 
     // Reset to valid quantity
@@ -626,13 +623,12 @@ contract EntityRecordTest is MudTest {
     testItems[0].typeId = NON_SINGLETON_TYPE_ID;
     testItems[0].itemId = 0;
 
-    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
+    vm.expectRevert(
+      abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-        (smartObjectId, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositInventory, (smartObjectId, testItems))
     );
 
     // Reset to valid non-singleton values
@@ -641,13 +637,12 @@ contract EntityRecordTest is MudTest {
     // 5. Invalid quantity (zero) for non-singleton
     testItems[0].quantity = 0; // Should be > 0 for non-singleton
 
-    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
+    vm.expectRevert(
+      abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0)
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-        (smartObjectId, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositInventory, (smartObjectId, testItems))
     );
 
     // Setup for successful test case
@@ -677,14 +672,11 @@ contract EntityRecordTest is MudTest {
     assertEq(EntityRecord.getExists(singletonObjectId), false);
     assertEq(EntityRecord.getExists(singletonClassId), false);
     assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
-    
+
     // Create and deposit inventory items
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-        (smartObjectId, items)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositInventory, (smartObjectId, items))
     );
 
     // Verify records were created with correct values
@@ -739,13 +731,16 @@ contract EntityRecordTest is MudTest {
     bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
     testItems[0].tenantId = wrongTenantId;
 
-    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidTenantId.selector, ephemeralSingletonObjectId, wrongTenantId));
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        EphemeralInventorySystem.EphemeralInventory_InvalidTenantId.selector,
+        ephemeralSingletonObjectId,
+        wrongTenantId
+      )
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-        (smartObjectId, bob, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositEphemeral, (smartObjectId, bob, testItems))
     );
 
     // Reset tenant ID to valid value
@@ -755,13 +750,15 @@ contract EntityRecordTest is MudTest {
     uint256 incorrectSingletonObjectId = ephemeralSingletonObjectId + 1;
     testItems[0].smartObjectId = incorrectSingletonObjectId;
 
-    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        EphemeralInventorySystem.EphemeralInventory_InvalidItemObjectId.selector,
+        incorrectSingletonObjectId
+      )
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-        (smartObjectId, bob,testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositEphemeral, (smartObjectId, bob, testItems))
     );
 
     // Reset to valid object ID
@@ -770,13 +767,16 @@ contract EntityRecordTest is MudTest {
     // 3. Invalid quantity for singleton
     testItems[0].quantity = 2; // Should be 1 for singleton
 
-    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemDepositQuantity.selector, ephemeralSingletonObjectId, 2));
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        EphemeralInventorySystem.EphemeralInventory_InvalidItemDepositQuantity.selector,
+        ephemeralSingletonObjectId,
+        2
+      )
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-        (smartObjectId, bob, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositEphemeral, (smartObjectId, bob, testItems))
     );
 
     // Reset to valid quantity
@@ -788,13 +788,15 @@ contract EntityRecordTest is MudTest {
     testItems[0].typeId = NON_SINGLETON_TYPE_ID;
     testItems[0].itemId = 0;
 
-    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        EphemeralInventorySystem.EphemeralInventory_InvalidItemObjectId.selector,
+        incorrectNonSingletonObjectId
+      )
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-        (smartObjectId, bob, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositEphemeral, (smartObjectId, bob, testItems))
     );
 
     // Reset to valid non-singleton values
@@ -803,13 +805,16 @@ contract EntityRecordTest is MudTest {
     // 5. Invalid quantity (zero) for non-singleton
     testItems[0].quantity = 0; // Should be > 0 for non-singleton
 
-    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        EphemeralInventorySystem.EphemeralInventory_InvalidItemDepositQuantity.selector,
+        nonSingletonObjectId,
+        0
+      )
+    );
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-        (smartObjectId, bob, testItems)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositEphemeral, (smartObjectId, bob, testItems))
     );
 
     // Setup for successful test case
@@ -843,10 +848,7 @@ contract EntityRecordTest is MudTest {
     // Create and deposit ephemeral inventory items
     world.call(
       mockSystemId,
-      abi.encodeCall(
-        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-        (smartObjectId, bob, items)
-      )
+      abi.encodeCall(MockEntityRecordInteractSystem.callCreateAndDepositEphemeral, (smartObjectId, bob, items))
     );
 
     // Verify records were created with correct values
