@@ -233,6 +233,14 @@ contract EntityRecordTest is MudTest {
       true
     );
 
+    // add our mock to the EphemeralInventorySystem call access
+    CallAccess.set(
+      ephemeralInventorySystem.toResourceId(),
+      EphemeralInventorySystem.createAndDepositEphemeral.selector,
+      address(mockSystem),
+      true
+    );
+
     entitySystem.registerClass(objectClassId, systemIds); // tags the system to this class for scoping
 
     // instantiate the smart object
@@ -542,327 +550,329 @@ contract EntityRecordTest is MudTest {
     vm.stopPrank();
   }
 
-  // function test_Inventory_interaction() public {
-  //   vm.startPrank(alice, deployer);
+  function test_Inventory_interaction() public {
+    vm.startPrank(alice, deployer);
 
-  //   // Define item types for testing
-  //   singletonObjectId = _calculateObjectId(SINGLETON_TYPE_ID, SINGLETON_ITEM_ID, true);
-  //   singletonClassId = _calculateObjectId(SINGLETON_TYPE_ID, 0, false);
-  //   nonSingletonObjectId = _calculateObjectId(NON_SINGLETON_TYPE_ID, 0, false);
+    // Define item types for testing
+    singletonObjectId = _calculateObjectId(SINGLETON_TYPE_ID, SINGLETON_ITEM_ID, true);
+    singletonClassId = _calculateObjectId(SINGLETON_TYPE_ID, 0, false);
+    nonSingletonObjectId = _calculateObjectId(NON_SINGLETON_TYPE_ID, 0, false);
 
-  //   // Create a single reusable item array for revert tests
-  //   CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
+    // Create a single reusable item array for revert tests
+    CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
 
-  //   // Initial valid values
-  //   testItems[0] = CreateInventoryItemParams({
-  //     smartObjectId: singletonObjectId,
-  //     tenantId: tenantId,
-  //     typeId: SINGLETON_TYPE_ID,
-  //     itemId: SINGLETON_ITEM_ID,
-  //     volume: 10,
-  //     quantity: 1
-  //   });
+    // Initial valid values
+    testItems[0] = CreateInventoryItemParams({
+      smartObjectId: singletonObjectId,
+      tenantId: tenantId,
+      typeId: SINGLETON_TYPE_ID,
+      itemId: SINGLETON_ITEM_ID,
+      volume: 10,
+      quantity: 1
+    });
 
-  //   // Test failure cases
+    // Test failure cases
 
-  //   // 1. Invalid tenant ID for singleton
-  //   bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
-  //   testItems[0].tenantId = wrongTenantId;
+    // 1. Invalid tenant ID for singleton
+    bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
+    testItems[0].tenantId = wrongTenantId;
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, singletonObjectId, wrongTenantId));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-  //       (smartObjectId, testItems)
-  //     )
-  //   );
+    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, singletonObjectId, wrongTenantId));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
+        (smartObjectId, testItems)
+      )
+    );
 
-  //   // Reset tenant ID to valid value
-  //   testItems[0].tenantId = tenantId;
+    // Reset tenant ID to valid value
+    testItems[0].tenantId = tenantId;
 
-  //   // 2. Invalid object ID for singleton
-  //   uint256 incorrectSingletonObjectId = singletonObjectId + 1;
-  //   testItems[0].smartObjectId = incorrectSingletonObjectId;
+    // 2. Invalid object ID for singleton
+    uint256 incorrectSingletonObjectId = singletonObjectId + 1;
+    testItems[0].smartObjectId = incorrectSingletonObjectId;
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-  //       (smartObjectId, testItems)
-  //     )
-  //   );
+    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
+        (smartObjectId, testItems)
+      )
+    );
 
-  //   // Reset to valid object ID
-  //   testItems[0].smartObjectId = singletonObjectId;
+    // Reset to valid object ID
+    testItems[0].smartObjectId = singletonObjectId;
 
-  //   // 3. Invalid quantity for singleton
-  //   testItems[0].quantity = 2; // Should be 1 for singleton
+    // 3. Invalid quantity for singleton
+    testItems[0].quantity = 2; // Should be 1 for singleton
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, singletonObjectId, 2));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-  //       (smartObjectId, testItems)
-  //     )
-  //   );
+    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, singletonObjectId, 2));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
+        (smartObjectId, testItems)
+      )
+    );
 
-  //   // Reset to valid quantity
-  //   testItems[0].quantity = 1;
+    // Reset to valid quantity
+    testItems[0].quantity = 1;
 
-  //   // 4. Invalid object ID for non-singleton
-  //   uint256 incorrectNonSingletonObjectId = nonSingletonObjectId + 1;
-  //   testItems[0].smartObjectId = incorrectNonSingletonObjectId;
-  //   testItems[0].typeId = NON_SINGLETON_TYPE_ID;
-  //   testItems[0].itemId = 0;
+    // 4. Invalid object ID for non-singleton
+    uint256 incorrectNonSingletonObjectId = nonSingletonObjectId + 1;
+    testItems[0].smartObjectId = incorrectNonSingletonObjectId;
+    testItems[0].typeId = NON_SINGLETON_TYPE_ID;
+    testItems[0].itemId = 0;
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-  //       (smartObjectId, testItems)
-  //     )
-  //   );
+    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
+        (smartObjectId, testItems)
+      )
+    );
 
-  //   // Reset to valid non-singleton values
-  //   testItems[0].smartObjectId = nonSingletonObjectId;
+    // Reset to valid non-singleton values
+    testItems[0].smartObjectId = nonSingletonObjectId;
 
-  //   // 5. Invalid quantity (zero) for non-singleton
-  //   testItems[0].quantity = 0; // Should be > 0 for non-singleton
+    // 5. Invalid quantity (zero) for non-singleton
+    testItems[0].quantity = 0; // Should be > 0 for non-singleton
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-  //       (smartObjectId, testItems)
-  //     )
-  //   );
+    vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
+        (smartObjectId, testItems)
+      )
+    );
 
-  //   // Setup for successful test case
-  //   CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
+    // Setup for successful test case
+    CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
 
-  //   // Singleton item
-  //   items[0] = CreateInventoryItemParams({
-  //     smartObjectId: singletonObjectId,
-  //     tenantId: tenantId,
-  //     typeId: SINGLETON_TYPE_ID,
-  //     itemId: SINGLETON_ITEM_ID,
-  //     volume: 10,
-  //     quantity: 1
-  //   });
+    // Singleton item
+    items[0] = CreateInventoryItemParams({
+      smartObjectId: singletonObjectId,
+      tenantId: tenantId,
+      typeId: SINGLETON_TYPE_ID,
+      itemId: SINGLETON_ITEM_ID,
+      volume: 10,
+      quantity: 1
+    });
 
-  //   // Non-singleton item
-  //   items[1] = CreateInventoryItemParams({
-  //     smartObjectId: nonSingletonObjectId,
-  //     tenantId: tenantId,
-  //     typeId: NON_SINGLETON_TYPE_ID,
-  //     itemId: 0,
-  //     volume: 5,
-  //     quantity: 5
-  //   });
+    // Non-singleton item
+    items[1] = CreateInventoryItemParams({
+      smartObjectId: nonSingletonObjectId,
+      tenantId: tenantId,
+      typeId: NON_SINGLETON_TYPE_ID,
+      itemId: 0,
+      volume: 5,
+      quantity: 5
+    });
 
-  //   // Check initial state - records should not exist
-  //   assertEq(EntityRecord.getExists(singletonObjectId), false);
-  //   assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
+    // Check initial state - records should not exist
+    assertEq(EntityRecord.getExists(singletonObjectId), false);
+    assertEq(EntityRecord.getExists(singletonClassId), false);
+    assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
+    
+    // Create and deposit inventory items
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositInventory,
+        (smartObjectId, items)
+      )
+    );
 
-  //   // Create and deposit inventory items
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositInventory,
-  //       (smartObjectId, items)
-  //     )
-  //   );
+    // Verify records were created with correct values
+    // Singleton item
+    assertEq(EntityRecord.getExists(singletonObjectId), true);
+    assertEq(EntityRecord.getTenantId(singletonObjectId), tenantId);
+    assertEq(EntityRecord.getTypeId(singletonObjectId), SINGLETON_TYPE_ID);
+    assertEq(EntityRecord.getItemId(singletonObjectId), SINGLETON_ITEM_ID);
+    assertEq(EntityRecord.getVolume(singletonObjectId), 10);
 
-  //   // Verify records were created with correct values
-  //   // Singleton item
-  //   assertEq(EntityRecord.getExists(singletonObjectId), true);
-  //   assertEq(EntityRecord.getTenantId(singletonObjectId), tenantId);
-  //   assertEq(EntityRecord.getTypeId(singletonObjectId), SINGLETON_TYPE_ID);
-  //   assertEq(EntityRecord.getItemId(singletonObjectId), SINGLETON_ITEM_ID);
-  //   assertEq(EntityRecord.getVolume(singletonObjectId), 10);
+    // singleton class record
+    assertEq(EntityRecord.getExists(singletonClassId), true);
+    assertEq(EntityRecord.getTenantId(singletonClassId), tenantId);
+    assertEq(EntityRecord.getTypeId(singletonClassId), SINGLETON_TYPE_ID);
+    assertEq(EntityRecord.getItemId(singletonClassId), 0);
+    assertEq(EntityRecord.getVolume(singletonClassId), 10);
 
-  //   // singleton class record
-  //   assertEq(EntityRecord.getExists(singletonClassId), true);
-  //   assertEq(EntityRecord.getTenantId(singletonClassId), tenantId);
-  //   assertEq(EntityRecord.getTypeId(singletonClassId), SINGLETON_TYPE_ID);
-  //   assertEq(EntityRecord.getItemId(singletonClassId), 0);
-  //   assertEq(EntityRecord.getVolume(singletonClassId), 10);
+    // Non-singleton item
+    assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
+    assertEq(EntityRecord.getTenantId(nonSingletonObjectId), tenantId);
+    assertEq(EntityRecord.getTypeId(nonSingletonObjectId), NON_SINGLETON_TYPE_ID);
+    assertEq(EntityRecord.getItemId(nonSingletonObjectId), 0);
+    assertEq(EntityRecord.getVolume(nonSingletonObjectId), 5);
 
-  //   // Non-singleton item
-  //   assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
-  //   assertEq(EntityRecord.getTenantId(nonSingletonObjectId), tenantId);
-  //   assertEq(EntityRecord.getTypeId(nonSingletonObjectId), NON_SINGLETON_TYPE_ID);
-  //   assertEq(EntityRecord.getItemId(nonSingletonObjectId), 0);
-  //   assertEq(EntityRecord.getVolume(nonSingletonObjectId), 5);
+    vm.stopPrank();
+  }
 
-  //   vm.stopPrank();
-  // }
+  function test_EphemeralInventory_interaction() public {
+    vm.startPrank(bob, deployer);
 
-  // function test_EphemeralInventory_interaction() public {
-  //   vm.startPrank(bob, deployer);
+    // Define item types for testing
+    ephemeralSingletonObjectId = _calculateObjectId(SINGLETON_TYPE_ID, EPHEMERAL_ITEM_ID, true);
+    ephemeralSingletonClassId = _calculateObjectId(SINGLETON_TYPE_ID, 0, false);
+    nonSingletonObjectId = _calculateObjectId(NON_SINGLETON_TYPE_ID, 0, false);
 
-  //   // Define item types for testing
-  //   ephemeralSingletonObjectId = _calculateObjectId(SINGLETON_TYPE_ID, EPHEMERAL_ITEM_ID, true);
-  //   ephemeralSingletonClassId = _calculateObjectId(SINGLETON_TYPE_ID, 0, false);
-  //   nonSingletonObjectId = _calculateObjectId(NON_SINGLETON_TYPE_ID, 0, false);
+    // Create a single reusable item array for revert tests
+    CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
 
-  //   // Create a single reusable item array for revert tests
-  //   CreateInventoryItemParams[] memory testItems = new CreateInventoryItemParams[](1);
+    // Initial valid values
+    testItems[0] = CreateInventoryItemParams({
+      smartObjectId: ephemeralSingletonObjectId,
+      tenantId: tenantId,
+      typeId: SINGLETON_TYPE_ID,
+      itemId: EPHEMERAL_ITEM_ID,
+      volume: 10,
+      quantity: 1
+    });
 
-  //   // Initial valid values
-  //   testItems[0] = CreateInventoryItemParams({
-  //     smartObjectId: ephemeralSingletonObjectId,
-  //     tenantId: tenantId,
-  //     typeId: SINGLETON_TYPE_ID,
-  //     itemId: EPHEMERAL_ITEM_ID,
-  //     volume: 10,
-  //     quantity: 1
-  //   });
+    // Test failure cases
 
-  //   // Test failure cases
+    // 1. Invalid tenant ID for singleton
+    bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
+    testItems[0].tenantId = wrongTenantId;
 
-  //   // 1. Invalid tenant ID for singleton
-  //   bytes32 wrongTenantId = keccak256(abi.encodePacked("WRONG_TENANT"));
-  //   testItems[0].tenantId = wrongTenantId;
+    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidTenantId.selector, ephemeralSingletonObjectId, wrongTenantId));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
+        (smartObjectId, bob, testItems)
+      )
+    );
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidTenantId.selector, ephemeralSingletonObjectId, wrongTenantId));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-  //       (smartObjectId, bob, testItems)
-  //     )
-  //   );
+    // Reset tenant ID to valid value
+    testItems[0].tenantId = tenantId;
 
-  //   // Reset tenant ID to valid value
-  //   testItems[0].tenantId = tenantId;
+    // 2. Invalid object ID for singleton
+    uint256 incorrectSingletonObjectId = ephemeralSingletonObjectId + 1;
+    testItems[0].smartObjectId = incorrectSingletonObjectId;
 
-  //   // 2. Invalid object ID for singleton
-  //   uint256 incorrectSingletonObjectId = ephemeralSingletonObjectId + 1;
-  //   testItems[0].smartObjectId = incorrectSingletonObjectId;
+    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
+        (smartObjectId, bob,testItems)
+      )
+    );
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectSingletonObjectId));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-  //       (smartObjectId, bob,testItems)
-  //     )
-  //   );
+    // Reset to valid object ID
+    testItems[0].smartObjectId = ephemeralSingletonObjectId;
 
-  //   // Reset to valid object ID
-  //   testItems[0].smartObjectId = ephemeralSingletonObjectId;
+    // 3. Invalid quantity for singleton
+    testItems[0].quantity = 2; // Should be 1 for singleton
 
-  //   // 3. Invalid quantity for singleton
-  //   testItems[0].quantity = 2; // Should be 1 for singleton
+    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemDepositQuantity.selector, ephemeralSingletonObjectId, 2));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
+        (smartObjectId, bob, testItems)
+      )
+    );
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, ephemeralSingletonObjectId, 2));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-  //       (smartObjectId, bob, testItems)
-  //     )
-  //   );
+    // Reset to valid quantity
+    testItems[0].quantity = 1;
 
-  //   // Reset to valid quantity
-  //   testItems[0].quantity = 1;
+    // 4. Invalid object ID for non-singleton
+    uint256 incorrectNonSingletonObjectId = nonSingletonObjectId + 1;
+    testItems[0].smartObjectId = incorrectNonSingletonObjectId;
+    testItems[0].typeId = NON_SINGLETON_TYPE_ID;
+    testItems[0].itemId = 0;
 
-  //   // 4. Invalid object ID for non-singleton
-  //   uint256 incorrectNonSingletonObjectId = nonSingletonObjectId + 1;
-  //   testItems[0].smartObjectId = incorrectNonSingletonObjectId;
-  //   testItems[0].typeId = NON_SINGLETON_TYPE_ID;
-  //   testItems[0].itemId = 0;
+    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
+        (smartObjectId, bob, testItems)
+      )
+    );
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemObjectId.selector, incorrectNonSingletonObjectId));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-  //       (smartObjectId, bob, testItems)
-  //     )
-  //   );
+    // Reset to valid non-singleton values
+    testItems[0].smartObjectId = nonSingletonObjectId;
 
-  //   // Reset to valid non-singleton values
-  //   testItems[0].smartObjectId = nonSingletonObjectId;
+    // 5. Invalid quantity (zero) for non-singleton
+    testItems[0].quantity = 0; // Should be > 0 for non-singleton
 
-  //   // 5. Invalid quantity (zero) for non-singleton
-  //   testItems[0].quantity = 0; // Should be > 0 for non-singleton
+    vm.expectRevert(abi.encodeWithSelector(EphemeralInventorySystem.EphemeralInventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
+        (smartObjectId, bob, testItems)
+      )
+    );
 
-  //   vm.expectRevert(abi.encodeWithSelector(InventorySystem.Inventory_InvalidItemDepositQuantity.selector, nonSingletonObjectId, 0));
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-  //       (smartObjectId, bob, testItems)
-  //     )
-  //   );
+    // Setup for successful test case
+    CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
 
-  //   // Setup for successful test case
-  //   CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
+    // Singleton item
+    items[0] = CreateInventoryItemParams({
+      smartObjectId: ephemeralSingletonObjectId,
+      tenantId: tenantId,
+      typeId: SINGLETON_TYPE_ID,
+      itemId: EPHEMERAL_ITEM_ID,
+      volume: 10,
+      quantity: 1
+    });
 
-  //   // Singleton item
-  //   items[0] = CreateInventoryItemParams({
-  //     smartObjectId: ephemeralSingletonObjectId,
-  //     tenantId: tenantId,
-  //     typeId: SINGLETON_TYPE_ID,
-  //     itemId: EPHEMERAL_ITEM_ID,
-  //     volume: 10,
-  //     quantity: 1
-  //   });
+    // Non-singleton item
+    items[1] = CreateInventoryItemParams({
+      smartObjectId: nonSingletonObjectId,
+      tenantId: tenantId,
+      typeId: NON_SINGLETON_TYPE_ID,
+      itemId: 0,
+      volume: 5,
+      quantity: 5
+    });
 
-  //   // Non-singleton item
-  //   items[1] = CreateInventoryItemParams({
-  //     smartObjectId: nonSingletonObjectId,
-  //     tenantId: tenantId,
-  //     typeId: NON_SINGLETON_TYPE_ID,
-  //     itemId: 0,
-  //     volume: 5,
-  //     quantity: 5
-  //   });
+    // Check initial state - records should not exist
+    assertEq(EntityRecord.getExists(ephemeralSingletonObjectId), false);
+    assertEq(EntityRecord.getExists(ephemeralSingletonClassId), false);
+    assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
 
-  //   // Check initial state - records should not exist
-  //   assertEq(EntityRecord.getExists(ephemeralSingletonObjectId), false);
-  //   assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
+    // Create and deposit ephemeral inventory items
+    world.call(
+      mockSystemId,
+      abi.encodeCall(
+        MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
+        (smartObjectId, bob, items)
+      )
+    );
 
-  //   // Create and deposit ephemeral inventory items
-  //   world.call(
-  //     mockSystemId,
-  //     abi.encodeCall(
-  //       MockEntityRecordInteractSystem.callCreateAndDepositEphemeral,
-  //       (smartObjectId, bob, items)
-  //     )
-  //   );
+    // Verify records were created with correct values
+    // Singleton item
+    assertEq(EntityRecord.getExists(ephemeralSingletonObjectId), true);
+    assertEq(EntityRecord.getTenantId(ephemeralSingletonObjectId), tenantId);
+    assertEq(EntityRecord.getTypeId(ephemeralSingletonObjectId), SINGLETON_TYPE_ID);
+    assertEq(EntityRecord.getItemId(ephemeralSingletonObjectId), EPHEMERAL_ITEM_ID);
+    assertEq(EntityRecord.getVolume(ephemeralSingletonObjectId), 10);
 
-  //   // Verify records were created with correct values
-  //   // Singleton item
-  //   assertEq(EntityRecord.getExists(ephemeralSingletonObjectId), true);
-  //   assertEq(EntityRecord.getTenantId(ephemeralSingletonObjectId), tenantId);
-  //   assertEq(EntityRecord.getTypeId(ephemeralSingletonObjectId), SINGLETON_TYPE_ID);
-  //   assertEq(EntityRecord.getItemId(ephemeralSingletonObjectId), EPHEMERAL_ITEM_ID);
-  //   assertEq(EntityRecord.getVolume(ephemeralSingletonObjectId), 10);
+    // ephermaral singleton class record
+    assertEq(EntityRecord.getExists(ephemeralSingletonClassId), true);
+    assertEq(EntityRecord.getTenantId(ephemeralSingletonClassId), tenantId);
+    assertEq(EntityRecord.getTypeId(ephemeralSingletonClassId), SINGLETON_TYPE_ID);
+    assertEq(EntityRecord.getItemId(ephemeralSingletonClassId), 0);
+    assertEq(EntityRecord.getVolume(ephemeralSingletonClassId), 10);
 
-  //   // ephermaral singleton class record
-  //   assertEq(EntityRecord.getExists(ephemeralSingletonClassId), true);
-  //   assertEq(EntityRecord.getTenantId(ephemeralSingletonClassId), tenantId);
-  //   assertEq(EntityRecord.getTypeId(ephemeralSingletonClassId), SINGLETON_TYPE_ID);
-  //   assertEq(EntityRecord.getItemId(ephemeralSingletonClassId), 0);
-  //   assertEq(EntityRecord.getVolume(ephemeralSingletonClassId), 10);
+    // Non-singleton item
+    assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
+    assertEq(EntityRecord.getTenantId(nonSingletonObjectId), tenantId);
+    assertEq(EntityRecord.getTypeId(nonSingletonObjectId), NON_SINGLETON_TYPE_ID);
+    assertEq(EntityRecord.getItemId(nonSingletonObjectId), 0);
+    assertEq(EntityRecord.getVolume(nonSingletonObjectId), 5);
 
-  //   // Non-singleton item
-  //   assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
-  //   assertEq(EntityRecord.getTenantId(nonSingletonObjectId), tenantId);
-  //   assertEq(EntityRecord.getTypeId(nonSingletonObjectId), NON_SINGLETON_TYPE_ID);
-  //   assertEq(EntityRecord.getItemId(nonSingletonObjectId), 0);
-  //   assertEq(EntityRecord.getVolume(nonSingletonObjectId), 5);
-
-  //   vm.stopPrank();
-  // }
+    vm.stopPrank();
+  }
 
   // Helper function to setup item records
   function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {

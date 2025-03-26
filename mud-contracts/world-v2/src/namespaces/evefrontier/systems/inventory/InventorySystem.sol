@@ -252,7 +252,7 @@ contract InventorySystem is SmartObjectFramework {
           }
 
           uint256 classId = uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].typeId)));
-          _ensureClassIdExists(classId, items[i].typeId, items[i].volume);
+          _ensureClassIdExists(classId, items[i].tenantId, items[i].typeId, items[i].volume);
         } else {
           // non-singleton item case
           if (items[i].smartObjectId != uint256(keccak256(abi.encodePacked(items[i].tenantId, items[i].typeId)))) {
@@ -287,7 +287,7 @@ contract InventorySystem is SmartObjectFramework {
    * @param typeId The type ID to use if creating the class record
    * @param volume The volume to use if creating the class record
    */
-  function _ensureClassIdExists(uint256 classId, uint256 typeId, uint256 volume) internal {
+  function _ensureClassIdExists(uint256 classId, bytes32 tenantId, uint256 typeId, uint256 volume) internal {
     if (!EntityRecord.getExists(classId)) {
       // the classId EntityRecord is not created
       if (!Entity.getExists(classId)) {
@@ -306,7 +306,7 @@ contract InventorySystem is SmartObjectFramework {
       // Create an EntityRecord for the classId
       entityRecordSystem.createRecord(
         classId,
-        EntityRecordParams({ tenantId: 0, typeId: typeId, itemId: 0, volume: volume })
+        EntityRecordParams({ tenantId: tenantId, typeId: typeId, itemId: 0, volume: volume })
       );
     }
   }
