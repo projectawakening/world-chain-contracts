@@ -119,7 +119,7 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     // Use OwnershipSystem to track ownership
-    ownershipSystem.assignToAccount(smartObjectId, owner);
+    ownershipSystem.assignOwner(smartObjectId, owner);
 
     DeployableState.set(
       smartObjectId,
@@ -180,7 +180,7 @@ contract DeployableSystem is SmartObjectFramework {
 
     // Remove ownership tracking of the deployable smart object
     address owner = ownershipSystem.owner(smartObjectId);
-    ownershipSystem.removeFromAccount(smartObjectId, owner);
+    ownershipSystem.removeOwner(smartObjectId, owner);
 
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
@@ -238,10 +238,10 @@ contract DeployableSystem is SmartObjectFramework {
     // assign ownership tracking of the deployable smart object
     address currentOwner = ownershipSystem.owner(smartObjectId);
     if (currentOwner == address(0)) {
-      ownershipSystem.assignToAccount(smartObjectId, owner);
+      ownershipSystem.assignOwner(smartObjectId, owner);
     } else if (currentOwner != address(0) && currentOwner != owner) {
-      ownershipSystem.removeFromAccount(smartObjectId, currentOwner);
-      ownershipSystem.assignToAccount(smartObjectId, owner);
+      ownershipSystem.removeOwner(smartObjectId, currentOwner);
+      ownershipSystem.assignOwner(smartObjectId, owner);
     }
 
     locationSystem.saveLocation(smartObjectId, locationData);
@@ -289,7 +289,7 @@ contract DeployableSystem is SmartObjectFramework {
 
     // Remove ownership tracking through OwnershipSystem
     address owner = ownershipSystem.owner(smartObjectId);
-    ownershipSystem.removeFromAccount(smartObjectId, owner);
+    ownershipSystem.removeOwner(smartObjectId, owner);
 
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 

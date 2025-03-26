@@ -57,60 +57,44 @@ library AccessSystemLib {
   error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
 
-  function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(
+  function onlyOwnerOrEphemeralTransferRole(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return
-      CallWrapper(self.toResourceId(), address(0)).onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(
-        smartObjectId,
-        data
-      );
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrEphemeralTransferRole(smartObjectId, data);
   }
 
-  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+  function onlyOwnerOrEphemeralCrossTransferRole(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return
-      CallWrapper(self.toResourceId(), address(0)).onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
-        smartObjectId,
-        data
-      );
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrEphemeralCrossTransferRole(smartObjectId, data);
   }
 
-  function onlyCanTransferFromEphemeralRoleAccess(
+  function onlyEphemeralTransferRole(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyEphemeralTransferRole(smartObjectId, data);
+  }
+
+  function onlyOwnerOrInventoryTransferRole(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyCanTransferFromEphemeralRoleAccess(smartObjectId, data);
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerOrInventoryTransferRole(smartObjectId, data);
   }
 
-  function onlyDirectOwnerOrCanTransferToInventoryRoleAccess(
-    AccessSystemType self,
-    uint256 smartObjectId,
-    bytes memory data
-  ) internal view {
-    return
-      CallWrapper(self.toResourceId(), address(0)).onlyDirectOwnerOrCanTransferToInventoryRoleAccess(
-        smartObjectId,
-        data
-      );
+  function onlyOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyOwner(smartObjectId, data);
   }
 
-  function onlyOwnerAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyOwnerAccess(smartObjectId, data);
+  function onlyDirectOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyDirectOwner(smartObjectId, data);
   }
 
-  function onlyDirectOwnerAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyDirectOwnerAccess(smartObjectId, data);
-  }
-
-  function onlyDirectAdminAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyDirectAdminAccess(smartObjectId, data);
+  function onlyDirectAdmin(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyDirectAdmin(smartObjectId, data);
   }
 
   function onlyAdminSupportedAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
@@ -129,52 +113,44 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).adminSupportOrDirectOwnerGates(smartObjectId, data);
   }
 
-  function onlyAdminOrOwnerAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrOwnerAccess(smartObjectId, data);
+  function onlyAdminOrOwner(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrOwner(smartObjectId, data);
   }
 
-  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function onlyClassScopedOrCharAdminOrOwner(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return
-      CallWrapper(self.toResourceId(), address(0)).onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
-        smartObjectId,
-        data
-      );
+    return CallWrapper(self.toResourceId(), address(0)).onlyClassScopedOrCharAdminOrOwner(smartObjectId, data);
   }
 
   function onlyCallAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
     return CallWrapper(self.toResourceId(), address(0)).onlyCallAccess(smartObjectId, data);
   }
 
-  function onlyAdminSupportedOwnerOrCallAccess(
+  function onlyAdminSupportedOwnerOrCall(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyAdminSupportedOwnerOrCallAccess(smartObjectId, data);
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminSupportedOwnerOrCall(smartObjectId, data);
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccess(
+  function onlyDirectEphemeralOwnerOrCall(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyDirectEphemeralOwnerOrCallAccess(smartObjectId, data);
+    return CallWrapper(self.toResourceId(), address(0)).onlyDirectEphemeralOwnerOrCall(smartObjectId, data);
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
+  function onlyCallAccessOrDirectEphemeralOwner(
     AccessSystemType self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
-    return
-      CallWrapper(self.toResourceId(), address(0)).onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
-        smartObjectId,
-        data
-      );
+    return CallWrapper(self.toResourceId(), address(0)).onlyCallAccessOrDirectEphemeralOwner(smartObjectId, data);
   }
 
   function onlyAdminOrCallAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
@@ -189,12 +165,8 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).onlyCallAccessWithScopeEnforced(smartObjectId, data);
   }
 
-  function onlyAdminOrCallAccessWithScopeEnforced(
-    AccessSystemType self,
-    uint256 smartObjectId,
-    bytes memory data
-  ) internal view {
-    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrCallAccessWithScopeEnforced(smartObjectId, data);
+  function onlyAdminOrScopeEnforcedCall(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).onlyAdminOrScopeEnforcedCall(smartObjectId, data);
   }
 
   function onlyDirectAdminOrCallAccess(AccessSystemType self, uint256 smartObjectId, bytes memory data) internal view {
@@ -282,7 +254,7 @@ library AccessSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).canCrossTransferToEphemeral(smartObjectId, caller);
   }
 
-  function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(
+  function onlyOwnerOrEphemeralTransferRole(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -291,8 +263,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectOwnerOrCanTransferToEphemeralRoleAccess_uint256_bytes
-        .onlyDirectOwnerOrCanTransferToEphemeralRoleAccess,
+      _onlyOwnerOrEphemeralTransferRole_uint256_bytes.onlyOwnerOrEphemeralTransferRole,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -303,7 +274,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+  function onlyOwnerOrEphemeralCrossTransferRole(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -312,8 +283,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess_uint256_bytes
-        .onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess,
+      _onlyOwnerOrEphemeralCrossTransferRole_uint256_bytes.onlyOwnerOrEphemeralCrossTransferRole,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -324,7 +294,23 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyCanTransferFromEphemeralRoleAccess(
+  function onlyEphemeralTransferRole(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _onlyEphemeralTransferRole_uint256_bytes.onlyEphemeralTransferRole,
+      (smartObjectId, data)
+    );
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
+  function onlyOwnerOrInventoryTransferRole(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -333,7 +319,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyCanTransferFromEphemeralRoleAccess_uint256_bytes.onlyCanTransferFromEphemeralRoleAccess,
+      _onlyOwnerOrInventoryTransferRole_uint256_bytes.onlyOwnerOrInventoryTransferRole,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -344,19 +330,11 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDirectOwnerOrCanTransferToInventoryRoleAccess(
-    CallWrapper memory self,
-    uint256 smartObjectId,
-    bytes memory data
-  ) internal view {
+  function onlyOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(
-      _onlyDirectOwnerOrCanTransferToInventoryRoleAccess_uint256_bytes
-        .onlyDirectOwnerOrCanTransferToInventoryRoleAccess,
-      (smartObjectId, data)
-    );
+    bytes memory systemCall = abi.encodeCall(_onlyOwner_uint256_bytes.onlyOwner, (smartObjectId, data));
     bytes memory worldCall = self.from == address(0)
       ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
       : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
@@ -365,11 +343,11 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyOwnerAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyDirectOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_onlyOwnerAccess_uint256_bytes.onlyOwnerAccess, (smartObjectId, data));
+    bytes memory systemCall = abi.encodeCall(_onlyDirectOwner_uint256_bytes.onlyDirectOwner, (smartObjectId, data));
     bytes memory worldCall = self.from == address(0)
       ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
       : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
@@ -378,30 +356,11 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDirectOwnerAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyDirectAdmin(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(
-      _onlyDirectOwnerAccess_uint256_bytes.onlyDirectOwnerAccess,
-      (smartObjectId, data)
-    );
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-    abi.decode(returnData, (bytes));
-  }
-
-  function onlyDirectAdminAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _onlyDirectAdminAccess_uint256_bytes.onlyDirectAdminAccess,
-      (smartObjectId, data)
-    );
+    bytes memory systemCall = abi.encodeCall(_onlyDirectAdmin_uint256_bytes.onlyDirectAdmin, (smartObjectId, data));
     bytes memory worldCall = self.from == address(0)
       ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
       : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
@@ -462,14 +421,11 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminOrOwnerAccess(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+  function onlyAdminOrOwner(CallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrOwnerAccess_uint256_bytes.onlyAdminOrOwnerAccess,
-      (smartObjectId, data)
-    );
+    bytes memory systemCall = abi.encodeCall(_onlyAdminOrOwner_uint256_bytes.onlyAdminOrOwner, (smartObjectId, data));
     bytes memory worldCall = self.from == address(0)
       ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
       : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
@@ -478,7 +434,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function onlyClassScopedOrCharAdminOrOwner(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -487,8 +443,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes
-        .onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess,
+      _onlyClassScopedOrCharAdminOrOwner_uint256_bytes.onlyClassScopedOrCharAdminOrOwner,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -512,7 +467,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminSupportedOwnerOrCallAccess(
+  function onlyAdminSupportedOwnerOrCall(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -521,7 +476,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminSupportedOwnerOrCallAccess_uint256_bytes.onlyAdminSupportedOwnerOrCallAccess,
+      _onlyAdminSupportedOwnerOrCall_uint256_bytes.onlyAdminSupportedOwnerOrCall,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -532,7 +487,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccess(
+  function onlyDirectEphemeralOwnerOrCall(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -541,7 +496,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectEphemeralOwnerOrCallAccess_uint256_bytes.onlyDirectEphemeralOwnerOrCallAccess,
+      _onlyDirectEphemeralOwnerOrCall_uint256_bytes.onlyDirectEphemeralOwnerOrCall,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -552,7 +507,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
+  function onlyCallAccessOrDirectEphemeralOwner(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -561,8 +516,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner_uint256_bytes
-        .onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner,
+      _onlyCallAccessOrDirectEphemeralOwner_uint256_bytes.onlyCallAccessOrDirectEphemeralOwner,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -609,7 +563,7 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
-  function onlyAdminOrCallAccessWithScopeEnforced(
+  function onlyAdminOrScopeEnforcedCall(
     CallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
@@ -618,7 +572,7 @@ library AccessSystemLib {
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrCallAccessWithScopeEnforced_uint256_bytes.onlyAdminOrCallAccessWithScopeEnforced,
+      _onlyAdminOrScopeEnforcedCall_uint256_bytes.onlyAdminOrScopeEnforcedCall,
       (smartObjectId, data)
     );
     bytes memory worldCall = self.from == address(0)
@@ -896,75 +850,66 @@ library AccessSystemLib {
     return abi.decode(result, (bool));
   }
 
-  function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(
+  function onlyOwnerOrEphemeralTransferRole(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectOwnerOrCanTransferToEphemeralRoleAccess_uint256_bytes
-        .onlyDirectOwnerOrCanTransferToEphemeralRoleAccess,
+      _onlyOwnerOrEphemeralTransferRole_uint256_bytes.onlyOwnerOrEphemeralTransferRole,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
+  function onlyOwnerOrEphemeralCrossTransferRole(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess_uint256_bytes
-        .onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess,
+      _onlyOwnerOrEphemeralCrossTransferRole_uint256_bytes.onlyOwnerOrEphemeralCrossTransferRole,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyCanTransferFromEphemeralRoleAccess(
+  function onlyEphemeralTransferRole(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyCanTransferFromEphemeralRoleAccess_uint256_bytes.onlyCanTransferFromEphemeralRoleAccess,
+      _onlyEphemeralTransferRole_uint256_bytes.onlyEphemeralTransferRole,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDirectOwnerOrCanTransferToInventoryRoleAccess(
+  function onlyOwnerOrInventoryTransferRole(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectOwnerOrCanTransferToInventoryRoleAccess_uint256_bytes
-        .onlyDirectOwnerOrCanTransferToInventoryRoleAccess,
+      _onlyOwnerOrInventoryTransferRole_uint256_bytes.onlyOwnerOrInventoryTransferRole,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyOwnerAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
-    bytes memory systemCall = abi.encodeCall(_onlyOwnerAccess_uint256_bytes.onlyOwnerAccess, (smartObjectId, data));
+  function onlyOwner(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(_onlyOwner_uint256_bytes.onlyOwner, (smartObjectId, data));
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDirectOwnerAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
-    bytes memory systemCall = abi.encodeCall(
-      _onlyDirectOwnerAccess_uint256_bytes.onlyDirectOwnerAccess,
-      (smartObjectId, data)
-    );
+  function onlyDirectOwner(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(_onlyDirectOwner_uint256_bytes.onlyDirectOwner, (smartObjectId, data));
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDirectAdminAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
-    bytes memory systemCall = abi.encodeCall(
-      _onlyDirectAdminAccess_uint256_bytes.onlyDirectAdminAccess,
-      (smartObjectId, data)
-    );
+  function onlyDirectAdmin(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(_onlyDirectAdmin_uint256_bytes.onlyDirectAdmin, (smartObjectId, data));
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
@@ -1004,22 +949,18 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminOrOwnerAccess(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
-    bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrOwnerAccess_uint256_bytes.onlyAdminOrOwnerAccess,
-      (smartObjectId, data)
-    );
+  function onlyAdminOrOwner(RootCallWrapper memory self, uint256 smartObjectId, bytes memory data) internal view {
+    bytes memory systemCall = abi.encodeCall(_onlyAdminOrOwner_uint256_bytes.onlyAdminOrOwner, (smartObjectId, data));
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
+  function onlyClassScopedOrCharAdminOrOwner(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes
-        .onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess,
+      _onlyClassScopedOrCharAdminOrOwner_uint256_bytes.onlyClassScopedOrCharAdminOrOwner,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
@@ -1030,38 +971,37 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminSupportedOwnerOrCallAccess(
+  function onlyAdminSupportedOwnerOrCall(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminSupportedOwnerOrCallAccess_uint256_bytes.onlyAdminSupportedOwnerOrCallAccess,
+      _onlyAdminSupportedOwnerOrCall_uint256_bytes.onlyAdminSupportedOwnerOrCall,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccess(
+  function onlyDirectEphemeralOwnerOrCall(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectEphemeralOwnerOrCallAccess_uint256_bytes.onlyDirectEphemeralOwnerOrCallAccess,
+      _onlyDirectEphemeralOwnerOrCall_uint256_bytes.onlyDirectEphemeralOwnerOrCall,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
+  function onlyCallAccessOrDirectEphemeralOwner(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner_uint256_bytes
-        .onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner,
+      _onlyCallAccessOrDirectEphemeralOwner_uint256_bytes.onlyCallAccessOrDirectEphemeralOwner,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
@@ -1087,13 +1027,13 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
-  function onlyAdminOrCallAccessWithScopeEnforced(
+  function onlyAdminOrScopeEnforcedCall(
     RootCallWrapper memory self,
     uint256 smartObjectId,
     bytes memory data
   ) internal view {
     bytes memory systemCall = abi.encodeCall(
-      _onlyAdminOrCallAccessWithScopeEnforced_uint256_bytes.onlyAdminOrCallAccessWithScopeEnforced,
+      _onlyAdminOrScopeEnforcedCall_uint256_bytes.onlyAdminOrScopeEnforcedCall,
       (smartObjectId, data)
     );
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
@@ -1300,35 +1240,32 @@ library AccessSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _onlyDirectOwnerOrCanTransferToEphemeralRoleAccess_uint256_bytes {
-  function onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwnerOrEphemeralTransferRole_uint256_bytes {
+  function onlyOwnerOrEphemeralTransferRole(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess_uint256_bytes {
-  function onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external;
+interface _onlyOwnerOrEphemeralCrossTransferRole_uint256_bytes {
+  function onlyOwnerOrEphemeralCrossTransferRole(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyCanTransferFromEphemeralRoleAccess_uint256_bytes {
-  function onlyCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyEphemeralTransferRole_uint256_bytes {
+  function onlyEphemeralTransferRole(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDirectOwnerOrCanTransferToInventoryRoleAccess_uint256_bytes {
-  function onlyDirectOwnerOrCanTransferToInventoryRoleAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwnerOrInventoryTransferRole_uint256_bytes {
+  function onlyOwnerOrInventoryTransferRole(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyOwnerAccess_uint256_bytes {
-  function onlyOwnerAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyOwner_uint256_bytes {
+  function onlyOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDirectOwnerAccess_uint256_bytes {
-  function onlyDirectOwnerAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyDirectOwner_uint256_bytes {
+  function onlyDirectOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDirectAdminAccess_uint256_bytes {
-  function onlyDirectAdminAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyDirectAdmin_uint256_bytes {
+  function onlyDirectAdmin(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyAdminSupportedAccess_uint256_bytes {
@@ -1343,31 +1280,28 @@ interface _adminSupportOrDirectOwnerGates_uint256_bytes {
   function adminSupportOrDirectOwnerGates(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminOrOwnerAccess_uint256_bytes {
-  function onlyAdminOrOwnerAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyAdminOrOwner_uint256_bytes {
+  function onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess_uint256_bytes {
-  function onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external;
+interface _onlyClassScopedOrCharAdminOrOwner_uint256_bytes {
+  function onlyClassScopedOrCharAdminOrOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyCallAccess_uint256_bytes {
   function onlyCallAccess(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminSupportedOwnerOrCallAccess_uint256_bytes {
-  function onlyAdminSupportedOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyAdminSupportedOwnerOrCall_uint256_bytes {
+  function onlyAdminSupportedOwnerOrCall(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDirectEphemeralOwnerOrCallAccess_uint256_bytes {
-  function onlyDirectEphemeralOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external;
+interface _onlyDirectEphemeralOwnerOrCall_uint256_bytes {
+  function onlyDirectEphemeralOwnerOrCall(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner_uint256_bytes {
-  function onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(uint256 smartObjectId, bytes memory data) external;
+interface _onlyCallAccessOrDirectEphemeralOwner_uint256_bytes {
+  function onlyCallAccessOrDirectEphemeralOwner(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyAdminOrCallAccess_uint256_bytes {
@@ -1378,8 +1312,8 @@ interface _onlyCallAccessWithScopeEnforced_uint256_bytes {
   function onlyCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external;
 }
 
-interface _onlyAdminOrCallAccessWithScopeEnforced_uint256_bytes {
-  function onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external;
+interface _onlyAdminOrScopeEnforcedCall_uint256_bytes {
+  function onlyAdminOrScopeEnforcedCall(uint256 smartObjectId, bytes memory data) external;
 }
 
 interface _onlyDirectAdminOrCallAccess_uint256_bytes {

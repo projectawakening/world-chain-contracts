@@ -27,6 +27,7 @@ import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefron
 import { smartAssemblySystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
 import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { OwnershipSystem, ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryOwnershipSystemLib.sol";
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
@@ -723,7 +724,7 @@ contract EphemeralInventoryTest is MudTest {
     vm.startPrank(bob, deployer);
     vm.expectRevert(
       abi.encodeWithSelector(
-        OwnershipSystem.EphemeralInventory_InsufficientQuantity.selector,
+        InventoryOwnershipSystem.InventoryOwnership_Ephemeral_InsufficientQuantity.selector,
         inventoryObjectId,
         bob,
         item2ObjectId,
@@ -794,7 +795,7 @@ contract EphemeralInventoryTest is MudTest {
     vm.startPrank(bob, deployer);
     vm.expectRevert(
       abi.encodeWithSelector(
-        OwnershipSystem.EphemeralInventory_InsufficientQuantity.selector,
+        InventoryOwnershipSystem.InventoryOwnership_Ephemeral_InsufficientQuantity.selector,
         inventoryObjectId,
         bob,
         transferItemObjectId,

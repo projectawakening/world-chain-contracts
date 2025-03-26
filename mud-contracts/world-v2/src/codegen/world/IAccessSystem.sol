@@ -33,28 +33,19 @@ interface IAccessSystem {
   error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
 
-  function evefrontier__onlyDirectOwnerOrCanTransferToEphemeralRoleAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external view;
+  function evefrontier__onlyOwnerOrEphemeralTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectEphemeralOwnerOrCanCrossTransferToEphemeralRoleAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external view;
+  function evefrontier__onlyOwnerOrEphemeralCrossTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyCanTransferFromEphemeralRoleAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyEphemeralTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectOwnerOrCanTransferToInventoryRoleAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external view;
+  function evefrontier__onlyOwnerOrInventoryTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyDirectOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectAdminAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyDirectAdmin(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdminSupportedAccess(uint256 smartObjectId, bytes memory data) external view;
 
@@ -62,29 +53,23 @@ interface IAccessSystem {
 
   function evefrontier__adminSupportOrDirectOwnerGates(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminOrOwnerAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyClassScopedOrAdminForCharactersOtherwiseAlsoOwnerAccess(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external view;
+  function evefrontier__onlyClassScopedOrCharAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminSupportedOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminSupportedOwnerOrCall(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectEphemeralOwnerOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyDirectEphemeralOwnerOrCall(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyDirectEphemeralOwnerOrCallAccessWithEphemeralOwner(
-    uint256 smartObjectId,
-    bytes memory data
-  ) external view;
+  function evefrontier__onlyCallAccessOrDirectEphemeralOwner(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyAdminOrScopeEnforcedCall(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyDirectAdminOrCallAccess(uint256 smartObjectId, bytes memory data) external view;
 

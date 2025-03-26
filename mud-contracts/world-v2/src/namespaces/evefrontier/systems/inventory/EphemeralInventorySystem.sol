@@ -16,6 +16,7 @@ import { GlobalDeployableState, DeployableState, Inventory, EphemeralInvCapacity
 
 // Local namespace systems
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+import { inventoryOwnershipSystem } from "../../codegen/systems/InventoryOwnershipSystemLib.sol";
 import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 
@@ -77,7 +78,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
     }
 
-    // Ensure the smartObjectId is an assigned object
+    // Ensure the smartObjectId is an ownership assigned object
     if (OwnershipByObject.getAccount(smartObjectId) == address(0)) {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
     }
@@ -232,7 +233,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
 
     // Adjust ownership/quantity data
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
-    ownershipSystem.assignToInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
+    inventoryOwnershipSystem.assignOwnerToInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
 
     return usedCapacity + reqCapacity;
   }
@@ -247,7 +248,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
 
     // Adjust ownership and quantities
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
-    ownershipSystem.removeFromInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
+    inventoryOwnershipSystem.removeOwnerFromInventory(ephemeralSmartObjectId, item.smartObjectId, item.quantity);
 
     // remove item if quantity is reduced to 0
     if (item.quantity == itemData.quantity) {

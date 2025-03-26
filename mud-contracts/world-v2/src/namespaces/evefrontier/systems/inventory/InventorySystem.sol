@@ -17,7 +17,7 @@ import { GlobalDeployableState, Tenant, EntityRecord, DeployableState, Deployabl
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
 import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
-import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+import { inventoryOwnershipSystem } from "../../codegen/systems/InventoryOwnershipSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../entity-record/types.sol";
@@ -185,7 +185,7 @@ contract InventorySystem is SmartObjectFramework {
     }
 
     // Adjust ownership/quantity data
-    ownershipSystem.assignToInventory(smartObjectId, item.smartObjectId, item.quantity);
+    inventoryOwnershipSystem.assignOwnerToInventory(smartObjectId, item.smartObjectId, item.quantity);
 
     return usedCapacity + reqCapacity;
   }
@@ -200,7 +200,7 @@ contract InventorySystem is SmartObjectFramework {
     uint256 existingItemQuantity = InventoryItem.getQuantity(smartObjectId, item.smartObjectId);
 
     // Adjust ownership and quantities
-    ownershipSystem.removeFromInventory(smartObjectId, item.smartObjectId, item.quantity);
+    inventoryOwnershipSystem.removeOwnerFromInventory(smartObjectId, item.smartObjectId, item.quantity);
 
     // remove item if quantity is reduced to 0
     if (item.quantity == existingItemQuantity) {

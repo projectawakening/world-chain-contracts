@@ -132,7 +132,7 @@ contract SmartGateSystem is SmartObjectFramework {
    * @param destinationGateId is the smartObjectId of the destination gate
    */
   function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
-    // Check if the gates are online
+    //Check if the gates are online
     if (
       DeployableState.getCurrentState(sourceGateId) != State.ONLINE &&
       DeployableState.getCurrentState(destinationGateId) != State.ONLINE
@@ -144,7 +144,7 @@ contract SmartGateSystem is SmartObjectFramework {
       revert SmartGate_GateNotOnline(destinationGateId);
     }
 
-    // Check if the gates are linked
+    //Check if the gates are linked
     if (!isGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }

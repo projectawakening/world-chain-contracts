@@ -26,6 +26,7 @@ import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefron
 import { smartAssemblySystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
 import { entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { OwnershipSystem, ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryOwnershipSystemLib.sol";
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
@@ -754,7 +755,7 @@ contract InventoryTest is MudTest {
     vm.startPrank(alice, deployer);
     vm.expectRevert(
       abi.encodeWithSelector(
-        OwnershipSystem.Inventory_InsufficientQuantity.selector,
+        InventoryOwnershipSystem.InventoryOwnership_InsufficientQuantity.selector,
         smartObjectId,
         item2ObjectId,
         10,
@@ -814,7 +815,7 @@ contract InventoryTest is MudTest {
     vm.startPrank(alice, deployer);
     vm.expectRevert(
       abi.encodeWithSelector(
-        OwnershipSystem.Inventory_InsufficientQuantity.selector,
+        InventoryOwnershipSystem.InventoryOwnership_InsufficientQuantity.selector,
         smartObjectId,
         transferItemObjectId,
         1,

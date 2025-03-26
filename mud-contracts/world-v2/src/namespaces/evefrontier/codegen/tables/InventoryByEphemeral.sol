@@ -16,15 +16,15 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-struct ObjectByEphemeralData {
+struct InventoryByEphemeralData {
   bool exists;
   uint256 smartObjectId;
   address ephemeralOwner;
 }
 
-library ObjectByEphemeral {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "ObjectByEphemera", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004f626a6563744279457068656d657261);
+library InventoryByEphemeral {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "InventoryByEphem", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000496e76656e746f72794279457068656d);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0035030001201400000000000000000000000000000000000000000000000000);
@@ -197,7 +197,7 @@ library ObjectByEphemeral {
   /**
    * @notice Get the full data.
    */
-  function get(uint256 ephemeralSmartObjectId) internal view returns (ObjectByEphemeralData memory _table) {
+  function get(uint256 ephemeralSmartObjectId) internal view returns (InventoryByEphemeralData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(ephemeralSmartObjectId));
 
@@ -212,7 +212,7 @@ library ObjectByEphemeral {
   /**
    * @notice Get the full data.
    */
-  function _get(uint256 ephemeralSmartObjectId) internal view returns (ObjectByEphemeralData memory _table) {
+  function _get(uint256 ephemeralSmartObjectId) internal view returns (InventoryByEphemeralData memory _table) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(ephemeralSmartObjectId));
 
@@ -257,7 +257,7 @@ library ObjectByEphemeral {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(uint256 ephemeralSmartObjectId, ObjectByEphemeralData memory _table) internal {
+  function set(uint256 ephemeralSmartObjectId, InventoryByEphemeralData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.exists, _table.smartObjectId, _table.ephemeralOwner);
 
     EncodedLengths _encodedLengths;
@@ -272,7 +272,7 @@ library ObjectByEphemeral {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(uint256 ephemeralSmartObjectId, ObjectByEphemeralData memory _table) internal {
+  function _set(uint256 ephemeralSmartObjectId, InventoryByEphemeralData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.exists, _table.smartObjectId, _table.ephemeralOwner);
 
     EncodedLengths _encodedLengths;
@@ -307,7 +307,7 @@ library ObjectByEphemeral {
     bytes memory _staticData,
     EncodedLengths,
     bytes memory
-  ) internal pure returns (ObjectByEphemeralData memory _table) {
+  ) internal pure returns (InventoryByEphemeralData memory _table) {
     (_table.exists, _table.smartObjectId, _table.ephemeralOwner) = decodeStatic(_staticData);
   }
 
