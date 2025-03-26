@@ -19,10 +19,7 @@ contract KillMailSystem is SmartObjectFramework {
   error KillMail_AlreadyExists(uint256 killMailId);
   error KillMail_InvalidCharacterId(uint256 killMailId, uint256 characterId);
 
-  function reportKill(
-    uint256 killMailId,
-    KillMailData memory killMailData
-  ) public access(0) {
+  function reportKill(uint256 killMailId, KillMailData memory killMailData) public access(0) {
     // require valid character ids for submitted killmail data
     if (!Characters.getExists(killMailData.killerCharacterId)) {
       revert KillMail_InvalidCharacterId(killMailId, killMailData.killerCharacterId);
@@ -38,5 +35,4 @@ contract KillMailSystem is SmartObjectFramework {
 
     KillMail.set(killMailId, killMailData);
   }
-
 }

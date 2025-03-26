@@ -102,4 +102,14 @@ interface IEveSystem {
    * @notice Configure access for SmartGateSystem
    */
   function configureSmartGateAccess() external;
+
+  /**
+   * @notice Configure access for KillMailSystem
+   */
+  function configureKillMailAccess() external;
+
+  /**
+   * @notice Configure access for OwnershipSystem
+   */
+  function configureOwnershipAccess() external;
 }

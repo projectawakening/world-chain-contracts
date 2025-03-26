@@ -34,7 +34,7 @@ contract KillMailTest is MudTest {
 
   // Test variables
   uint256 killMailId = 12345;
-  
+
   // alice
   uint256 constant killerCharacterId = 1;
   // bob
@@ -76,7 +76,7 @@ contract KillMailTest is MudTest {
     Characters.set(1, true, 101, block.timestamp);
     CharactersByAccount.set(bob, 2);
     Characters.set(2, true, 202, block.timestamp);
-    
+
     vm.stopPrank();
     vm.resumeGasMetering();
   }
@@ -91,10 +91,12 @@ contract KillMailTest is MudTest {
       solarSystemId: solarSystemId,
       killTimestamp: killTimestamp
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(KillMailSystem.KillMail_InvalidCharacterId.selector, killMailId, invalidKillerCharacterId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(KillMailSystem.KillMail_InvalidCharacterId.selector, killMailId, invalidKillerCharacterId)
+    );
     killMailSystem.reportKill(killMailId, killMailDataParams);
-    
+
     // Test invalid victim character ID
     killMailDataParams = KillMailData({
       killerCharacterId: killerCharacterId,
@@ -103,17 +105,19 @@ contract KillMailTest is MudTest {
       solarSystemId: solarSystemId,
       killTimestamp: killTimestamp
     });
-    
-    vm.expectRevert(abi.encodeWithSelector(KillMailSystem.KillMail_InvalidCharacterId.selector, killMailId, invalidVictimCharacterId));
+
+    vm.expectRevert(
+      abi.encodeWithSelector(KillMailSystem.KillMail_InvalidCharacterId.selector, killMailId, invalidVictimCharacterId)
+    );
     killMailSystem.reportKill(killMailId, killMailDataParams);
-    
+
     // Verify initial relevant state
     assertEq(KillMail.getKillerCharacterId(killMailId), 0, "killmail data should not exist before reporting");
     assertEq(KillMail.getVictimCharacterId(killMailId), 0, "killmail data should not exist before reporting");
     assertEq(uint8(KillMail.getLossType(killMailId)), 0, "killmail data should not exist before reporting");
     assertEq(KillMail.getSolarSystemId(killMailId), 0, "killmail data should not exist before reporting");
     assertEq(KillMail.getKillTimestamp(killMailId), 0, "killmail data should not exist before reporting");
-    
+
     // Make successful call
     killMailDataParams = KillMailData({
       killerCharacterId: killerCharacterId,
@@ -122,20 +126,20 @@ contract KillMailTest is MudTest {
       solarSystemId: solarSystemId,
       killTimestamp: killTimestamp
     });
-    
+
     killMailSystem.reportKill(killMailId, killMailDataParams);
-    
+
     // Validate correct state changes after execution
     assertEq(KillMail.getKillerCharacterId(killMailId), killerCharacterId, "killer ID should match");
     assertEq(KillMail.getVictimCharacterId(killMailId), victimCharacterId, "victim ID should match");
     assertEq(uint8(KillMail.getLossType(killMailId)), uint8(lossType), "loss type should match");
     assertEq(KillMail.getSolarSystemId(killMailId), solarSystemId, "solar system ID should match");
     assertEq(KillMail.getKillTimestamp(killMailId), killTimestamp, "timestamp should match");
-    
+
     // Test killmail already exists
     vm.expectRevert(abi.encodeWithSelector(KillMailSystem.KillMail_AlreadyExists.selector, killMailId));
     killMailSystem.reportKill(killMailId, killMailDataParams);
-    
+
     vm.stopPrank();
   }
 }

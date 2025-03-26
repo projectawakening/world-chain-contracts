@@ -15,6 +15,7 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
@@ -214,8 +215,10 @@ contract OwnershipTest is MudTest {
     uint256 newClassId = uint256(keccak256(abi.encodePacked(tenantId, testObjectTypeId)));
 
     // Create with minimal systems
-    ResourceId[] memory systemIds = new ResourceId[](1);
+    ResourceId[] memory systemIds = new ResourceId[](3);
     systemIds[0] = entityRecordSystem.toResourceId();
+    systemIds[1] = ownershipSystem.toResourceId(); // required because of the scope enforced access control
+    systemIds[2] = mockSystemId; // required because of the scope enforced access control
 
     entitySystem.registerClass(newClassId, systemIds);
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
@@ -230,20 +233,36 @@ contract OwnershipTest is MudTest {
     // Test non-existent object
     uint256 nonExistentObjectId = 99999;
 
+    // turn off access enforcement to test the next revert case
+    vm.prank(deployer);
+    accessConfigSystem.setAccessEnforcement(
+      ownershipSystem.toResourceId(),
+      OwnershipSystem.assignOwner.selector,
+      false
+    );
+
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_NonexistentObject.selector, nonExistentObjectId));
     ownershipSystem.assignOwner(nonExistentObjectId, alice);
+
+    // turn access enforcement back on
+    vm.prank(deployer);
+    accessConfigSystem.setAccessEnforcement(ownershipSystem.toResourceId(), OwnershipSystem.assignOwner.selector, true);
 
     // Test invalid account (account without a character)
     address invalidAccount = address(0x123);
 
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidAccount.selector, invalidAccount));
-    ownershipSystem.assignOwner(newSmartObjectId, invalidAccount);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, newSmartObjectId, invalidAccount)
+    );
 
-    // Test non-singleton object
-    uint256 nonSingletonId = _calculateObjectId(NON_SINGLETON_ITEM_TYPE_ID, 0, false);
-
-    vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, nonSingletonId));
-    ownershipSystem.assignOwner(nonSingletonId, alice);
+    // Test non-singleton object (newClassId is the scoped non-singleton version of newSmartObjectId)
+    vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, newClassId));
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, newClassId, alice)
+    );
 
     // Check state before assigning
     address currentOwner = ownershipSystem.owner(newSmartObjectId);
@@ -251,7 +270,10 @@ contract OwnershipTest is MudTest {
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "OwnershipByObject table should show no owner");
 
     // Successful assignment
-    ownershipSystem.assignOwner(newSmartObjectId, alice);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, newSmartObjectId, alice)
+    );
 
     // Check the owner after assigning
     address ownerAfterAssign = ownershipSystem.owner(newSmartObjectId);
@@ -260,7 +282,10 @@ contract OwnershipTest is MudTest {
 
     // Verify the object cannot be re-assigned directly to another account
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_AlreadyOwned.selector, newSmartObjectId, alice));
-    ownershipSystem.assignOwner(newSmartObjectId, bob);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, newSmartObjectId, bob)
+    );
     vm.stopPrank();
   }
 
@@ -275,8 +300,10 @@ contract OwnershipTest is MudTest {
     uint256 newClassId = uint256(keccak256(abi.encodePacked(tenantId, testObjectTypeId)));
 
     // Create with minimal systems
-    ResourceId[] memory systemIds = new ResourceId[](1);
+    ResourceId[] memory systemIds = new ResourceId[](3);
     systemIds[0] = entityRecordSystem.toResourceId();
+    systemIds[1] = ownershipSystem.toResourceId(); // required because of the scope enforced access control
+    systemIds[2] = mockSystemId; // required because of the scope enforced access control
 
     entitySystem.registerClass(newClassId, systemIds);
     entitySystem.instantiate(newClassId, newSmartObjectId, alice);
@@ -285,36 +312,62 @@ contract OwnershipTest is MudTest {
     _setupEntityRecord(newSmartObjectId, testObjectTypeId, testObjectItemId, 100);
 
     // assign ownership to alice
-    ownershipSystem.assignOwner(newSmartObjectId, alice);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, newSmartObjectId, alice)
+    );
     vm.stopPrank();
 
     // Verify initial state - alice should own the object
     assertEq(ownershipSystem.owner(newSmartObjectId), alice, "Smart object should be owned by Alice initially");
     assertEq(OwnershipByObject.get(newSmartObjectId), alice, "OwnershipByObject table should show Alice as owner");
 
+    // turn off access enforcement to test the next revert case
+    vm.prank(deployer);
+    accessConfigSystem.setAccessEnforcement(
+      ownershipSystem.toResourceId(),
+      OwnershipSystem.removeOwner.selector,
+      false
+    );
+
     // Test removing a non-existent object
     uint256 nonExistentObjectId = 99999;
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_NonexistentObject.selector, nonExistentObjectId));
     ownershipSystem.removeOwner(nonExistentObjectId, alice);
 
-    // Try removing a non-singleton object
-    uint256 nonSingletonId = _calculateObjectId(NON_SINGLETON_ITEM_TYPE_ID, 0, false);
-    vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, nonSingletonId));
-    ownershipSystem.removeOwner(nonSingletonId, alice);
+    // turn access enforcement back on
+    vm.prank(deployer);
+    accessConfigSystem.setAccessEnforcement(ownershipSystem.toResourceId(), OwnershipSystem.removeOwner.selector, true);
+
+    // Try removing a non-singleton object (newClassId is the scoped non-singleton version of newSmartObjectId)
+    vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidSingleton.selector, newClassId));
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callRemoveOwner.selector, newClassId, alice)
+    );
 
     // Try to remove with wrong owner
     vm.expectRevert(abi.encodeWithSelector(OwnershipSystem.Ownership_InvalidOwner.selector, newSmartObjectId, bob));
-    ownershipSystem.removeOwner(newSmartObjectId, bob);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callRemoveOwner.selector, newSmartObjectId, bob)
+    );
 
     // Successful case: remove ownership properly
-    ownershipSystem.removeOwner(newSmartObjectId, alice);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callRemoveOwner.selector, newSmartObjectId, alice)
+    );
 
     // Verify the state after removement
     assertEq(ownershipSystem.owner(newSmartObjectId), address(0), "Smart object should have no owner after removal");
     assertEq(OwnershipByObject.get(newSmartObjectId), address(0), "OwnershipByObject table should show no owner");
 
     // After removement, we should be able to assign ownership again
-    ownershipSystem.assignOwner(newSmartObjectId, bob);
+    world.call(
+      mockSystemId,
+      abi.encodeWithSelector(MockOwnershipInteractSystem.callAssignOwner.selector, newSmartObjectId, bob)
+    );
     assertEq(ownershipSystem.owner(newSmartObjectId), bob, "Smart object should be owned by Bob after re-assigning");
   }
 

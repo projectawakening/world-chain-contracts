@@ -160,5 +160,6 @@ contract Config is Script {
     eveSystem.configureEphemeralInteractAccess();
     eveSystem.configureInventoryInteractAccess();
     eveSystem.configureKillMailAccess();
+    eveSystem.configureOwnershipAccess();
   }
 }

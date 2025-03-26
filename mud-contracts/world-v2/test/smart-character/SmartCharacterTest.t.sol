@@ -63,7 +63,6 @@ contract SmartCharacterTest is MudTest {
   uint256 ephemeralSingletonClassId;
   uint256 ephemeralSingletonObjectId;
   uint256 nonSingletonObjectId;
-  uint256 invalidSmartObjectId;
 
   EntityRecordParams entityRecordParams;
   EntityMetadataParams entityMetadataParams;

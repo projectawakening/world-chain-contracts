@@ -15,33 +15,22 @@ import { Initialize, Tenant } from "../codegen/index.sol";
 
 // Local namespace system imports
 import { AccessSystem, accessSystem } from "../codegen/systems/AccessSystemLib.sol";
-import { EntityRecordSystem } from "./entity-record/EntityRecordSystem.sol";
-import { entityRecordSystem } from "../codegen/systems/EntityRecordSystemLib.sol";
+import { EntityRecordSystem, entityRecordSystem } from "../codegen/systems/EntityRecordSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "../codegen/systems/DeployableSystemLib.sol";
-import { FuelSystem } from "./fuel/FuelSystem.sol";
-import { fuelSystem } from "../codegen/systems/FuelSystemLib.sol";
-import { LocationSystem } from "./location/LocationSystem.sol";
-import { locationSystem } from "../codegen/systems/LocationSystemLib.sol";
-import { InventorySystem } from "./inventory/InventorySystem.sol";
-import { inventorySystem } from "../codegen/systems/InventorySystemLib.sol";
-import { EphemeralInventorySystem } from "./inventory/EphemeralInventorySystem.sol";
-import { ephemeralInventorySystem } from "../codegen/systems/EphemeralInventorySystemLib.sol";
-import { InventoryInteractSystem } from "./inventory/InventoryInteractSystem.sol";
-import { inventoryInteractSystem } from "../codegen/systems/InventoryInteractSystemLib.sol";
-import { SmartAssemblySystem } from "./smart-assembly/SmartAssemblySystem.sol";
-import { smartAssemblySystem } from "../codegen/systems/SmartAssemblySystemLib.sol";
-import { SmartCharacterSystem } from "./smart-character/SmartCharacterSystem.sol";
-import { smartCharacterSystem } from "../codegen/systems/SmartCharacterSystemLib.sol";
-import { SmartStorageUnitSystem } from "./smart-storage-unit/SmartStorageUnitSystem.sol";
-import { smartStorageUnitSystem } from "../codegen/systems/SmartStorageUnitSystemLib.sol";
-import { SmartTurretSystem } from "./smart-turret/SmartTurretSystem.sol";
-import { smartTurretSystem } from "../codegen/systems/SmartTurretSystemLib.sol";
-import { SmartGateSystem } from "./smart-gate/SmartGateSystem.sol";
-import { smartGateSystem } from "../codegen/systems/SmartGateSystemLib.sol";
-import { OwnershipSystem } from "./ownership/OwnershipSystem.sol";
-import { InventoryOwnershipSystem } from "./ownership/InventoryOwnershipSystem.sol";
-import { ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
-import { inventoryOwnershipSystem } from "../codegen/systems/InventoryOwnershipSystemLib.sol";
+import { FuelSystem, fuelSystem } from "../codegen/systems/FuelSystemLib.sol";
+import { LocationSystem, locationSystem } from "../codegen/systems/LocationSystemLib.sol";
+import { InventorySystem, inventorySystem } from "../codegen/systems/InventorySystemLib.sol";
+import { EphemeralInventorySystem, ephemeralInventorySystem } from "../codegen/systems/EphemeralInventorySystemLib.sol";
+import { InventoryInteractSystem, inventoryInteractSystem } from "../codegen/systems/InventoryInteractSystemLib.sol";
+import { EphemeralInteractSystem, ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSystemLib.sol";
+import { SmartAssemblySystem, smartAssemblySystem } from "../codegen/systems/SmartAssemblySystemLib.sol";
+import { SmartCharacterSystem, smartCharacterSystem } from "../codegen/systems/SmartCharacterSystemLib.sol";
+import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../codegen/systems/SmartStorageUnitSystemLib.sol";
+import { SmartTurretSystem, smartTurretSystem } from "../codegen/systems/SmartTurretSystemLib.sol";
+import { SmartGateSystem, smartGateSystem } from "../codegen/systems/SmartGateSystemLib.sol";
+import { OwnershipSystem, ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
+import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../codegen/systems/InventoryOwnershipSystemLib.sol";
+import { KillMailSystem, killMailSystem } from "../codegen/systems/KillMailSystemLib.sol";
 
 import { Initialize } from "../codegen/index.sol";
 import { IEveSystem } from "../interfaces/IEveSystem.sol";
@@ -632,11 +621,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       AccessSystem.onlyAdminSupportedAccess.selector
     );
 
-    accessConfigSystem.setAccessEnforcement(
-      killMailSystem.toResourceId(),
-      KillMailSystem.reportKill.selector,
-      true
-    );
+    accessConfigSystem.setAccessEnforcement(killMailSystem.toResourceId(), KillMailSystem.reportKill.selector, true);
   }
 
   /**
