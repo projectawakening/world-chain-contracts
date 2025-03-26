@@ -20,7 +20,7 @@ import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@e
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, EntityRecordMetadata, EntityRecordMetadataData, DeployableState, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, EphemeralInventory, InventoryByEphemeral, SmartAssembly, Fuel, Location } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -164,7 +164,7 @@ contract EntityRecordTest is MudTest {
     CharactersByAccount.set(alice, 1);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
@@ -256,7 +256,7 @@ contract EntityRecordTest is MudTest {
     // set bob as owner of the mock ephemeral inventory
     uint256 ephermaObjectId = uint256(keccak256(abi.encodePacked(smartObjectId, bob)));
     InventoryByItem.set(ephemeralSingletonObjectId, ephermaObjectId);
-    ObjectByEphemeral.set(ephermaObjectId, true, smartObjectId, bob);
+    InventoryByEphemeral.set(ephermaObjectId, true, smartObjectId, bob);
 
     // set test parameters
     entityRecordParams = EntityRecordParams(tenantId, SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, 100);

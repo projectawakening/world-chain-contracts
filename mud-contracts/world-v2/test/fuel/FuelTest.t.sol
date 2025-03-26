@@ -17,7 +17,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, CharactersByAccount, LocationData, EphemeralInventory, SmartAssembly, Fuel, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -33,7 +33,6 @@ import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
@@ -153,7 +152,7 @@ contract FuelTest is MudTest {
     CharactersByAccount.set(alice, 1);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);

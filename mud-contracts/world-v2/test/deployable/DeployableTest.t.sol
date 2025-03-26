@@ -19,7 +19,7 @@ import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@e
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral, SmartAssembly, Fuel, FuelData, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, EphemeralInventory, SmartAssembly, Fuel, FuelData, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -35,7 +35,6 @@ import { smartGateSystem } from "../../src/namespaces/evefrontier/codegen/system
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/inventory/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
@@ -135,7 +134,7 @@ contract DeployableTest is MudTest {
     CharactersByAccount.set(bob, 2);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object IDs
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);

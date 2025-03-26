@@ -21,7 +21,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, Fuel, FuelData, Location, SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Fuel, FuelData, Location, SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -166,7 +166,7 @@ contract SmartGateTest is MudTest {
     charlie = vm.addr(vm.deriveKey(mnemonic, 4));
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     uint256 smartCharacterTypeId = EntityRecord.getTypeId(smartCharacterSystem.getSmartCharacterClassId());
 

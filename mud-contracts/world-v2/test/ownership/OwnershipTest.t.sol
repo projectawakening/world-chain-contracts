@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, ObjectByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, InventoryItem, InventoryByItem, OwnershipByObject, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -108,7 +108,7 @@ contract OwnershipTest is MudTest {
     CharactersByAccount.set(bob, 2);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
@@ -456,7 +456,7 @@ contract OwnershipTest is MudTest {
     vm.startPrank(deployer);
     EphemeralInventory.setVersion(smartObjectId, bob, Inventory.getVersion(smartObjectId)); // Match the primary inventory version
     uint256 ephemeralSmartObjectId = uint256(keccak256(abi.encodePacked(smartObjectId, bob)));
-    ObjectByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, bob);
+    InventoryByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, bob);
 
     // Test successful case 3: Add singleton item to ephemeral inventory
     uint256 ephemeralSingletonItemId = _calculateObjectId(SINGLETON_ITEM_TYPE_ID, SINGLETON_ITEM_ID + 1, true);
@@ -585,7 +585,7 @@ contract OwnershipTest is MudTest {
     vm.startPrank(deployer);
     EphemeralInventory.setVersion(smartObjectId, bob, Inventory.getVersion(smartObjectId)); // Match the primary inventory version
     uint256 ephemeralSmartObjectId = uint256(keccak256(abi.encodePacked(smartObjectId, bob)));
-    ObjectByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, bob);
+    InventoryByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, bob);
 
     // Create a new singleton item for ephemeral inventory
     uint256 ephemeralSingletonItemId = _calculateObjectId(SINGLETON_ITEM_TYPE_ID, SINGLETON_ITEM_ID + 1, true);

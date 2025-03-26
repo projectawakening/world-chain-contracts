@@ -8,7 +8,7 @@ import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.
 import { GlobalDeployableState } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/GlobalDeployableState.sol";
 import { LocationData } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/Location.sol";
 import { Characters } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/Characters.sol";
-import { CharactersByAddress } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/CharactersByAddress.sol";
+import { CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/CharactersByAccount.sol";
 import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { DeployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
 import { SmartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
@@ -48,7 +48,7 @@ contract AnchorSSU is Script {
 
     if (
       Characters.getCharacterAddress(characterId) == address(0) &&
-      CharactersByAddress.getCharacterId(characterAddress) == 0
+      CharactersByAccount.getCharacterId(characterAddress) == 0
     ) {
       smartCharacterSystem.createCharacter(characterId, characterAddress, tribeId, entityRecord, entityRecordMetadata);
     }

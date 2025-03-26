@@ -20,7 +20,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, InventoryData, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, Fuel, FuelData, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, InventoryData, Tenant, EntityRecord, EntityRecordData, DeployableState, InventoryItemData, InventoryItem, EphemeralInvCapacity, CharactersByAccount, SmartAssembly, Fuel, FuelData, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -84,7 +84,7 @@ contract SmartStorageUnitTest is MudTest {
     CharactersByAccount.set(alice, 1);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object IDs
     smartObjectId = _calculateObjectId(

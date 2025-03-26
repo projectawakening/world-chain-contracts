@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
@@ -134,7 +134,7 @@ contract EphemeralInventoryTest is MudTest {
     CharactersByAccount.set(bob, 2);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object IDs
     inventoryObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
@@ -384,7 +384,7 @@ contract EphemeralInventoryTest is MudTest {
 
     // Verify initial state - ephemeral inventory shouldn't exist yet and the objects should not exist
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(inventoryObjectId, bob);
-    assertEq(ObjectByEphemeral.getExists(ephemeralSmartObjectId), false);
+    assertEq(InventoryByEphemeral.getExists(ephemeralSmartObjectId), false);
     assertEq(EntityRecord.getExists(singletonObjectId), false);
     assertEq(EntityRecord.getExists(nonSingletonObjectId), false);
 
@@ -410,7 +410,7 @@ contract EphemeralInventoryTest is MudTest {
     assertEq(EntityRecord.getExists(nonSingletonObjectId), true);
 
     // Verify the ephemeral inventory has been created and linked
-    ObjectByEphemeralData memory ephemeralObjectData = ObjectByEphemeral.get(ephemeralSmartObjectId);
+    InventoryByEphemeralData memory ephemeralObjectData = InventoryByEphemeral.get(ephemeralSmartObjectId);
     assertEq(ephemeralObjectData.exists, true);
     assertEq(ephemeralObjectData.smartObjectId, inventoryObjectId);
     assertEq(ephemeralObjectData.ephemeralOwner, bob);
@@ -535,7 +535,7 @@ contract EphemeralInventoryTest is MudTest {
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(inventoryObjectId, bob);
 
     // Verify initial ephemeral inventory state - should not exist yet
-    assertEq(ObjectByEphemeral.getExists(ephemeralSmartObjectId), false);
+    assertEq(InventoryByEphemeral.getExists(ephemeralSmartObjectId), false);
     assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 0);
     assertEq(EphemeralInventory.getUsedCapacity(inventoryObjectId, bob), 0);
 
@@ -545,10 +545,10 @@ contract EphemeralInventoryTest is MudTest {
     vm.stopPrank();
 
     // Verify the ephemeral inventory has been created and linked
-    ObjectByEphemeral.getExists(ephemeralSmartObjectId);
-    assertEq(ObjectByEphemeral.getExists(ephemeralSmartObjectId), true);
-    assertEq(ObjectByEphemeral.getSmartObjectId(ephemeralSmartObjectId), inventoryObjectId);
-    assertEq(ObjectByEphemeral.getEphemeralOwner(ephemeralSmartObjectId), bob);
+    InventoryByEphemeral.getExists(ephemeralSmartObjectId);
+    assertEq(InventoryByEphemeral.getExists(ephemeralSmartObjectId), true);
+    assertEq(InventoryByEphemeral.getSmartObjectId(ephemeralSmartObjectId), inventoryObjectId);
+    assertEq(InventoryByEphemeral.getEphemeralOwner(ephemeralSmartObjectId), bob);
 
     // Verify items were added to the ephemeral inventory
     uint256[] memory ephemeralItems = EphemeralInventory.getItems(inventoryObjectId, bob);

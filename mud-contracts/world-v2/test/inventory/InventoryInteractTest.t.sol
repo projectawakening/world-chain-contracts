@@ -20,7 +20,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -104,7 +104,7 @@ contract EphemeralInteractTest is MudTest {
     CharactersByAccount.set(bob, 2);
 
     // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
+    tenantId = Tenant.get();
 
     // Setup smart object IDs
     inventoryObjectId = _calculateObjectId(

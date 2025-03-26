@@ -16,7 +16,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 
 // Local namespace tables
 import { EntityRecord } from "../../codegen/tables/EntityRecord.sol";
-import { ObjectByEphemeral } from "../../codegen/tables/ObjectByEphemeral.sol";
+import { InventoryByEphemeral } from "../../codegen/tables/InventoryByEphemeral.sol";
 
 // Local namespace system imports
 import { OwnershipSystem, ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
@@ -305,7 +305,7 @@ contract AccessSystem is SmartObjectFramework {
     (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
       callCount
     );
-    uint256 associatedObject = ObjectByEphemeral.getSmartObjectId(smartObjectId);
+    uint256 associatedObject = InvnetoryByEphemeral.getSmartObjectId(smartObjectId);
     ResourceId callingSystemId = SystemRegistry.get(msgSender);
     if (associatedObject == 0) {
       _scope(smartObjectId, callingSystemId);
@@ -321,7 +321,7 @@ contract AccessSystem is SmartObjectFramework {
   }
 
   function onlyAdminOrCallAccessWithScopeEnforced(uint256 smartObjectId, bytes memory data) public view {
-    uint256 associatedObject = ObjectByEphemeral.getSmartObjectId(smartObjectId);
+    uint256 associatedObject = InventoryByEphemeral.getSmartObjectId(smartObjectId);
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (ResourceId systemId, bytes4 functionId, address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(
       callCount

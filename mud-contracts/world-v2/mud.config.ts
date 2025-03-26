@@ -258,7 +258,7 @@ export default defineWorld({
           },
           key: ["smartObjectId", "ephemeralOwner", "itemObjectId"],
         },
-        ObjectByEphemeral: {
+        InventoryByEphemeral: {
           schema: {
             ephemeralSmartObjectId: "uint256",
             exists: "bool",

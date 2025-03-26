@@ -12,7 +12,7 @@ import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefr
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, DeployableState, Inventory, EphemeralInvCapacity, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EntityRecord, ObjectByEphemeral, Tenant, OwnershipByObject } from "../../codegen/index.sol";
+import { GlobalDeployableState, DeployableState, Inventory, EphemeralInvCapacity, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EntityRecord, InventoryByEphemeral, Tenant, OwnershipByObject } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
@@ -125,9 +125,9 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 ephemeralSmartObjectId = getEphemeralSmartObjectId(smartObjectId, ephemeralOwner);
 
     // Link the ephemeral inventory object to the associated smart object (if needed)
-    if (!ObjectByEphemeral.getExists(ephemeralSmartObjectId)) {
+    if (!InventoryByEphemeral.getExists(ephemeralSmartObjectId)) {
       // Store mapping from ephemeral ID to associated smart object and owner
-      ObjectByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, ephemeralOwner);
+      InventoryByEphemeral.set(ephemeralSmartObjectId, true, smartObjectId, ephemeralOwner);
     }
 
     // update ephemeral inventory capacity if it is not set and the smart object has an ephemeral capacity set

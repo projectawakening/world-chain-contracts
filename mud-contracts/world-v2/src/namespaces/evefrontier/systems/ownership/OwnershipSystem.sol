@@ -6,7 +6,7 @@ import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/in
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 
 // Local namespace tables
-import { CharactersByAccount, EntityRecord, Inventory, InventoryByItem, InventoryItem, OwnershipByObject, ObjectByEphemeral, ObjectByEphemeralData, EphemeralInventory, EphemeralInvItem } from "../../codegen/index.sol";
+import { CharactersByAccount, EntityRecord, Inventory, InventoryByItem, InventoryItem, OwnershipByObject, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
@@ -53,20 +53,20 @@ contract OwnershipSystem is SmartObjectFramework {
     // Check if the inventoryObjectId is an ephemeral inventory object
     uint256 currentVersion;
     uint256 recordedVersion;
-    if (ObjectByEphemeral.getExists(inventoryObjectId)) {
+    if (InventoryByEphemeral.getExists(inventoryObjectId)) {
       // yes, it is an ephemeral inventory
-      ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
+      InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
       currentVersion = EphemeralInventory.getVersion(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner
       );
       recordedVersion = EphemeralInvItem.getVersion(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner,
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner,
         smartObjectId
       );
       if (currentVersion == recordedVersion) {
-        return objectByEphemeralData.ephemeralOwner;
+        return inventoryByEphemeralData.ephemeralOwner;
       }
     } else {
       // no, it is not an ephemeral inventory
@@ -152,7 +152,7 @@ contract OwnershipSystem is SmartObjectFramework {
       revert Ownership_NonexistentItemRecord(itemObjectId);
     }
 
-    if (!(Entity.getExists(inventoryObjectId) || ObjectByEphemeral.getExists(inventoryObjectId))) {
+    if (!(Entity.getExists(inventoryObjectId) || InventoryByEphemeral.getExists(inventoryObjectId))) {
       revert Ownership_NonexistentObject(inventoryObjectId);
     }
 
@@ -172,37 +172,37 @@ contract OwnershipSystem is SmartObjectFramework {
     uint256 currentVersion;
     uint256 recordedVersion;
     bool versionChanged;
-    if (ObjectByEphemeral.getExists(inventoryObjectId)) {
+    if (InventoryByEphemeral.getExists(inventoryObjectId)) {
       // yes, it is an ephemeral inventory
-      ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
+      InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
       existingItemQuantity = EphemeralInvItem.getQuantity(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner,
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner,
         itemObjectId
       );
       currentVersion = EphemeralInventory.getVersion(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner
       );
       recordedVersion = EphemeralInvItem.getVersion(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner,
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner,
         itemObjectId
       );
       versionChanged = currentVersion > recordedVersion;
 
       // Update ephemeral inventory quantity for this item
       EphemeralInvItem.setQuantity(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner,
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner,
         itemObjectId,
         uint256(versionChanged ? quantity : existingItemQuantity + quantity)
       );
       if (versionChanged) {
         // if the version has changed, update the version
         EphemeralInvItem.setVersion(
-          objectByEphemeralData.smartObjectId,
-          objectByEphemeralData.ephemeralOwner,
+          inventoryByEphemeralData.smartObjectId,
+          inventoryByEphemeralData.ephemeralOwner,
           itemObjectId,
           currentVersion
         );
@@ -254,31 +254,31 @@ contract OwnershipSystem is SmartObjectFramework {
       }
     }
 
-    if (ObjectByEphemeral.getExists(inventoryObjectId)) {
+    if (InventoryByEphemeral.getExists(inventoryObjectId)) {
       // yes, it is an ephemeral inventory
-      ObjectByEphemeralData memory objectByEphemeralData = ObjectByEphemeral.get(inventoryObjectId);
+      InventoryByEphemeralData memory inventoryByEphemeralData = InventoryByEphemeral.get(inventoryObjectId);
       uint256 currentVersion = EphemeralInventory.getVersion(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner
       );
       uint256 recordedVersion = EphemeralInvItem.getVersion(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner,
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner,
         itemObjectId
       );
       uint256 existingItemQuantity = currentVersion > recordedVersion
         ? 0
         : EphemeralInvItem.getQuantity(
-          objectByEphemeralData.smartObjectId,
-          objectByEphemeralData.ephemeralOwner,
+          inventoryByEphemeralData.smartObjectId,
+          inventoryByEphemeralData.ephemeralOwner,
           itemObjectId
         );
 
       // safety check
       if (existingItemQuantity < quantity) {
         revert EphemeralInventory_InsufficientQuantity(
-          objectByEphemeralData.smartObjectId,
-          objectByEphemeralData.ephemeralOwner,
+          inventoryByEphemeralData.smartObjectId,
+          inventoryByEphemeralData.ephemeralOwner,
           itemObjectId,
           quantity,
           existingItemQuantity
@@ -287,8 +287,8 @@ contract OwnershipSystem is SmartObjectFramework {
 
       // Update inventory quantity for this item
       EphemeralInvItem.setQuantity(
-        objectByEphemeralData.smartObjectId,
-        objectByEphemeralData.ephemeralOwner,
+        inventoryByEphemeralData.smartObjectId,
+        inventoryByEphemeralData.ephemeralOwner,
         itemObjectId,
         existingItemQuantity - quantity
       );
