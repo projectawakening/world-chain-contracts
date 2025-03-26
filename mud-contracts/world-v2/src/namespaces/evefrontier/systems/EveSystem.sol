@@ -2,17 +2,19 @@
 
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
-import { Tenant } from "../codegen/tables/Tenant.sol";
+// Local namespace tables
+import { Initialize, Tenant } from "../codegen/index.sol";
 
-import { AccessSystem } from "./access-system/AccessSystem.sol";
-import { accessSystem } from "../codegen/systems/AccessSystemLib.sol";
-
+// Local namespace system imports
+import { AccessSystem, accessSystem } from "../codegen/systems/AccessSystemLib.sol";
 import { EntityRecordSystem } from "./entity-record/EntityRecordSystem.sol";
 import { entityRecordSystem } from "../codegen/systems/EntityRecordSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "../codegen/systems/DeployableSystemLib.sol";
@@ -43,16 +45,14 @@ import { inventoryOwnershipSystem } from "../codegen/systems/InventoryOwnershipS
 
 import { Initialize } from "../codegen/index.sol";
 import { IEveSystem } from "../interfaces/IEveSystem.sol";
-import { EphemeralInteractSystem } from "./inventory/EphemeralInteractSystem.sol";
-import { ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSystemLib.sol";
 
+// Local namespace types
 import { EntityRecordParams } from "./entity-record/types.sol";
 
 /**
  * @title EveSystem
  * @author CCP Games
- * @notice This is the base system to be inherited by all other systems.
- * @dev Consider combining this with the SmartObjectSystem which is extended by all systems.
+ * @notice This is the base configuration system for the evefrontier namespace.
  */
 contract EveSystem is IEveSystem, SmartObjectFramework {
   function registerSmartCharacterClass(uint256 typeId, uint256 volume) public {
@@ -621,6 +621,22 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         true
       );
     }
+  }
+
+  // Configure access for KillMailSystem
+  function configureKillMailAccess() public {
+    accessConfigSystem.configureAccess(
+      killMailSystem.toResourceId(),
+      KillMailSystem.reportKill.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyAdminSupportedAccess.selector
+    );
+
+    accessConfigSystem.setAccessEnforcement(
+      killMailSystem.toResourceId(),
+      KillMailSystem.reportKill.selector,
+      true
+    );
   }
 
   /**

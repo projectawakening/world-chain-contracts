@@ -44,4 +44,6 @@ interface IEveSystem {
   function evefrontier__configureSmartTurretAccess() external;
 
   function evefrontier__configureSmartGateAccess() external;
+
+  function evefrontier__configureKillMailAccess() external;
 }

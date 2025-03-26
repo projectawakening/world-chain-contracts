@@ -108,6 +108,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureSmartGateAccess();
   }
 
+  function configureKillMailAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureKillMailAccess();
+  }
+
   function registerSmartCharacterClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
@@ -300,6 +304,16 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function configureKillMailAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureKillMailAccess.configureKillMailAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function registerSmartCharacterClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
     bytes memory systemCall = abi.encodeCall(
       _registerSmartCharacterClass_uint256_uint256.registerSmartCharacterClass,
@@ -399,6 +413,11 @@ library EveSystemLib {
 
   function configureSmartGateAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureSmartGateAccess.configureSmartGateAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function configureKillMailAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureKillMailAccess.configureKillMailAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -510,6 +529,10 @@ interface _configureSmartTurretAccess {
 
 interface _configureSmartGateAccess {
   function configureSmartGateAccess() external;
+}
+
+interface _configureKillMailAccess {
+  function configureKillMailAccess() external;
 }
 
 using EveSystemLib for EveSystemType global;
