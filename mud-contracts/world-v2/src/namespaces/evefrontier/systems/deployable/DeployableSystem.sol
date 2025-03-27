@@ -10,7 +10,7 @@ import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/Ta
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Fuel, FuelData, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
+import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Fuel, FuelData, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, Anchor, AnchoredTo } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { FuelSystem } from "../fuel/FuelSystem.sol";
@@ -21,6 +21,8 @@ import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
+import { anchorSystem } from "../../codegen/systems/AnchorSystemLib.sol";
+
 
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
@@ -68,7 +70,7 @@ contract DeployableSystem is SmartObjectFramework {
       params.fuelMaxCapacity
     );
 
-    anchor(params.smartObjectId, params.owner, params.locationData);
+    anchor(params.smartObjectId, params.owner, params.anchorId, params.locationData);
   }
 
   /**
@@ -228,6 +230,7 @@ contract DeployableSystem is SmartObjectFramework {
   function anchor(
     uint256 smartObjectId,
     address owner,
+    uint256 anchorId,
     LocationData memory locationData
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
@@ -245,6 +248,11 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     locationSystem.saveLocation(smartObjectId, locationData);
+
+    bool isAnchor = Anchor.getCreatedAt(smartObjectId) != 0;
+    if (!isAnchor) {
+      anchorSystem.anchorDeployable(anchorId, smartObjectId);
+    }
 
     DeployableState.setIsValid(smartObjectId, true);
     DeployableState.setAnchoredAt(smartObjectId, block.timestamp);

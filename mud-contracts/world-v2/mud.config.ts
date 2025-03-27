@@ -310,6 +310,26 @@ export default defineWorld({
           },
           key: ["sourceGateId"],
         },
+
+        /*************************
+         * ANCHOR MODULE *
+         *************************/
+        Anchor: {
+          schema: {
+            smartObjectId: "uint256",
+            createdAt: "uint256",
+            anchoredObjects: "uint256[]",
+          },
+          key: ["smartObjectId"],
+        },
+        AnchoredTo: {
+          schema: {
+            smartObjectId: "uint256",
+            anchorId: "uint256",
+            anchoredAt: "uint256",
+          },
+          key: ["smartObjectId", "anchorId"],
+        },
       },
     },
   },

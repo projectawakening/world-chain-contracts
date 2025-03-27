@@ -3,7 +3,7 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
+import { EveTest } from "../EveTest.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -88,27 +88,11 @@ contract MockFuelInteractSystem is System {
   }
 }
 
-contract FuelTest is MudTest {
+contract FuelTest is EveTest {
   using WorldResourceIdInstance for ResourceId;
-
-  // Mock system address
-  // MockFuelInteractSystem fuelMockSystem;
-  // ResourceId fuelMockSystemId;
-
-  IWorldWithContext public world;
 
   // Test variables
   uint256 deployableObjectClassId;
-  uint256 smartObjectId;
-  bytes32 tenantId;
-
-  // Smart Object variables
-  uint256 constant SMART_OBJECT_ID = 1234;
-  uint256 constant SMART_OBJECT_TYPE_ID = 1235;
-
-  // Test addresses
-  address deployer;
-  address alice;
 
   LocationData location;
   EntityRecordParams entityRecordParams;
@@ -137,27 +121,8 @@ contract FuelTest is MudTest {
   function setUp() public virtual override {
     vm.pauseGasMetering();
     super.setUp();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
-
-    // Initialize addresses
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-    alice = vm.addr(vm.deriveKey(mnemonic, 2));
 
     vm.startPrank(deployer, deployer);
-
-    // Mock smart character data for alice
-    CharactersByAccount.set(alice, 1);
-
-    // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
-
-    // Setup smart object ID
-    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
-
     // Register class and setup smart object state
     deployableObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
 
@@ -225,7 +190,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
     vm.stopPrank();
@@ -272,7 +238,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
     vm.stopPrank();
@@ -313,7 +280,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
     vm.stopPrank();
@@ -354,7 +322,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
     vm.stopPrank();
@@ -394,7 +363,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
 
@@ -440,7 +410,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
 
@@ -501,7 +472,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        location
+        location,
+        anchorId
       )
     );
 
@@ -556,7 +528,8 @@ contract FuelTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelAmount * fuelUnitVolume * 2,
-        location
+        location,
+        anchorId
       )
     );
 
@@ -597,7 +570,8 @@ contract FuelTest is MudTest {
         100,
         3600000000000, // Fixed value to avoid issues
         bound(_fuelAmount, 100, 10000) * 100 * 2, // Direct calculation of capacity
-        location
+        location,
+        anchorId
       )
     );
 
@@ -674,38 +648,6 @@ contract FuelTest is MudTest {
       return 0;
     } else {
       return startingFuelAmount - fuelConsumed;
-    }
-  }
-
-  // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
-    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-
-    if (itemId != 0) {
-      // For singleton items
-      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
-
-      if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-      }
-    } else {
-      // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-    }
-
-    if (!Entity.getExists(classId)) {
-      entitySystem.registerClass(classId, new ResourceId[](0));
-    }
-  }
-
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
     }
   }
 }

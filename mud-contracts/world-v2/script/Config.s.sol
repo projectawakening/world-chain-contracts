@@ -91,6 +91,7 @@ contract Config is Script {
     eveSystem.registerSmartStorageUnitClass(vm.envUint("SSU_TYPE_ID"), vm.envUint("SSU_VOLUME"));
     eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"), vm.envUint("TURRET_VOLUME"));
     eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"), vm.envUint("GATE_VOLUME"));
+    eveSystem.registerFlagClass(vm.envUint("FLAG_TYPE_ID"), vm.envUint("FLAG_VOLUME"));
 
   }
 
@@ -158,5 +159,6 @@ contract Config is Script {
     eveSystem.configureSmartGateAccess();
     eveSystem.configureEphemeralInteractAccess();
     eveSystem.configureInventoryInteractAccess();
+    eveSystem.configureFlagAccess();
   }
 }

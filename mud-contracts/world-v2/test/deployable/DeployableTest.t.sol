@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
+import { EveTest } from "../EveTest.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
@@ -60,8 +60,8 @@ contract MockDeployableInteractSystem is System {
     deployableSystem.destroyDeployable(smartObjectId);
   }
 
-  function callAnchor(uint256 smartObjectId, address owner, LocationData memory location) public {
-    deployableSystem.anchor(smartObjectId, owner, location);
+  function callAnchor(uint256 smartObjectId, address owner, uint256 anchorId, LocationData memory location) public {
+    deployableSystem.anchor(smartObjectId, owner, anchorId, location);
   }
 
   function callUnanchor(uint256 smartObjectId) public {
@@ -85,19 +85,9 @@ contract MockDeployableInteractSystem is System {
   }
 }
 
-contract DeployableTest is MudTest {
-  using ResourceIdInstance for ResourceId;
-
-  IWorldWithContext public world;
-
+contract DeployableTest is EveTest {
   // Test variables
   uint256 deployableObjectClassId;
-  uint256 smartObjectId;
-  bytes32 tenantId;
-
-  // Smart Object variables
-  uint256 constant SMART_OBJECT_ID = 1234;
-  uint256 constant SMART_OBJECT_TYPE_ID = 1235;
 
   uint256 smartGate1Id;
   uint256 smartGate2Id;
@@ -105,40 +95,15 @@ contract DeployableTest is MudTest {
   uint256 constant GATE_1_ID = 1236;
   uint256 constant GATE_2_ID = 1237;
 
-  // Test addresses
-  address deployer;
-  address alice;
-  address bob;
-
   // Mock system address
   MockDeployableInteractSystem mockSystem;
   ResourceId mockSystemId;
 
   function setUp() public virtual override {
-    vm.pauseGasMetering();
     super.setUp();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
-
-    // Initialize addresses
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-    alice = vm.addr(vm.deriveKey(mnemonic, 2));
-    bob = vm.addr(vm.deriveKey(mnemonic, 3));
+    vm.pauseGasMetering();
 
     vm.startPrank(deployer, deployer);
-
-    // Mock smart character data for alice and bob
-    CharactersByAccount.set(alice, 1);
-    CharactersByAccount.set(bob, 2);
-
-    // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
-
-    // Setup smart object IDs
-    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
     smartGate1Id = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), GATE_1_ID, true);
     smartGate2Id = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), GATE_2_ID, true);
@@ -170,9 +135,6 @@ contract DeployableTest is MudTest {
 
     // instantiate the smart object
     entitySystem.instantiate(deployableObjectClassId, smartObjectId, alice);
-
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
 
     // Configure access control to allow the mock system to call ownership system
     ResourceId deployableSystemId = deployableSystem.toResourceId();
@@ -223,7 +185,8 @@ contract DeployableTest is MudTest {
         fuelUnitVolume,
         fuelConsumptionIntervalInSeconds,
         fuelMaxCapacity,
-        LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
+        LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }),
+        anchorId
       )
     );
 
@@ -451,7 +414,7 @@ contract DeployableTest is MudTest {
 
     // ANCHOR the deployable
     vm.prank(alice, deployer);
-    deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }));
+    deployableSystem.anchor(smartObjectId, alice, anchorId, LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }));
 
     // Verify the initial state before destruction
     assertEq(
@@ -517,7 +480,7 @@ contract DeployableTest is MudTest {
     // Anchor it (puts it in ANCHORED state)
     LocationData memory location = LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 });
 
-    deployableSystem.anchor(smartObjectId, alice, location);
+    deployableSystem.anchor(smartObjectId, alice, anchorId, location);
     vm.stopPrank();
 
     // Try to anchor it again (should fail since it's already ANCHORED)
@@ -525,7 +488,7 @@ contract DeployableTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(DeployableSystem.Deployable_IncorrectState.selector, smartObjectId, State.ANCHORED)
     );
-    deployableSystem.anchor(smartObjectId, alice, location);
+    deployableSystem.anchor(smartObjectId, alice, anchorId, location);
 
     // Create a new deployable for successful anchoring test
     uint256 newSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID + 3, true);
@@ -559,7 +522,7 @@ contract DeployableTest is MudTest {
     uint256 priorTimestamp = block.timestamp + 1000;
     vm.prank(bob, deployer);
     vm.warp(priorTimestamp);
-    deployableSystem.anchor(newSmartObjectId, bob, newLocation);
+    deployableSystem.anchor(newSmartObjectId, bob, anchorId, newLocation);
 
     // Validate state changes after successful anchoring
     // State transition
@@ -609,7 +572,7 @@ contract DeployableTest is MudTest {
 
     // Anchor it specifying alice again as owner (should not change ownership)
     vm.prank(alice, deployer);
-    deployableSystem.anchor(thirdSmartObjectId, alice, newLocation);
+    deployableSystem.anchor(thirdSmartObjectId, alice, anchorId, newLocation);
 
     // Verify owner is still alice
     assertEq(ownershipSystem.owner(thirdSmartObjectId), alice, "Owner should still be alice");
@@ -644,7 +607,7 @@ contract DeployableTest is MudTest {
 
     // ANCHOR the deployable
     vm.prank(alice, deployer);
-    deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }));
+    deployableSystem.anchor(smartObjectId, alice, anchorId, LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }));
 
     // Capture pre-unanchor state
     assertTrue(DeployableState.getIsValid(smartObjectId), "Deployable should be valid when anchored");
@@ -691,7 +654,7 @@ contract DeployableTest is MudTest {
     // Create, anchor, and bring online
     vm.startPrank(alice, deployer);
     deployableSystem.createDeployable(onlineObjectId, alice, 100, 60, 100000000); // max amount is 1000000
-    deployableSystem.anchor(onlineObjectId, alice, LocationData({ solarSystemId: 2, x: 2000, y: 2001, z: 2002 }));
+    deployableSystem.anchor(onlineObjectId, alice, anchorId, LocationData({ solarSystemId: 2, x: 2000, y: 2001, z: 2002 }));
 
     // requirement specifically for depositFuel
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
@@ -759,7 +722,7 @@ contract DeployableTest is MudTest {
 
     // Now anchor the deployable to get to ANCHORED state
     vm.prank(alice, deployer);
-    deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }));
+    deployableSystem.anchor(smartObjectId, alice, anchorId, LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }));
 
     // Test no fuel revert
     vm.prank(alice, deployer);
@@ -855,7 +818,7 @@ contract DeployableTest is MudTest {
 
     // Anchor the deployable
     vm.prank(alice, deployer);
-    deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 1, x: 100, y: 200, z: 300 }));
+    deployableSystem.anchor(smartObjectId, alice, anchorId, LocationData({ solarSystemId: 1, x: 100, y: 200, z: 300 }));
 
     // Test revert case: Attempt to bring offline when state is ANCHORED
     vm.prank(alice);
@@ -947,7 +910,8 @@ contract DeployableTest is MudTest {
         10,
         60,
         100000000,
-        LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
+        LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }),
+        anchorId
       )
     );
 
@@ -968,7 +932,7 @@ contract DeployableTest is MudTest {
 
     // anchor the deployable
 
-    deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 1, x: 100, y: 200, z: 300 }));
+    deployableSystem.anchor(smartObjectId, alice, anchorId, LocationData({ solarSystemId: 1, x: 100, y: 200, z: 300 }));
     vm.stopPrank();
 
     // mock Inventory capacity again
@@ -1001,7 +965,8 @@ contract DeployableTest is MudTest {
         10,
         60,
         100000000,
-        LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 })
+        LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 }),
+        anchorId
       ),
       100
     );
@@ -1020,7 +985,8 @@ contract DeployableTest is MudTest {
         10,
         60,
         100000000,
-        LocationData({ solarSystemId: 1, x: 2, y: 2, z: 2 })
+        LocationData({ solarSystemId: 1, x: 2, y: 2, z: 2 }),
+        anchorId
       ),
       100
     );
@@ -1038,7 +1004,7 @@ contract DeployableTest is MudTest {
     assertEq(smartGateSystem.isGateLinked(smartGate1Id, smartGate2Id), false, "Gates should not be linked");
 
     // reanchor the gate
-    deployableSystem.anchor(smartGate1Id, alice, LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 }));
+    deployableSystem.anchor(smartGate1Id, alice, anchorId, LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 }));
 
     // re link the gates
     smartGateSystem.linkGates(smartGate1Id, smartGate2Id);
@@ -1055,35 +1021,4 @@ contract DeployableTest is MudTest {
     assertEq(smartGateSystem.isGateLinked(smartGate1Id, smartGate2Id), false, "Gates should not be linked");
   }
 
-  // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
-    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-
-    if (itemId != 0) {
-      // For singleton items
-      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
-
-      if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-      }
-    } else {
-      // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-    }
-
-    if (!Entity.getExists(classId)) {
-      entitySystem.registerClass(classId, new ResourceId[](0));
-    }
-  }
-
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
-  }
 }

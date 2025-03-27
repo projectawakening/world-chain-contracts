@@ -5,7 +5,7 @@ pragma solidity >=0.8.24;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 // Local namespace tables
-import { Fuel, FuelData, DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
+import { Fuel, FuelData, DeployableState, GlobalDeployableState, GlobalDeployableStateData, Anchor } from "../../codegen/index.sol";
 
 // Types and parameters
 import { State } from "../../../../codegen/common.sol";
@@ -315,6 +315,16 @@ contract FuelSystem is SmartObjectFramework {
     // OneFuelUnitConsumptionIntervalInSec = 60; // Consuming 1 unit of fuel every minute.
     // OneFuelUnitConsumptionIntervalInSec = 3600; // Consuming 1 unit of fuel every hour.
     uint256 oneFuelUnitConsumptionIntervalInSec = fuelData.fuelConsumptionIntervalInSeconds;
+
+    uint256[] memory anchoredObjects = Anchor.getAnchoredObjects(smartObjectId);
+    if (anchoredObjects.length > 0) {
+      uint256 totalConsumptionRate = 0;
+      for (uint256 i = 0; i < anchoredObjects.length; i++) {
+        uint256 anchoredObject = anchoredObjects[i];
+        totalConsumptionRate += (1e36) / Fuel.getFuelConsumptionIntervalInSeconds(anchoredObject);
+      }
+      oneFuelUnitConsumptionIntervalInSec = (1e36) / totalConsumptionRate;
+    }
 
     // Calculate the fuel consumed since the last update.
     uint256 fuelConsumed = ((block.timestamp - fuelData.lastUpdatedAt) * ONE_UNIT_IN_WEI) /

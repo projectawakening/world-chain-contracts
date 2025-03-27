@@ -42,6 +42,10 @@ import { Initialize } from "../codegen/index.sol";
 import { IEveSystem } from "../interfaces/IEveSystem.sol";
 import { EphemeralInteractSystem } from "./inventory/EphemeralInteractSystem.sol";
 import { ephemeralInteractSystem } from "../codegen/systems/EphemeralInteractSystemLib.sol";
+import { FlagSystem } from "./flag/FlagSystem.sol";
+import { flagSystem } from "../codegen/systems/FlagSystemLib.sol";
+import { AnchorSystem } from "./anchor/AnchorSystem.sol";
+import { anchorSystem } from "../codegen/systems/AnchorSystemLib.sol";
 
 import { EntityRecordParams } from "./entity-record/types.sol";
 
@@ -113,6 +117,21 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
     ResourceId smartGateSystemId = smartGateSystem.toResourceId();
     Initialize.set(smartGateSystemId, classId);
+  }
+
+  function registerFlagClass(uint256 typeId, uint256 volume) public {
+    ResourceId[] memory systemIds = new ResourceId[](7);
+    systemIds[0] = deployableSystem.toResourceId();
+    systemIds[1] = entityRecordSystem.toResourceId();
+    systemIds[2] = fuelSystem.toResourceId();
+    systemIds[3] = locationSystem.toResourceId();
+    systemIds[4] = flagSystem.toResourceId();
+    systemIds[5] = anchorSystem.toResourceId();
+    systemIds[6] = smartAssemblySystem.toResourceId();
+    uint256 classId = initialize(typeId, volume, systemIds);
+
+    ResourceId flagSystemId = flagSystem.toResourceId();
+    Initialize.set(flagSystemId, classId);
   }
 
   // Configure access for all systems
@@ -633,6 +652,16 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         true
       );
     }
+  }
+
+  function configureFlagAccess() public {
+    accessConfigSystem.configureAccess(
+      flagSystem.toResourceId(),
+      FlagSystem.createFlag.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyDirectAdminAccess.selector
+    );
+    accessConfigSystem.setAccessEnforcement(flagSystem.toResourceId(), FlagSystem.createFlag.selector, true);
   }
 
   /**

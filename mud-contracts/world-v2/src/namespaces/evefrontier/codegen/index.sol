@@ -27,3 +27,5 @@ import { EphemeralItemTransfer, EphemeralItemTransferData } from "./tables/Ephem
 import { SmartTurretConfig } from "./tables/SmartTurretConfig.sol";
 import { SmartGateConfig, SmartGateConfigData } from "./tables/SmartGateConfig.sol";
 import { SmartGateLink, SmartGateLinkData } from "./tables/SmartGateLink.sol";
+import { Anchor, AnchorData } from "./tables/Anchor.sol";
+import { AnchoredTo } from "./tables/AnchoredTo.sol";

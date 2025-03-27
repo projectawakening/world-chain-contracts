@@ -21,7 +21,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, Fuel, FuelData, Location, SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, ObjectByEphemeral, ObjectByEphemeralData, SmartAssembly, Fuel, FuelData, Location, SmartTurretConfig, Anchor } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -31,6 +31,7 @@ import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/A
 import { SmartTurretSystem, smartTurretSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
 import { ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
 import { smartCharacterSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
+import { flagSystem } from "../../src/namespaces/evefrontier/codegen/systems/FlagSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams, EntityMetadataParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -130,6 +131,8 @@ contract SmartGateTest is MudTest {
   uint256 constant SMART_OBJECT_ID = 1234;
 
   uint256 smartObjectId;
+  uint256 anchorId;
+  uint256 ANCHOR_ID = 556677;
 
   // Location data
   LocationData locationParams;
@@ -236,6 +239,32 @@ contract SmartGateTest is MudTest {
       charlieEntityMetadataParams
     );
 
+    anchorId = _calculateObjectId(vm.envUint("FLAG_TYPE_ID"), ANCHOR_ID, true);
+    vm.startPrank(deployer, deployer);
+    CreateAndAnchorParams memory flagParams = CreateAndAnchorParams({
+      smartObjectId: anchorId,
+      assemblyType: "FLAG",
+      entityRecordParams: EntityRecordParams({
+          tenantId: tenantId,
+          typeId: vm.envUint("FLAG_TYPE_ID"),
+          itemId: ANCHOR_ID,
+          volume: vm.envUint("FLAG_VOLUME")
+      }),
+      owner: alice,
+      fuelUnitVolume: 10,
+      fuelConsumptionIntervalInSeconds: 3600,
+      fuelMaxCapacity: 100000000,
+      locationData: LocationData({
+          solarSystemId: 1,
+          x: 1000,
+          y: 1000,
+          z: 1000
+      }),
+      anchorId: 0
+    });
+    flagSystem.createFlag(flagParams);
+    vm.stopPrank();
+
     // Setup smart object ID for this turret
     smartObjectId = _calculateObjectId(
       EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
@@ -314,7 +343,7 @@ contract SmartGateTest is MudTest {
     assertEq(locationData.y, 0);
     assertEq(locationData.z, 0);
 
-    vm.startPrank(alice, deployer);
+    vm.startPrank(deployer, deployer);
     // create and anchor smart turret
     world.call(
       smartTurretSystem.toResourceId(),
@@ -329,7 +358,8 @@ contract SmartGateTest is MudTest {
             fuelUnitVolume,
             fuelConsumptionIntervalInSeconds,
             fuelMaxCapacity,
-            locationParams
+            locationParams,
+            anchorId
           )
         )
       )

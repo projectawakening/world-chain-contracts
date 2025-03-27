@@ -4,7 +4,7 @@ pragma solidity >=0.8.24;
 import "forge-std/Test.sol";
 
 // MUD imports
-import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
+import { EveTest } from "../EveTest.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -71,10 +71,10 @@ contract CustomEphemeralInteractSystem is System {
   }
 }
 
-contract EphemeralInteractTest is MudTest {
-  using WorldResourceIdInstance for ResourceId;
+import "forge-std/console.sol";
 
-  IWorldWithContext public world;
+contract EphemeralInteractTest is EveTest {
+  using WorldResourceIdInstance for ResourceId;
 
   // SSU variables
   uint256 inventoryObjectId;
@@ -84,18 +84,11 @@ contract EphemeralInteractTest is MudTest {
   CustomEphemeralInteractSystem customSystem;
 
   // Item variables
-  bytes32 tenantId;
   uint256 constant ITEM1_ID = 4235;
   uint256 constant ITEM_TYPE_ID = 1000;
   uint256 constant ITEM_TYPE_ID_NON_SINGLETON = 1001; // Non-singleton item type
   uint256 constant ITEM_VOLUME = 100;
   uint256 constant TRANSFER_ITEM_TYPE_ID = 9091;
-
-  // Test addresses
-  address deployer;
-  address alice;
-  address bob;
-  address charlie;
 
   uint256 constant SMART_OBJECT_ITEM_ID = 1234;
 
@@ -103,64 +96,39 @@ contract EphemeralInteractTest is MudTest {
   uint256 item2ObjectId;
 
   function setUp() public virtual override {
-    vm.pauseGasMetering();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
-
-    // Initialize addresses
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-    alice = vm.addr(vm.deriveKey(mnemonic, 2));
-    bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    charlie = vm.addr(vm.deriveKey(mnemonic, 4));
-
+    super.setUp();
+    
     vm.startPrank(deployer, deployer);
-
-    // Mock smart character data for alice and bob
-    CharactersByAccount.set(alice, 1);
-    CharactersByAccount.set(bob, 2);
-
-    // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
-
     // Setup smart object IDs
     inventoryObjectId = _calculateObjectId(
       EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
       SMART_OBJECT_ITEM_ID,
       true
     );
-
     // Make sure deploy system is active
     GlobalDeployableState.setIsPaused(false);
 
     // Setup SSU for inventory
     uint256 capacity = 1000;
-    world.call(
-      smartStorageUnitSystem.toResourceId(),
-      abi.encodeCall(
-        SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (
-          CreateAndAnchorParams(
-            inventoryObjectId,
-            "SSU",
-            EntityRecordParams({
-              tenantId: tenantId,
-              typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-              itemId: SMART_OBJECT_ITEM_ID,
-              volume: 1000
-            }),
-            alice,
-            1,
-            10,
-            100000,
-            LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-          ),
-          capacity,
-          capacity
-        )
-      )
+    smartStorageUnitSystem.createAndAnchorStorageUnit(
+      CreateAndAnchorParams(
+        inventoryObjectId,
+        "SSU",
+        EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+          itemId: SMART_OBJECT_ITEM_ID,
+          volume: 1000
+        }),
+        alice,
+        1,
+        10,
+        100000,
+        LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 }),
+        anchorId
+      ),
+      capacity,
+      capacity
     );
 
     // Calculate itemObjectIds
@@ -618,37 +586,5 @@ contract EphemeralInteractTest is MudTest {
     // Verify state is updated - role should still exist but charlie should not have access
     assertEq(Role.getExists(roleId), true);
     assertEq(HasRole.getIsMember(roleId, charlie), false);
-  }
-
-  // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
-    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-
-    if (itemId != 0) {
-      // For singleton items
-      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
-
-      if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-      }
-    } else {
-      // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-    }
-
-    if (!Entity.getExists(classId)) {
-      entitySystem.registerClass(classId, new ResourceId[](0));
-    }
-  }
-
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
   }
 }

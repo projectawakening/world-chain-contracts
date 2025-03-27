@@ -17,6 +17,8 @@ interface IEveSystem {
 
   function evefrontier__registerSmartGateClass(uint256 typeId, uint256 volume) external;
 
+  function evefrontier__registerFlagClass(uint256 typeId, uint256 volume) external;
+
   function evefrontier__configureEntityRecordAccess() external;
 
   function evefrontier__configureSmartAssemblyAccess() external;
@@ -44,4 +46,6 @@ interface IEveSystem {
   function evefrontier__configureSmartTurretAccess() external;
 
   function evefrontier__configureSmartGateAccess() external;
+
+  function evefrontier__configureFlagAccess() external;
 }

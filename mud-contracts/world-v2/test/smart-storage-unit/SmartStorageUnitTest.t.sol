@@ -4,7 +4,7 @@ pragma solidity >=0.8.24;
 import "forge-std/Test.sol";
 
 // MUD imports
-import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
+import { EveTest } from "../EveTest.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -40,21 +40,8 @@ import { InventoryItemParams } from "../../src/namespaces/evefrontier/systems/in
 import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 
-contract SmartStorageUnitTest is MudTest {
+contract SmartStorageUnitTest is EveTest {
   using WorldResourceIdInstance for ResourceId;
-
-  IWorldWithContext public world;
-
-  // Item variables
-  bytes32 tenantId;
-
-  // Test addresses
-  address deployer;
-  address alice;
-
-  uint256 constant SMART_OBJECT_ID = 1234;
-
-  uint256 smartObjectId;
 
   // Location data
   LocationData locationParams;
@@ -68,30 +55,9 @@ contract SmartStorageUnitTest is MudTest {
 
   function setUp() public virtual override {
     vm.pauseGasMetering();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
-
-    // Initialize addresses
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-    alice = vm.addr(vm.deriveKey(mnemonic, 2));
+    super.setUp();
 
     vm.startPrank(deployer, deployer);
-
-    // Mock smart character data for alice and bob
-    CharactersByAccount.set(alice, 1);
-
-    // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
-
-    // Setup smart object IDs
-    smartObjectId = _calculateObjectId(
-      EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-      SMART_OBJECT_ID,
-      true
-    );
 
     locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
@@ -171,7 +137,8 @@ contract SmartStorageUnitTest is MudTest {
             fuelUnitVolume,
             fuelConsumptionIntervalInSeconds,
             fuelMaxCapacity,
-            locationParams
+            locationParams,
+            anchorId
           ),
           1000,
           1000
@@ -228,16 +195,5 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(inventoryData.version, 1);
     assertEq(EphemeralInvCapacity.get(smartObjectId), 1000);
     vm.resumeGasMetering();
-  }
-
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
   }
 }

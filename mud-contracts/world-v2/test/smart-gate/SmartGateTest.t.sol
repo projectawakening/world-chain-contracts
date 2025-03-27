@@ -4,7 +4,7 @@ pragma solidity >=0.8.24;
 import "forge-std/Test.sol";
 
 // MUD imports
-import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
+import { EveTest } from "../EveTest.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -52,23 +52,12 @@ contract MockCanJumpCustomSystem is System {
   }
 }
 
-contract SmartGateTest is MudTest {
+contract SmartGateTest is EveTest {
   using WorldResourceIdInstance for ResourceId;
-
-  IWorldWithContext public world;
 
   // custom canJump system variables
   ResourceId customSystemId;
   MockCanJumpCustomSystem customSystem;
-
-  // Item variables
-  bytes32 tenantId;
-
-  // Test addresses
-  address deployer;
-  address alice;
-  address bob;
-  address charlie;
 
   uint256 constant SOURCE_GATE_ID = 1234;
   uint256 constant DESTINATION_GATE_ID = 1235;
@@ -96,27 +85,8 @@ contract SmartGateTest is MudTest {
   uint256 maxDistance = 1; // will increase after testing failure
 
   function setUp() public virtual override {
-    vm.pauseGasMetering();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
-
-    // Initialize addresses
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-    alice = vm.addr(vm.deriveKey(mnemonic, 2));
-    bob = vm.addr(vm.deriveKey(mnemonic, 3));
-    charlie = vm.addr(vm.deriveKey(mnemonic, 4));
-
+    super.setUp();
     vm.startPrank(deployer, deployer);
-
-    // Mock smart character data for alice and bob
-    CharactersByAccount.set(alice, 1);
-    CharactersByAccount.set(bob, 2);
-
-    // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
 
     // Setup smart object IDs
     sourceGateId = _calculateObjectId(
@@ -240,7 +210,8 @@ contract SmartGateTest is MudTest {
             fuelUnitVolume,
             fuelConsumptionIntervalInSeconds,
             fuelMaxCapacity,
-            sourceLocationParams
+            sourceLocationParams,
+            anchorId
           ),
           maxDistance
         )
@@ -320,7 +291,8 @@ contract SmartGateTest is MudTest {
             fuelUnitVolume,
             fuelConsumptionIntervalInSeconds,
             fuelMaxCapacity,
-            sourceLocationParams
+            sourceLocationParams,
+            anchorId
           ),
           maxDistance
         )
@@ -347,7 +319,8 @@ contract SmartGateTest is MudTest {
             fuelUnitVolume,
             fuelConsumptionIntervalInSeconds,
             fuelMaxCapacity,
-            destinationLocationParams
+            destinationLocationParams,
+            anchorId
           ),
           maxDistance
         )
@@ -436,17 +409,6 @@ contract SmartGateTest is MudTest {
     vm.startPrank(alice, deployer);
     smartGateSystem.linkGates(sourceGateId, destinationGateId);
     vm.stopPrank();
-  }
-
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
   }
 
   function test_unlinkGates() public {

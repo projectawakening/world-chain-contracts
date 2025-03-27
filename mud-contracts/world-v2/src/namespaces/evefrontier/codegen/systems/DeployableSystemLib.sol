@@ -82,9 +82,10 @@ library DeployableSystemLib {
     DeployableSystemType self,
     uint256 smartObjectId,
     address owner,
+    uint256 anchorId,
     LocationData memory locationData
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).anchor(smartObjectId, owner, locationData);
+    return CallWrapper(self.toResourceId(), address(0)).anchor(smartObjectId, owner, anchorId, locationData);
   }
 
   function unanchor(DeployableSystemType self, uint256 smartObjectId) internal {
@@ -163,14 +164,15 @@ library DeployableSystemLib {
     CallWrapper memory self,
     uint256 smartObjectId,
     address owner,
+    uint256 anchorId,
     LocationData memory locationData
   ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _anchor_uint256_address_LocationData.anchor,
-      (smartObjectId, owner, locationData)
+      _anchor_uint256_address_uint256_LocationData.anchor,
+      (smartObjectId, owner, anchorId, locationData)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -246,11 +248,12 @@ library DeployableSystemLib {
     RootCallWrapper memory self,
     uint256 smartObjectId,
     address owner,
+    uint256 anchorId,
     LocationData memory locationData
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _anchor_uint256_address_LocationData.anchor,
-      (smartObjectId, owner, locationData)
+      _anchor_uint256_address_uint256_LocationData.anchor,
+      (smartObjectId, owner, anchorId, locationData)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
@@ -334,8 +337,8 @@ interface _bringOffline_uint256 {
   function bringOffline(uint256 smartObjectId) external;
 }
 
-interface _anchor_uint256_address_LocationData {
-  function anchor(uint256 smartObjectId, address owner, LocationData memory locationData) external;
+interface _anchor_uint256_address_uint256_LocationData {
+  function anchor(uint256 smartObjectId, address owner, uint256 anchorId, LocationData memory locationData) external;
 }
 
 interface _unanchor_uint256 {

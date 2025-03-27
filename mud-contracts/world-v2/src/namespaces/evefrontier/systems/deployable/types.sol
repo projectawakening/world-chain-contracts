@@ -17,4 +17,5 @@ struct CreateAndAnchorParams {
   uint256 fuelConsumptionIntervalInSeconds;
   uint256 fuelMaxCapacity;
   LocationData locationData;
+  uint256 anchorId;
 }

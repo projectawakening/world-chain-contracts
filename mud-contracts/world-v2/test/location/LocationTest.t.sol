@@ -3,7 +3,7 @@ pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
 
-import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
+import { EveTest } from "../EveTest.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -47,8 +47,8 @@ contract MockLocationInteractSystem is System {
     deployableSystem.createAndAnchor(params);
   }
 
-  function callAnchor(uint256 smartObjectId, address owner, LocationData memory location) public {
-    deployableSystem.anchor(smartObjectId, owner, location);
+  function callAnchor(uint256 smartObjectId, address owner, uint256 anchorId, LocationData memory location) public {
+    deployableSystem.anchor(smartObjectId, owner, anchorId, location);
   }
 
   function callUnanchor(uint256 smartObjectId) public {
@@ -56,29 +56,16 @@ contract MockLocationInteractSystem is System {
   }
 }
 
-contract LocationTest is MudTest {
+contract LocationTest is EveTest {
   using WorldResourceIdInstance for ResourceId;
-
-  IWorldWithContext public world;
-
   // Test variables
   uint256 objectClassId;
-  uint256 smartObjectId;
   uint256 deployableSmartObjectId;
-  bytes32 tenantId;
 
-  // Smart Object Entity Record variables
-  uint256 constant SMART_OBJECT_TYPE_ID = 1235;
-  uint256 constant SMART_OBJECT_ID = 1234;
   uint256 constant DEPLOYABLE_OBJECT_ID = 1236;
 
   CreateAndAnchorParams createAndAnchorParams;
   LocationData locationDataParams;
-
-  // Test addresses
-  address deployer;
-  address alice;
-  address bob;
 
   // Mock system address
   MockLocationInteractSystem mockSystem;
@@ -87,27 +74,9 @@ contract LocationTest is MudTest {
   function setUp() public virtual override {
     vm.pauseGasMetering();
     super.setUp();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
-
-    // Initialize addresses
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    deployer = vm.addr(vm.deriveKey(mnemonic, 0));
-    alice = vm.addr(vm.deriveKey(mnemonic, 2));
-    bob = vm.addr(vm.deriveKey(mnemonic, 3));
 
     vm.startPrank(deployer, deployer);
 
-    // Mock smart character data for alice
-    CharactersByAccount.set(alice, 1);
-
-    // Setup tenant
-    tenantId = keccak256(abi.encodePacked("TEST"));
-
-    // Setup smart object ID
-    smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
     deployableSmartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, true);
     // setup smart object class id
     objectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
@@ -167,7 +136,8 @@ contract LocationTest is MudTest {
       10,
       60,
       100000000,
-      locationDataParams
+      locationDataParams,
+      anchorId
     );
     vm.stopPrank();
   }
@@ -218,37 +188,5 @@ contract LocationTest is MudTest {
     assertEq(locationData.x, 0);
     assertEq(locationData.y, 0);
     assertEq(locationData.z, 0);
-  }
-
-  // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
-    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-
-    if (itemId != 0) {
-      // For singleton items
-      EntityRecord.set(entityId, true, tenantId, typeId, itemId, volume);
-
-      if (!EntityRecord.getExists(classId)) {
-        EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-      }
-    } else {
-      // For non-singleton items
-      EntityRecord.set(classId, true, tenantId, typeId, 0, volume);
-    }
-
-    if (!Entity.getExists(classId)) {
-      entitySystem.registerClass(classId, new ResourceId[](0));
-    }
-  }
-
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
   }
 }

@@ -52,6 +52,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).registerSmartGateClass(typeId, volume);
   }
 
+  function registerFlagClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerFlagClass(typeId, volume);
+  }
+
   function configureEntityRecordAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureEntityRecordAccess();
   }
@@ -108,6 +112,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureSmartGateAccess();
   }
 
+  function configureFlagAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureFlagAccess();
+  }
+
   function registerSmartCharacterClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
@@ -155,6 +163,16 @@ library EveSystemLib {
       _registerSmartGateClass_uint256_uint256.registerSmartGateClass,
       (typeId, volume)
     );
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function registerFlagClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_registerFlagClass_uint256_uint256.registerFlagClass, (typeId, volume));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -300,6 +318,16 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function configureFlagAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureFlagAccess.configureFlagAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function registerSmartCharacterClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
     bytes memory systemCall = abi.encodeCall(
       _registerSmartCharacterClass_uint256_uint256.registerSmartCharacterClass,
@@ -329,6 +357,11 @@ library EveSystemLib {
       _registerSmartGateClass_uint256_uint256.registerSmartGateClass,
       (typeId, volume)
     );
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function registerFlagClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    bytes memory systemCall = abi.encodeCall(_registerFlagClass_uint256_uint256.registerFlagClass, (typeId, volume));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -402,6 +435,11 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function configureFlagAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureFlagAccess.configureFlagAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function callFrom(EveSystemType self, address from) internal pure returns (CallWrapper memory) {
     return CallWrapper(self.toResourceId(), from);
   }
@@ -454,6 +492,10 @@ interface _registerSmartTurretClass_uint256_uint256 {
 
 interface _registerSmartGateClass_uint256_uint256 {
   function registerSmartGateClass(uint256 typeId, uint256 volume) external;
+}
+
+interface _registerFlagClass_uint256_uint256 {
+  function registerFlagClass(uint256 typeId, uint256 volume) external;
 }
 
 interface _configureEntityRecordAccess {
@@ -510,6 +552,10 @@ interface _configureSmartTurretAccess {
 
 interface _configureSmartGateAccess {
   function configureSmartGateAccess() external;
+}
+
+interface _configureFlagAccess {
+  function configureFlagAccess() external;
 }
 
 using EveSystemLib for EveSystemType global;
