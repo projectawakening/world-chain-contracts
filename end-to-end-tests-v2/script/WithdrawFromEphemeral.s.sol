@@ -5,7 +5,7 @@ import { console } from "forge-std/console.sol";
 
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
-import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/Constants.sol";
+import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/constants.sol";
 
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Tenant, EphemeralInvItemData, EphemeralInvItem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";

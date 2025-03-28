@@ -10,21 +10,15 @@ import { OwnershipSystem, ownershipSystem } from "../codegen/systems/OwnershipSy
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 library OwnershipHelper {
-    function getOwner(
-        uint256 smartObjectId
-    ) internal view returns (address) {
-        bytes memory returnData = world().callStatic(
-            ownershipSystem.toResourceId(),
-            abi.encodeCall(
-                OwnershipSystem.owner,
-                (smartObjectId)
-            )
-        );
-        return abi.decode(returnData, (address));
-    }
+  function getOwner(uint256 smartObjectId) internal view returns (address) {
+    bytes memory returnData = world().callStatic(
+      ownershipSystem.toResourceId(),
+      abi.encodeCall(OwnershipSystem.owner, (smartObjectId))
+    );
+    return abi.decode(returnData, (address));
+  }
 
-    function world() internal view returns (IWorldWithContext) {
-        return IWorldWithContext(StoreSwitch.getStoreAddress());
-    }
-    
-} 
+  function world() internal view returns (IWorldWithContext) {
+    return IWorldWithContext(StoreSwitch.getStoreAddress());
+  }
+}

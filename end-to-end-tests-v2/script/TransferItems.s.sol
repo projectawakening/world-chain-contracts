@@ -4,7 +4,7 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/Constants.sol";
+import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/constants.sol";
 
 import { System } from "@latticexyz/world/src/System.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
