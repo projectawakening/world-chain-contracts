@@ -15,7 +15,6 @@ import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src
 
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
-
 contract AnchorSSU is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -51,7 +50,7 @@ contract AnchorSSU is Script {
       itemId: ssuItemId,
       volume: 1000
     });
-    
+
     CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
       smartObjectId: ssuSmartObjectId,
       assemblyType: "SSU",

@@ -6,11 +6,10 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { Tenant , DeployableState} from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Tenant, DeployableState } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 import { deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
-
 
 contract BringOnline is Script {
   // assumes CreateAndAnchor.s.sol and Deposit fuel has been run

@@ -5,12 +5,10 @@ import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 
-import { Tenant , DeployableState} from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Tenant, DeployableState } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 import { deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
-
-
 
 contract BringOffline is Script {
   // assumes CreateAndAnchor.s.sol and Deposit fuel and bring online has been run
@@ -18,8 +16,8 @@ contract BringOffline is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
-      string memory mnemonic = "test test test test test test test test test test test junk";
-      uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(alicePrivateKey);

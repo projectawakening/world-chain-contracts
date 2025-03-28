@@ -9,7 +9,6 @@ import { CreateAndAnchorParams } from "@eveworld/world-v2/src/namespaces/evefron
 import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
-
 contract AnchorSmartTurret is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -28,7 +27,7 @@ contract AnchorSmartTurret is Script {
     uint256 aliceSmartTurretItemId = 1559;
     uint256 bobSmartTurretItemId = 1560;
     uint256 charlieSmartTurretItemId = 1561;
-    
+
     uint256 aliceSmartTurretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, aliceSmartTurretItemId);
     uint256 bobSmartTurretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, bobSmartTurretItemId);
     uint256 charlieSmartTurretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, charlieSmartTurretItemId);
@@ -61,30 +60,28 @@ contract AnchorSmartTurret is Script {
     vm.stopBroadcast();
   }
 
-  function createAndAnchorTurret(uint256 smartTurretSmartObjectId, EntityRecordParams memory entityRecordParams, address owner) public {
+  function createAndAnchorTurret(
+    uint256 smartTurretSmartObjectId,
+    EntityRecordParams memory entityRecordParams,
+    address owner
+  ) public {
     uint256 fuelUnitVolume = 10;
     uint256 fuelConsumptionIntervalInSeconds = 60;
     uint256 fuelMaxCapacity = 100000000;
 
-    LocationData memory locationData = LocationData({
-      solarSystemId: 1,
-      x: 1001,
-      y: 1001,
-      z: 1001
-    });
+    LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
     CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
       smartObjectId: smartTurretSmartObjectId,
       assemblyType: "ST",
       entityRecordParams: entityRecordParams,
       owner: owner,
-      fuelUnitVolume: fuelUnitVolume, 
-      fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds, 
+      fuelUnitVolume: fuelUnitVolume,
+      fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity: fuelMaxCapacity,
       locationData: locationData
     });
 
     smartTurretSystem.createAndAnchorTurret(deployableParams);
     fuelSystem.depositFuel(smartTurretSmartObjectId, 10000);
-
   }
 }

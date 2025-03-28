@@ -8,21 +8,19 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { Tenant, CharactersByAccount, CharactersData, Characters} from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Tenant, CharactersByAccount, CharactersData, Characters } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { OwnershipSystem, ownershipSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { SmartTurretSystem, smartTurretSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 import { TargetPriority, AggressionParams, Turret, SmartTurretTarget } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-turret/types.sol";
 
-
-
 contract ConfigureSmartTurret is Script {
   using WorldResourceIdInstance for ResourceId;
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
-     IWorldWithContext world = IWorldWithContext(worldAddress);
+    IWorldWithContext world = IWorldWithContext(worldAddress);
 
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -53,7 +51,7 @@ contract ConfigureSmartTurret is Script {
     deployableSystem.bringOnline(aliceSmartTurretId);
     vm.stopBroadcast();
 
-    //Test inProximity for friendly tribe 
+    //Test inProximity for friendly tribe
     uint256 returnTargetQueueLength = callInProximity(aliceSmartTurretId, bobShipId, bobCharacterId);
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 0
 
@@ -62,17 +60,33 @@ contract ConfigureSmartTurret is Script {
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
 
     // Test aggression for friendly tribe
-    returnTargetQueueLength = callAggression(aliceSmartTurretId, bobShipId, bobCharacterId, charlieShipId, charlieCharacterId);
+    returnTargetQueueLength = callAggression(
+      aliceSmartTurretId,
+      bobShipId,
+      bobCharacterId,
+      charlieShipId,
+      charlieCharacterId
+    );
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 0
 
     // Test aggression for enemy tribe
-    returnTargetQueueLength = callAggression(aliceSmartTurretId, charlieShipId, charlieCharacterId, bobShipId, bobCharacterId);
+    returnTargetQueueLength = callAggression(
+      aliceSmartTurretId,
+      charlieShipId,
+      charlieCharacterId,
+      bobShipId,
+      bobCharacterId
+    );
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
   }
 
-function callInProximity(uint256 smartTurretId, uint256 turretTargetId, uint256 turretTargetCharacterId) public returns (uint256) {
-  TargetPriority[] memory priorityQueue = new TargetPriority[](0);
-  Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+  function callInProximity(
+    uint256 smartTurretId,
+    uint256 turretTargetId,
+    uint256 turretTargetCharacterId
+  ) public returns (uint256) {
+    TargetPriority[] memory priorityQueue = new TargetPriority[](0);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
       shipId: turretTargetId,
       shipTypeId: 1,
@@ -88,32 +102,37 @@ function callInProximity(uint256 smartTurretId, uint256 turretTargetId, uint256 
       turret,
       turretTarget
     );
-   return returnTargetQueue.length;
-}
+    return returnTargetQueue.length;
+  }
 
-function callAggression(uint256 smartTurretId, uint256 aggressorSmartTurretId, uint256 aggressorCharacterId, uint256 victimSmartTurretId, uint256 victimCharacterId) public returns (uint256) {
-  
-  TargetPriority[] memory priorityQueue = new TargetPriority[](0);
-  Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
+  function callAggression(
+    uint256 smartTurretId,
+    uint256 aggressorSmartTurretId,
+    uint256 aggressorCharacterId,
+    uint256 victimSmartTurretId,
+    uint256 victimCharacterId
+  ) public returns (uint256) {
+    TargetPriority[] memory priorityQueue = new TargetPriority[](0);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
 
-  SmartTurretTarget memory aggressor = SmartTurretTarget({
+    SmartTurretTarget memory aggressor = SmartTurretTarget({
       shipId: aggressorSmartTurretId,
       shipTypeId: 1,
       characterId: aggressorCharacterId,
       hpRatio: 100,
       shieldRatio: 100,
       armorRatio: 100
-  });
-  SmartTurretTarget memory victim = SmartTurretTarget({
+    });
+    SmartTurretTarget memory victim = SmartTurretTarget({
       shipId: victimSmartTurretId,
       shipTypeId: 1,
       characterId: victimCharacterId,
       hpRatio: 80,
       shieldRatio: 100,
       armorRatio: 100
-  });
+    });
 
-  TargetPriority[] memory returnTargetQueue = smartTurretSystem.aggression(
+    TargetPriority[] memory returnTargetQueue = smartTurretSystem.aggression(
       AggressionParams({
         smartObjectId: smartTurretId,
         priorityQueue: priorityQueue,
@@ -121,9 +140,9 @@ function callAggression(uint256 smartTurretId, uint256 aggressorSmartTurretId, u
         aggressor: aggressor,
         victim: victim
       })
-  );
-  return returnTargetQueue.length;
-}
+    );
+    return returnTargetQueue.length;
+  }
 }
 
 // Create a mock custom system to call when inProximity or aggression is called
@@ -180,4 +199,3 @@ contract SmartTurretTestSystem is System {
     }
   }
 }
-

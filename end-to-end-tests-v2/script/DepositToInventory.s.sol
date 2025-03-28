@@ -2,14 +2,13 @@ pragma solidity >=0.8.24;
 
 import { Script } from "forge-std/Script.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { UNLIMITED_DELEGATION} from "@latticexyz/world/src/Constants.sol";
+import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/Constants.sol";
 
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Tenant } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 import { InventorySystem, inventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { CreateInventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
-
 
 contract DepositToInventory is Script {
   function run(address worldAddress) public {
@@ -38,18 +37,16 @@ contract DepositToInventory is Script {
     uint256 smartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
     CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
-    
-    uint256  SINGLETON_ITEM_TYPE_ID = 9000;
-    uint256  SINGLETON_ITEM_ID = 66;
-    uint256  NON_SINGLETON_ITEM_TYPE_ID = 9090;
-    uint256  ITEM_VOLUME = 10;
 
+    uint256 SINGLETON_ITEM_TYPE_ID = 9000;
+    uint256 SINGLETON_ITEM_ID = 66;
+    uint256 NON_SINGLETON_ITEM_TYPE_ID = 9090;
+    uint256 ITEM_VOLUME = 10;
 
     uint256 singletonObjectId = ObjectIdLib.calculateSingletonId(tenantId, SINGLETON_ITEM_ID);
     uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
 
-
-    //add as singleton item 
+    //add as singleton item
     items[0] = CreateInventoryItemParams({
       smartObjectId: singletonObjectId,
       tenantId: tenantId,
@@ -59,7 +56,7 @@ contract DepositToInventory is Script {
       volume: ITEM_VOLUME
     });
 
-    //add as non-singleton item 
+    //add as non-singleton item
     items[1] = CreateInventoryItemParams({
       smartObjectId: nonSingletonObjectId,
       tenantId: tenantId,
@@ -68,9 +65,12 @@ contract DepositToInventory is Script {
       quantity: 9, // Non-singleton can have any quantity
       volume: ITEM_VOLUME
     });
-    
 
-    world.callFrom(alice,inventorySystem.toResourceId(), abi.encodeCall(InventorySystem.createAndDepositInventory, (smartObjectId, items)));
+    world.callFrom(
+      alice,
+      inventorySystem.toResourceId(),
+      abi.encodeCall(InventorySystem.createAndDepositInventory, (smartObjectId, items))
+    );
 
     vm.stopBroadcast();
   }

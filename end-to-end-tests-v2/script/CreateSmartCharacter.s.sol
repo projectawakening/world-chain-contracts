@@ -30,9 +30,9 @@ contract CreateSmartCharacter is Script {
 
   function createCharacter(address characterAddress, uint256 characterItemId, uint256 tribeId) public {
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
-   
+
     bytes32 tenantId = Tenant.get();
-    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId( tenantId, characterItemId);
+    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -46,7 +46,13 @@ contract CreateSmartCharacter is Script {
       description: "xxx"
     });
 
-    smartCharacterSystem.createCharacter(characterSmartObjectId, characterAddress, tribeId, entityRecordParams, entityRecordMetadataParams);
+    smartCharacterSystem.createCharacter(
+      characterSmartObjectId,
+      characterAddress,
+      tribeId,
+      entityRecordParams,
+      entityRecordMetadataParams
+    );
 
     uint256 characterId = CharactersByAccount.getSmartObjectId(characterAddress);
     console.log("Character created:", characterId);

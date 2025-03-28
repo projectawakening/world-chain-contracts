@@ -5,14 +5,13 @@ import { console } from "forge-std/console.sol";
 
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
-import { UNLIMITED_DELEGATION} from "@latticexyz/world/src/Constants.sol";
+import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/Constants.sol";
 
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Tenant, EphemeralInvItemData, EphemeralInvItem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-import { InventoryItemParams} from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
+import { InventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
-
 
 contract WithdrawFromEphemeral is Script {
   function run(address worldAddress) public {
@@ -36,8 +35,12 @@ contract WithdrawFromEphemeral is Script {
       smartObjectId: nonSingletonObjectId,
       quantity: 5 // Withdraw 5 of 13
     });
-    
-    world.callFrom(bob,ephemeralInventorySystem.toResourceId(), abi.encodeCall(EphemeralInventorySystem.withdrawEphemeral, (smartObjectId, bob, items)));
+
+    world.callFrom(
+      bob,
+      ephemeralInventorySystem.toResourceId(),
+      abi.encodeCall(EphemeralInventorySystem.withdrawEphemeral, (smartObjectId, bob, items))
+    );
 
     EphemeralInvItemData memory itemData = EphemeralInvItem.get(smartObjectId, bob, nonSingletonObjectId);
     console.log("Item data:", itemData.quantity); // should be 8

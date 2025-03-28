@@ -5,7 +5,7 @@ import { console } from "forge-std/console.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/Constants.sol";
+import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/constants.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Tenant } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
@@ -14,7 +14,6 @@ import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/names
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract ConfigureSmartGate is Script {
-
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     IWorldWithContext world = IWorldWithContext(worldAddress);
@@ -26,7 +25,7 @@ contract ConfigureSmartGate is Script {
     uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
     address alice = vm.addr(alicePrivateKey);
 
-     // Mock builder deployment of custom canJumpsystem
+    // Mock builder deployment of custom canJumpsystem
     bytes14 namespace = bytes14("spaceforalice");
     bytes16 name = bytes16("SmartGateTestSys");
     // Create resource ID for the mock system using the proper format
@@ -36,7 +35,7 @@ contract ConfigureSmartGate is Script {
     world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
     SmartGateTestSystem customSystem = new SmartGateTestSystem();
     world.registerSystem(customSystemId, customSystem, true);
-  
+
     bytes32 tenantId = Tenant.get();
     uint256 smartGate1ItemId = 1557;
     uint256 smartGate2ItemId = 1558;
@@ -52,9 +51,17 @@ contract ConfigureSmartGate is Script {
     vm.stopBroadcast();
 
     vm.startBroadcast(deployerPrivateKey);
-    world.callFrom(alice, smartGateSystem.toResourceId(), abi.encodeCall(SmartGateSystem.linkGates, (smartGate1SmartObjectId, smartGate2SmartObjectId)));
+    world.callFrom(
+      alice,
+      smartGateSystem.toResourceId(),
+      abi.encodeCall(SmartGateSystem.linkGates, (smartGate1SmartObjectId, smartGate2SmartObjectId))
+    );
 
-    world.callFrom(alice, smartGateSystem.toResourceId(), abi.encodeCall(SmartGateSystem.canJump, (smartGate1SmartObjectId, smartGate2SmartObjectId)));
+    world.callFrom(
+      alice,
+      smartGateSystem.toResourceId(),
+      abi.encodeCall(SmartGateSystem.canJump, (smartGate1SmartObjectId, smartGate2SmartObjectId))
+    );
     bool possibleToJump = smartGateSystem.canJump(smartGate1SmartObjectId, smartGate2SmartObjectId);
     console.log("possibleToJump", possibleToJump); // should be false
 

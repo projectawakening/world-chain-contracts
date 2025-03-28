@@ -4,12 +4,12 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { UNLIMITED_DELEGATION} from "@latticexyz/world/src/Constants.sol";
+import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/Constants.sol";
 
 import { System } from "@latticexyz/world/src/System.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
-import { Tenant, InventoryItemData, InventoryItem, LocationData , CharactersByAccount} from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Tenant, InventoryItemData, InventoryItem, LocationData, CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { FuelSystem, fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
@@ -17,12 +17,11 @@ import { InventorySystem, inventorySystem } from "@eveworld/world-v2/src/namespa
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { InventoryInteractSystem, inventoryInteractSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { EphemeralInteractSystem, ephemeralInteractSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
-import { InventoryItemParams} from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
+import { InventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
 import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { CreateAndAnchorParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/types.sol";
 
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
-
 
 contract TransferItems is Script {
   bytes32 tenantId;
@@ -63,22 +62,34 @@ contract TransferItems is Script {
     InventoryItemParams[] memory invItems = new InventoryItemParams[](1);
     invItems[0] = InventoryItemParams({ smartObjectId: item1ObjectId, quantity: 1 });
 
-    //Ephemeral Items for Bob : Bob has a stack of ore   
+    //Ephemeral Items for Bob : Bob has a stack of ore
     InventoryItemParams[] memory ephemeralItems = new InventoryItemParams[](1);
     ephemeralItems[0] = InventoryItemParams({ smartObjectId: item2ObjectId, quantity: 20 });
 
     // vm.startBroadcast(deployerPrivateKey);
     //Create inventory for alice
     createInventory(aliceInventoryId, alice, 5555);
-    world.callFrom(alice, inventorySystem.toResourceId(), abi.encodeCall(InventorySystem.depositInventory, (aliceInventoryId, invItems)));
-    world.callFrom(bob, ephemeralInventorySystem.toResourceId(), abi.encodeCall(EphemeralInventorySystem.depositEphemeral, (aliceInventoryId, bob, ephemeralItems)));
-    
+    world.callFrom(
+      alice,
+      inventorySystem.toResourceId(),
+      abi.encodeCall(InventorySystem.depositInventory, (aliceInventoryId, invItems))
+    );
+    world.callFrom(
+      bob,
+      ephemeralInventorySystem.toResourceId(),
+      abi.encodeCall(EphemeralInventorySystem.depositEphemeral, (aliceInventoryId, bob, ephemeralItems))
+    );
+
     // Create inventory for bob
     createInventory(bobInventoryId, bob, 6666);
 
     //Create inventory for charlie
     createInventory(charlieInventoryId, charlie, 7777);
-    world.callFrom(charlie, inventorySystem.toResourceId(), abi.encodeCall(InventorySystem.depositInventory, (charlieInventoryId, invItems)));
+    world.callFrom(
+      charlie,
+      inventorySystem.toResourceId(),
+      abi.encodeCall(InventorySystem.depositInventory, (charlieInventoryId, invItems))
+    );
     vm.stopBroadcast();
 
     // Alice share
@@ -88,13 +99,13 @@ contract TransferItems is Script {
     vm.stopBroadcast();
 
     //Now as a act of goodwill, Bob transfers 50% of his ore to Charlie
-    //Transfer From Ephemeral to Ephemeral : Bob's Ephemeral to Charlie's Ephemeral attached to Alice's Inventory 
+    //Transfer From Ephemeral to Ephemeral : Bob's Ephemeral to Charlie's Ephemeral attached to Alice's Inventory
     vm.startBroadcast(bobPrivateKey);
     transferFromEphemeralToEphemeral(aliceInventoryId, bob, charlie);
     vm.stopBroadcast();
 
     //Charlie shares 50% of his ore with Alice
-    //Transfer From Ephemeral to Inventory : Charlie Ephemeral to Alice Inventory 
+    //Transfer From Ephemeral to Inventory : Charlie Ephemeral to Alice Inventory
     vm.startBroadcast(charliePrivateKey);
     transferFromEphemeralToInventory(aliceInventoryId, charlie);
     vm.stopBroadcast();
@@ -104,15 +115,14 @@ contract TransferItems is Script {
     vm.startBroadcast(bobPrivateKey);
     transferFromInventoryToEphemeral(bobInventoryId, alice);
     vm.stopBroadcast();
-    
+
     //Exchange/Trade items using an external contract by setting permissions for the external contract
     vm.startBroadcast(charliePrivateKey);
     contractTransfer(world, charlieInventoryId, bobInventoryId);
     vm.stopBroadcast();
-
   }
 
-  function transferFromInventoryToInventory(uint256 fromInventoryId, uint256 toInventoryId) public { 
+  function transferFromInventoryToInventory(uint256 fromInventoryId, uint256 toInventoryId) public {
     InventoryItemParams[] memory transferItems = new InventoryItemParams[](1);
     transferItems[0] = InventoryItemParams({ smartObjectId: item1ObjectId, quantity: 1 });
 
@@ -183,7 +193,7 @@ contract TransferItems is Script {
     vm.stopBroadcast();
   }
 
-  function createInventory(uint256 ssuSmartObjectId,address invOwner, uint256 ssuItemId) public {
+  function createInventory(uint256 ssuSmartObjectId, address invOwner, uint256 ssuItemId) public {
     uint256 ssuTypeId = vm.envUint("SSU_TYPE_ID");
     uint256 fuelUnitVolume = 10;
     uint256 fuelConsumptionIntervalInSeconds = 60;
@@ -199,7 +209,7 @@ contract TransferItems is Script {
       itemId: ssuItemId,
       volume: 10
     });
-    
+
     CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
       smartObjectId: ssuSmartObjectId,
       assemblyType: "SSU",

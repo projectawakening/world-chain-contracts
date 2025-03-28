@@ -79,6 +79,5 @@ contract AnchorSmartGate is Script {
     fuelSystem.depositFuel(smartGate2SmartObjectId, 10000);
 
     vm.stopBroadcast();
-
   }
 }

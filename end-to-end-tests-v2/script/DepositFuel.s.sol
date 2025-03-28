@@ -8,7 +8,6 @@ import { fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codege
 
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
-
 contract DepositFuel is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
