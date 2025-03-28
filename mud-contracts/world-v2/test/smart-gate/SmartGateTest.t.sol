@@ -47,7 +47,7 @@ import { State } from "../../src/namespaces/evefrontier/systems/deployable/types
 //   - create a custom contract that handles the canJump logic, and
 //   - then configure the smart gate to use this custom system
 contract MockCanJumpCustomSystem is System {
-  function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+  function canJump(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
     return false;
   }
 }
@@ -474,7 +474,6 @@ contract SmartGateTest is MudTest {
   }
 
   function test_canJump() public {
-    uint256 characterId = 1;
     test_linkGates();
 
     // NOTE: canJump checks fail when using the MUD system libs for a view function call
@@ -485,7 +484,7 @@ contract SmartGateTest is MudTest {
     );
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
+      abi.encodeCall(SmartGateSystem.canJump, (sourceGateId, destinationGateId))
     );
 
     vm.startPrank(alice, deployer);
@@ -496,7 +495,7 @@ contract SmartGateTest is MudTest {
     vm.expectRevert(abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotOnline.selector, destinationGateId));
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
+      abi.encodeCall(SmartGateSystem.canJump, (sourceGateId, destinationGateId))
     );
 
     vm.startPrank(alice, deployer);
@@ -510,7 +509,7 @@ contract SmartGateTest is MudTest {
     vm.expectRevert(abi.encodeWithSelector(SmartGateSystem.SmartGate_GateNotOnline.selector, sourceGateId));
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, destinationGateId))
+      abi.encodeCall(SmartGateSystem.canJump, (sourceGateId, destinationGateId))
     );
 
     vm.startPrank(deployer);
@@ -525,14 +524,14 @@ contract SmartGateTest is MudTest {
     );
     world.call(
       smartGateSystem.toResourceId(),
-      abi.encodeCall(SmartGateSystem.canJump, (characterId, sourceGateId, invalidDestinationGateId))
+      abi.encodeCall(SmartGateSystem.canJump, (sourceGateId, invalidDestinationGateId))
     );
 
     // successfully jump
-    bool canJump = smartGateSystem.canJump(characterId, sourceGateId, destinationGateId);
+    bool canJump = smartGateSystem.canJump(sourceGateId, destinationGateId);
     assert(canJump);
 
-    bool canJumpReverse = smartGateSystem.canJump(characterId, destinationGateId, sourceGateId);
+    bool canJumpReverse = smartGateSystem.canJump(destinationGateId, sourceGateId);
     assert(canJumpReverse);
   }
 
@@ -569,8 +568,7 @@ contract SmartGateTest is MudTest {
 
     ResourceId systemId = SmartGateConfig.getSystemId(sourceGateId);
     assertEq(ResourceId.unwrap(systemId), ResourceId.unwrap(customSystemId));
-    uint256 characterId = 1;
-    bool canJump = smartGateSystem.canJump(characterId, sourceGateId, destinationGateId);
+    bool canJump = smartGateSystem.canJump(sourceGateId, destinationGateId);
     assert(!canJump);
   }
 

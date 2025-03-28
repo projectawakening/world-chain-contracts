@@ -29,11 +29,7 @@ interface ISmartGateSystem {
 
   function evefrontier__configureGate(uint256 smartObjectId, ResourceId systemId) external;
 
-  function evefrontier__canJump(
-    uint256 characterId,
-    uint256 sourceGateId,
-    uint256 destinationGateId
-  ) external returns (bool);
+  function evefrontier__canJump(uint256 sourceGateId, uint256 destinationGateId) external returns (bool);
 
   function evefrontier__areGatesOnline(uint256 sourceGateId, uint256 destinationGateId) external view returns (bool);
 

@@ -6,16 +6,11 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { UNLIMITED_DELEGATION} from "@latticexyz/world/src/Constants.sol";
 
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
-import { Tenant, EntityRecordMetadata, EntityRecordMetadataData, Characters, CharactersData, CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
-
-import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
-
-import { SmartCharacterSystem, smartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
+import { Tenant} from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { CreateInventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
-
 
 
 contract DepositToEphemeral is Script {
@@ -28,7 +23,6 @@ contract DepositToEphemeral is Script {
     string memory mnemonic = "test test test test test test test test test test test junk";
     uint256 bobPrivateKey = vm.deriveKey(mnemonic, 3);
     address bob = vm.addr(bobPrivateKey);
-    address charlie = vm.addr(vm.deriveKey(mnemonic, 4));
     
     IWorldWithContext world = IWorldWithContext(worldAddress);
 
@@ -39,13 +33,6 @@ contract DepositToEphemeral is Script {
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
-    if(CharactersByAccount.getSmartObjectId(bob) == 0) {
-      createCharacter(bob, 1350);
-    }
-
-    if(CharactersByAccount.getSmartObjectId(charlie) == 0) {
-      createCharacter(charlie, 1351);
-    }
 
     bytes32 tenantId = Tenant.get();
     uint256 smartObjectId = ObjectIdLib.calculateSingletonId(tenantId, 1244);
@@ -81,30 +68,5 @@ contract DepositToEphemeral is Script {
     world.callFrom(bob,ephemeralInventorySystem.toResourceId(), abi.encodeCall(EphemeralInventorySystem.createAndDepositEphemeral, (smartObjectId, bob, items)));
 
     vm.stopBroadcast();
-  }
-
-  function createCharacter(address characterAddress, uint256 characterItemId) public {
-    uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
-   
-    bytes32 tenantId = Tenant.get();
-    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId( tenantId, characterItemId);
-
-    uint256 tribeId = 100;
-    EntityRecordParams memory entityRecordParams = EntityRecordParams({
-      tenantId: tenantId,
-      typeId: characterTypeId,
-      itemId: characterItemId,
-      volume: 0
-    });
-    EntityMetadataParams memory entityRecordMetadataParams = EntityMetadataParams({
-      name: "hero",
-      dappURL: "hero",
-      description: "hero"
-    });
-
-    smartCharacterSystem.createCharacter(characterSmartObjectId, characterAddress, tribeId, entityRecordParams, entityRecordMetadataParams);
-
-    CharactersData memory character = Characters.get(characterSmartObjectId);
-    console.log("Character created:");
   }
 }
