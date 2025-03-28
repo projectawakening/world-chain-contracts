@@ -3,7 +3,6 @@ pragma solidity >=0.8.24;
 import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 
 import { Tenant, EntityRecordMetadata, EntityRecordMetadataData, Characters, CharactersData, CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
@@ -17,14 +16,16 @@ contract CreateSmartCharacter is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    vm.startBroadcast(deployerPrivateKey);
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    address alice = vm.addr(vm.deriveKey(mnemonic, 2));
 
+    vm.startBroadcast(deployerPrivateKey);
     // Test values for creating the smart character
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
-    uint256 characterItemId = 1347;
+    uint256 characterItemId = 1348;
     bytes32 tenantId = Tenant.get();
     uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId( tenantId, characterItemId);
-    address characterAddress = vm.addr(vm.envUint("PLAYER_PRIVATE_KEY"));
+    address characterAddress = alice;
     uint256 tribeId = 100;
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
       tenantId: tenantId,

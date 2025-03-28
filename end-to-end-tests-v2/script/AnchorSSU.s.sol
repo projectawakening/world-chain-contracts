@@ -21,6 +21,8 @@ contract AnchorSSU is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    address alice = vm.addr(vm.deriveKey(mnemonic, 2));
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
@@ -31,15 +33,14 @@ contract AnchorSSU is Script {
       deployableSystem.globalResume();
     }
 
-    address player = vm.addr(vm.envUint("PLAYER_PRIVATE_KEY"));
     bytes32 tenantId = Tenant.get();
     uint256 ssuTypeId = vm.envUint("SSU_TYPE_ID");
     uint256 ssuItemId = 1244;
     uint256 fuelUnitVolume = 10;
     uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 1000000;
-    uint256 storageCapacity = 1000;
-    uint256 ephemeralCapacity = 1000;
+    uint256 fuelMaxCapacity = 100000000;
+    uint256 storageCapacity = 100000000;
+    uint256 ephemeralCapacity = 100000000;
 
     uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
@@ -55,7 +56,7 @@ contract AnchorSSU is Script {
       smartObjectId: ssuSmartObjectId,
       assemblyType: "SSU",
       entityRecordParams: entityRecordParams,
-      owner: player,
+      owner: alice,
       fuelUnitVolume: fuelUnitVolume,
       fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
       fuelMaxCapacity: fuelMaxCapacity,
