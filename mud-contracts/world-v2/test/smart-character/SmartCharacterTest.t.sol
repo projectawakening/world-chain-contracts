@@ -44,10 +44,10 @@ contract SmartCharacterTest is MudTest {
   // Test variables
   uint256 smartCharacterClassId;
   uint256 smartCharacterObjectId;
+  uint256 smartCharacterTypeId;
   bytes32 tenantId;
 
   // Smart Object Entity Record variables
-  uint256 constant SMART_CHARACTER_TYPE_ID = 2;
   uint256 constant SMART_CHARACTER_ITEM_ID = 1337;
 
   // metadata variables
@@ -79,6 +79,7 @@ contract SmartCharacterTest is MudTest {
     worldAddress = vm.envAddress("WORLD_ADDRESS");
     world = IWorldWithContext(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
+    smartCharacterTypeId = vm.envUint("CHARACTER_TYPE_ID");
 
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
@@ -91,11 +92,11 @@ contract SmartCharacterTest is MudTest {
     // Setup tenant
     tenantId = Tenant.get();
 
-    smartCharacterClassId = _calculateObjectId(SMART_CHARACTER_TYPE_ID, 0, false);
-    smartCharacterObjectId = _calculateObjectId(SMART_CHARACTER_TYPE_ID, SMART_CHARACTER_ITEM_ID, true);
+    smartCharacterClassId = _calculateObjectId(smartCharacterTypeId, 0, false);
+    smartCharacterObjectId = _calculateObjectId(smartCharacterTypeId, SMART_CHARACTER_ITEM_ID, true);
     entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
-      typeId: SMART_CHARACTER_TYPE_ID,
+      typeId: smartCharacterTypeId,
       itemId: SMART_CHARACTER_ITEM_ID,
       volume: 0
     });
@@ -126,7 +127,7 @@ contract SmartCharacterTest is MudTest {
 
     assertEq(entityRecord.exists, true);
     assertEq(entityRecord.tenantId, tenantId);
-    assertEq(entityRecord.typeId, SMART_CHARACTER_TYPE_ID);
+    assertEq(entityRecord.typeId, smartCharacterTypeId);
     assertEq(entityRecord.itemId, SMART_CHARACTER_ITEM_ID);
     assertEq(entityRecord.volume, 0);
 

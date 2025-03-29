@@ -2,12 +2,11 @@ pragma solidity >=0.8.24;
 
 import { Script } from "forge-std/Script.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-
-import { FuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/fuel/FuelSystem.sol";
+import { Tenant } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 import { fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
+
+import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract DepositFuel is Script {
   function run(address worldAddress) public {
@@ -17,9 +16,10 @@ contract DepositFuel is Script {
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
-    IBaseWorld world = IBaseWorld(worldAddress);
 
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-00001")));
+    bytes32 tenantId = Tenant.get();
+    uint256 ssuItemId = 1244;
+    uint256 smartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
     fuelSystem.depositFuel(smartObjectId, 1000);
 
     vm.stopBroadcast();

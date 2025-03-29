@@ -1,14 +1,15 @@
 pragma solidity >=0.8.24;
 
 import { Script } from "forge-std/Script.sol";
+import { console } from "forge-std/console.sol";
+
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { GlobalDeployableState } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/GlobalDeployableState.sol";
-import { DeployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
+import { Tenant, DeployableState } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 import { deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
+import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract BringOnline is Script {
   // assumes CreateAndAnchor.s.sol and Deposit fuel has been run
@@ -16,22 +17,20 @@ contract BringOnline is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
-    uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
 
     // Start broadcasting transactions from the deployer account
-    vm.startBroadcast(deployerPrivateKey);
-    IBaseWorld world = IBaseWorld(worldAddress);
+    vm.startBroadcast(alicePrivateKey);
 
-    ResourceId deployableSystemId = deployableSystem.toResourceId();
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-00001")));
-
-    // check global state and resume if needed
-    if (GlobalDeployableState.getIsPaused() == false) {
-      deployableSystem.globalResume();
-    }
+    bytes32 tenantId = Tenant.get();
+    uint256 ssuItemId = 1244;
+    uint256 smartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
     deployableSystem.bringOnline(smartObjectId); // needs to have some fuel in it to work, else it will just let the state to offline
 
+    console.log("Deployable brought online");
+    console.log("Deployable state:", uint8(DeployableState.getCurrentState(smartObjectId)));
     vm.stopBroadcast();
   }
 }

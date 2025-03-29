@@ -26,6 +26,7 @@ import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
 import { State, CreateAndAnchorParams } from "./types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
 import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
+import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
 
 /**
  * @title DeployableSystem
@@ -236,7 +237,7 @@ contract DeployableSystem is SmartObjectFramework {
     }
     _setDeployableState(smartObjectId, previousState, State.ANCHORED);
     // assign ownership tracking of the deployable smart object
-    address currentOwner = ownershipSystem.owner(smartObjectId);
+    address currentOwner = OwnershipHelper.getOwner(smartObjectId);
     if (currentOwner == address(0)) {
       ownershipSystem.assignOwner(smartObjectId, owner);
     } else if (currentOwner != address(0) && currentOwner != owner) {
@@ -288,7 +289,7 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     // Remove ownership tracking through OwnershipSystem
-    address owner = ownershipSystem.owner(smartObjectId);
+    address owner = OwnershipHelper.getOwner(smartObjectId);
     ownershipSystem.removeOwner(smartObjectId, owner);
 
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
