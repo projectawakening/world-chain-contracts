@@ -148,20 +148,20 @@ deployment_output=$(pnpm nx deploy @eveworld/world-v2 --worldAddress '${WORLD_AD
 wait
 show_progress 5 9
 
-# #6 Configure Smart Object Framework access control
-# echo " - Configuring access control for smart object framework v2" | tee -a $LOG_FILE
-# pnpm nx configure-access @eveworld/smart-object-framework-v2 >> $LOG_FILE 2>&1
+#6 Configure Smart Object Framework access control
+echo " - Configuring access control for smart object framework v2" | tee -a $LOG_FILE
+pnpm nx configure-access @eveworld/smart-object-framework-v2 >> $LOG_FILE 2>&1
 
-# wait
-# show_progress 6 9
+wait
+show_progress 6 9
 
-# #7 Configure Smart Object Framework v2 Rules for World v2
-# echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG_FILE
-# pnpm nx config-sof @eveworld/world-v2 >> $LOG_FILE 2>&1
+#7 Configure Smart Object Framework v2 Rules for World v2
+echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG_FILE
+pnpm nx config @eveworld/world-v2 >> $LOG_FILE 2>&1
 
-# wait
-# show_progress 7 9
-# echo " - World v2 configured with Smart Object Framework v2" | tee -a $LOG_FILE
+wait
+show_progress 7 9
+echo " - World v2 configured with Smart Object Framework v2" | tee -a $LOG_FILE
 
 
 # Extract the ERC20 token address from the output
