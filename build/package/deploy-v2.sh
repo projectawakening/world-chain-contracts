@@ -72,6 +72,7 @@ show_progress 4 9 "World V2 deployed"
 
 #5 Deploy world features v2
 echo " - Deploying world features v2" | tee -a $LOG_FILE
+pnpm nx build @eveworld/world-v2
 deployment_output=$(pnpm nx deploy @eveworld/world-v2 --worldAddress '${WORLD_ADDRESS}' 2>&1 | tee -a $LOG_FILE)
 
 wait
