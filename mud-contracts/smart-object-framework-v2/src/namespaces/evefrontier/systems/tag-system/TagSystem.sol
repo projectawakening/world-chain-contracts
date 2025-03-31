@@ -15,16 +15,22 @@ import { TagId, TagIdLib } from "../../../../libs/TagId.sol";
 
 import { TAG_TYPE_PROPERTY, TAG_TYPE_ENTITY_RELATION, TAG_TYPE_RESOURCE_RELATION, TAG_IDENTIFIER_CLASS, TAG_IDENTIFIER_OBJECT, TAG_IDENTIFIER_ENTITY_COUNT, TagParams, EntityRelationValue, ResourceRelationValue } from "./types.sol";
 
-import { ITagSystem } from "../../interfaces/ITagSystem.sol";
-import { IEntitySystem } from "../../interfaces/IEntitySystem.sol";
-
 import { IWorldWithContext } from "../../../../IWorldWithContext.sol";
 
 import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
-contract TagSystem is ITagSystem, SmartObjectFramework {
+contract TagSystem is SmartObjectFramework {
   using TagIdLib for TagId;
 
+  error Tag_InvalidTagId(TagId tagId);
+  error Tag_TagDoesNotExist(TagId tagId);
+  error Tag_TagNotFound(uint256 entityId, TagId tagId);
+  error Tag_TagTypeNotDefined(bytes2 tagType);
+  error Tag_ResourceNotRegistered(ResourceId systemId);
+  error Tag_EntityAlreadyHasTag(uint256 entityId, TagId tagId);
+  error Tag_InvalidCaller(address caller);
+  error Tag_OnlyClassOrObjectPropertyAllowed();
+  error Tag_EntityDoesNotExist(uint256 entityId);
   /**
    * @notice set a Tag for an Entity
    * @param entityId A unique uint256 entity ID
@@ -118,7 +124,7 @@ contract TagSystem is ITagSystem, SmartObjectFramework {
         }
 
         if (!Entity.getExists(entityRelationValue.relatedEntityId)) {
-          revert IEntitySystem.Entity_EntityDoesNotExist(entityRelationValue.relatedEntityId);
+          revert Tag_EntityDoesNotExist(entityRelationValue.relatedEntityId);
         }
 
         tagIndex = 0;

@@ -35,6 +35,14 @@ struct RootCallWrapper {
  */
 library RoleManagementSystemLib {
   error RoleManagementSystemLib_CallingFromRootSystem();
+  error RoleManagement_InvalidRole();
+  error RoleManagement_InvalidRoleMember();
+  error RoleManagement_RoleAlreadyCreated(bytes32 role);
+  error RoleManagement_UnauthorizedAccount(bytes32 role, address caller);
+  error RoleManagement_MustRenounceSelf();
+  error RoleManagement_BadConfirmation();
+  error RoleManagement_RoleDoesNotExist(bytes32 role);
+  error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
 
   function createRole(RoleManagementSystemType self, bytes32 role, bytes32 admin) internal {
     return CallWrapper(self.toResourceId(), address(0)).createRole(role, admin);

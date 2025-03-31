@@ -11,6 +11,12 @@ import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IAccessConfigSystem {
+  error AccessConfig_AccessDenied(ResourceId targetSystemId, address caller);
+  error AccessConfig_RoleAccessDenied(bytes32 roleId, address caller);
+  error AccessConfig_InvalidTargetSystem(ResourceId targetSystemId);
+  error AccessConfig_InvalidAccessSystem(ResourceId accessSystemId);
+  error AccessConfig_TargetNotConfigured(ResourceId targetSystemId, bytes4 targetFunctionId);
+
   function evefrontier__configureAccess(
     ResourceId targetSystemId,
     bytes4 targetFunctionId,

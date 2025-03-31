@@ -22,6 +22,7 @@ interface ISOFAccessSystem {
     uint256 entityId,
     bytes memory targetCallData
   ) external view;
+  function noAllowances(uint256 entityId, bytes memory targetCallData) external view;
 
   error SOFAccess_AccessDenied(uint256 entityId, address caller);
 }

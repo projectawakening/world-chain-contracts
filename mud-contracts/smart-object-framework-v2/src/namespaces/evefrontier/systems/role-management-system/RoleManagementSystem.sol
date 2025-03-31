@@ -6,8 +6,6 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { Role, RoleData } from "../../codegen/tables/Role.sol";
 import { HasRole } from "../../codegen/tables/HasRole.sol";
 
-import { IRoleManagementSystem } from "../../interfaces/IRoleManagementSystem.sol";
-
 import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
 /**
@@ -17,7 +15,16 @@ import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.s
  * @dev Implements role creation, administration, and membership management functionality
  * @dev IMPORTANT: all state changing functions implement the `enforceCallCount(1)` modifier, which means (for security enforcement) they must be directly called from a MUD World entry point, not another MUD System
  */
-contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
+contract RoleManagementSystem is SmartObjectFramework {
+  error RoleManagement_InvalidRole();
+  error RoleManagement_InvalidRoleMember();
+  error RoleManagement_RoleAlreadyCreated(bytes32 role);
+  error RoleManagement_UnauthorizedAccount(bytes32 role, address caller);
+  error RoleManagement_MustRenounceSelf();
+  error RoleManagement_BadConfirmation();
+  error RoleManagement_RoleDoesNotExist(bytes32 role);
+  error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
+
   /**
    * @dev Modifier that checks if `account` is a member of a specific role with `roleId`. Reverts
    * with an {AccessControlUnauthorizedAccount} error, if the `account` is not a member.
@@ -285,6 +292,7 @@ contract RoleManagementSystem is IRoleManagementSystem, SmartObjectFramework {
    */
   function _grantRole(bytes32 role, address account) internal virtual {
     uint256 lengthMembers = Role.lengthMembers(role);
+
     if (!HasRole.getIsMember(role, account)) {
       HasRole.set(role, account, true, lengthMembers);
       Role.pushMembers(role, account);

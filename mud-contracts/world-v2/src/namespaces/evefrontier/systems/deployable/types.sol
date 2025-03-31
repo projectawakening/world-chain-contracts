@@ -6,22 +6,13 @@ pragma solidity >=0.8.21;
 // defined in `mud.config.ts`
 import { State } from "../../../../codegen/common.sol";
 import { LocationData } from "../../codegen/tables/Location.sol";
-import { EntityRecordData } from "../entity-record/types.sol";
+import { EntityRecordParams } from "../entity-record/types.sol";
 
-/**
- * @notice Holds the data for a smart object
- * @dev SmartObjectData structure
- */
-struct SmartObjectData {
-  address owner;
-  string tokenURI;
-}
-
-struct CreateAndAnchorDeployableParams {
+struct CreateAndAnchorParams {
   uint256 smartObjectId;
-  string smartAssemblyType;
-  EntityRecordData entityRecordData;
-  SmartObjectData smartObjectData;
+  string assemblyType;
+  EntityRecordParams entityRecordParams;
+  address owner;
   uint256 fuelUnitVolume;
   uint256 fuelConsumptionIntervalInSeconds;
   uint256 fuelMaxCapacity;

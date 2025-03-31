@@ -31,35 +31,47 @@ export default defineWorld({
           key: ["systemId"],
         },
         /***************************
-         * SMART ASSEMBLY *
+         * OWNERSHIP TABLES *
          ***************************/
-        /**
-         * Used to store the assembly of a smart object
-         */
-        SmartAssembly: {
+        InventoryByItem: {
+          schema: {
+            itemObjectId: "uint256",
+            inventoryObjectId: "uint256",
+          },
+          key: ["itemObjectId"],
+        },
+        OwnershipByObject: {
           schema: {
             smartObjectId: "uint256",
-            smartAssemblyId: "uint256",
-            smartAssemblyType: "string",
+            account: "address",
           },
           key: ["smartObjectId"],
         },
-
         /**********************
-         * ENTITY RECORD MODULE *
+         * ENTITY RECORD TABLES *
          **********************/
         /**
-         * Used to create a record for an game entity onchain
-         * Singleton smartObjectId is calculated as `uint256(keccak256("item:<placeholder_tenantID>-<game-itemID>"))`
-         * Non Singleton smartObjectId is calculated as `id = uint256(keccak256("item:<placeholder_tenantID>-<game-typeID>"))`
+         * Used to store the allowed tenantId assignable a smart object being created in this World
+         */
+        Tenant: {
+          schema: {
+            tenantId: "bytes32",
+          },
+          key: [],
+        },
+        /**
+         * Used to create a record which holds important game related data for an entity onchain
+         * Singleton entities are treated as objects, OBJECT smartObjectIds are calculated as `objectId = uint256(keccak256(abi.encodePacked(<game-tenantID-as-utf8-string>, <game-itemID-as-uint256>)))`
+         * Non-singleton entities are treated as a class, CLASS smartObjectIds as calculated as `classId = uint256(keccak256(abi.encodePacked(<game-typeID-as-uint256>)))`
          */
         EntityRecord: {
           schema: {
             smartObjectId: "uint256",
-            itemId: "uint256",
+            exists: "bool",
+            tenantId: "bytes32",
             typeId: "uint256",
+            itemId: "uint256",
             volume: "uint256",
-            recordExists: "bool",
           },
           key: ["smartObjectId"],
         },
@@ -72,134 +84,41 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        /**********************
-         * STATIC DATA MODULE *
-         **********************/
+        /***************************
+         * SMART ASSEMBLY TABLE *
+         ***************************/
         /**
-         * Used to store the IPFS CID of a smart object
+         * Used to store the assembly typeof a smart object
          */
-        StaticData: {
+        SmartAssembly: {
           schema: {
             smartObjectId: "uint256",
-            cid: "string",
+            assemblyType: "string",
           },
           key: ["smartObjectId"],
         },
-        /**
-         * Used to store the DNS which servers the IPFS gateway
-         */
-        StaticDataMetadata: {
-          schema: {
-            baseURI: "string",
-          },
-          key: [],
-        },
         /*************************
-         * SMART CHARACTER MODULE *
+         * SMART CHARACTER TABLES *
          *************************/
         Characters: {
           schema: {
-            characterId: "uint256",
-            characterAddress: "address",
+            smartObjectId: "uint256",
+            exists: "bool",
             tribeId: "uint256",
             createdAt: "uint256",
           },
-          key: ["characterId"],
+          key: ["smartObjectId"],
         },
-        CharacterToken: {
-          schema: {
-            erc721Address: "address",
-          },
-          key: [],
-        },
-
-        CharactersByAddress: {
-          schema: {
-            characterAddress: "address",
-            characterId: "uint256",
-          },
-          key: ["characterAddress"],
-        },
-
-        /*************************
-         * ERC721 PUPPET MODULE *
-         ************************/
-        Balances: {
+        CharactersByAccount: {
           schema: {
             account: "address",
-            value: "uint256",
+            smartObjectId: "uint256",
           },
           key: ["account"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        ERC721Metadata: {
-          schema: {
-            name: "string",
-            symbol: "string",
-            baseURI: "string",
-          },
-          key: [],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        TokenURI: {
-          schema: {
-            tokenId: "uint256",
-            tokenURI: "string",
-          },
-          key: ["tokenId"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        Owners: {
-          schema: {
-            tokenId: "uint256",
-            owner: "address",
-          },
-          key: ["tokenId"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        TokenApproval: {
-          schema: {
-            tokenId: "uint256",
-            account: "address",
-          },
-          key: ["tokenId"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        OperatorApproval: {
-          schema: {
-            owner: "address",
-            operator: "address",
-            approved: "bool",
-          },
-          key: ["owner", "operator"],
-          codegen: {
-            tableIdArgument: true,
-          },
-        },
-        ERC721Registry: {
-          schema: {
-            namespaceId: "ResourceId",
-            tokenAddress: "address",
-          },
-          key: ["namespaceId"],
-          codegen: {
-            tableIdArgument: true,
-          },
         },
         /*******************
-         * LOCATION MODULE *
+         * LOCATION TABLE *
          *******************/
-
         /**
          * Used to store the location of a in-game entity in the solar system
          */
@@ -213,9 +132,8 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         /***************************
-         * DEPLOYABLE MODULE *
+         * DEPLOYABLE TABLES *
          ***************************/
         /**
          * Used to store the Global state of the Deployable
@@ -245,19 +163,9 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        /**
-         * Used to store the deployable details of a in-game entity
-         */
-        DeployableToken: {
-          schema: {
-            erc721Address: "address",
-          },
-          key: [],
-        },
         /*******************
-         * FUEL MODULE *
+         * FUEL TABLE *
          *******************/
-
         /**
          * Used to store the fuel balance of a Deployable
          */
@@ -272,33 +180,51 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         /*******************
-         * INVENTORY MODULE *
+         * INVENTORY TABLES *
          *******************/
         Inventory: {
           schema: {
             smartObjectId: "uint256",
             capacity: "uint256",
             usedCapacity: "uint256",
+            version: "uint256",
             items: "uint256[]",
           },
           key: ["smartObjectId"],
         },
         /**
-         * Used to store the inventory items of a in-game smart storage unit
+         * Used to store the inventory item entries of a smart object's inventory
          */
         InventoryItem: {
           schema: {
             smartObjectId: "uint256",
-            inventoryItemId: "uint256",
+            itemObjectId: "uint256",
+            exists: "bool",
             quantity: "uint256",
             index: "uint256",
-            stateUpdate: "uint256",
+            version: "uint256",
           },
-          key: ["smartObjectId", "inventoryItemId"],
+          key: ["smartObjectId", "itemObjectId"],
         },
-        //EPHEMERAL INVENTORY MODULE
+        /**
+         * Used to signal the transfer details when a item is exchanged between its primary inventory and another smart object's primary inventory
+         */
+        InventoryItemTransfer: {
+          schema: {
+            smartObjectId: "uint256",
+            itemObjectId: "uint256",
+            toObjectId: "uint256",
+            previousOwner: "address",
+            currentOwner: "address",
+            quantity: "uint256",
+            updatedAt: "uint256",
+          },
+          key: ["smartObjectId", "itemObjectId"],
+        },
+        /*******************
+         * EPHEMERAL INVENTORY TABLES *
+         *******************/
         /**
          * Used to Store Ephemeral Capacity by smartObjectId
          */
@@ -309,49 +235,57 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        /**
-         * Used to store the ephemeral inventory details of a in-game smart storage unit
-         * Each user has a separate ephemeral inventory capacity
-         */
-        EphemeralInv: {
+        EphemeralInventory: {
           schema: {
             smartObjectId: "uint256",
-            ephemeralInvOwner: "address",
+            ephemeralOwner: "address",
+            capacity: "uint256",
             usedCapacity: "uint256",
+            version: "uint256",
             items: "uint256[]",
           },
-          key: ["smartObjectId", "ephemeralInvOwner"],
+          key: ["smartObjectId", "ephemeralOwner"],
         },
-        /**
-         * Used to store the ephemeral inventory items details of a in-game smart storage unit
-         */
         EphemeralInvItem: {
           schema: {
             smartObjectId: "uint256",
-            inventoryItemId: "uint256",
-            ephemeralInvOwner: "address",
+            ephemeralOwner: "address",
+            itemObjectId: "uint256",
+            exists: "bool",
             quantity: "uint256",
             index: "uint256",
-            stateUpdate: "uint256",
+            version: "uint256",
           },
-          key: ["smartObjectId", "inventoryItemId", "ephemeralInvOwner"],
+          key: ["smartObjectId", "ephemeralOwner", "itemObjectId"],
         },
         /**
-         * Used to store the transfer details when a item is exchanged
+         * Look up table to find the associated inventory smart object for an ephemeral inventory
          */
-        ItemTransferOffchain: {
+        InventoryByEphemeral: {
+          schema: {
+            ephemeralSmartObjectId: "uint256",
+            exists: "bool",
+            smartObjectId: "uint256", // parent container ID
+            ephemeralOwner: "address", // TODO : ? why is this needed? is this inventory owner?
+          },
+          key: ["ephemeralSmartObjectId"],
+        },
+        /**
+         * Used to signal the transfer details when a item is exchanged between it's primary inventory and an associated ephemeral inventory or two ehpemeral inventories
+         */
+        EphemeralItemTransfer: {
           schema: {
             smartObjectId: "uint256",
-            inventoryItemId: "uint256",
+            itemObjectId: "uint256",
             previousOwner: "address",
             currentOwner: "address",
             quantity: "uint256",
             updatedAt: "uint256",
           },
-          key: ["smartObjectId", "inventoryItemId"],
+          key: ["smartObjectId", "itemObjectId"],
         },
         /*************************
-         * SMART TURRET MODULE *
+         * SMART TURRET TABLE *
          *************************/
         SmartTurretConfig: {
           schema: {
@@ -360,9 +294,8 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         /*************************
-         * SMART GATE MODULE *
+         * SMART GATE TABLE *
          *************************/
         SmartGateConfig: {
           schema: {
@@ -372,7 +305,6 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-
         SmartGateLink: {
           schema: {
             sourceGateId: "uint256",
@@ -380,6 +312,20 @@ export default defineWorld({
             isLinked: "bool",
           },
           key: ["sourceGateId"],
+        },
+        /************************
+         * KILL MAIL TABLE *
+         ************************/
+        KillMail: {
+          schema: {
+            killMailId: "uint256",
+            killerCharacterId: "uint256",
+            victimCharacterId: "uint256",
+            lossType: "KillMailLossType",
+            solarSystemId: "uint256",
+            killTimestamp: "uint256",
+          },
+          key: ["killMailId"],
         },
       },
     },

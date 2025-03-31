@@ -337,8 +337,16 @@ contract SOFAccessSystemTest is MudTest {
     world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callRemoveTag, (classId, CLASS_SCOPED_SYSTEM_TAG)));
 
     // success, via the EntitySystem call (all tags removed through deleteClass->removeSystemTags->removeSystemTag)
+
+    // temporarily disable access control for deleteClass
+    vm.prank(deployer);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, false);
     vm.prank(deployer);
     entitySystem.deleteClass(classId);
+
+    // re-enable access control for deleteClass
+    vm.prank(deployer);
+    accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, true);
 
     // re-register Class (with classScopedSystem tag)
     vm.prank(deployer);
@@ -537,7 +545,7 @@ contract SOFAccessSystemTest is MudTest {
   }
 
   function test_EntitySystem_deleteClass() public {
-    // deleteClass - allowDirectAccessRole
+    // deleteClass - noAllowances
 
     // register Class (with the class scoped system tag)
     ResourceId[] memory scopedSystemIds = new ResourceId[](1);
@@ -546,18 +554,35 @@ contract SOFAccessSystemTest is MudTest {
     vm.prank(deployer);
     entitySystem.registerClass(classId, scopedSystemIds);
 
-    // revert if calling from a system (even a scoped one). We only allow direct calls to this function
+    // revert if calling from a scoped system
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(classScopedSystem))
     );
     world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callDeleteClass, (classId)));
 
-    // revert, if direct caller is not a class access role member
+    // revert if calling from an unscoped system
+    vm.expectRevert(
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
+    );
+    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteClass, (classId)));
+
+    // add UNSCOPED_SYSTEM_ID to the CallAccess table for deleteClass
+    vm.prank(deployer);
+    CallAccess.set(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, address(unscopedSystem), true);
+
+    // still revert even with CallAccess
+    vm.expectRevert(
+      abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
+    );
+    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteClass, (classId)));
+
+    // revert on direct call
     vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(this)));
     entitySystem.deleteClass(classId);
 
-    // success, direct caller is a class access role member
+    // revert even if direct caller is a class access role member
     vm.prank(deployer);
+    vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, deployer));
     entitySystem.deleteClass(classId);
   }
 
@@ -829,12 +854,12 @@ contract SOFAccessSystemTest is MudTest {
       sOFAccessSystem.toResourceId(),
       ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector
     );
-    // set allowDirectClassAccessRoleOnly for deleteClass
+    // set noAllowances for deleteClass
     accessConfigSystem.configureAccess(
       entitySystem.toResourceId(),
       IEntitySystem.deleteClass.selector,
       sOFAccessSystem.toResourceId(),
-      ISOFAccessSystem.allowDirectClassAccessRoleOnly.selector
+      ISOFAccessSystem.noAllowances.selector
     );
     // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for instantiate
     accessConfigSystem.configureAccess(

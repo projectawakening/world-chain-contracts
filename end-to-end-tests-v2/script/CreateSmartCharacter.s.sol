@@ -3,36 +3,58 @@ pragma solidity >=0.8.24;
 import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { SmartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
+import { Tenant, EntityRecordMetadata, EntityRecordMetadataData, Characters, CharactersData, CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
-import { smartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
+import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
+
+import { SmartCharacterSystem, smartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
+import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract CreateSmartCharacter is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    address alice = vm.addr(vm.deriveKey(mnemonic, 2));
+    address bob = vm.addr(vm.deriveKey(mnemonic, 3));
+    address charlie = vm.addr(vm.deriveKey(mnemonic, 4));
+
     vm.startBroadcast(deployerPrivateKey);
-    IBaseWorld world = IBaseWorld(worldAddress);
+    createCharacter(alice, 1348, 100);
+    createCharacter(bob, 1349, 100);
+    createCharacter(charlie, 1350, 300);
+    vm.stopBroadcast();
+  }
 
-    // Test values for creating the smart character
-    uint256 characterId = 123;
-    address characterAddress = vm.addr(deployerPrivateKey);
-    uint256 tribeId = 100;
-    EntityRecordData memory entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
+  function createCharacter(address characterAddress, uint256 characterItemId, uint256 tribeId) public {
+    uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
 
-    EntityMetadata memory entityRecordMetadata = EntityMetadata({
-      name: "name",
-      dappURL: "dappURL",
-      description: "description"
+    bytes32 tenantId = Tenant.get();
+    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
+
+    EntityRecordParams memory entityRecordParams = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: characterTypeId,
+      itemId: characterItemId,
+      volume: 0
+    });
+    EntityMetadataParams memory entityRecordMetadataParams = EntityMetadataParams({
+      name: "xxx",
+      dappURL: "xxx",
+      description: "xxx"
     });
 
-    smartCharacterSystem.createCharacter(characterId, characterAddress, tribeId, entityRecord, entityRecordMetadata);
+    smartCharacterSystem.createCharacter(
+      characterSmartObjectId,
+      characterAddress,
+      tribeId,
+      entityRecordParams,
+      entityRecordMetadataParams
+    );
 
-    vm.stopBroadcast();
+    uint256 characterId = CharactersByAccount.getSmartObjectId(characterAddress);
+    console.log("Character created:", characterId);
   }
 }

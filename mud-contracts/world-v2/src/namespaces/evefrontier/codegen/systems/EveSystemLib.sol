@@ -36,32 +36,32 @@ struct RootCallWrapper {
 library EveSystemLib {
   error EveSystemLib_CallingFromRootSystem();
 
-  function registerSmartCharacterClass(EveSystemType self, uint256 typeId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartCharacterClass(typeId);
+  function registerSmartCharacterClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerSmartCharacterClass(typeId, volume);
   }
 
-  function registerSmartStorageUnitClass(EveSystemType self, uint256 typeId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartStorageUnitClass(typeId);
+  function registerSmartStorageUnitClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerSmartStorageUnitClass(typeId, volume);
   }
 
-  function registerSmartTurretClass(EveSystemType self, uint256 typeId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartTurretClass(typeId);
+  function registerSmartTurretClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerSmartTurretClass(typeId, volume);
   }
 
-  function registerSmartGateClass(EveSystemType self, uint256 typeId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartGateClass(typeId);
+  function registerSmartGateClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerSmartGateClass(typeId, volume);
   }
 
   function configureEntityRecordAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureEntityRecordAccess();
   }
 
-  function configureStaticDataAccess(EveSystemType self) internal {
-    return CallWrapper(self.toResourceId(), address(0)).configureStaticDataAccess();
-  }
-
   function configureSmartAssemblyAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureSmartAssemblyAccess();
+  }
+
+  function configureOwnershipAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureOwnershipAccess();
   }
 
   function configureSmartCharacterAccess(EveSystemType self) internal {
@@ -88,6 +88,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureEphemeralInventoryAccess();
   }
 
+  function configureEphemeralInteractAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureEphemeralInteractAccess();
+  }
+
   function configureInventoryInteractAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureInventoryInteractAccess();
   }
@@ -104,47 +108,57 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureSmartGateAccess();
   }
 
-  function registerSmartCharacterClass(CallWrapper memory self, uint256 typeId) internal {
+  function configureKillMailAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureKillMailAccess();
+  }
+
+  function registerSmartCharacterClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _registerSmartCharacterClass_uint256.registerSmartCharacterClass,
-      (typeId)
+      _registerSmartCharacterClass_uint256_uint256.registerSmartCharacterClass,
+      (typeId, volume)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerSmartStorageUnitClass(CallWrapper memory self, uint256 typeId) internal {
+  function registerSmartStorageUnitClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _registerSmartStorageUnitClass_uint256.registerSmartStorageUnitClass,
-      (typeId)
+      _registerSmartStorageUnitClass_uint256_uint256.registerSmartStorageUnitClass,
+      (typeId, volume)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerSmartTurretClass(CallWrapper memory self, uint256 typeId) internal {
+  function registerSmartTurretClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_registerSmartTurretClass_uint256.registerSmartTurretClass, (typeId));
+    bytes memory systemCall = abi.encodeCall(
+      _registerSmartTurretClass_uint256_uint256.registerSmartTurretClass,
+      (typeId, volume)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerSmartGateClass(CallWrapper memory self, uint256 typeId) internal {
+  function registerSmartGateClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_registerSmartGateClass_uint256.registerSmartGateClass, (typeId));
+    bytes memory systemCall = abi.encodeCall(
+      _registerSmartGateClass_uint256_uint256.registerSmartGateClass,
+      (typeId, volume)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -160,21 +174,21 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function configureStaticDataAccess(CallWrapper memory self) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_configureStaticDataAccess.configureStaticDataAccess, ());
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
   function configureSmartAssemblyAccess(CallWrapper memory self) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_configureSmartAssemblyAccess.configureSmartAssemblyAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureOwnershipAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureOwnershipAccess.configureOwnershipAccess, ());
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -240,6 +254,16 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function configureEphemeralInteractAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureEphemeralInteractAccess.configureEphemeralInteractAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function configureInventoryInteractAccess(CallWrapper memory self) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
@@ -280,29 +304,45 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerSmartCharacterClass(RootCallWrapper memory self, uint256 typeId) internal {
+  function configureKillMailAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureKillMailAccess.configureKillMailAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function registerSmartCharacterClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
     bytes memory systemCall = abi.encodeCall(
-      _registerSmartCharacterClass_uint256.registerSmartCharacterClass,
-      (typeId)
+      _registerSmartCharacterClass_uint256_uint256.registerSmartCharacterClass,
+      (typeId, volume)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function registerSmartStorageUnitClass(RootCallWrapper memory self, uint256 typeId) internal {
+  function registerSmartStorageUnitClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
     bytes memory systemCall = abi.encodeCall(
-      _registerSmartStorageUnitClass_uint256.registerSmartStorageUnitClass,
-      (typeId)
+      _registerSmartStorageUnitClass_uint256_uint256.registerSmartStorageUnitClass,
+      (typeId, volume)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function registerSmartTurretClass(RootCallWrapper memory self, uint256 typeId) internal {
-    bytes memory systemCall = abi.encodeCall(_registerSmartTurretClass_uint256.registerSmartTurretClass, (typeId));
+  function registerSmartTurretClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _registerSmartTurretClass_uint256_uint256.registerSmartTurretClass,
+      (typeId, volume)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function registerSmartGateClass(RootCallWrapper memory self, uint256 typeId) internal {
-    bytes memory systemCall = abi.encodeCall(_registerSmartGateClass_uint256.registerSmartGateClass, (typeId));
+  function registerSmartGateClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _registerSmartGateClass_uint256_uint256.registerSmartGateClass,
+      (typeId, volume)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -311,13 +351,13 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function configureStaticDataAccess(RootCallWrapper memory self) internal {
-    bytes memory systemCall = abi.encodeCall(_configureStaticDataAccess.configureStaticDataAccess, ());
+  function configureSmartAssemblyAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureSmartAssemblyAccess.configureSmartAssemblyAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function configureSmartAssemblyAccess(RootCallWrapper memory self) internal {
-    bytes memory systemCall = abi.encodeCall(_configureSmartAssemblyAccess.configureSmartAssemblyAccess, ());
+  function configureOwnershipAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureOwnershipAccess.configureOwnershipAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -351,6 +391,11 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function configureEphemeralInteractAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureEphemeralInteractAccess.configureEphemeralInteractAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function configureInventoryInteractAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureInventoryInteractAccess.configureInventoryInteractAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -368,6 +413,11 @@ library EveSystemLib {
 
   function configureSmartGateAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureSmartGateAccess.configureSmartGateAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function configureKillMailAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureKillMailAccess.configureKillMailAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -409,32 +459,32 @@ library EveSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _registerSmartCharacterClass_uint256 {
-  function registerSmartCharacterClass(uint256 typeId) external;
+interface _registerSmartCharacterClass_uint256_uint256 {
+  function registerSmartCharacterClass(uint256 typeId, uint256 volume) external;
 }
 
-interface _registerSmartStorageUnitClass_uint256 {
-  function registerSmartStorageUnitClass(uint256 typeId) external;
+interface _registerSmartStorageUnitClass_uint256_uint256 {
+  function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) external;
 }
 
-interface _registerSmartTurretClass_uint256 {
-  function registerSmartTurretClass(uint256 typeId) external;
+interface _registerSmartTurretClass_uint256_uint256 {
+  function registerSmartTurretClass(uint256 typeId, uint256 volume) external;
 }
 
-interface _registerSmartGateClass_uint256 {
-  function registerSmartGateClass(uint256 typeId) external;
+interface _registerSmartGateClass_uint256_uint256 {
+  function registerSmartGateClass(uint256 typeId, uint256 volume) external;
 }
 
 interface _configureEntityRecordAccess {
   function configureEntityRecordAccess() external;
 }
 
-interface _configureStaticDataAccess {
-  function configureStaticDataAccess() external;
-}
-
 interface _configureSmartAssemblyAccess {
   function configureSmartAssemblyAccess() external;
+}
+
+interface _configureOwnershipAccess {
+  function configureOwnershipAccess() external;
 }
 
 interface _configureSmartCharacterAccess {
@@ -461,6 +511,10 @@ interface _configureEphemeralInventoryAccess {
   function configureEphemeralInventoryAccess() external;
 }
 
+interface _configureEphemeralInteractAccess {
+  function configureEphemeralInteractAccess() external;
+}
+
 interface _configureInventoryInteractAccess {
   function configureInventoryInteractAccess() external;
 }
@@ -475,6 +529,10 @@ interface _configureSmartTurretAccess {
 
 interface _configureSmartGateAccess {
   function configureSmartGateAccess() external;
+}
+
+interface _configureKillMailAccess {
+  function configureKillMailAccess() external;
 }
 
 using EveSystemLib for EveSystemType global;

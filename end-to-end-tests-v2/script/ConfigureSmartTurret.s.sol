@@ -4,112 +4,218 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { System } from "@latticexyz/world/src/System.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
-
-import { GlobalDeployableState } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/tables/GlobalDeployableState.sol";
-import { DeployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
-import { State, SmartObjectData } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/types.sol";
-import { SmartTurretSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-turret/SmartTurretSystem.sol";
-import { FuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/fuel/FuelSystem.sol";
-import { TargetPriority, Turret, SmartTurretTarget } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-turret/types.sol";
-
-import { deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
-import { fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
-import { smartTurretSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
+import { Tenant, CharactersByAccount, CharactersData, Characters } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { OwnershipSystem, ownershipSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
+import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
+import { SmartTurretSystem, smartTurretSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
+import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
+import { TargetPriority, AggressionParams, Turret, SmartTurretTarget } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-turret/types.sol";
 
 contract ConfigureSmartTurret is Script {
   using WorldResourceIdInstance for ResourceId;
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
+    IWorldWithContext world = IWorldWithContext(worldAddress);
+
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    address player = vm.addr(deployerPrivateKey);
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
+    address alice = vm.addr(alicePrivateKey);
+    address bob = vm.addr(vm.deriveKey(mnemonic, 3));
+    address charlie = vm.addr(vm.deriveKey(mnemonic, 4));
 
-    // Start broadcasting transactions from the deployer account
-    vm.startBroadcast(deployerPrivateKey);
-    IBaseWorld world = IBaseWorld(worldAddress);
+    bytes32 tenantId = Tenant.get();
+    uint256 aliceSmartTurretId = ObjectIdLib.calculateSingletonId(tenantId, 1559);
 
-    // check global state and resume if needed
-    if (GlobalDeployableState.getIsPaused() == false) {
-      deployableSystem.globalResume();
-    }
+    uint256 aliceCharacterId = CharactersByAccount.getSmartObjectId(alice);
+    uint256 bobCharacterId = CharactersByAccount.getSmartObjectId(bob);
+    uint256 charlieCharacterId = CharactersByAccount.getSmartObjectId(charlie);
+    uint256 aliceShipId = 22;
+    uint256 bobShipId = 23;
+    uint256 charlieShipId = 24;
 
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-00002")));
+    vm.startBroadcast(alicePrivateKey);
 
-    fuelSystem.depositFuel(smartObjectId, 100000);
-    deployableSystem.bringOnline(smartObjectId);
+    //Register the custom system
+    bytes14 namespace = bytes14("turretspace");
+    bytes16 name = bytes16("SmartTurretTestS");
+    ResourceId customSystemId = WorldResourceIdLib.encode(RESOURCE_SYSTEM, namespace, name);
+    world.registerNamespace(WorldResourceIdLib.encodeNamespace(namespace));
+    SmartTurretTestSystem customSystem = new SmartTurretTestSystem();
+    world.registerSystem(customSystemId, customSystem, true);
 
-    SmartTurretTestSystem smartTurretTestSystem = new SmartTurretTestSystem();
-    ResourceId smartTurretTestSystemId = WorldResourceIdLib.encode({
-      typeId: RESOURCE_SYSTEM,
-      namespace: "testnamespace",
-      name: "SmartTurretTestS"
-    });
+    smartTurretSystem.configureTurret(aliceSmartTurretId, customSystemId);
+    deployableSystem.bringOnline(aliceSmartTurretId);
+    vm.stopBroadcast();
 
-    // register the smart turret system
-    world.registerNamespace(smartTurretTestSystemId.getNamespaceId());
-    world.registerSystem(smartTurretTestSystemId, smartTurretTestSystem, true);
-    //register the function selector
-    world.registerFunctionSelector(
-      smartTurretTestSystemId,
-      "inProximity(uint256,uint256,((uint256,uint256,uint256,uint256,uint256,uint256),uint256)[],(uint256,uint256,uint256),(uint256,uint256,uint256,uint256,uint256,uint256))"
+    //Test inProximity for owner through custom system
+    uint256 returnTargetQueueLength = callInProximity(aliceSmartTurretId, aliceShipId, aliceCharacterId);
+    console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 0
+
+    //Test inProximity for non owner through custom system
+    returnTargetQueueLength = callInProximity(aliceSmartTurretId, charlieShipId, charlieCharacterId);
+    console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
+
+    // Test aggression for friendly tribe
+    returnTargetQueueLength = callAggression(
+      aliceSmartTurretId,
+      bobShipId,
+      bobCharacterId,
+      charlieShipId,
+      charlieCharacterId
     );
+    console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
 
-    smartTurretSystem.configureSmartTurret(smartObjectId, smartTurretTestSystemId);
+    // Test aggression for enemy tribe
+    returnTargetQueueLength = callAggression(
+      aliceSmartTurretId,
+      charlieShipId,
+      charlieCharacterId,
+      bobShipId,
+      bobCharacterId
+    );
+    console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
 
-    //Execute inProximity view function and see what is returns
-    TargetPriority[] memory priorityQueue = new TargetPriority[](1);
+    // Test case where both aggressor and victim are from enemy tribe
+    returnTargetQueueLength = callAggression(
+      aliceSmartTurretId, // turret owner: Alice (FRIENDLY_TRIBE_ID)
+      bobShipId, // aggressor: Bob (FRIENDLY_TRIBE_ID)
+      bobCharacterId,
+      aliceShipId, // victim: Alice (FRIENDLY_TRIBE_ID)
+      aliceCharacterId
+    );
+    console.log("returnTargetQueueLength for enemy vs enemy:", returnTargetQueueLength); // should be 0
+  }
+
+  function callInProximity(
+    uint256 smartTurretId,
+    uint256 turretTargetId,
+    uint256 turretTargetCharacterId
+  ) public returns (uint256) {
+    TargetPriority[] memory priorityQueue = new TargetPriority[](0);
     Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
-    uint256 characterId = 11111;
-
     SmartTurretTarget memory turretTarget = SmartTurretTarget({
-      shipId: 1,
+      shipId: turretTargetId,
       shipTypeId: 1,
-      characterId: characterId,
+      characterId: turretTargetCharacterId,
       hpRatio: 100,
       shieldRatio: 100,
       armorRatio: 100
     });
-    priorityQueue[0] = TargetPriority({ target: turretTarget, weight: 100 });
 
-    TargetPriority[] memory returnTargetQueue = smartTurretTestSystem.inProximity(
-      smartObjectId,
-      characterId,
+    TargetPriority[] memory returnTargetQueue = smartTurretSystem.inProximity(
+      smartTurretId,
       priorityQueue,
       turret,
       turretTarget
     );
+    return returnTargetQueue.length;
+  }
 
-    console.log(returnTargetQueue.length);
+  function callAggression(
+    uint256 smartTurretId,
+    uint256 aggressorSmartTurretId,
+    uint256 aggressorCharacterId,
+    uint256 victimSmartTurretId,
+    uint256 victimCharacterId
+  ) public returns (uint256) {
+    TargetPriority[] memory priorityQueue = new TargetPriority[](0);
+    Turret memory turret = Turret({ weaponTypeId: 1, ammoTypeId: 1, chargesLeft: 100 });
 
-    vm.stopBroadcast();
+    SmartTurretTarget memory aggressor = SmartTurretTarget({
+      shipId: aggressorSmartTurretId,
+      shipTypeId: 1,
+      characterId: aggressorCharacterId,
+      hpRatio: 100,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+    SmartTurretTarget memory victim = SmartTurretTarget({
+      shipId: victimSmartTurretId,
+      shipTypeId: 1,
+      characterId: victimCharacterId,
+      hpRatio: 80,
+      shieldRatio: 100,
+      armorRatio: 100
+    });
+
+    TargetPriority[] memory returnTargetQueue = smartTurretSystem.aggression(
+      AggressionParams({
+        smartObjectId: smartTurretId,
+        priorityQueue: priorityQueue,
+        turret: turret,
+        aggressor: aggressor,
+        victim: victim
+      })
+    );
+    return returnTargetQueue.length;
   }
 }
 
-//Mock Contract for testing
+// Create a mock custom system to call when inProximity or aggression is called
+// This fits the expected builder pattern -
+//   - create a custom contract that handles the inProximity or aggression logic, and
+//   - then configure the smart turret to use this custom system
 contract SmartTurretTestSystem is System {
+  // don't shoot your owner, but everyone else is fair game
   function inProximity(
     uint256 smartTurretId,
-    uint256 turretOwnerCharacterId,
     TargetPriority[] memory priorityQueue,
     Turret memory turret,
     SmartTurretTarget memory turretTarget
-  ) public returns (TargetPriority[] memory returnTargetQueue) {
-    //TODO: Implement the logic for the system
-    return priorityQueue;
+  ) public returns (TargetPriority[] memory updatedPriorityQueue) {
+    address owner = ownershipSystem.owner(smartTurretId);
+    uint256 turretOwnerCharacterId = CharactersByAccount.getSmartObjectId(owner);
+    if (turretTarget.characterId == turretOwnerCharacterId) {
+      // don't bite the hand that feeds you
+      return priorityQueue;
+    } else {
+      // shoot to kill
+      updatedPriorityQueue = new TargetPriority[](priorityQueue.length + 1);
+      for (uint256 i = 0; i < priorityQueue.length; i++) {
+        updatedPriorityQueue[i] = priorityQueue[i];
+      }
+      updatedPriorityQueue[priorityQueue.length] = TargetPriority({ target: turretTarget, weight: 100 });
+      return updatedPriorityQueue;
+    }
   }
 
-  function aggression(
-    uint256 smartTurretId,
-    uint256 turretOwnerCharacterId,
-    TargetPriority[] memory priorityQueue,
-    Turret memory turret,
-    SmartTurretTarget memory aggressor,
-    SmartTurretTarget memory victim
-  ) public returns (TargetPriority[] memory returnTargetQueue) {
-    return returnTargetQueue;
+  // help your friends, shoot their enemies (victim or agressor)
+  function aggression(AggressionParams memory params) public returns (TargetPriority[] memory updatedPriorityQueue) {
+    address owner = abi.decode(
+      IWorldWithContext(_world()).callStatic(
+        ownershipSystem.toResourceId(),
+        abi.encodeWithSelector(OwnershipSystem.owner.selector, params.smartObjectId)
+      ),
+      (address)
+    );
+
+    uint256 turretOwnerCharacterId = CharactersByAccount.getSmartObjectId(owner);
+    uint256 turretOwnerTribe = Characters.getTribeId(turretOwnerCharacterId);
+    uint256 aggressorTribe = Characters.getTribeId(params.aggressor.characterId);
+    uint256 victimTribe = Characters.getTribeId(params.victim.characterId);
+    if (aggressorTribe == turretOwnerTribe && aggressorTribe != victimTribe) {
+      updatedPriorityQueue = new TargetPriority[](params.priorityQueue.length + 1);
+      for (uint256 i = 0; i < params.priorityQueue.length; i++) {
+        // TODO: yul assembly to store mapping of charcterIds bools in the priority queue
+        updatedPriorityQueue[i] = params.priorityQueue[i];
+      }
+      // TODO: yul assembly to load the apporpriate bool slot from the stored mapping keyed to the victim characterId, don't add the victim to the priority queue if the bool is true (they are already in the queue)
+      updatedPriorityQueue[params.priorityQueue.length] = TargetPriority({ target: params.victim, weight: 100 });
+    } else if (victimTribe == turretOwnerTribe && aggressorTribe != victimTribe) {
+      updatedPriorityQueue = new TargetPriority[](params.priorityQueue.length + 1);
+      for (uint256 i = 0; i < params.priorityQueue.length; i++) {
+        updatedPriorityQueue[i] = params.priorityQueue[i];
+      }
+      updatedPriorityQueue[params.priorityQueue.length] = TargetPriority({ target: params.aggressor, weight: 100 });
+    } else {
+      return params.priorityQueue;
+    }
   }
 }

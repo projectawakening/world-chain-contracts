@@ -1,37 +1,38 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { LocationData } from "../../codegen/index.sol";
-import { DeployableSystemLib, deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
-import { InventorySystemLib, inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
-import { EphemeralInventorySystemLib, ephemeralInventorySystem } from "../../codegen/systems/EphemeralInventorySystemLib.sol";
-import { EntityRecordData } from "../entity-record/types.sol";
-import { SmartObjectData } from "../deployable/types.sol";
-import { WorldPosition } from "../location/types.sol";
-import { SMART_STORAGE_UNIT } from "../constants.sol";
-import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
-import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+// Local namespace tables
 import { Initialize } from "../../codegen/index.sol";
+
+// Local namespace systems
+import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartStorageUnitSystem } from "../../codegen/systems/SmartStorageUnitSystemLib.sol";
+// Types and parameters
+import { CreateAndAnchorParams } from "../deployable/types.sol";
+import { SMART_STORAGE_UNIT } from "../constants.sol";
 
 contract SmartStorageUnitSystem is SmartObjectFramework {
-  function createAndAnchorSmartStorageUnit(
-    CreateAndAnchorDeployableParams memory params,
+  function createAndAnchorStorageUnit(
+    CreateAndAnchorParams memory params,
     uint256 storageCapacity,
     uint256 ephemeralStorageCapacity
-  ) public context access(params.smartObjectId) scope(getClassId()) {
-    entitySystem.instantiate(getClassId(), params.smartObjectId, params.smartObjectData.owner);
+  ) public context access(params.smartObjectId) scope(getSmartStorageUnitClassId()) {
+    entitySystem.instantiate(getSmartStorageUnitClassId(), params.smartObjectId, params.owner);
 
-    params.smartAssemblyType = SMART_STORAGE_UNIT;
-    deployableSystem.createAndAnchorDeployable(params);
+    params.assemblyType = SMART_STORAGE_UNIT;
+    deployableSystem.createAndAnchor(params);
 
-    inventorySystem.setInventoryCapacity(params.smartObjectId, storageCapacity);
+    inventorySystem.setCapacity(params.smartObjectId, storageCapacity);
 
-    ephemeralInventorySystem.setEphemeralInventoryCapacity(params.smartObjectId, ephemeralStorageCapacity);
+    inventorySystem.setEphemeralCapacity(params.smartObjectId, ephemeralStorageCapacity);
   }
 
-  function getClassId() public view returns (uint256) {
+  function getSmartStorageUnitClassId() public view returns (uint256) {
     return Initialize.get(smartStorageUnitSystem.toResourceId());
   }
 }

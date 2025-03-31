@@ -15,14 +15,9 @@ import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-p
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { ERC721MetadataData } from "../src/namespaces/evefrontier/codegen/tables/ERC721Metadata.sol";
 import { SmartCharacterSystem } from "../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-import { registerERC721 } from "../src/namespaces/evefrontier/systems/eve-erc721-puppet/registerERC721.sol";
-import { IERC721Mintable } from "../src/namespaces/evefrontier/systems/eve-erc721-puppet/IERC721Mintable.sol";
-import { StaticDataSystem } from "../src/namespaces/evefrontier/systems/static-data/StaticDataSystem.sol";
 import { DeployableSystem } from "../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
 
-import { StaticDataSystemLib, staticDataSystem } from "../src/namespaces/evefrontier/codegen/systems/StaticDataSystemLib.sol";
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 
@@ -81,7 +76,6 @@ contract PostDeploy is Script {
     console.log("minting to: ", address(to));
     console.log("amount: ", amount * 1 ether);
   }
-
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {
     bytes memory tempBytes = bytes(str);

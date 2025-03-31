@@ -1,25 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
-
-import { SmartGateConfig } from "../../codegen/tables/SmartGateConfig.sol";
-import { SmartGateLink, SmartGateLinkData } from "../../codegen/tables/SmartGateLink.sol";
-import { DeployableState, DeployableStateData } from "../../codegen/index.sol";
-import { State, SmartObjectData } from "../deployable/types.sol";
-import { DeployableSystem } from "../deployable/DeployableSystem.sol";
-import { EntityRecordData } from "../entity-record/types.sol";
-import { WorldPosition } from "../location/types.sol";
-import { LocationData, Location } from "../../codegen/tables/Location.sol";
-import { SMART_GATE } from "../constants.sol";
-import { DeployableSystemLib, deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
-import { CreateAndAnchorDeployableParams } from "../deployable/types.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+// Local namespace tables
+import { SmartGateConfig, SmartGateLink, SmartGateLinkData, DeployableState, Location, LocationData, Initialize } from "../../codegen/index.sol";
+
+// Local namespace systems
+import { DeployableSystem } from "../deployable/DeployableSystem.sol";
+import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
-import { Initialize } from "../../codegen/index.sol";
+
+// Types and parameters
+import { State, CreateAndAnchorParams } from "../deployable/types.sol";
+import { SMART_GATE } from "../constants.sol";
 
 contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_UndefinedClassId();
@@ -28,22 +29,23 @@ contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_GateNotLinked(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_NotWithtinRange(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
+  error SmartGate_GateNotOnline(uint256 smartObjectId);
 
   /**
    * @notice Create and anchor a Smart Gate
    * @param params CreateAndAnchorDeployableParams
    * @param maxDistance is the maximum distance between two gates
-   * TODO: make it accessible only by admin
    */
-  function createAndAnchorSmartGate(
-    CreateAndAnchorDeployableParams memory params,
+  function createAndAnchorGate(
+    CreateAndAnchorParams memory params,
     uint256 maxDistance
   ) public context access(params.smartObjectId) scope(getSmartGateClassId()) {
-    params.smartAssemblyType = SMART_GATE;
+    params.assemblyType = SMART_GATE;
 
-    entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.smartObjectData.owner);
+    entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.owner);
 
-    deployableSystem.createAndAnchorDeployable(params);
+    deployableSystem.createAndAnchor(params);
 
     SmartGateConfig.setMaxDistance(params.smartObjectId, maxDistance);
   }
@@ -52,13 +54,24 @@ contract SmartGateSystem is SmartObjectFramework {
    * @notice Link Smart Gates
    * @param sourceGateId is the smartObjectId of the source gate
    * @param destinationGateId is the smartObjectId of the destination gate
-   * //TODO make it configurable only by owner of the smart gate
    */
-  function linkSmartGates(
+  function linkGates(
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
-    if (isGateLinked(sourceGateId, destinationGateId)) {
+    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
+
+    if (sourceGateState == State.NULL || sourceGateState == State.DESTROYED) {
+      revert DeployableSystem.Deployable_IncorrectState(sourceGateId, sourceGateState);
+    }
+
+    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
+
+    if (destinationGateState == State.NULL || destinationGateState == State.DESTROYED) {
+      revert DeployableSystem.Deployable_IncorrectState(destinationGateId, destinationGateState);
+    }
+
+    if (isAnyGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateAlreadyLinked(sourceGateId, destinationGateId);
     }
 
@@ -66,12 +79,16 @@ contract SmartGateSystem is SmartObjectFramework {
       revert SmartGate_SameSourceAndDestination(sourceGateId, destinationGateId);
     }
 
-    //TODO: Check if the state is online for both the gates ??
     if (isWithinRange(sourceGateId, destinationGateId) == false) {
       revert SmartGate_NotWithtinRange(sourceGateId, destinationGateId);
     }
 
-    //Create a 2 way link between the gates
+    // Delete the existing records for the source and destination gate before creating a new link to avoid replacing the record
+    // The invalid records are not deleted during unlink because the external services are subscribed to the unlink events. If the record is deleted then the external services will not be able to notify the game
+    _deleteExistingLink(sourceGateId);
+    _deleteExistingLink(destinationGateId);
+
+    // Create a 2 way link between the gates
     SmartGateLink.set(sourceGateId, destinationGateId, true);
     SmartGateLink.set(destinationGateId, sourceGateId, true);
   }
@@ -80,13 +97,12 @@ contract SmartGateSystem is SmartObjectFramework {
    * @notice Unlink Smart Gates
    * @param sourceGateId is the id of the source gate
    * @param destinationGateId is the id of the destination gate
-   * //TODO make it configurable only by owner of the smart gate
    */
-  function unlinkSmartGates(
+  function unlinkGates(
     uint256 sourceGateId,
     uint256 destinationGateId
   ) public context access(sourceGateId) scope(sourceGateId) {
-    //Check if the gates are linked
+    // Check if the gates are linked
     if (!isGateLinked(sourceGateId, destinationGateId)) {
       revert SmartGate_GateNotLinked(sourceGateId, destinationGateId);
     }
@@ -99,30 +115,32 @@ contract SmartGateSystem is SmartObjectFramework {
    * @param smartObjectId is smartObjectId of the Smart Gate
    * @param systemId is the system id of the Smart Gate logic
    */
-  function configureSmartGate(
+  function configureGate(
     uint256 smartObjectId,
     ResourceId systemId
   ) public context access(smartObjectId) scope(smartObjectId) {
+    if (DeployableState.getCurrentState(smartObjectId) == State.NULL) {
+      revert DeployableSystem.Deployable_IncorrectState(smartObjectId, State.NULL);
+    }
     SmartGateConfig.setSystemId(smartObjectId, systemId);
   }
 
   /**
    * @notice view function for smart gates which is linked
-   * @param characterId is of the smartObjectId of the character
    * @param sourceGateId is the smartObjectId of the source gate
    * @param destinationGateId is the smartObjectId of the destination gate
    */
-  function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
-    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
-
-    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
-
-    if (sourceGateState != State.ONLINE) {
-      revert DeployableSystem.Deployable_IncorrectState(sourceGateId, sourceGateState);
-    }
-
-    if (destinationGateState != State.ONLINE) {
-      revert DeployableSystem.Deployable_IncorrectState(destinationGateId, destinationGateState);
+  function canJump(uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
+    //Check if the gates are online
+    if (
+      DeployableState.getCurrentState(sourceGateId) != State.ONLINE &&
+      DeployableState.getCurrentState(destinationGateId) != State.ONLINE
+    ) {
+      revert SmartGate_GatesNotOnline(sourceGateId, destinationGateId);
+    } else if (DeployableState.getCurrentState(sourceGateId) != State.ONLINE) {
+      revert SmartGate_GateNotOnline(sourceGateId);
+    } else if (DeployableState.getCurrentState(destinationGateId) != State.ONLINE) {
+      revert SmartGate_GateNotOnline(destinationGateId);
     }
 
     //Check if the gates are linked
@@ -135,20 +153,53 @@ contract SmartGateSystem is SmartObjectFramework {
     if (ResourceIds.getExists(systemId)) {
       bytes memory returnData = getWorld().call(
         systemId,
-        abi.encodeCall(this.canJump, (characterId, sourceGateId, destinationGateId))
+        abi.encodeCall(this.canJump, (sourceGateId, destinationGateId))
       );
       return abi.decode(returnData, (bool));
     }
     return true;
   }
 
-  function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
-    SmartGateLinkData memory smartGateLinkData = SmartGateLink.get(sourceGateId);
-    bool isLinked = smartGateLinkData.isLinked && smartGateLinkData.destinationGateId == destinationGateId;
+  /**
+   * @notice view function to check if the gates are online
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if the gates are online
+   */
+  function areGatesOnline(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    State sourceGateState = DeployableState.getCurrentState(sourceGateId);
+    State destinationGateState = DeployableState.getCurrentState(destinationGateId);
 
-    return isLinked;
+    return sourceGateState == State.ONLINE && destinationGateState == State.ONLINE;
   }
 
+  /**
+   * @notice view function to check if the source gate is linked to the destination gate
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if the source gate is linked to the destination gate
+   */
+  function isGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    return
+      SmartGateLink.getIsLinked(sourceGateId) && SmartGateLink.getDestinationGateId(sourceGateId) == destinationGateId;
+  }
+
+  /**
+   * @notice view function to check if any gate is linked previously
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if any gate is linked previously
+   */
+  function isAnyGateLinked(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    return (SmartGateLink.getIsLinked(sourceGateId) || SmartGateLink.getIsLinked(destinationGateId));
+  }
+
+  /**
+   * @notice view function to check if the source gate is within the range of the destination gate
+   * @param sourceGateId is the smartObjectId of the source gate
+   * @param destinationGateId is the smartObjectId of the destination gate
+   * @return true if the source gate is within the range of the destination gate
+   */
   function isWithinRange(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
     //Get the location of the source gate and destination gate
     LocationData memory sourceGateLocation = Location.get(sourceGateId);
@@ -178,5 +229,21 @@ contract SmartGateSystem is SmartObjectFramework {
 
   function getWorld() internal view returns (IWorldWithContext) {
     return IWorldWithContext(_world());
+  }
+
+  /**
+   * @notice delete the existing record if there exists a link for either source or destination gates
+   * @param sourceGateId is the smartObjectId of the source gate
+   */
+  function _deleteExistingLink(uint256 sourceGateId) internal {
+    uint256 destinationGateId;
+    //delete the source gate record
+    SmartGateLinkData memory linkData = SmartGateLink.get(sourceGateId);
+    if (linkData.isLinked) {
+      destinationGateId = linkData.destinationGateId;
+
+      SmartGateLink.deleteRecord(sourceGateId);
+      SmartGateLink.deleteRecord(destinationGateId);
+    }
   }
 }

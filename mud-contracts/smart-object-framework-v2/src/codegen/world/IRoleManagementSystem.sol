@@ -9,6 +9,15 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IRoleManagementSystem {
+  error RoleManagement_InvalidRole();
+  error RoleManagement_InvalidRoleMember();
+  error RoleManagement_RoleAlreadyCreated(bytes32 role);
+  error RoleManagement_UnauthorizedAccount(bytes32 role, address caller);
+  error RoleManagement_MustRenounceSelf();
+  error RoleManagement_BadConfirmation();
+  error RoleManagement_RoleDoesNotExist(bytes32 role);
+  error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
+
   function evefrontier__createRole(bytes32 role, bytes32 admin) external;
 
   function evefrontier__transferRoleAdmin(bytes32 role, bytes32 newAdmin) external;

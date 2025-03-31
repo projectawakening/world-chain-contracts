@@ -2,77 +2,110 @@
 
 pragma solidity >=0.8.24;
 
+// MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+
+// Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
-import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
-
-import { Characters, CharacterToken } from "../../codegen/index.sol";
-import { CharactersByAddress } from "../../codegen/tables/CharactersByAddress.sol";
-import { EntityRecordSystem } from "../entity-record/EntityRecordSystem.sol";
-import { EntityRecordData, EntityMetadata } from "../entity-record/types.sol";
-import { IERC721Mintable } from "../eve-erc721-puppet/IERC721Mintable.sol";
-
-import { EntityRecord } from "../../codegen/tables/EntityRecord.sol";
-import { Initialize } from "../../codegen/index.sol";
-import { EntityRecordSystemLib, entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
+import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
+
+// Local namespace tables
+import { Characters, CharactersByAccount, EntityRecord, Initialize, Tenant } from "../../codegen/index.sol";
+
+// Local namespace systems
+import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
+import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { smartCharacterSystem } from "../../codegen/systems/SmartCharacterSystemLib.sol";
 
+// Types and parameters
+import { EntityRecordParams, EntityMetadataParams } from "../entity-record/types.sol";
+
 contract SmartCharacterSystem is SmartObjectFramework {
-  error SmartCharacter_ERC721AlreadyInitialized();
-  error SmartCharacter_AlreadyCreated(address characterAddress, uint256 characterId);
-  error SmartCharacterDoesNotExist(uint256 characterId);
-
-  /**
-   * @notice Register a new character token
-   * @param tokenAddress The address of the token to register
-   */
-  function registerCharacterToken(address tokenAddress) public context access(0) scope(0) {
-    if (CharacterToken.get() != address(0)) {
-      revert SmartCharacter_ERC721AlreadyInitialized();
-    }
-    CharacterToken.set(tokenAddress);
-  }
-
+  error SmartCharacter_AlreadyCreated(address account, uint256 smartObjectId);
+  error SmartCharacterDoesNotExist(uint256 smartObjectId);
+  error SmartCharacter_InvalidTenantId(uint256 smartObjectId, bytes32 tenantId);
+  error SmartCharacter_InvalidTypeId(uint256 smartObjectId, uint256 typeId);
+  error SmartCharacter_InvalidObjectId(uint256 smartObjectId);
   /**
    * @notice Create a new character
-   * @param characterId The ID of the character
-   * @param characterAddress The address of the character
-   * @param entityRecord The entity record data
+   * @param smartObjectId The ID of the character smart object
+   * @param owner The owning account of the character
+   * @param tribeId The tribe ID of the character
+   * @param entityRecordParams The entity record params
    * @param entityRecordMetadata The entity record metadata
    */
   function createCharacter(
-    uint256 characterId,
-    address characterAddress,
+    uint256 smartObjectId,
+    address owner,
     uint256 tribeId,
-    EntityRecordData memory entityRecord,
-    EntityMetadata memory entityRecordMetadata
-  ) public context access(characterId) scope(getSmartCharacterClassId()) {
+    EntityRecordParams memory entityRecordParams,
+    EntityMetadataParams memory entityRecordMetadata
+  ) public context access(smartObjectId) scope(getSmartCharacterClassId()) {
     uint256 createdAt = block.timestamp;
 
-    // enforce one-to-one mapping
-    if (CharactersByAddress.get(characterAddress) != 0) {
-      revert SmartCharacter_AlreadyCreated(characterAddress, characterId);
+    // enforce one-to-one mapping between an account and a character
+    // TODO: move this logic to character class hook enforcement
+    if (CharactersByAccount.getSmartObjectId(owner) != 0) {
+      revert SmartCharacter_AlreadyCreated(owner, smartObjectId);
     }
 
-    entitySystem.instantiate(getSmartCharacterClassId(), characterId, characterAddress);
+    // sanity checks
+    if (Tenant.get() != entityRecordParams.tenantId) {
+      revert SmartCharacter_InvalidTenantId(smartObjectId, entityRecordParams.tenantId);
+    }
+    if (
+      uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.typeId))) !=
+      getSmartCharacterClassId()
+    ) {
+      revert SmartCharacter_InvalidTypeId(smartObjectId, entityRecordParams.typeId);
+    }
+    if (smartObjectId != uint256(keccak256(abi.encodePacked(entityRecordParams.tenantId, entityRecordParams.itemId)))) {
+      revert SmartCharacter_InvalidObjectId(smartObjectId);
+    }
 
-    Characters.set(characterId, characterAddress, tribeId, createdAt);
-    CharactersByAddress.set(characterAddress, characterId);
-
-    //Save the entity record in EntityRecord Module
-    entityRecordSystem.createEntityRecord(characterId, entityRecord);
-    entityRecordSystem.createEntityRecordMetadata(characterId, entityRecordMetadata);
-
-    //Mint a new character token
-    IERC721Mintable(CharacterToken.get()).mint(characterAddress, characterId);
+    // Instantiate the character object
+    entitySystem.instantiate(getSmartCharacterClassId(), smartObjectId, owner);
+    // Save the entity record in EntityRecord Table
+    entityRecordSystem.createRecord(smartObjectId, entityRecordParams);
+    entityRecordSystem.createMetadata(smartObjectId, entityRecordMetadata);
+    // Save the character data in Characters Table
+    Characters.set(smartObjectId, true, tribeId, createdAt);
+    // assign the character ownership data - using the singleton version
+    ownershipSystem.assignOwner(smartObjectId, owner);
+    // Save the character reverse lookup in the CharactersByAccount Table
+    CharactersByAccount.set(owner, smartObjectId);
   }
 
-  function updateTribeId(uint256 characterId, uint256 tribeId) public context access(characterId) scope(characterId) {
-    if (Characters.getTribeId(characterId) == 0) {
-      revert SmartCharacterDoesNotExist(characterId);
+  function updateTribeId(
+    uint256 smartObjectId,
+    uint256 tribeId
+  ) public context access(smartObjectId) scope(smartObjectId) {
+    if (Characters.getTribeId(smartObjectId) == 0) {
+      revert SmartCharacterDoesNotExist(smartObjectId);
     }
-    Characters.setTribeId(characterId, tribeId);
+    Characters.setTribeId(smartObjectId, tribeId);
+  }
+
+  function removeCharacter(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
+    if (!Characters.getExists(smartObjectId)) {
+      revert SmartCharacterDoesNotExist(smartObjectId);
+    }
+
+    // Get the current owner before we delete records
+    address owner = ownershipSystem.owner(smartObjectId);
+
+    // Delete the character reverse lookup in the CharactersByAccount Table
+    CharactersByAccount.deleteRecord(owner);
+
+    // remove the character ownership data using the singleton version
+    ownershipSystem.removeOwner(smartObjectId, owner);
+
+    // Delete the character data in Characters Table
+    Characters.deleteRecord(smartObjectId);
+
+    // Delete the character object
+    entitySystem.deleteObject(smartObjectId);
   }
 
   function getSmartCharacterClassId() public view returns (uint256) {

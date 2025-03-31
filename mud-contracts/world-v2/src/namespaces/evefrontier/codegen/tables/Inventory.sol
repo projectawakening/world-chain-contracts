@@ -19,6 +19,7 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 struct InventoryData {
   uint256 capacity;
   uint256 usedCapacity;
+  uint256 version;
   uint256[] items;
 }
 
@@ -27,12 +28,12 @@ library Inventory {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000496e76656e746f727900000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0040020120200000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0060030120202000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256, uint256[])
-  Schema constant _valueSchema = Schema.wrap(0x004002011f1f8100000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, uint256, uint256, uint256[])
+  Schema constant _valueSchema = Schema.wrap(0x006003011f1f1f81000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -48,10 +49,11 @@ library Inventory {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
+    fieldNames = new string[](4);
     fieldNames[0] = "capacity";
     fieldNames[1] = "usedCapacity";
-    fieldNames[2] = "items";
+    fieldNames[2] = "version";
+    fieldNames[3] = "items";
   }
 
   /**
@@ -150,6 +152,48 @@ library Inventory {
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((usedCapacity)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get version.
+   */
+  function getVersion(uint256 smartObjectId) internal view returns (uint256 version) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get version.
+   */
+  function _getVersion(uint256 smartObjectId) internal view returns (uint256 version) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set version.
+   */
+  function setVersion(uint256 smartObjectId, uint256 version) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((version)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set version.
+   */
+  function _setVersion(uint256 smartObjectId, uint256 version) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((version)), _fieldLayout);
   }
 
   /**
@@ -347,8 +391,14 @@ library Inventory {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 smartObjectId, uint256 capacity, uint256 usedCapacity, uint256[] memory items) internal {
-    bytes memory _staticData = encodeStatic(capacity, usedCapacity);
+  function set(
+    uint256 smartObjectId,
+    uint256 capacity,
+    uint256 usedCapacity,
+    uint256 version,
+    uint256[] memory items
+  ) internal {
+    bytes memory _staticData = encodeStatic(capacity, usedCapacity, version);
 
     EncodedLengths _encodedLengths = encodeLengths(items);
     bytes memory _dynamicData = encodeDynamic(items);
@@ -362,8 +412,14 @@ library Inventory {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 smartObjectId, uint256 capacity, uint256 usedCapacity, uint256[] memory items) internal {
-    bytes memory _staticData = encodeStatic(capacity, usedCapacity);
+  function _set(
+    uint256 smartObjectId,
+    uint256 capacity,
+    uint256 usedCapacity,
+    uint256 version,
+    uint256[] memory items
+  ) internal {
+    bytes memory _staticData = encodeStatic(capacity, usedCapacity, version);
 
     EncodedLengths _encodedLengths = encodeLengths(items);
     bytes memory _dynamicData = encodeDynamic(items);
@@ -378,7 +434,7 @@ library Inventory {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 smartObjectId, InventoryData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.capacity, _table.usedCapacity);
+    bytes memory _staticData = encodeStatic(_table.capacity, _table.usedCapacity, _table.version);
 
     EncodedLengths _encodedLengths = encodeLengths(_table.items);
     bytes memory _dynamicData = encodeDynamic(_table.items);
@@ -393,7 +449,7 @@ library Inventory {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 smartObjectId, InventoryData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.capacity, _table.usedCapacity);
+    bytes memory _staticData = encodeStatic(_table.capacity, _table.usedCapacity, _table.version);
 
     EncodedLengths _encodedLengths = encodeLengths(_table.items);
     bytes memory _dynamicData = encodeDynamic(_table.items);
@@ -407,10 +463,14 @@ library Inventory {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (uint256 capacity, uint256 usedCapacity) {
+  function decodeStatic(
+    bytes memory _blob
+  ) internal pure returns (uint256 capacity, uint256 usedCapacity, uint256 version) {
     capacity = (uint256(Bytes.getBytes32(_blob, 0)));
 
     usedCapacity = (uint256(Bytes.getBytes32(_blob, 32)));
+
+    version = (uint256(Bytes.getBytes32(_blob, 64)));
   }
 
   /**
@@ -439,7 +499,7 @@ library Inventory {
     EncodedLengths _encodedLengths,
     bytes memory _dynamicData
   ) internal pure returns (InventoryData memory _table) {
-    (_table.capacity, _table.usedCapacity) = decodeStatic(_staticData);
+    (_table.capacity, _table.usedCapacity, _table.version) = decodeStatic(_staticData);
 
     (_table.items) = decodeDynamic(_encodedLengths, _dynamicData);
   }
@@ -468,8 +528,8 @@ library Inventory {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(uint256 capacity, uint256 usedCapacity) internal pure returns (bytes memory) {
-    return abi.encodePacked(capacity, usedCapacity);
+  function encodeStatic(uint256 capacity, uint256 usedCapacity, uint256 version) internal pure returns (bytes memory) {
+    return abi.encodePacked(capacity, usedCapacity, version);
   }
 
   /**
@@ -500,9 +560,10 @@ library Inventory {
   function encode(
     uint256 capacity,
     uint256 usedCapacity,
+    uint256 version,
     uint256[] memory items
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(capacity, usedCapacity);
+    bytes memory _staticData = encodeStatic(capacity, usedCapacity, version);
 
     EncodedLengths _encodedLengths = encodeLengths(items);
     bytes memory _dynamicData = encodeDynamic(items);
