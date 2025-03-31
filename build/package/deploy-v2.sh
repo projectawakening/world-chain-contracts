@@ -123,7 +123,7 @@ mkdir -p abis/world
 
 # 9 Copy ABIS to be used for External consumption
 cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v2-${IMAGE_TAG}.abi.json"
-cp mud-contracts/world-v2/out/world/IWorld.sol/IWorld.abi.json "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json"
+cp mud-contracts/world-v2/artifacts/out/world/IWorld.sol/IWorld.abi.json "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json"
 
 # Custom ERC2771 Compatible IWorld contract
 jq 'map((.name? |= gsub("^eveworld__"; "")) // .)' "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json" > "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.abi.json"

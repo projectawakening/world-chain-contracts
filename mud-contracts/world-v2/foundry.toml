@@ -8,7 +8,7 @@ seed = '0x2'
 verbosity = 3
 src = "src"
 test = "test"
-out = "out"
+out = "artifacts/out"
 allow_paths = [
   # pnpm symlinks to the project root's node_modules
   "../../node_modules",
