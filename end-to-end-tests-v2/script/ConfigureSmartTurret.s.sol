@@ -26,16 +26,19 @@ contract ConfigureSmartTurret is Script {
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     string memory mnemonic = "test test test test test test test test test test test junk";
     uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
+    address alice = vm.addr(alicePrivateKey);
     address bob = vm.addr(vm.deriveKey(mnemonic, 3));
     address charlie = vm.addr(vm.deriveKey(mnemonic, 4));
 
     bytes32 tenantId = Tenant.get();
     uint256 aliceSmartTurretId = ObjectIdLib.calculateSingletonId(tenantId, 1559);
 
+    uint256 aliceCharacterId = CharactersByAccount.getSmartObjectId(alice);
     uint256 bobCharacterId = CharactersByAccount.getSmartObjectId(bob);
     uint256 charlieCharacterId = CharactersByAccount.getSmartObjectId(charlie);
-    uint256 bobShipId = 22;
-    uint256 charlieShipId = 23;
+    uint256 aliceShipId = 22;
+    uint256 bobShipId = 23;
+    uint256 charlieShipId = 24;
 
     vm.startBroadcast(alicePrivateKey);
 
@@ -51,11 +54,11 @@ contract ConfigureSmartTurret is Script {
     deployableSystem.bringOnline(aliceSmartTurretId);
     vm.stopBroadcast();
 
-    //Test inProximity for friendly tribe
-    uint256 returnTargetQueueLength = callInProximity(aliceSmartTurretId, bobShipId, bobCharacterId);
+    //Test inProximity for owner through custom system
+    uint256 returnTargetQueueLength = callInProximity(aliceSmartTurretId, aliceShipId, aliceCharacterId);
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 0
 
-    //Test inProximity for enemy tribe
+    //Test inProximity for non owner through custom system
     returnTargetQueueLength = callInProximity(aliceSmartTurretId, charlieShipId, charlieCharacterId);
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
 
@@ -67,7 +70,7 @@ contract ConfigureSmartTurret is Script {
       charlieShipId,
       charlieCharacterId
     );
-    console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 0
+    console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
 
     // Test aggression for enemy tribe
     returnTargetQueueLength = callAggression(
@@ -78,6 +81,16 @@ contract ConfigureSmartTurret is Script {
       bobCharacterId
     );
     console.log("returnTargetQueueLength", returnTargetQueueLength); // should be 1
+
+    // Test case where both aggressor and victim are from enemy tribe
+    returnTargetQueueLength = callAggression(
+      aliceSmartTurretId, // turret owner: Alice (FRIENDLY_TRIBE_ID)
+      bobShipId, // aggressor: Bob (FRIENDLY_TRIBE_ID)
+      bobCharacterId,
+      aliceShipId, // victim: Alice (FRIENDLY_TRIBE_ID)
+      aliceCharacterId
+    );
+    console.log("returnTargetQueueLength for enemy vs enemy:", returnTargetQueueLength); // should be 0
   }
 
   function callInProximity(
@@ -175,7 +188,14 @@ contract SmartTurretTestSystem is System {
 
   // help your friends, shoot their enemies (victim or agressor)
   function aggression(AggressionParams memory params) public returns (TargetPriority[] memory updatedPriorityQueue) {
-    address owner = ownershipSystem.owner(params.smartObjectId);
+    address owner = abi.decode(
+      IWorldWithContext(_world()).callStatic(
+        ownershipSystem.toResourceId(),
+        abi.encodeWithSelector(OwnershipSystem.owner.selector, params.smartObjectId)
+      ),
+      (address)
+    );
+
     uint256 turretOwnerCharacterId = CharactersByAccount.getSmartObjectId(owner);
     uint256 turretOwnerTribe = Characters.getTribeId(turretOwnerCharacterId);
     uint256 aggressorTribe = Characters.getTribeId(params.aggressor.characterId);
