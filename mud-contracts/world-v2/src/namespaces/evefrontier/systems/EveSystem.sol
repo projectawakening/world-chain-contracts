@@ -284,7 +284,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       fuelSystem.toResourceId(),
       FuelSystem.depositFuel.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyAdminSupportedAccess.selector
+      AccessSystem.onlyAdminOrOwner.selector
     );
     accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), FuelSystem.depositFuel.selector, true);
   }
