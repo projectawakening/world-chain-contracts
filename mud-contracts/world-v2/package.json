@@ -4,7 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "mud build",
+    "build": "pnpm run build:mud && pnpm run build:abi",
+    "build:abi": "forge build --silent",
+    "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
     "clean": "forge clean && rm -rf src/codegen && rm -rf out && rm -rf cache",
     "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL --alwaysRunPostDeploy",
     "upgrade": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && mud deploy --rpc $RPC_URL --worldAddress $WORLD_ADDRESS",
