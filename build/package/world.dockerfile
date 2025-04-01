@@ -19,10 +19,6 @@ RUN rm -rf node_modules
 # Install module dependencies
 RUN CI=1 pnpm install --frozen-lockfile
 
-# Build world-v2 first and copy its ABI to avoid overwrite issue
-RUN pnpm nx build @eveworld/world-v2
-RUN mkdir -p abis/world && cp mud-contracts/world-v2/out/world/IWorld.sol/IWorld.abi.json "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json"
-
 # Building all other modules
 RUN pnpm nx run-many -t build
 

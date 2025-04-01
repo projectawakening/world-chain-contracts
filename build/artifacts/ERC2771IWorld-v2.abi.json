@@ -1,0 +1,6502 @@
+[
+  {
+    "type": "function",
+    "name": "batchCall",
+    "inputs": [
+      {
+        "name": "systemCalls",
+        "type": "tuple[]",
+        "internalType": "struct SystemCallData[]",
+        "components": [
+          {
+            "name": "systemId",
+            "type": "bytes32",
+            "internalType": "ResourceId"
+          },
+          {
+            "name": "callData",
+            "type": "bytes",
+            "internalType": "bytes"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnDatas",
+        "type": "bytes[]",
+        "internalType": "bytes[]"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "batchCallFrom",
+    "inputs": [
+      {
+        "name": "systemCalls",
+        "type": "tuple[]",
+        "internalType": "struct SystemCallFromData[]",
+        "components": [
+          {
+            "name": "from",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "systemId",
+            "type": "bytes32",
+            "internalType": "ResourceId"
+          },
+          {
+            "name": "callData",
+            "type": "bytes",
+            "internalType": "bytes"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnDatas",
+        "type": "bytes[]",
+        "internalType": "bytes[]"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "call",
+    "inputs": [
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "callData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "callFrom",
+    "inputs": [
+      {
+        "name": "delegator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "callData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "creator",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "deleteRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "adminSupportOrDirectOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "adminSupportOrDirectOwnerGates",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "aggression",
+    "inputs": [
+      {
+        "name": "params",
+        "type": "tuple",
+        "internalType": "struct AggressionParams",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "priorityQueue",
+            "type": "tuple[]",
+            "internalType": "struct TargetPriority[]",
+            "components": [
+              {
+                "name": "target",
+                "type": "tuple",
+                "internalType": "struct SmartTurretTarget",
+                "components": [
+                  {
+                    "name": "shipId",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                  },
+                  {
+                    "name": "shipTypeId",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                  },
+                  {
+                    "name": "characterId",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                  },
+                  {
+                    "name": "hpRatio",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                  },
+                  {
+                    "name": "shieldRatio",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                  },
+                  {
+                    "name": "armorRatio",
+                    "type": "uint256",
+                    "internalType": "uint256"
+                  }
+                ]
+              },
+              {
+                "name": "weight",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "turret",
+            "type": "tuple",
+            "internalType": "struct Turret",
+            "components": [
+              {
+                "name": "weaponTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "ammoTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "chargesLeft",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "aggressor",
+            "type": "tuple",
+            "internalType": "struct SmartTurretTarget",
+            "components": [
+              {
+                "name": "shipId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shipTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "characterId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "hpRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shieldRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "armorRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "victim",
+            "type": "tuple",
+            "internalType": "struct SmartTurretTarget",
+            "components": [
+              {
+                "name": "shipId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shipTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "characterId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "hpRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shieldRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "armorRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "updatedPriorityQueue",
+        "type": "tuple[]",
+        "internalType": "struct TargetPriority[]",
+        "components": [
+          {
+            "name": "target",
+            "type": "tuple",
+            "internalType": "struct SmartTurretTarget",
+            "components": [
+              {
+                "name": "shipId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shipTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "characterId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "hpRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shieldRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "armorRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "weight",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "anchor",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "locationData",
+        "type": "tuple",
+        "internalType": "struct LocationData",
+        "components": [
+          {
+            "name": "solarSystemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "x",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "y",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "z",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "areGatesOnline",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "assignItemToInventory",
+    "inputs": [
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "quantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "assignOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "to",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bringOffline",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "bringOnline",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "canCrossTransferToEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "canJump",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "canTransferFromEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "canTransferToEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "canTransferToInventory",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "configureDeployableAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureEntityRecordAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureEphemeralInteractAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureEphemeralInventoryAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureFuelAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureFuelParameters",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelUnitVolume",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelConsumptionIntervalInSeconds",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelMaxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureGate",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureInventoryAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureInventoryInteractAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureKillMailAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureLocationAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureOwnershipAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureSmartAssemblyAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureSmartCharacterAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureSmartGateAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureSmartStorageUnitAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureSmartTurretAccess",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "configureTurret",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAndAnchor",
+    "inputs": [
+      {
+        "name": "params",
+        "type": "tuple",
+        "internalType": "struct CreateAndAnchorParams",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "assemblyType",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "entityRecordParams",
+            "type": "tuple",
+            "internalType": "struct EntityRecordParams",
+            "components": [
+              {
+                "name": "tenantId",
+                "type": "bytes32",
+                "internalType": "bytes32"
+              },
+              {
+                "name": "typeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "itemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "volume",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "fuelUnitVolume",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelConsumptionIntervalInSeconds",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelMaxCapacity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "locationData",
+            "type": "tuple",
+            "internalType": "struct LocationData",
+            "components": [
+              {
+                "name": "solarSystemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "x",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "y",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "z",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAndAnchorGate",
+    "inputs": [
+      {
+        "name": "params",
+        "type": "tuple",
+        "internalType": "struct CreateAndAnchorParams",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "assemblyType",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "entityRecordParams",
+            "type": "tuple",
+            "internalType": "struct EntityRecordParams",
+            "components": [
+              {
+                "name": "tenantId",
+                "type": "bytes32",
+                "internalType": "bytes32"
+              },
+              {
+                "name": "typeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "itemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "volume",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "fuelUnitVolume",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelConsumptionIntervalInSeconds",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelMaxCapacity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "locationData",
+            "type": "tuple",
+            "internalType": "struct LocationData",
+            "components": [
+              {
+                "name": "solarSystemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "x",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "y",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "z",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "maxDistance",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAndAnchorStorageUnit",
+    "inputs": [
+      {
+        "name": "params",
+        "type": "tuple",
+        "internalType": "struct CreateAndAnchorParams",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "assemblyType",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "entityRecordParams",
+            "type": "tuple",
+            "internalType": "struct EntityRecordParams",
+            "components": [
+              {
+                "name": "tenantId",
+                "type": "bytes32",
+                "internalType": "bytes32"
+              },
+              {
+                "name": "typeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "itemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "volume",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "fuelUnitVolume",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelConsumptionIntervalInSeconds",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelMaxCapacity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "locationData",
+            "type": "tuple",
+            "internalType": "struct LocationData",
+            "components": [
+              {
+                "name": "solarSystemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "x",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "y",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "z",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "storageCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralStorageCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAndAnchorTurret",
+    "inputs": [
+      {
+        "name": "params",
+        "type": "tuple",
+        "internalType": "struct CreateAndAnchorParams",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "assemblyType",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "entityRecordParams",
+            "type": "tuple",
+            "internalType": "struct EntityRecordParams",
+            "components": [
+              {
+                "name": "tenantId",
+                "type": "bytes32",
+                "internalType": "bytes32"
+              },
+              {
+                "name": "typeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "itemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "volume",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "owner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "fuelUnitVolume",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelConsumptionIntervalInSeconds",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "fuelMaxCapacity",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "locationData",
+            "type": "tuple",
+            "internalType": "struct LocationData",
+            "components": [
+              {
+                "name": "solarSystemId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "x",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "y",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "z",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAndDepositEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct CreateInventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tenantId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "itemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "typeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "volume",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAndDepositInventory",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct CreateInventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tenantId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "itemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "typeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "volume",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createAssembly",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyType",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "entityRecordParams",
+        "type": "tuple",
+        "internalType": "struct EntityRecordParams",
+        "components": [
+          {
+            "name": "tenantId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "typeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "itemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "volume",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createCharacter",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "tribeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "entityRecordParams",
+        "type": "tuple",
+        "internalType": "struct EntityRecordParams",
+        "components": [
+          {
+            "name": "tenantId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "typeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "itemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "volume",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      },
+      {
+        "name": "entityRecordMetadata",
+        "type": "tuple",
+        "internalType": "struct EntityMetadataParams",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "dappURL",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createDeployable",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "fuelUnitVolume",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelConsumptionIntervalInSeconds",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelMaxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createMetadata",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "entityRecordMetadata",
+        "type": "tuple",
+        "internalType": "struct EntityMetadataParams",
+        "components": [
+          {
+            "name": "name",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "dappURL",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "internalType": "string"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createRecord",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "entityRecordParams",
+        "type": "tuple",
+        "internalType": "struct EntityRecordParams",
+        "components": [
+          {
+            "name": "tenantId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "typeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "itemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "volume",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "crossTransferToEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fromEphemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "toEphemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "currentFuelAmountInWei",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "depositEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "depositFuel",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "depositInventory",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "destroyDeployable",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getEphemeralOwner",
+    "inputs": [
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getEphemeralSmartObjectId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "getInventoryOwner",
+    "inputs": [
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getSmartCharacterClassId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getSmartGateClassId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getSmartStorageUnitClassId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getSmartTurretClassId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "globalPause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "globalResume",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "inProximity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "priorityQueue",
+        "type": "tuple[]",
+        "internalType": "struct TargetPriority[]",
+        "components": [
+          {
+            "name": "target",
+            "type": "tuple",
+            "internalType": "struct SmartTurretTarget",
+            "components": [
+              {
+                "name": "shipId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shipTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "characterId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "hpRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shieldRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "armorRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "weight",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      },
+      {
+        "name": "turret",
+        "type": "tuple",
+        "internalType": "struct Turret",
+        "components": [
+          {
+            "name": "weaponTypeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "ammoTypeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "chargesLeft",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      },
+      {
+        "name": "turretTarget",
+        "type": "tuple",
+        "internalType": "struct SmartTurretTarget",
+        "components": [
+          {
+            "name": "shipId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shipTypeId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "characterId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "hpRatio",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "shieldRatio",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "armorRatio",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "updatedPriorityQueue",
+        "type": "tuple[]",
+        "internalType": "struct TargetPriority[]",
+        "components": [
+          {
+            "name": "target",
+            "type": "tuple",
+            "internalType": "struct SmartTurretTarget",
+            "components": [
+              {
+                "name": "shipId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shipTypeId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "characterId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "hpRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "shieldRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "armorRatio",
+                "type": "uint256",
+                "internalType": "uint256"
+              }
+            ]
+          },
+          {
+            "name": "weight",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "isAdmin",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isAnyGateLinked",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isClassScoped",
+    "inputs": [
+      {
+        "name": "classId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isEphemeralOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isGateLinked",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isOwnerOfBothGates",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isWithinRange",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "linkGates",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onlyAdminOrCallAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyAdminOrClassScopedAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyAdminOrOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyAdminOrScopeEnforcedCall",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyAdminSupportedAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyAdminSupportedOwnerOrCall",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyCallAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyCallAccessOrDirectEphemeralOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyCallAccessWithScopeEnforced",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyClassScopedAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyClassScopedOrCharAdminOrOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyDirectAdmin",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyDirectAdminOrCallAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyDirectEphemeralOwnerOrCall",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyDirectOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyEphemeralTransferRole",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyOwnerOrEphemeralCrossTransferRole",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyOwnerOrEphemeralTransferRole",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyOwnerOrInventoryTransferRole",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlyOwnerWithAdminSupportAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "onlySmartAssemblyClassScopedAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "registerSmartCharacterClass",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSmartGateClass",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSmartStorageUnitClass",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSmartTurretClass",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeCharacter",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeItemFromInventory",
+    "inputs": [
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "quantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "from",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "reportKill",
+    "inputs": [
+      {
+        "name": "killMailId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "killMailData",
+        "type": "tuple",
+        "internalType": "struct KillMailData",
+        "components": [
+          {
+            "name": "killerCharacterId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "victimCharacterId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "lossType",
+            "type": "uint8",
+            "internalType": "enum KillMailLossType"
+          },
+          {
+            "name": "solarSystemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "killTimestamp",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "saveLocation",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "locationData",
+        "type": "tuple",
+        "internalType": "struct LocationData",
+        "components": [
+          {
+            "name": "solarSystemId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "x",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "y",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "z",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setAssemblyType",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyType",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setCapacity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "capacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setCrossTransferToEphemeralAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "accessAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "isAllowed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setDappURL",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "dappURL",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setDescription",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setEphemeralCapacity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setFuelAmount",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmountInWei",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setFuelConsumptionIntervalInSeconds",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelConsumptionIntervalInSeconds",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setFuelMaxCapacity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelMaxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setFuelUnitVolume",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelUnitVolume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setName",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setTransferFromEphemeralAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "accessAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "isAllowed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setTransferToEphemeralAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "accessAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "isAllowed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setTransferToInventoryAccess",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "accessAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "isAllowed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferFromEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferToEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferToInventory",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "toObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unanchor",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unlinkGates",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateAssemblyType",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyType",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateFuel",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateTribeId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "tribeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawEphemeral",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawFuel",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawInventory",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "items",
+        "type": "tuple[]",
+        "internalType": "struct InventoryItemParams[]",
+        "components": [
+          {
+            "name": "smartObjectId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "quantity",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getDynamicField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getDynamicFieldLength",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getDynamicFieldSlice",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "start",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "end",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getFieldLayout",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getFieldLength",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getFieldLength",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getKeySchema",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "keySchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "staticData",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "encodedLengths",
+        "type": "bytes32",
+        "internalType": "EncodedLengths"
+      },
+      {
+        "name": "dynamicData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "staticData",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "encodedLengths",
+        "type": "bytes32",
+        "internalType": "EncodedLengths"
+      },
+      {
+        "name": "dynamicData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getStaticField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getValueSchema",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "valueSchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "grantAccess",
+    "inputs": [
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "grantee",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "initialize",
+    "inputs": [
+      {
+        "name": "initModule",
+        "type": "address",
+        "internalType": "contract IModule"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "installModule",
+    "inputs": [
+      {
+        "name": "module",
+        "type": "address",
+        "internalType": "contract IModule"
+      },
+      {
+        "name": "encodedArgs",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "installRootModule",
+    "inputs": [
+      {
+        "name": "module",
+        "type": "address",
+        "internalType": "contract IModule"
+      },
+      {
+        "name": "encodedArgs",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "popFromDynamicField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "byteLengthToPop",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "pushToDynamicField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "dataToPush",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerDelegation",
+    "inputs": [
+      {
+        "name": "delegatee",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "delegationControlId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "initCallData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerFunctionSelector",
+    "inputs": [
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "systemFunctionSignature",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "worldFunctionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerNamespace",
+    "inputs": [
+      {
+        "name": "namespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerNamespaceDelegation",
+    "inputs": [
+      {
+        "name": "namespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "delegationControlId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "initCallData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerRootFunctionSelector",
+    "inputs": [
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "worldFunctionSignature",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "systemFunctionSignature",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "worldFunctionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerStoreHook",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "hookAddress",
+        "type": "address",
+        "internalType": "contract IStoreHook"
+      },
+      {
+        "name": "enabledHooksBitmap",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSystem",
+    "inputs": [
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "system",
+        "type": "address",
+        "internalType": "contract System"
+      },
+      {
+        "name": "publicAccess",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSystemHook",
+    "inputs": [
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "hookAddress",
+        "type": "address",
+        "internalType": "contract ISystemHook"
+      },
+      {
+        "name": "enabledHooksBitmap",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerTable",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      },
+      {
+        "name": "keySchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      },
+      {
+        "name": "valueSchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      },
+      {
+        "name": "keyNames",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      {
+        "name": "fieldNames",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "inputs": [
+      {
+        "name": "namespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "revokeAccess",
+    "inputs": [
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "grantee",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setDynamicField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "staticData",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "encodedLengths",
+        "type": "bytes32",
+        "internalType": "EncodedLengths"
+      },
+      {
+        "name": "dynamicData",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setStaticField",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "fieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "fieldLayout",
+        "type": "bytes32",
+        "internalType": "FieldLayout"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "spliceDynamicData",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "startWithinField",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "deleteCount",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "spliceStaticData",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "start",
+        "type": "uint48",
+        "internalType": "uint48"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "storeVersion",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "version",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "transferBalanceToAddress",
+    "inputs": [
+      {
+        "name": "fromNamespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "toAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferBalanceToNamespace",
+    "inputs": [
+      {
+        "name": "fromNamespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "toNamespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
+      {
+        "name": "namespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "newOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unregisterDelegation",
+    "inputs": [
+      {
+        "name": "delegatee",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unregisterNamespaceDelegation",
+    "inputs": [
+      {
+        "name": "namespaceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unregisterStoreHook",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "hookAddress",
+        "type": "address",
+        "internalType": "contract IStoreHook"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unregisterSystemHook",
+    "inputs": [
+      {
+        "name": "systemId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "hookAddress",
+        "type": "address",
+        "internalType": "contract ISystemHook"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "worldVersion",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "HelloStore",
+    "inputs": [
+      {
+        "name": "storeVersion",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "HelloWorld",
+    "inputs": [
+      {
+        "name": "worldVersion",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Store_DeleteRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "indexed": false,
+        "internalType": "bytes32[]"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Store_SetRecord",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "indexed": false,
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "staticData",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      },
+      {
+        "name": "encodedLengths",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "EncodedLengths"
+      },
+      {
+        "name": "dynamicData",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Store_SpliceDynamicData",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "indexed": false,
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "dynamicFieldIndex",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "uint8"
+      },
+      {
+        "name": "start",
+        "type": "uint48",
+        "indexed": false,
+        "internalType": "uint48"
+      },
+      {
+        "name": "deleteCount",
+        "type": "uint40",
+        "indexed": false,
+        "internalType": "uint40"
+      },
+      {
+        "name": "encodedLengths",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "EncodedLengths"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Store_SpliceStaticData",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "keyTuple",
+        "type": "bytes32[]",
+        "indexed": false,
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "start",
+        "type": "uint48",
+        "indexed": false,
+        "internalType": "uint48"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "Access_CannotTransferFromEphemeral",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminOrCallAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminOrClassScoped",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminOrOwner",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminSupported",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminSupportedOrDirectOwner",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminSupportedOrDirectOwnerGates",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotAdminSupportedOwnerOrCallAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotCallAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotClassScoped",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotClassScopedAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotDirectAdmin",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotDirectAdminOrCallAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotDirectOwner",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotDirectOwnerOrCanTransferToEphemeral",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotDirectOwnerOrCanTransferToInventory",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotEphemeralOwnerOrCallAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotOwner",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Access_NotOwnerWithAdminSupportAccess",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Deployable_IncorrectState",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "currentState",
+        "type": "uint8",
+        "internalType": "enum State"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Deployable_InvalidFuelConsumptionInterval",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Deployable_InvalidObjectOwner",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "smartObjectOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Deployable_NoFuel",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Deployable_StateTransitionPaused",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Deployable_TooMuchFuelDeposited",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "amountDeposited",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EncodedLengths_InvalidLength",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_InsufficientCapacity",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "maxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "usedCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_InvalidEphemeralOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_InvalidItemDepositQuantity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "quantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_InvalidItemObjectId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_InvalidSmartObjectId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_InvalidTenantId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "tenantId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "EphemeralInventory_NonExistentEntityRecord",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_Empty",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_InvalidStaticDataLength",
+    "inputs": [
+      {
+        "name": "staticDataLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "computedStaticDataLength",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_StaticLengthDoesNotFitInAWord",
+    "inputs": [
+      {
+        "name": "index",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_StaticLengthIsNotZero",
+    "inputs": [
+      {
+        "name": "index",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_StaticLengthIsZero",
+    "inputs": [
+      {
+        "name": "index",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_TooManyDynamicFields",
+    "inputs": [
+      {
+        "name": "numFields",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxFields",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FieldLayout_TooManyFields",
+    "inputs": [
+      {
+        "name": "numFields",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxFields",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Fuel_ExceedsMaxCapacity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalProjectedCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Fuel_InsufficientFuel",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "availableFuel",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Fuel_InvalidFuelAmount",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "min",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "max",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Fuel_InvalidFuelConsumptionInterval",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelConsumptionIntervalInSeconds",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "min",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "max",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Fuel_InvalidFuelMaxCapacity",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelMaxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "min",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "max",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Fuel_InvalidFuelUnitVolume",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "fuelUnitVolume",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "min",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "max",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_Ephemeral_InsufficientQuantity",
+    "inputs": [
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "ephemeralOwner",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "providedQuantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "availableQuantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_InsufficientQuantity",
+    "inputs": [
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "providedQuantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "availableQuantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_InvalidInventory",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "inventoryObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_InvalidOperation",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_InvalidQuantity",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "providedQuantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "expectedQuantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_NonexistentItemRecord",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_NonexistentObject",
+    "inputs": [
+      {
+        "name": "objectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InventoryOwnership_ZeroQuantity",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Inventory_InsufficientCapacity",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "maxCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "usedCapacity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Inventory_InvalidCapacity",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Inventory_InvalidItemDepositQuantity",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "quantity",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Inventory_InvalidItemObjectId",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Inventory_InvalidTenantId",
+    "inputs": [
+      {
+        "name": "itemObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "tenantId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Inventory_NonExistentEntityRecord",
+    "inputs": [
+      {
+        "name": "message",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "KillMail_AlreadyExists",
+    "inputs": [
+      {
+        "name": "killMailId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "KillMail_InvalidCharacterId",
+    "inputs": [
+      {
+        "name": "killMailId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "characterId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Module_AlreadyInstalled",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Module_MissingDependency",
+    "inputs": [
+      {
+        "name": "dependency",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Module_NonRootInstallNotSupported",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Module_RootInstallNotSupported",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Ownership_AlreadyOwned",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "currentOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Ownership_InvalidAccount",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Ownership_InvalidOwner",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "invalidOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Ownership_InvalidSingleton",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Ownership_NonexistentObject",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Schema_InvalidLength",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Schema_StaticTypeAfterDynamicType",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Slice_OutOfBounds",
+    "inputs": [
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "start",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "end",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartAssembly_DoesNotExist",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartAssembly_InvalidObjectId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartAssembly_InvalidTenantId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "tenantId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartAssembly_InvalidTypeId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartAssembly_TypeCannotBeEmpty",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartCharacterDoesNotExist",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartCharacter_AlreadyCreated",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartCharacter_InvalidObjectId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartCharacter_InvalidTenantId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "tenantId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartCharacter_InvalidTypeId",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_GateAlreadyLinked",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_GateNotLinked",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_GateNotOnline",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_GatesNotOnline",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_NotConfigured",
+    "inputs": [
+      {
+        "name": "smartObjectId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_NotWithtinRange",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_SameSourceAndDestination",
+    "inputs": [
+      {
+        "name": "sourceGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "destinationGateId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SmartGate_UndefinedClassId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Store_IndexOutOfBounds",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "accessedIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidBounds",
+    "inputs": [
+      {
+        "name": "start",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "end",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidFieldNamesLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidKeyNamesLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidResourceType",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "bytes2",
+        "internalType": "bytes2"
+      },
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "resourceIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidSplice",
+    "inputs": [
+      {
+        "name": "startWithinField",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "deleteCount",
+        "type": "uint40",
+        "internalType": "uint40"
+      },
+      {
+        "name": "fieldLength",
+        "type": "uint40",
+        "internalType": "uint40"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidStaticDataLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidValueSchemaDynamicLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidValueSchemaLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_InvalidValueSchemaStaticLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_TableAlreadyExists",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "tableIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Store_TableNotFound",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "tableIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_AccessDenied",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_AlreadyInitialized",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "World_CallbackNotAllowed",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_DelegationNotFound",
+    "inputs": [
+      {
+        "name": "delegator",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "delegatee",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_FunctionSelectorAlreadyExists",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_FunctionSelectorNotFound",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_InsufficientBalance",
+    "inputs": [
+      {
+        "name": "balance",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_InterfaceNotSupported",
+    "inputs": [
+      {
+        "name": "contractAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "interfaceId",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_InvalidNamespace",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes14",
+        "internalType": "bytes14"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_InvalidResourceId",
+    "inputs": [
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "resourceIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_InvalidResourceType",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "bytes2",
+        "internalType": "bytes2"
+      },
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "resourceIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_ResourceAlreadyExists",
+    "inputs": [
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "resourceIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_ResourceNotFound",
+    "inputs": [
+      {
+        "name": "resourceId",
+        "type": "bytes32",
+        "internalType": "ResourceId"
+      },
+      {
+        "name": "resourceIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_SystemAlreadyExists",
+    "inputs": [
+      {
+        "name": "system",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "World_UnlimitedDelegationNotAllowed",
+    "inputs": []
+  }
+]
