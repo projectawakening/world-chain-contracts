@@ -62,7 +62,7 @@
     "@latticexyz/world-modules": "2.2.8"
   },
   "devDependencies": {
-    "@types/debug": "4.1.7",
+    "@types/debug": "4.1.12",
     "@types/node": "^18.15.11",
     "@types/prettier": "2.7.2",
     "ds-test": "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0",
