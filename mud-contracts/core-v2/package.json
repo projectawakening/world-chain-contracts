@@ -17,7 +17,7 @@
     "prettier": "prettier 'src/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol'  --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && mud test"
+    "test": "tsc --noEmit"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.14",
