@@ -16,7 +16,6 @@ import { SmartCharacterSystem, smartCharacterSystem } from "@eveworld/world-v2/s
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract SimulateMetaTxn is Script {
-  
   uint256 signerPrivatekey;
   address signer;
 
@@ -32,7 +31,7 @@ contract SimulateMetaTxn is Script {
 
     uint256 characterItemId = 12345;
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
-    
+
     bytes32 tenantId = Tenant.get();
     uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
 
@@ -47,7 +46,7 @@ contract SimulateMetaTxn is Script {
       dappURL: "xxx",
       description: "xxx"
     });
-    
+
     bytes memory data = abi.encodeWithSelector(
       SmartCharacterSystem.createCharacter.selector,
       characterSmartObjectId,
