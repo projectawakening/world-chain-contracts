@@ -107,7 +107,7 @@ show_progress 6 9 "EVE token deployed"
 
 #8 Delegate Namespace Access
 echo " - Delegating namespace access to forwarder contract" | tee -a $LOG_FILE
-pnpm nx delegateNamespaceAccess @eveworld/world-core >> $LOG_FILE 2>&1
+pnpm nx delegateNamespaceAccess @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
 show_progress 7 9 "Namespace access delegated"
