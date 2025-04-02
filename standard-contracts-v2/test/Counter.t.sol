@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import { Test, console } from "forge-std/Test.sol";
+import { Test } from "forge-std/Test.sol";
 import { ERC2771Context } from "./ERC2771Context.sol";
 import { ERC2771Forwarder } from "../src/metatx/ERC2771Forwarder.sol";
 

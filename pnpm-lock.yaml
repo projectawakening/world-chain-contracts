@@ -573,9 +573,15 @@ importers:
       chai:
         specifier: ^5.1.0
         version: 5.1.0
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
+        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
       ethers:
         specifier: ^6.11.1
         version: 6.11.1
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
+        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
       husky:
         specifier: ^9.0.11
         version: 9.0.11
