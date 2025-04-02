@@ -76,7 +76,7 @@ export PRIVATE_KEY="$private_key"
 
 # Build everything
 echo "------------------------- Building all packages ---------------------"
-pnpm nx run-many -t build
+pnpm nx run-many -t build --projects=mud-contracts/common,mud-contracts/core,mud-contracts/smart-object-framework,mud-contracts/world,end-to-end-tests --parallel=false
 wait
 echo "==================== Packages successfully built ===================="
 

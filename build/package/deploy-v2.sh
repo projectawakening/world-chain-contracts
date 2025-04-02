@@ -22,13 +22,19 @@ echo "Using chain ID: $chain_id" | tee -a $LOG_FILE
 export RPC_URL="$rpc_url"
 export PRIVATE_KEY="$private_key"
 
-show_progress 0 9 "World V2 deployed"
+show_progress 0 9 "Building packages..."
+#0 Build all packages
+pnpm nx run-many -t clean
+pnpm nx run-many -t build --projects=standard-contracts,mud-contracts/common,mud-contracts/core,mud-contracts/smart-object-framework-v2,mud-contracts/world-v2,end-to-end-tests-v2
 
+wait
+show_progress 0 9 "Packages built"
+ 
 #1 Deploying the standard contracts
 echo " - Deploying standard contracts..." | tee -a $LOG_FILE
 pnpm nx run @eveworld/standard-contracts:deploy >> $LOG_FILE 2>&1
 wait
-show_progress 1 9 "World V2 deployed"
+show_progress 1 9 "Standard contracts deployed"
 
 export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/$chain_id/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
@@ -42,7 +48,7 @@ if [ -z "$world_address" ]; then
     echo "No world address parameter set - Deploying a new world..." | tee -a $LOG_FILE
     pnpm nx deploy @eveworld/world-core >> $LOG_FILE 2>&1
     wait
-    show_progress 2 9 "World V2 deployed"
+    show_progress 2 9 "World core deployed"
     world_address=$(cat ./mud-contracts/core/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
     export WORLD_ADDRESS="$world_address"
 else
@@ -51,7 +57,7 @@ else
     echo "World address parameter set - Updating the world @ ${WORLD_ADDRESS}..." | tee -a $LOG_FILE
     pnpm nx deploy @eveworld/world-core --worldAddress '${WORLD_ADDRESS}' >> $LOG_FILE 2>&1
     wait
-    show_progress 2 9 "World V2 deployed"
+    show_progress 2 9 "World core deployed"
 fi
 
 #3 Configure the world to receive the forwarder
@@ -59,7 +65,7 @@ echo " - Configuring trusted forwarder within the world" | tee -a $LOG_FILE
 pnpm nx setForwarder @eveworld/world-core >> $LOG_FILE 2>&1
 
 wait
-show_progress 3 9 "World V2 deployed"
+show_progress 3 9 "Trusted forwarder configured"
 
 echo " - World address: $WORLD_ADDRESS" | tee -a $LOG_FILE
 
@@ -68,14 +74,14 @@ echo " - Installing smart object framework v2 into world" | tee -a $LOG_FILE
 pnpm nx deploy @eveworld/smart-object-framework-v2 --worldAddress '${WORLD_ADDRESS}' >> $LOG_FILE 2>&1
 
 wait
-show_progress 4 9 "World V2 deployed"
+show_progress 4 9 "Smart object framework v2 deployed"
 
 #5 Deploy world features v2
 echo " - Deploying world features v2" | tee -a $LOG_FILE
 deployment_output=$(pnpm nx deploy @eveworld/world-v2 --worldAddress '${WORLD_ADDRESS}' 2>&1 | tee -a $LOG_FILE)
 
 wait
-show_progress 5 9 "World V2 deployed"
+show_progress 5 9 "World features v2 deployed"
 
 # #6 Configure Smart Object Framework access control
 # echo " - Configuring access control for smart object framework v2" | tee -a $LOG_FILE
@@ -105,14 +111,14 @@ fi
 export EVE_TOKEN_ADDRESS="$eve_token_address"
 
 wait
-show_progress 8 9 "World V2 deployed"
+show_progress 6 9 "EVE token deployed"
 
 #8 Delegate Namespace Access
 echo " - Delegating namespace access to forwarder contract" | tee -a $LOG_FILE
 pnpm nx delegateNamespaceAccess @eveworld/world-core >> $LOG_FILE 2>&1
 
 wait
-show_progress 9 9 "World V2 deployed"
+show_progress 7 9 "Namespace access delegated"
 
 
 echo " - Collecting ABIs" | tee -a $LOG_FILE
