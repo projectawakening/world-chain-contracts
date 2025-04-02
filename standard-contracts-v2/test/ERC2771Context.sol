@@ -43,7 +43,7 @@ abstract contract ERC2771Context is Context {
   /**
    * @dev Indicates whether any particular address is the trusted forwarder.
    */
-  function eveworld__isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+  function evefrontier__isTrustedForwarder(address forwarder) public view virtual returns (bool) {
     return forwarder == trustedForwarder();
   }
 
@@ -55,7 +55,7 @@ abstract contract ERC2771Context is Context {
   function _msgSender() internal view virtual override returns (address) {
     uint256 calldataLength = msg.data.length;
     uint256 contextSuffixLength = _contextSuffixLength();
-    if (eveworld__isTrustedForwarder(msg.sender) && calldataLength >= contextSuffixLength) {
+    if (evefrontier__isTrustedForwarder(msg.sender) && calldataLength >= contextSuffixLength) {
       return address(bytes20(msg.data[calldataLength - contextSuffixLength:]));
     } else {
       return super._msgSender();
@@ -70,7 +70,7 @@ abstract contract ERC2771Context is Context {
   function _msgData() internal view virtual override returns (bytes calldata) {
     uint256 calldataLength = msg.data.length;
     uint256 contextSuffixLength = _contextSuffixLength();
-    if (eveworld__isTrustedForwarder(msg.sender) && calldataLength >= contextSuffixLength) {
+    if (evefrontier__isTrustedForwarder(msg.sender) && calldataLength >= contextSuffixLength) {
       return msg.data[:calldataLength - contextSuffixLength];
     } else {
       return super._msgData();

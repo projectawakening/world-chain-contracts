@@ -67,7 +67,7 @@ contract CallReceiverMockTrustingForwarder is CallReceiverMock {
     _trustedForwarder = trustedForwarder_;
   }
 
-  function eveworld__isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+  function evefrontier__isTrustedForwarder(address forwarder) public view virtual returns (bool) {
     return forwarder == _trustedForwarder;
   }
 }
