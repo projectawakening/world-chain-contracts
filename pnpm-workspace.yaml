@@ -2,5 +2,6 @@ packages:
   - "common/*"
   - "mud-contracts/**/**"
   - "standard-contracts"
+  - "standard-contracts-v2"
   - "end-to-end-tests"
   - "end-to-end-tests-v2"

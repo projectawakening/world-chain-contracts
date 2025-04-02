@@ -21,22 +21,14 @@ echo "Using chain ID: $chain_id" | tee -a $LOG_FILE
 
 export RPC_URL="$rpc_url"
 export PRIVATE_KEY="$private_key"
-
-show_progress 0 9 "Building packages..."
-#0 Build all packages
-pnpm nx run-many -t clean
-pnpm nx run-many -t build --projects=standard-contracts,mud-contracts/common,mud-contracts/core,mud-contracts/smart-object-framework-v2,mud-contracts/world-v2,end-to-end-tests-v2
-
-wait
-show_progress 0 9 "Packages built"
  
 #1 Deploying the standard contracts
 echo " - Deploying standard contracts..." | tee -a $LOG_FILE
-pnpm nx run @eveworld/standard-contracts:deploy >> $LOG_FILE 2>&1
+pnpm nx run @eveworld/standard-contracts-v2:deploy >> $LOG_FILE 2>&1
 wait
 show_progress 1 9 "Standard contracts deployed"
 
-export FORWARDER_ADDRESS=$(cat ./standard-contracts/broadcast/Deploy.s.sol/$chain_id/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
+export FORWARDER_ADDRESS=$(cat ./standard-contracts-v2/broadcast/Deploy.s.sol/$chain_id/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
 #2 Deploy the world core
 #
@@ -46,23 +38,23 @@ echo " - Deploying world core..." | tee -a $LOG_FILE
 if [ -z "$world_address" ]; then
     # If not set, execute a command to obtain the value
     echo "No world address parameter set - Deploying a new world..." | tee -a $LOG_FILE
-    pnpm nx deploy @eveworld/world-core >> $LOG_FILE 2>&1
+    pnpm nx deploy @eveworld/world-core-v2 >> $LOG_FILE 2>&1
     wait
     show_progress 2 9 "World core deployed"
-    world_address=$(cat ./mud-contracts/core/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
+    world_address=$(cat ./mud-contracts/core-v2/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
     export WORLD_ADDRESS="$world_address"
 else
     # If set, use that value
     export WORLD_ADDRESS="$world_address"
     echo "World address parameter set - Updating the world @ ${WORLD_ADDRESS}..." | tee -a $LOG_FILE
-    pnpm nx deploy @eveworld/world-core --worldAddress '${WORLD_ADDRESS}' >> $LOG_FILE 2>&1
+    pnpm nx deploy @eveworld/world-core-v2 --worldAddress '${WORLD_ADDRESS}' >> $LOG_FILE 2>&1
     wait
     show_progress 2 9 "World core deployed"
 fi
 
 #3 Configure the world to receive the forwarder
 echo " - Configuring trusted forwarder within the world" | tee -a $LOG_FILE
-pnpm nx setForwarder @eveworld/world-core >> $LOG_FILE 2>&1
+pnpm nx setForwarder @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
 show_progress 3 9 "Trusted forwarder configured"
@@ -76,27 +68,27 @@ pnpm nx deploy @eveworld/smart-object-framework-v2 --worldAddress '${WORLD_ADDRE
 wait
 show_progress 4 9 "Smart object framework v2 deployed"
 
-#5 Deploy world features v2
-echo " - Deploying world features v2" | tee -a $LOG_FILE
+#5 Deploy world v2
+echo " - Deploying world v2" | tee -a $LOG_FILE
 deployment_output=$(pnpm nx deploy @eveworld/world-v2 --worldAddress '${WORLD_ADDRESS}' 2>&1 | tee -a $LOG_FILE)
 
 wait
-show_progress 5 9 "World features v2 deployed"
+show_progress 5 9 "World v2 deployed"
 
-# #6 Configure Smart Object Framework access control
-# echo " - Configuring access control for smart object framework v2" | tee -a $LOG_FILE
-# pnpm nx configure-access @eveworld/smart-object-framework-v2 >> $LOG_FILE 2>&1
+#6 Configure Smart Object Framework access control
+echo " - Configuring access control for smart object framework v2" | tee -a $LOG_FILE
+pnpm nx configure-access @eveworld/smart-object-framework-v2 >> $LOG_FILE 2>&1
 
-# wait
-# show_progress 6 9 "World V2 deployed"
+wait
+show_progress 6 9 "Configured smart object framework v2 access control" 
 
-# #7 Configure Smart Object Framework v2 Rules for World v2
-# echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG_FILE
-# pnpm nx config @eveworld/world-v2 >> $LOG_FILE 2>&1
+#7 Configure Smart Object Framework v2 Rules for World v2
+echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG_FILE
+pnpm nx config @eveworld/world-v2 >> $LOG_FILE 2>&1
 
-# wait
-# show_progress 7 9 "World V2 deployed"
-# echo " - World v2 configured with Smart Object Framework v2" | tee -a $LOG_FILE
+wait
+show_progress 7 9 "Configured Smart Object Framework v2 Rules for World v2"
+echo " - World v2 configured with Smart Object Framework v2" | tee -a $LOG_FILE
 
 
 # Extract the ERC20 token address from the output
@@ -128,7 +120,7 @@ mkdir -p abis/world
 # 9 Copy ABIS to be used for External consumption
 cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v2-${IMAGE_TAG}.abi.json"
 cp build/artifacts/IWorld-v2.abi.json "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json"
-cp build/artifacts/ERC2771IWorld-v2.abi.json "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.json"
+cp build/artifacts/ERC2771IWorld-v2.abi.json "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.abi.json"
 
 # Custom ERC2771 Compatible IWorld contract
 jq 'map((.name? |= gsub("^evefrontier__"; "")) // .)' "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json" > "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.abi.json"
