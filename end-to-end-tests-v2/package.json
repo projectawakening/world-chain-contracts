@@ -26,20 +26,24 @@
     "anchorSmartGate:local": "source ./.env.local && WORLD_ADDRESS=$WORLD_ADDRESS RPC_URL=$RPC_URL PRIVATE_KEY=$PRIVATE_KEY forge script script/AnchorSmartGate.s.sol:AnchorSmartGate --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "configureSmartGate:local": "source ./.env.local && WORLD_ADDRESS=$WORLD_ADDRESS RPC_URL=$RPC_URL PRIVATE_KEY=$PRIVATE_KEY forge script script/ConfigureSmartGate.s.sol:ConfigureSmartGate --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "runAll:local": "pnpm run createSmartCharacter:local && pnpm run createMintERC20:local && pnpm run anchorSSU:local && pnpm run depositFuel:local && pnpm run bringOnline:local && pnpm run depositToInventory:local && pnpm run depositToEphemeral:local && pnpm run withdrawFromInv:local && pnpm run withdrawFromEphemeral:local && pnpm run transferItems:local && pnpm run anchorSmartTurret:local && pnpm run configureSmartTurret:local && pnpm run anchorSmartGate:local && pnpm run configureSmartGate:local",
+    "simulateMetaTxn:local": "source ./.env.local && PRIVATE_KEY=$PRIVATE_KEY && FORWARDER_ADDRESS=$FORWARDER_ADDRESS && WORLD_ADDRESS=$WORLD_ADDRESS && forge script script/SimulateMetaTxn.s.sol:SimulateMetaTxn --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig \"run(address)\" $WORLD_ADDRESS -vvvv",
     "lint": "pnpm run prettier && pnpm run solhint",
     "prettier": "prettier '**/*.sol' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier '**/*.sol' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'"
   },
   "dependencies": {
-    "@eveworld/world-v2": "link:../mud-contracts/world-v2",
     "@eveworld/smart-object-framework-v2": "link:../mud-contracts/smart-object-framework-v2",
+    "@eveworld/standard-contracts-v2": "link:../standard-contracts-v2",
+    "@eveworld/world-v2": "link:../mud-contracts/world-v2",
+    "@eveworld/world-core-v2": "link:../mud-contracts/core-v2",
     "@latticexyz/cli": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/gas-report": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/schema-type": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/store": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/world": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/world-modules": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7"
+    "@latticexyz/world-modules": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
+    "@openzeppelin/contracts": "^5.0.1"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",

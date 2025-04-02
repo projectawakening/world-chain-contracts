@@ -118,7 +118,7 @@ mkdir -p abis
 mkdir -p abis/trusted-forwarder
 mkdir -p abis/world
 # 9 Copy ABIS to be used for External consumption
-cp standard-contracts/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v2-${IMAGE_TAG}.abi.json"
+cp standard-contracts-v2/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v2-${IMAGE_TAG}.abi.json"
 cp build/artifacts/IWorld-v2.abi.json "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json"
 cp build/artifacts/ERC2771IWorld-v2.abi.json "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.abi.json"
 

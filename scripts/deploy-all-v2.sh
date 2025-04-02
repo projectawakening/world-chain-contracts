@@ -56,7 +56,7 @@ echo "==================== World modules configured ===================="
 echo "==================== Delegate access to Forwarder Contract ===================="
 pnpm nx delegateNamespaceAccess @eveworld/world-core-v2
 wait
-echo "==================== Delegate access to Forwarder Contract ===================="
+echo "==================== Deploy Successfull ===================="
 
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS" 
