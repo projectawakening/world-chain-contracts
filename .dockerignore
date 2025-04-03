@@ -1,0 +1,51 @@
+# Version control
+.git
+.gitignore
+.gitmodules
+
+# Dependencies
+**/node_modules
+**/package-lock.json
+
+# Build outputs
+**/dist  # Commented out if needed for build
+**/out   # Commented out if needed for build
+**/cache
+**/deploys
+**/broadcast
+.nx/cache
+
+# Environment and local config
+**/.env
+**/.env.*
+.DS_Store
+.vscode
+.idea
+
+# Test files
+**/coverage
+**/*.test.*
+**/*.spec.*
+
+# Documentation
+*.md
+!README.md
+LICENSE
+CONTRIBUTING.md
+MIGRATION.md
+
+# MUD specific
+**/worlds.json
+.mud
+
+# Images and media
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Temporary files
+*.log
+*.tmp
+*.temp 

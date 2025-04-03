@@ -6,7 +6,7 @@ ENV IMAGE_TAG=${IMAGE_TAG}
 
 # Install node and pnpm
 RUN cat /etc/apk/repositories
-RUN apk add  --update nodejs-current=18.9.1-r0 npm jq curl
+RUN apk add  --update nodejs-current=18.9.1-r0 npm jq curl git
 
 RUN npm install -g pnpm@8.9.2
 

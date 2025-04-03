@@ -1,5 +1,4 @@
 packages:
-  - "common/*"
   - "mud-contracts/**/**"
   - "standard-contracts"
   - "standard-contracts-v2"
