@@ -125,6 +125,9 @@ cp build/artifacts/ERC2771IWorld-v2.abi.json "abis/world/ERC2771IWorld-v2-${IMAG
 # Custom ERC2771 Compatible IWorld contract
 jq 'map((.name? |= gsub("^evefrontier__"; "")) // .)' "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json" > "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.abi.json"
 
+#Copy Systems.json for systemIds to be used for External consumption
+cp mud-contracts/world-v2/.mud/local/systems.json "abis/world/systems.json"
+
 
 # Update run_env.json with the extracted addresses
 echo '{"WORLD_ADDRESS":"'$WORLD_ADDRESS'", "FORWARDER_ADDRESS":"'$FORWARDER_ADDRESS'", "EVE_TOKEN_ADDRESS":"'$EVE_TOKEN_ADDRESS'"}' > run_env.json
