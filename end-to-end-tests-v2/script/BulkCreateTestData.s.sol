@@ -23,35 +23,48 @@ import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src
 import { CreateInventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
 
 contract BulkCreateTestData is Script {
+  // Global variables for item IDs
+  //Note: Change this when you run the script second time
+  uint256 constant CHARACTER_BASE_ITEM_ID = 2000;
+  uint256 constant SSU_BASE_ITEM_ID = 2100;
+  uint256 constant TURRET_BASE_ITEM_ID = 2200;
+  uint256 constant GATE_BASE_ITEM_ID = 2300;
+  uint256 constant SINGLETON_ITEM_TYPE_ID = 2400;
+  uint256 constant NON_SINGLETON_ITEM_TYPE_ID = 2500;
+  uint256 constant SINGLETON_ITEM_BASE_ID = 2600;
+  uint256 constant ITEM_VOLUME = 10;
+
+  // Helper function to derive private key
+  function derivePrivateKey(uint256 index) internal pure returns (uint256) {
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    uint256 n = index + 2;
+    if (n == 2) return vm.deriveKey(mnemonic, 2);
+    if (n == 3) return vm.deriveKey(mnemonic, 3);
+    if (n == 4) return vm.deriveKey(mnemonic, 4);
+    if (n == 5) return vm.deriveKey(mnemonic, 5);
+    if (n == 6) return vm.deriveKey(mnemonic, 6);
+    if (n == 7) return vm.deriveKey(mnemonic, 7);
+    if (n == 8) return vm.deriveKey(mnemonic, 8);
+    if (n == 9) return vm.deriveKey(mnemonic, 9);
+    if (n == 10) return vm.deriveKey(mnemonic, 10);
+    return vm.deriveKey(mnemonic, 11); // Fallback for any other value
+  }
+
   function run(address worldAddress, uint256 count) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env and not .env.local)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     address deployer = vm.addr(deployerPrivateKey);
 
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    uint256 privateKey = vm.deriveKey(mnemonic, 2);
-
     // Generate multiple accounts for testing
     address[] memory accounts = new address[](count);
     for (uint256 i = 0; i < count; i++) {
-      uint256 n = i + 2;
-      uint256 accountPrivateKey;
-      if (n == 2) accountPrivateKey = privateKey;
-      else if (n == 3) accountPrivateKey = vm.deriveKey(mnemonic, 3);
-      else if (n == 4) accountPrivateKey = vm.deriveKey(mnemonic, 4);
-      else if (n == 5) accountPrivateKey = vm.deriveKey(mnemonic, 5);
-      else if (n == 6) accountPrivateKey = vm.deriveKey(mnemonic, 6);
-      else if (n == 7) accountPrivateKey = vm.deriveKey(mnemonic, 7);
-      else if (n == 8) accountPrivateKey = vm.deriveKey(mnemonic, 8);
-      else if (n == 9) accountPrivateKey = vm.deriveKey(mnemonic, 9);
-      else if (n == 10) accountPrivateKey = vm.deriveKey(mnemonic, 10);
-      else accountPrivateKey = vm.deriveKey(mnemonic, 11); // Fallback for any other value
-
+      uint256 accountPrivateKey = derivePrivateKey(i);
       accounts[i] = vm.addr(accountPrivateKey);
     }
 
     // Step 1: Deployer creates characters
+    // Note: Remove this when you run the script second time
     vm.startBroadcast(deployerPrivateKey);
     createCharacters(count, accounts);
     vm.stopBroadcast();
@@ -78,36 +91,21 @@ contract BulkCreateTestData is Script {
 
     // Step 6: Each character brings their own deployables online
     for (uint256 i = 0; i < count; i++) {
-      // Get the private key for this account
-      uint256 n = i + 2;
-      uint256 accountPrivateKey;
-      if (n == 2) accountPrivateKey = privateKey;
-      else if (n == 3) accountPrivateKey = vm.deriveKey(mnemonic, 3);
-      else if (n == 4) accountPrivateKey = vm.deriveKey(mnemonic, 4);
-      else if (n == 5) accountPrivateKey = vm.deriveKey(mnemonic, 5);
-      else if (n == 6) accountPrivateKey = vm.deriveKey(mnemonic, 6);
-      else if (n == 7) accountPrivateKey = vm.deriveKey(mnemonic, 7);
-      else if (n == 8) accountPrivateKey = vm.deriveKey(mnemonic, 8);
-      else if (n == 9) accountPrivateKey = vm.deriveKey(mnemonic, 9);
-      else if (n == 10) accountPrivateKey = vm.deriveKey(mnemonic, 10);
-      else accountPrivateKey = vm.deriveKey(mnemonic, 11); // Fallback for any other value
-
-      // Start broadcasting as this character
+      uint256 accountPrivateKey = derivePrivateKey(i);
       vm.startBroadcast(accountPrivateKey);
-
-      // Bring this character's deployables online
       bringOnlineForAccount(i, count, accounts);
-
       vm.stopBroadcast();
     }
 
-    // Step 7: Register delegations from each account to the deployer
-    registerDelegations(count, accounts, deployer);
+    // // Step 7: Register delegations from each account to the deployer
+    // registerDelegations(count, accounts, deployer);
 
-    // Step 8: Deployer deposits to each character's inventory
-    vm.startBroadcast(deployerPrivateKey);
-    depositToInventory(count, accounts);
-    vm.stopBroadcast();
+    // // Step 8: Deployer deposits to each character's inventory (one account at a time)
+    // for (uint256 i = 0; i < count; i++) {
+    //   vm.startBroadcast(deployerPrivateKey);
+    //   depositToInventoryForAccount(i, accounts);
+    //   vm.stopBroadcast();
+    // }
   }
 
   function createCharacters(uint256 count, address[] memory accounts) internal {
@@ -115,7 +113,7 @@ contract BulkCreateTestData is Script {
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
 
     for (uint256 i = 0; i < count; i++) {
-      uint256 characterItemId = 1348 + i;
+      uint256 characterItemId = CHARACTER_BASE_ITEM_ID + i;
       uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
 
       EntityRecordParams memory entityRecordParams = EntityRecordParams({
@@ -155,7 +153,7 @@ contract BulkCreateTestData is Script {
     uint256 ephemeralCapacity = 100000000;
 
     for (uint256 i = 0; i < count; i++) {
-      uint256 ssuItemId = 1244 + i;
+      uint256 ssuItemId = SSU_BASE_ITEM_ID + i;
       uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
       LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001 + i, y: 1001 + i, z: 1001 + i });
@@ -192,7 +190,7 @@ contract BulkCreateTestData is Script {
     uint256 fuelMaxCapacity = 100000000;
 
     for (uint256 i = 0; i < count; i++) {
-      uint256 turretItemId = 1669 + i;
+      uint256 turretItemId = TURRET_BASE_ITEM_ID + i;
       uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
 
       LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001 + i, y: 1001 + i, z: 1001 + i });
@@ -232,8 +230,8 @@ contract BulkCreateTestData is Script {
     for (uint256 i = 0; i < count; i += 2) {
       if (i + 1 >= count) break; // Ensure we have a pair
 
-      uint256 sourceGateItemId = 1887 + i;
-      uint256 destinationGateItemId = 1888 + i;
+      uint256 sourceGateItemId = GATE_BASE_ITEM_ID + i;
+      uint256 destinationGateItemId = GATE_BASE_ITEM_ID + i + 1;
 
       uint256 sourceGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, sourceGateItemId);
       uint256 destinationGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, destinationGateItemId);
@@ -301,14 +299,14 @@ contract BulkCreateTestData is Script {
 
     // Deposit fuel to SSUs
     for (uint256 i = 0; i < count; i++) {
-      uint256 ssuItemId = 1244 + i; // Match creation ID
+      uint256 ssuItemId = SSU_BASE_ITEM_ID + i;
       uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
       fuelSystem.depositFuel(ssuSmartObjectId, 10000);
     }
 
     // Deposit fuel to Smart Turrets
     for (uint256 i = 0; i < count; i++) {
-      uint256 turretItemId = 1669 + i; // Match creation ID
+      uint256 turretItemId = TURRET_BASE_ITEM_ID + i;
       uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
       fuelSystem.depositFuel(turretSmartObjectId, 10000);
     }
@@ -317,8 +315,8 @@ contract BulkCreateTestData is Script {
     for (uint256 i = 0; i < count; i += 2) {
       if (i + 1 >= count) break;
 
-      uint256 sourceGateItemId = 1887 + i; // Match creation ID
-      uint256 destinationGateItemId = 1888 + i; // Match creation ID
+      uint256 sourceGateItemId = GATE_BASE_ITEM_ID + i;
+      uint256 destinationGateItemId = GATE_BASE_ITEM_ID + i + 1;
 
       uint256 sourceGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, sourceGateItemId);
       uint256 destinationGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, destinationGateItemId);
@@ -336,19 +334,19 @@ contract BulkCreateTestData is Script {
     uint256 destinationGateSmartObjectId;
 
     // Bring SSU online
-    uint256 ssuItemId = 1244 + index; // Match creation ID
+    uint256 ssuItemId = SSU_BASE_ITEM_ID + index;
     uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
     deployableSystem.bringOnline(ssuSmartObjectId);
 
     // Bring Smart Turret online
-    uint256 turretItemId = 1669 + index; // Match creation ID
+    uint256 turretItemId = TURRET_BASE_ITEM_ID + index;
     uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
     deployableSystem.bringOnline(turretSmartObjectId);
 
     // Bring Smart Gates online (if applicable)
     if (index % 2 == 0 && index + 1 < count) {
-      uint256 sourceGateItemId = 1887 + index; // Match creation ID
-      uint256 destinationGateItemId = 1888 + index; // Match creation ID
+      uint256 sourceGateItemId = GATE_BASE_ITEM_ID + index;
+      uint256 destinationGateItemId = GATE_BASE_ITEM_ID + index + 1;
 
       sourceGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, sourceGateItemId);
       destinationGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, destinationGateItemId);
@@ -373,83 +371,46 @@ contract BulkCreateTestData is Script {
   }
 
   function registerDelegations(uint256 count, address[] memory accounts, address admin) internal {
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    uint256 privateKey = vm.deriveKey(mnemonic, 2);
     IWorldWithContext world = IWorldWithContext(StoreSwitch.getStoreAddress());
 
     // Register delegations from each account to the admin
     for (uint256 i = 0; i < count; i++) {
-      // Get the private key for this account
-      uint256 n = i + 2;
-      uint256 accountPrivateKey;
-      if (n == 2) accountPrivateKey = privateKey;
-      else if (n == 3) accountPrivateKey = vm.deriveKey(mnemonic, 3);
-      else if (n == 4) accountPrivateKey = vm.deriveKey(mnemonic, 4);
-      else if (n == 5) accountPrivateKey = vm.deriveKey(mnemonic, 5);
-      else if (n == 6) accountPrivateKey = vm.deriveKey(mnemonic, 6);
-      else if (n == 7) accountPrivateKey = vm.deriveKey(mnemonic, 7);
-      else if (n == 8) accountPrivateKey = vm.deriveKey(mnemonic, 8);
-      else if (n == 9) accountPrivateKey = vm.deriveKey(mnemonic, 9);
-      else if (n == 10) accountPrivateKey = vm.deriveKey(mnemonic, 10);
-      else accountPrivateKey = vm.deriveKey(mnemonic, 11); // Fallback for any other value
-
-      // Start broadcasting as this account
+      uint256 accountPrivateKey = derivePrivateKey(i);
       vm.startBroadcast(accountPrivateKey);
-
-      // Register delegation from this account to the admin
       world.registerDelegation(admin, UNLIMITED_DELEGATION, new bytes(0));
       console.log("Registered delegation from account:", accounts[i], "to admin:", admin);
-
       vm.stopBroadcast();
     }
   }
 
-  function depositToInventory(uint256 count, address[] memory accounts) internal {
+  function depositToInventoryForAccount(uint256 index, address[] memory accounts) internal {
     bytes32 tenantId = Tenant.get();
     IWorldWithContext world = IWorldWithContext(StoreSwitch.getStoreAddress());
 
-    for (uint256 i = 0; i < count; i++) {
-      uint256 ssuItemId = 1244 + i;
-      uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuItemId = SSU_BASE_ITEM_ID + index;
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
-      CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
+    CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](1);
 
-      uint256 SINGLETON_ITEM_TYPE_ID = 9000;
-      uint256 SINGLETON_ITEM_ID = 66 + i;
-      uint256 NON_SINGLETON_ITEM_TYPE_ID = 9090;
-      uint256 ITEM_VOLUME = 10;
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
 
-      uint256 singletonObjectId = ObjectIdLib.calculateSingletonId(tenantId, SINGLETON_ITEM_ID);
-      uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
+    // Add as non-singleton item
+    items[0] = CreateInventoryItemParams({
+      smartObjectId: nonSingletonObjectId,
+      tenantId: tenantId,
+      typeId: NON_SINGLETON_ITEM_TYPE_ID,
+      itemId: 0,
+      quantity: 9,
+      volume: ITEM_VOLUME
+    });
 
-      // Add as singleton item
-      items[0] = CreateInventoryItemParams({
-        smartObjectId: singletonObjectId,
-        tenantId: tenantId,
-        typeId: SINGLETON_ITEM_TYPE_ID,
-        itemId: SINGLETON_ITEM_ID,
-        quantity: 1,
-        volume: ITEM_VOLUME
-      });
+    // Call from the character's account but broadcasted by deployer
+    world.callFrom(
+      accounts[index],
+      inventorySystem.toResourceId(),
+      abi.encodeCall(InventorySystem.createAndDepositInventory, (ssuSmartObjectId, items))
+    );
 
-      // Add as non-singleton item
-      items[1] = CreateInventoryItemParams({
-        smartObjectId: nonSingletonObjectId,
-        tenantId: tenantId,
-        typeId: NON_SINGLETON_ITEM_TYPE_ID,
-        itemId: 0,
-        quantity: 9,
-        volume: ITEM_VOLUME
-      });
-
-      // Call from the character's account but broadcasted by deployer
-      world.callFrom(
-        accounts[i],
-        inventorySystem.toResourceId(),
-        abi.encodeCall(InventorySystem.createAndDepositInventory, (ssuSmartObjectId, items))
-      );
-
-      console.log("Deposited items to inventory for account:", accounts[i]);
-    }
+    console.log("Deposited items to inventory for account:", accounts[index]);
   }
 }

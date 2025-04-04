@@ -13,11 +13,11 @@ export WORLD_ADDRESS=0x5fc8d32690cc91d4c39d9d3abcbd16989f875707
 # Run the bulk create script
 echo "Creating $COUNT instances of each entity type..."
 forge script script/BulkCreateTestData.s.sol:BulkCreateTestData \
-  --fork-url $RPC_URL \
+  --rpc-url $RPC_URL \
   --private-key $PRIVATE_KEY \
   --broadcast \
   --sig "run(address,uint256)" $WORLD_ADDRESS $COUNT \
   --gas-price 0 \
-  --vvvv
+  -vvv
 
 echo "Bulk test data creation complete!" 
