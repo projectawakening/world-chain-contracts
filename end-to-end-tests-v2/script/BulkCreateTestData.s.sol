@@ -97,15 +97,15 @@ contract BulkCreateTestData is Script {
       vm.stopBroadcast();
     }
 
-    // // Step 7: Register delegations from each account to the deployer
-    // registerDelegations(count, accounts, deployer);
+    // Step 7: Register delegations from each account to the deployer
+    registerDelegations(count, accounts, deployer);
 
-    // // Step 8: Deployer deposits to each character's inventory (one account at a time)
-    // for (uint256 i = 0; i < count; i++) {
-    //   vm.startBroadcast(deployerPrivateKey);
-    //   depositToInventoryForAccount(i, accounts);
-    //   vm.stopBroadcast();
-    // }
+    // Step 8: Deployer deposits to each character's inventory (one account at a time)
+    for (uint256 i = 0; i < count; i++) {
+      vm.startBroadcast(deployerPrivateKey);
+      depositToInventoryForAccount(i, accounts);
+      vm.stopBroadcast();
+    }
   }
 
   function createCharacters(uint256 count, address[] memory accounts) internal {
