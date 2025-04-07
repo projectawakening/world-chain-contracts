@@ -65,8 +65,13 @@ library SmartGateSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureGate(smartObjectId, systemId);
   }
 
-  function canJump(SmartGateSystemType self, uint256 sourceGateId, uint256 destinationGateId) internal returns (bool) {
-    return CallWrapper(self.toResourceId(), address(0)).canJump(sourceGateId, destinationGateId);
+  function canJump(
+    SmartGateSystemType self,
+    uint256 characterId,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal returns (bool) {
+    return CallWrapper(self.toResourceId(), address(0)).canJump(characterId, sourceGateId, destinationGateId);
   }
 
   function areGatesOnline(
@@ -158,11 +163,19 @@ library SmartGateSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function canJump(CallWrapper memory self, uint256 sourceGateId, uint256 destinationGateId) internal returns (bool) {
+  function canJump(
+    CallWrapper memory self,
+    uint256 characterId,
+    uint256 sourceGateId,
+    uint256 destinationGateId
+  ) internal returns (bool) {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_canJump_uint256_uint256.canJump, (sourceGateId, destinationGateId));
+    bytes memory systemCall = abi.encodeCall(
+      _canJump_uint256_uint256_uint256.canJump,
+      (characterId, sourceGateId, destinationGateId)
+    );
 
     bytes memory result = self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -308,10 +321,14 @@ library SmartGateSystemLib {
 
   function canJump(
     RootCallWrapper memory self,
+    uint256 characterId,
     uint256 sourceGateId,
     uint256 destinationGateId
   ) internal returns (bool) {
-    bytes memory systemCall = abi.encodeCall(_canJump_uint256_uint256.canJump, (sourceGateId, destinationGateId));
+    bytes memory systemCall = abi.encodeCall(
+      _canJump_uint256_uint256_uint256.canJump,
+      (characterId, sourceGateId, destinationGateId)
+    );
 
     bytes memory result = SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
     return abi.decode(result, (bool));
@@ -434,8 +451,8 @@ interface _configureGate_uint256_ResourceId {
   function configureGate(uint256 smartObjectId, ResourceId systemId) external;
 }
 
-interface _canJump_uint256_uint256 {
-  function canJump(uint256 sourceGateId, uint256 destinationGateId) external;
+interface _canJump_uint256_uint256_uint256 {
+  function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) external;
 }
 
 interface _areGatesOnline_uint256_uint256 {

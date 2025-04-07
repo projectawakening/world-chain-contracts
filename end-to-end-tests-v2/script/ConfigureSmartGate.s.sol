@@ -8,7 +8,7 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/constants.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
-import { Tenant } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Tenant, CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { SmartGateSystem, smartGateSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
@@ -37,6 +37,7 @@ contract ConfigureSmartGate is Script {
     world.registerSystem(customSystemId, customSystem, true);
 
     bytes32 tenantId = Tenant.get();
+    uint256 characterId = CharactersByAccount.getSmartObjectId(alice);
     uint256 smartGate1ItemId = 1557;
     uint256 smartGate2ItemId = 1558;
     uint256 smartGate1SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate1ItemId);
@@ -60,9 +61,9 @@ contract ConfigureSmartGate is Script {
     world.callFrom(
       alice,
       smartGateSystem.toResourceId(),
-      abi.encodeCall(SmartGateSystem.canJump, (smartGate1SmartObjectId, smartGate2SmartObjectId))
+      abi.encodeCall(SmartGateSystem.canJump, (characterId, smartGate1SmartObjectId, smartGate2SmartObjectId))
     );
-    bool possibleToJump = smartGateSystem.canJump(smartGate1SmartObjectId, smartGate2SmartObjectId);
+    bool possibleToJump = smartGateSystem.canJump(characterId, smartGate1SmartObjectId, smartGate2SmartObjectId);
     console.log("possibleToJump", possibleToJump); // should be false
 
     vm.stopBroadcast();
@@ -71,7 +72,7 @@ contract ConfigureSmartGate is Script {
 
 //Mock Contract for testing
 contract SmartGateTestSystem is System {
-  function canJump(uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
-    return false;
+  function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public view returns (bool) {
+    return true;
   }
 }

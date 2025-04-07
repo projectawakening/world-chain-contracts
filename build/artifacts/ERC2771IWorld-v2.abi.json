@@ -566,6 +566,11 @@
     "name": "canJump",
     "inputs": [
       {
+        "name": "characterId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
         "name": "sourceGateId",
         "type": "uint256",
         "internalType": "uint256"

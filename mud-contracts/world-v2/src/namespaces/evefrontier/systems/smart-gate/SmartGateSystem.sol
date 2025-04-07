@@ -127,10 +127,11 @@ contract SmartGateSystem is SmartObjectFramework {
 
   /**
    * @notice view function for smart gates which is linked
+   * @param characterId is of the smartObjectId of the character
    * @param sourceGateId is the smartObjectId of the source gate
    * @param destinationGateId is the smartObjectId of the destination gate
    */
-  function canJump(uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
+  function canJump(uint256 characterId, uint256 sourceGateId, uint256 destinationGateId) public returns (bool) {
     //Check if the gates are online
     if (
       DeployableState.getCurrentState(sourceGateId) != State.ONLINE &&
@@ -153,7 +154,7 @@ contract SmartGateSystem is SmartObjectFramework {
     if (ResourceIds.getExists(systemId)) {
       bytes memory returnData = getWorld().call(
         systemId,
-        abi.encodeCall(this.canJump, (sourceGateId, destinationGateId))
+        abi.encodeCall(this.canJump, (characterId, sourceGateId, destinationGateId))
       );
       return abi.decode(returnData, (bool));
     }
