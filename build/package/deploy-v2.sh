@@ -87,7 +87,7 @@ echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG
 pnpm nx config @eveworld/world-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 7 9 "Configured Smart Object Framework v2 Rules for World v2"
+show_progress 6 9 "Configured Smart Object Framework v2 Rules for World v2"
 echo " - World v2 configured with Smart Object Framework v2" | tee -a $LOG_FILE
 
 
@@ -103,14 +103,14 @@ fi
 export EVE_TOKEN_ADDRESS="$eve_token_address"
 
 wait
-show_progress 6 9 "EVE token deployed"
+show_progress 7 9 "EVE token deployed"
 
 #8 Delegate Namespace Access
 echo " - Delegating namespace access to forwarder contract" | tee -a $LOG_FILE
 pnpm nx delegateNamespaceAccess @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 7 9 "Namespace access delegated"
+show_progress 9 9 "Namespace access delegated"
 
 
 echo " - Collecting ABIs" | tee -a $LOG_FILE
