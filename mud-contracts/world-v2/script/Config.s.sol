@@ -2,7 +2,6 @@
 pragma solidity >=0.8.20;
 
 import { Script } from "forge-std/Script.sol";
-import { console } from "forge-std/console.sol";
 import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
@@ -41,8 +40,6 @@ contract Config is Script {
 
     string memory tenant = vm.envString("TENANT");
     bytes32 tenantId = keccak256(abi.encodePacked(tenant));
-
-    console.log(tenant);
 
     vm.startBroadcast(deployerPrivateKey);
 
