@@ -21,3 +21,4 @@
 
 # Ignore all env files
 **/.env
+.pnpm-store/
