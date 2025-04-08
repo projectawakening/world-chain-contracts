@@ -8,7 +8,6 @@ on:
       - 'v[0-9]+\.[0-9]+\.[0-9]+-beta[0-9]+'
       - 'v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+'
 
-
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
@@ -19,7 +18,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: world-chain-deployer-image
   TEST_RPC_URL: http://127.0.0.1:8545
-  TEST_PRIVATE_KEY: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+  TEST_PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 jobs:
   Build:
@@ -43,7 +42,6 @@ jobs:
       - name: Test
         uses: ./.github/actions/unit-test
 
-
   SmokeTest:
     runs-on: ubuntu-latest
     needs: Test
@@ -62,9 +60,21 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
+      - name: Create .env file
+        run: |
+          cat << EOF > .env
+          BASE_URI="http://127.0.0.1:8080/ipfs/"
+          EVE_TOKEN_NAMESPACE=test
+          ERC20_TOKEN_NAME=TEST TOKEN   
+          ERC20_TOKEN_SYMBOL=TEST
+          ERC20_INITIAL_SUPPLY=10000000000
+          EVE_TOKEN_ADMIN=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+          ADMIN_ACCOUNTS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8,0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+          EOF
+
       - name: Run local anvil node
         run: |
-          ./scripts/run-local-node.sh & 
+          ./scripts/run-local-node.sh &
 
       - name: Docker meta
         uses: docker/metadata-action@v5
@@ -92,8 +102,24 @@ jobs:
 
       - name: Run deployer image
         run: |
-          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA} deploy-v1 --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
+          # Debug information
+          echo "=== Environment Variables ==="
+          cat .env
+
+          export BASE_URI=$TEST_BASE_URI
+          docker run --name world-chain-deployer-image-TEST -i --rm=false --network="host" \
+            --env-file .env \
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:sha-${GITHUB_SHA} deploy-v1 --rpc-url $TEST_RPC_URL --private-key $TEST_PRIVATE_KEY
           docker cp world-chain-deployer-image-TEST:/monorepo/run_env.json ./docker_run_env.json
+          # Copy the logfile for debugging
+          docker cp world-chain-deployer-image-TEST:/monorepo/logfile.log ./deployment.log || true
+          echo "=== Deployment Logs ==="
+          if [ -f "./deployment.log" ]; then
+            echo "Contents of deployment.log:"
+            cat ./deployment.log
+          else
+            echo "deployment.log file not found"
+          fi
 
       - name: Load Environment Variables from JSON
         run: |
@@ -129,7 +155,6 @@ jobs:
           export RPC_URL=$TEST_RPC_URL
           export PRIVATE_KEY=$TEST_PRIVATE_KEY
           pnpm nx createAndAnchor:ci end-to-end-tests
-  
 
   ReleaseImage:
     runs-on: ubuntu-latest
