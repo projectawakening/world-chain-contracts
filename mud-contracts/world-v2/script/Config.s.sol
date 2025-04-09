@@ -42,8 +42,6 @@ contract Config is Script {
     string memory tenant = vm.envString("TENANT");
     bytes32 tenantId = keccak256(abi.encodePacked(tenant));
 
-    console.log(tenant);
-
     vm.startBroadcast(deployerPrivateKey);
 
     // set world tenant

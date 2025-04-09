@@ -55,7 +55,20 @@ echo "Running config..."
 pnpm nx run @eveworld/world-v2:config || { echo "Config failed"; kill $ANVIL_PID; exit 1; }
 
 echo "Running scripts..."
-pnpm nx run end-to-end-tests-v2:runAll:test || { echo "Scripts failed"; kill $ANVIL_PID; exit 1; }
+forge script script/CreateSmartCharacter.s.sol:CreateSmartCharacter --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "CreateSmartCharacter script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/CreateMintERC20.s.sol:CreateMintERC20 --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "CreateMintERC20 script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/AnchorSSU.s.sol:AnchorSSU --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "AnchorSSU script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/DepositFuel.s.sol:DepositFuel --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "DepositFuel script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/BringOnline.s.sol:BringOnline --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "BringOnline script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/DepositToInventory.s.sol:DepositToInventory --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "DepositToInventory script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/DepositToEphemeral.s.sol:DepositToEphemeral --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "DepositToEphemeral script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/WithdrawFromInventory.s.sol:WithdrawFromInventory --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "WithdrawFromInventory script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/WithdrawFromEphemeral.s.sol:WithdrawFromEphemeral --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "WithdrawFromEphemeral script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/TransferItems.s.sol:TransferItems --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "TransferItems script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/AnchorSmartTurret.s.sol:AnchorSmartTurret --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "AnchorSmartTurret script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/ConfigureSmartTurret.s.sol:ConfigureSmartTurret --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "ConfigureSmartTurret script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/AnchorSmartGate.s.sol:AnchorSmartGate --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "AnchorSmartGate script failed"; kill $ANVIL_PID; exit 1; }
+forge script script/ConfigureSmartGate.s.sol:ConfigureSmartGate --fork-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --sig "run(address)" $WORLD_ADDRESS -vvv || { echo "ConfigureSmartGate script failed"; kill $ANVIL_PID; exit 1; }
 
 # Kill anvil process
 echo "Tests completed. Shutting down Anvil."
