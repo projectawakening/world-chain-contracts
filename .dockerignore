@@ -48,3 +48,5 @@ MIGRATION.md
 *.log
 *.tmp
 *.temp 
+**/logs/**
+.pnpm-store/
