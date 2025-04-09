@@ -2,7 +2,6 @@
 pragma solidity >=0.8.20;
 
 import { Script } from "forge-std/Script.sol";
-import { console } from "forge-std/console.sol";
 import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
