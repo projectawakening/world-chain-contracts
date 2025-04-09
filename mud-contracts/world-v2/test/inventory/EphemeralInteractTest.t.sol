@@ -206,6 +206,7 @@ contract EphemeralInteractTest is MudTest {
     vm.startPrank(bob, deployer);
     // Add items to bob's ephemeral inventory
     ephemeralInventorySystem.depositEphemeral(inventoryObjectId, bob, itemParams);
+    vm.stopPrank();
 
     // Verify the items are in ephemeral inventory before transfer
     assertEq(EphemeralInventory.lengthItems(inventoryObjectId, bob), 2);
@@ -221,10 +222,10 @@ contract EphemeralInteractTest is MudTest {
       smartObjectId: item2ObjectId,
       quantity: 3 // Transfer part of the quantity
     });
-
+    vm.startPrank(charlie, deployer);
     // Direct transfer from ephemeral to inventory
     vm.expectRevert(
-      abi.encodeWithSelector(AccessSystem.Access_CannotTransferFromEphemeral.selector, bob, inventoryObjectId)
+      abi.encodeWithSelector(AccessSystem.Access_CannotTransferFromEphemeral.selector, charlie, inventoryObjectId)
     );
     ephemeralInteractSystem.transferFromEphemeral(inventoryObjectId, bob, itemParams);
 
