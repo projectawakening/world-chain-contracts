@@ -5,8 +5,6 @@ import { console } from "forge-std/console.sol";
 
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
-import { UNLIMITED_DELEGATION } from "@latticexyz/world/src/constants.sol";
-
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { Tenant, EphemeralInvItemData, EphemeralInvItem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
@@ -26,9 +24,9 @@ contract WithdrawFromEphemeral is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
     bytes32 tenantId = Tenant.get();
-    uint256 smartObjectId = ObjectIdLib.calculateSingletonId(tenantId, 1244);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, 1244);
 
-    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, 8080);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, 9090);
 
     InventoryItemParams[] memory items = new InventoryItemParams[](1);
     items[0] = InventoryItemParams({
@@ -36,14 +34,15 @@ contract WithdrawFromEphemeral is Script {
       quantity: 5 // Withdraw 5 of 13
     });
 
+    // withdrawEphemeral is a validated call, validated calls must be made from the deployer account via delegation using world.callFrom
     world.callFrom(
       bob,
       ephemeralInventorySystem.toResourceId(),
-      abi.encodeCall(EphemeralInventorySystem.withdrawEphemeral, (smartObjectId, bob, items))
+      abi.encodeCall(EphemeralInventorySystem.withdrawEphemeral, (ssuSmartObjectId, bob, items))
     );
 
-    EphemeralInvItemData memory itemData = EphemeralInvItem.get(smartObjectId, bob, nonSingletonObjectId);
-    console.log("Item data:", itemData.quantity); // should be 8
+    EphemeralInvItemData memory itemData = EphemeralInvItem.get(ssuSmartObjectId, bob, nonSingletonObjectId);
+    console.log("Expected 8, Item quantity:", itemData.quantity); // should be 8
 
     vm.stopBroadcast();
   }

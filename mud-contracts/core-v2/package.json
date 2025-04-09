@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
+    "build": "mud build",
     "build:abi": "forge build",
     "build:abi-ts": "mud abi-ts",
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",

@@ -40,7 +40,6 @@ contract AnchorSSU is Script {
     uint256 fuelMaxCapacity = 100000000;
     uint256 storageCapacity = 100000000;
     uint256 ephemeralCapacity = 100000000;
-
     uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
@@ -62,7 +61,15 @@ contract AnchorSSU is Script {
       locationData: locationParams
     });
 
-    smartStorageUnitSystem.createAndAnchorStorageUnit(deployableParams, storageCapacity, ephemeralCapacity);
+    // createAndAnchorStorageUnit is a validated call, validated calls must be made from the deployer account via delegation using world.callFrom
+    world.callFrom(
+      alice,
+      smartStorageUnitSystem.toResourceId(),
+      abi.encodeCall(
+        SmartStorageUnitSystem.createAndAnchorStorageUnit,
+        (deployableParams, storageCapacity, ephemeralCapacity)
+      )
+    );
 
     vm.stopBroadcast();
   }

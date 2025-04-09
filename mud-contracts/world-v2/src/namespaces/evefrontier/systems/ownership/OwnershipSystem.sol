@@ -21,6 +21,7 @@ contract OwnershipSystem is SmartObjectFramework {
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
   error Ownership_NonexistentObject(uint256 smartObjectId);
   error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
+  error Ownership_SingletonInInventory(uint256 smartObjectId, uint256 inventoryObjectId);
 
   /**
    * @notice Get the owner account of a smart object
@@ -69,7 +70,13 @@ contract OwnershipSystem is SmartObjectFramework {
       revert Ownership_InvalidSingleton(smartObjectId);
     }
 
-    // Check if the object is already assigned to an account
+    // Check if the singleton is currently located in an inventory
+    uint256 inventoryObjectId = InventoryByItem.get(smartObjectId);
+    if (inventoryObjectId != 0) {
+      revert Ownership_SingletonInInventory(smartObjectId, inventoryObjectId);
+    }
+
+    // Check if the object is already assigned direct ownership to an account
     address currentOwner = OwnershipByObject.get(smartObjectId);
     if (currentOwner != address(0)) {
       revert Ownership_AlreadyOwned(smartObjectId, currentOwner);

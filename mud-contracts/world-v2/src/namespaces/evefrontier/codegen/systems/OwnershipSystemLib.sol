@@ -40,6 +40,7 @@ library OwnershipSystemLib {
   error Ownership_InvalidOwner(uint256 smartObjectId, address invalidOwner);
   error Ownership_NonexistentObject(uint256 smartObjectId);
   error Ownership_AlreadyOwned(uint256 smartObjectId, address currentOwner);
+  error Ownership_SingletonInInventory(uint256 smartObjectId, uint256 inventoryObjectId);
 
   function owner(OwnershipSystemType self, uint256 smartObjectId) internal view returns (address) {
     return CallWrapper(self.toResourceId(), address(0)).owner(smartObjectId);

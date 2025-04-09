@@ -37,6 +37,8 @@ contract InventoryOwnershipSystem is SmartObjectFramework {
   error InventoryOwnership_NonexistentItemRecord(uint256 itemObjectId);
   error InventoryOwnership_NonexistentObject(uint256 objectId);
   error InventoryOwnership_InvalidOperation(string message);
+  error InventoryOwnership_SingletonAlreadyAssigned(uint256 itemObjectId, uint256 currentInventoryObjectId);
+  error InventoryOwnership_SingletonDirectlyOwned(uint256 itemObjectId, address directOwner);
 
   /**
    * @notice Assign ownership of item(s) to an inventory associated with a specific smart object
@@ -70,7 +72,22 @@ contract InventoryOwnershipSystem is SmartObjectFramework {
       if (quantity != 1) {
         revert InventoryOwnership_InvalidQuantity(itemObjectId, quantity, 1);
       }
-      if (InventoryByItem.get(itemObjectId) != inventoryObjectId) {
+
+      // ownership checks
+      address directOwner = OwnershipByObject.get(itemObjectId);
+      // Check if the singleton item is directly owned by an account
+      if (directOwner != address(0)) {
+        revert InventoryOwnership_SingletonDirectlyOwned(itemObjectId, directOwner);
+      }
+
+      uint256 currentInventoryId = InventoryByItem.get(itemObjectId);
+      // Check if the singleton is already assigned to another inventory
+      if (currentInventoryId != 0 && currentInventoryId != inventoryObjectId) {
+        revert InventoryOwnership_SingletonAlreadyAssigned(itemObjectId, currentInventoryId);
+      }
+
+      // Only set if not already assigned to this inventory (minor optimization)
+      if (currentInventoryId != inventoryObjectId) {
         InventoryByItem.set(itemObjectId, inventoryObjectId);
       }
     }

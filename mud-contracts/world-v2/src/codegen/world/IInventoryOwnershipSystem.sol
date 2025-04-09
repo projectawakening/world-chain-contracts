@@ -28,6 +28,8 @@ interface IInventoryOwnershipSystem {
   error InventoryOwnership_NonexistentItemRecord(uint256 itemObjectId);
   error InventoryOwnership_NonexistentObject(uint256 objectId);
   error InventoryOwnership_InvalidOperation(string message);
+  error InventoryOwnership_SingletonAlreadyAssigned(uint256 itemObjectId, uint256 currentInventoryObjectId);
+  error InventoryOwnership_SingletonDirectlyOwned(uint256 itemObjectId, address directOwner);
 
   function evefrontier__assignItemToInventory(
     uint256 inventoryObjectId,

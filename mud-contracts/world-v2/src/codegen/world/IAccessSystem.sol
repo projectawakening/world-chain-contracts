@@ -15,6 +15,7 @@ interface IAccessSystem {
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
+  error Access_NotAdminOrOwnerSupported(address caller, uint256 smartObjectId);
   error Access_NotDirectOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_CannotTransferFromEphemeral(address caller, uint256 smartObjectId);
   error Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
@@ -37,7 +38,7 @@ interface IAccessSystem {
 
   function evefrontier__onlyOwnerOrEphemeralCrossTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
-  function evefrontier__onlyEphemeralTransferRole(uint256 smartObjectId, bytes memory data) external view;
+  function evefrontier__onlyEphemeralOwnerOrTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyOwnerOrInventoryTransferRole(uint256 smartObjectId, bytes memory data) external view;
 
@@ -54,6 +55,8 @@ interface IAccessSystem {
   function evefrontier__adminSupportOrDirectOwnerGates(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
+
+  function evefrontier__onlyAdminOrOwnerSupported(uint256 smartObjectId, bytes memory data) external view;
 
   function evefrontier__onlyClassScopedOrCharAdminOrOwner(uint256 smartObjectId, bytes memory data) external view;
 

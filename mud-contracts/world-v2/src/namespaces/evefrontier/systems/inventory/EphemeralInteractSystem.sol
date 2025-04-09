@@ -2,6 +2,7 @@
 pragma solidity >=0.8.24;
 
 // Smart Object Framework imports
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { roleManagementSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
 import { HasRole, Role } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
@@ -12,7 +13,7 @@ import { EphemeralItemTransfer } from "../../codegen/tables/EphemeralItemTransfe
 // Local namespace systems
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { ephemeralInventorySystem } from "../../codegen/systems/EphemeralInventorySystemLib.sol";
-import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
+import { OwnershipSystem, ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 
 // Types and parameters
 import { InventoryItemParams } from "./types.sol";
@@ -35,7 +36,11 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) public context access(smartObjectId) {
-    address inventoryOwner = ownershipSystem.owner(smartObjectId);
+    bytes memory returnData = IWorldWithContext(_world()).callStatic(
+      ownershipSystem.toResourceId(),
+      abi.encodeCall(OwnershipSystem.owner, (smartObjectId))
+    );
+    address inventoryOwner = abi.decode(returnData, (address));
 
     // withdraw the items from the designated ephemeral inventory
     ephemeralInventorySystem.withdrawEphemeral(smartObjectId, ephemeralOwner, items);
@@ -67,7 +72,11 @@ contract EphemeralInteractSystem is SmartObjectFramework {
     address ephemeralOwner,
     InventoryItemParams[] memory items
   ) public context access(smartObjectId) {
-    address inventoryOwner = ownershipSystem.owner(smartObjectId);
+    bytes memory returnData = IWorldWithContext(_world()).callStatic(
+      ownershipSystem.toResourceId(),
+      abi.encodeCall(OwnershipSystem.owner, (smartObjectId))
+    );
+    address inventoryOwner = abi.decode(returnData, (address));
 
     // withdraw the items from the designated inventory
     inventorySystem.withdrawInventory(smartObjectId, items);

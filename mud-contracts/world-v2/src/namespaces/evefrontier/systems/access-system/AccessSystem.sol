@@ -31,6 +31,7 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotOwner(address caller, uint256 smartObjectId);
   error Access_NotDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminOrOwner(address caller, uint256 smartObjectId);
+  error Access_NotAdminOrOwnerSupported(address caller, uint256 smartObjectId);
   error Access_NotDirectOwnerOrCanTransferToEphemeral(address caller, uint256 smartObjectId);
   error Access_CannotTransferFromEphemeral(address caller, uint256 smartObjectId);
   error Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral(address caller, uint256 smartObjectId);
@@ -82,8 +83,12 @@ contract AccessSystem is SmartObjectFramework {
     revert Access_NotDirectEphemeralOwnerOrCanCrossTransferToEphemeral(caller, smartObjectId);
   }
 
-  function onlyEphemeralTransferRole(uint256 smartObjectId, bytes memory data) public view {
+  function onlyEphemeralOwnerOrTransferRole(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    address caller = _callMsgSender(1);
+    if (callCount == 1 && isEphemeralOwner(smartObjectId, caller, data)) {
+      return;
+    }
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
     if (canTransferFromEphemeral(smartObjectId, msgSender)) {
       return;
@@ -180,6 +185,18 @@ contract AccessSystem is SmartObjectFramework {
     }
 
     revert Access_NotAdminOrOwner(_callMsgSender(1), smartObjectId);
+  }
+
+  function onlyAdminOrOwnerSupported(uint256 smartObjectId, bytes memory data) public view {
+    if (isAdmin(_callMsgSender(1))) {
+      return;
+    }
+
+    if (isOwner(smartObjectId, _callMsgSender(1)) && isAdmin(tx.origin)) {
+      return;
+    }
+
+    revert Access_NotAdminOrOwnerSupported(_callMsgSender(1), smartObjectId);
   }
 
   function onlyClassScopedOrCharAdminOrOwner(uint256 smartObjectId, bytes memory data) public view {

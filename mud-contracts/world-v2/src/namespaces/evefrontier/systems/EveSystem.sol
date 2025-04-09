@@ -284,7 +284,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       fuelSystem.toResourceId(),
       FuelSystem.depositFuel.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyAdminOrOwner.selector
+      AccessSystem.onlyAdminOrOwnerSupported.selector
     );
     accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), FuelSystem.depositFuel.selector, true);
   }
@@ -454,7 +454,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       ephemeralInteractSystem.toResourceId(),
       EphemeralInteractSystem.transferFromEphemeral.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyEphemeralTransferRole.selector
+      AccessSystem.onlyEphemeralOwnerOrTransferRole.selector
     );
     accessConfigSystem.setAccessEnforcement(
       ephemeralInteractSystem.toResourceId(),

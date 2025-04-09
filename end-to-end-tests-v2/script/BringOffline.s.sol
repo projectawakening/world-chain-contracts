@@ -16,20 +16,29 @@ contract BringOffline is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
+    uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     string memory mnemonic = "test test test test test test test test test test test junk";
     uint256 alicePrivateKey = vm.deriveKey(mnemonic, 2);
 
-    // Start broadcasting transactions from the deployer account
-    vm.startBroadcast(alicePrivateKey);
-
     bytes32 tenantId = Tenant.get();
     uint256 ssuItemId = 1244;
-    uint256 smartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
-    deployableSystem.bringOffline(smartObjectId); // needs to have some fuel in it to work, else it will just let the state to offline
+    // SSU is already online from the BringOnline.s.sol script
 
-    console.log("Deployable brought offline");
-    console.log("Deployable state should be 2:", uint8(DeployableState.getCurrentState(smartObjectId)));
+    // currently bringOffline can be made by ADMIN or by owner of the SSU directly
+    vm.startBroadcast(deployerPrivateKey);
+    deployableSystem.bringOffline(ssuSmartObjectId); // needs to have some fuel in it to work, else it will just let the state to offline
+    console.log("Deployable brought offline by ADMIN");
+    console.log("Deployable state should be 2:", uint8(DeployableState.getCurrentState(ssuSmartObjectId)));
+
+    deployableSystem.bringOnline(ssuSmartObjectId); // bring online so owner can bring offline
+    vm.stopBroadcast();
+
+    vm.startBroadcast(alicePrivateKey);
+    deployableSystem.bringOffline(ssuSmartObjectId);
+    console.log("Deployable brought offline by owner");
+    console.log("Deployable state should be 2:", uint8(DeployableState.getCurrentState(ssuSmartObjectId)));
     vm.stopBroadcast();
   }
 }
