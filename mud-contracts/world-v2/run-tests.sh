@@ -3,7 +3,7 @@ set -e
 
 # Start anvil with the saved state
 echo "Starting Anvil node with saved smart object framework snapshot..."
-anvil --gas-limit 120000000 --load-state sof-state.json > /dev/null 2>&1 &
+anvil --gas-limit 120000000 --load-state ../../sof-state.json > /dev/null 2>&1 &
 ANVIL_PID=$!
 
 # Wait for anvil to initialize

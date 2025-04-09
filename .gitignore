@@ -22,3 +22,6 @@
 # Ignore all env files
 **/.env
 .pnpm-store/
+
+# Ignore logs
+**/logs/**

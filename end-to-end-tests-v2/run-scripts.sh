@@ -28,7 +28,7 @@ print_and_log() {
 # Function to start and manage Anvil
 start_anvil() {
     print_and_log "$YELLOW" "Starting Anvil node with saved smart object framework snapshot..."
-    anvil --gas-limit 120000000 --load-state sof-state.json > /dev/null 2>&1 &
+    anvil --gas-limit 120000000 --load-state ../sof-state.json > /dev/null 2>&1 &
     ANVIL_PID=$!
 
     # Wait for anvil to initialize
