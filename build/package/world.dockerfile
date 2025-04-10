@@ -1,18 +1,36 @@
-# Use the latest foundry image as of April 11th 2024
-FROM --platform=linux/amd64 ghcr.io/foundry-rs/foundry@sha256:8b843eb65cc7b155303b316f65d27173c862b37719dc095ef3a2ef27ce8d3c00
+# Use a glibc-based image instead of Alpine
+FROM --platform=linux/amd64 ubuntu:22.04
 
 ARG IMAGE_TAG
 ENV IMAGE_TAG=${IMAGE_TAG}
 
-# Install node and pnpm
-RUN cat /etc/apk/repositories
-RUN apk add  --update nodejs-current=18.9.1-r0 npm jq curl git
+# Install basic dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Node.js 18.x
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Install pnpm
 RUN npm install -g pnpm@8.9.2
+
+# Install Foundry
+RUN curl -L https://foundry.paradigm.xyz | bash && \
+    export PATH="$PATH:$HOME/.foundry/bin" && \
+    echo 'export PATH="$PATH:$HOME/.foundry/bin"' >> $HOME/.bashrc && \
+    $HOME/.foundry/bin/foundryup
+
+# Add Foundry to PATH
+ENV PATH="$PATH:/root/.foundry/bin"
 
 # Set up working directory
 WORKDIR /monorepo
-COPY . . 
+COPY . .
 
 RUN rm -rf node_modules
 
