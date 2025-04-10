@@ -1,20 +1,20 @@
-# Use a glibc-based image instead of Alpine
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM --platform=linux/amd64 debian:bookworm-slim
 
 ARG IMAGE_TAG
 ENV IMAGE_TAG=${IMAGE_TAG}
 
 # Install basic dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
-    build-essential \
+    ca-certificates \
     jq \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 18.x
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
+RUN curl -fsSL https://nodejs.org/dist/v18.16.0/node-v18.16.0-linux-x64.tar.gz | \
+    tar -xz -C /usr/local --strip-components=1
 
 # Install pnpm
 RUN npm install -g pnpm@8.9.2
