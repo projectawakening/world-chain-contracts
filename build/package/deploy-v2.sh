@@ -52,14 +52,14 @@ else
     show_progress 2 9 "World core deployed"
 fi
 
+echo " - World address: $WORLD_ADDRESS" | tee -a $LOG_FILE
+
 #3 Configure the world to receive the forwarder
 echo " - Configuring trusted forwarder within the world" | tee -a $LOG_FILE
 pnpm nx setForwarder @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
 show_progress 3 9 "Trusted forwarder configured"
-
-echo " - World address: $WORLD_ADDRESS" | tee -a $LOG_FILE
 
 #4 Deploy smart object framework v2
 echo " - Installing smart object framework v2 into world" | tee -a $LOG_FILE
@@ -87,9 +87,7 @@ echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG
 pnpm nx config @eveworld/world-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 6 9 "Configured Smart Object Framework v2 Rules for World v2"
-echo " - World v2 configured with Smart Object Framework v2" | tee -a $LOG_FILE
-
+show_progress 7 9 "Configured Smart Object Framework v2 Rules for World v2"
 
 # Extract the ERC20 token address from the output
 eve_token_address=$(echo "$deployment_output" \
@@ -105,19 +103,25 @@ export EVE_TOKEN_ADDRESS="$eve_token_address"
 wait
 show_progress 7 9 "EVE token deployed"
 
-#8 Delegate Namespace Access
+#8 Delegate Namespace Access and Grant Admin Access to 
 echo " - Delegating namespace access to forwarder contract" | tee -a $LOG_FILE
 pnpm nx delegateNamespaceAccess @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 9 9 "Namespace access delegated"
+show_progress 8 9 "Namespace access delegated"
 
+#9 Grant Admin Access to list of addresses
+echo " - Granting admin access to list of addresses" | tee -a $LOG_FILE
+pnpm nx grant-admin-access @eveworld/world-v2 >> $LOG_FILE 2>&1
+
+wait
+show_progress 9 9 "Admin access granted"
 
 echo " - Collecting ABIs" | tee -a $LOG_FILE
 mkdir -p abis
 mkdir -p abis/trusted-forwarder
 mkdir -p abis/world
-# 9 Copy ABIS to be used for External consumption
+#Copy ABIS to be used for External consumption
 cp standard-contracts-v2/out/ERC2771ForwarderWithHashNonce.sol/ERC2771Forwarder.abi.json "abis/trusted-forwarder/ERC2771Forwarder-v2-${IMAGE_TAG}.abi.json"
 cp build/artifacts/IWorld-v2.abi.json "abis/world/IWorld-v2-${IMAGE_TAG}.abi.json"
 cp build/artifacts/ERC2771IWorld-v2.abi.json "abis/world/ERC2771IWorld-v2-${IMAGE_TAG}.abi.json"
