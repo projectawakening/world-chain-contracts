@@ -4,6 +4,8 @@ pragma solidity >=0.8.24;
 
 // MUD core imports
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
+import { BatchCallSystem } from "@latticexyz/world/src/modules/init/implementations/BatchCallSystem.sol";
+import { BATCH_CALL_SYSTEM_ID } from "@latticexyz/world/src/modules/init/constants.sol";
 
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
@@ -38,6 +40,9 @@ import { IEveSystem } from "../interfaces/IEveSystem.sol";
 // Local namespace types
 import { EntityRecordParams } from "./entity-record/types.sol";
 
+// Define BatchCallSystem resourceId alias for readability
+ResourceId constant batchCallSystem = BATCH_CALL_SYSTEM_ID;
+
 /**
  * @title EveSystem
  * @author CCP Games
@@ -45,10 +50,11 @@ import { EntityRecordParams } from "./entity-record/types.sol";
  */
 contract EveSystem is IEveSystem, SmartObjectFramework {
   function registerSmartCharacterClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](3);
+    ResourceId[] memory systemIds = new ResourceId[](4);
     systemIds[0] = smartCharacterSystem.toResourceId();
     systemIds[1] = entityRecordSystem.toResourceId();
     systemIds[2] = ownershipSystem.toResourceId();
+    systemIds[3] = batchCallSystem;
     uint256 classId = initialize(typeId, volume, systemIds);
 
     ResourceId smartCharacterSystemId = smartCharacterSystem.toResourceId();
@@ -56,7 +62,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](11);
+    ResourceId[] memory systemIds = new ResourceId[](12);
     systemIds[0] = smartStorageUnitSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -68,6 +74,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[8] = ephemeralInventorySystem.toResourceId();
     systemIds[9] = inventoryInteractSystem.toResourceId();
     systemIds[10] = ephemeralInteractSystem.toResourceId();
+    systemIds[11] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
@@ -76,7 +83,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartTurretClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](7);
+    ResourceId[] memory systemIds = new ResourceId[](8);
     systemIds[0] = smartTurretSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -84,6 +91,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
+    systemIds[7] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
@@ -92,7 +100,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartGateClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](7);
+    ResourceId[] memory systemIds = new ResourceId[](8);
     systemIds[0] = smartGateSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -100,6 +108,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
+    systemIds[7] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
