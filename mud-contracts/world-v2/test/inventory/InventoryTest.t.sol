@@ -160,9 +160,6 @@ contract InventoryTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
       )
     );
@@ -179,9 +176,6 @@ contract InventoryTest is MudTest {
           volume: 1000
         }),
         bob,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
       )
     );

@@ -10,14 +10,12 @@ import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/Ta
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Fuel, FuelData, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
+import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
 
 // Local namespace systems
-import { FuelSystem } from "../fuel/FuelSystem.sol";
 import { LocationSystem } from "../location/LocationSystem.sol";
 import { locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
 import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLib.sol";
-import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
@@ -35,10 +33,7 @@ import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
  */
 contract DeployableSystem is SmartObjectFramework {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
-  error Deployable_NoFuel(uint256 smartObjectId);
   error Deployable_StateTransitionPaused();
-  error Deployable_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
-  error Deployable_InvalidFuelConsumptionInterval(uint256 smartObjectId);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
   /**
@@ -61,13 +56,7 @@ contract DeployableSystem is SmartObjectFramework {
     // Create the smart assembly object
     smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
-    createDeployable(
-      params.smartObjectId,
-      params.owner,
-      params.fuelUnitVolume,
-      params.fuelConsumptionIntervalInSeconds,
-      params.fuelMaxCapacity
-    );
+    createDeployable(params.smartObjectId, params.owner);
 
     anchor(params.smartObjectId, params.owner, params.locationData);
   }
@@ -77,24 +66,14 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev creates a new deployable smart object
    * @param smartObjectId id of the smart object
    * @param owner the owner of the smart object
-   * @param fuelUnitVolume the fuel unit volume in wei
-   * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
-   * @param fuelMaxCapacity the fuel max capacity in wei
    */
   function createDeployable(
     uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
+    address owner
   ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.NULL) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
-    }
-
-    if (fuelConsumptionIntervalInSeconds < 1) {
-      revert Deployable_InvalidFuelConsumptionInterval(smartObjectId);
     }
 
     // revert if the given smart object owner is not a valid character
@@ -131,14 +110,6 @@ contract DeployableSystem is SmartObjectFramework {
       0,
       block.number,
       block.timestamp
-    );
-
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity,
-      0
     );
   }
 
@@ -197,13 +168,7 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    fuelSystem.updateFuel(smartObjectId);
-
-    uint256 currentFuel = Fuel.getFuelAmount(smartObjectId);
-    if (currentFuel < ONE_UNIT_IN_WEI) revert Deployable_NoFuel(smartObjectId);
-
-    fuelSystem.setFuelAmount(smartObjectId, currentFuel - ONE_UNIT_IN_WEI);
-
+    //TODO: check if the deployable has enough energy to be brought online
     _setDeployableState(smartObjectId, previousState, State.ONLINE);
   }
 
@@ -217,7 +182,7 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    fuelSystem.updateFuel(smartObjectId);
+    //TODO: release the energy reserved by the deployable
     _bringOffline(smartObjectId, previousState);
   }
 

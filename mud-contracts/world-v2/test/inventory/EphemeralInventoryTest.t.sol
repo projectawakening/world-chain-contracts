@@ -31,7 +31,6 @@ import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../../src/na
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 
 // Types and parameters
@@ -154,15 +153,14 @@ contract EphemeralInventoryTest is MudTest {
     // Register class and setup smart object state
     inventoryObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
 
-    ResourceId[] memory systemIds = new ResourceId[](8);
+    ResourceId[] memory systemIds = new ResourceId[](7);
     systemIds[0] = deployableSystem.toResourceId();
     systemIds[1] = smartAssemblySystem.toResourceId();
     systemIds[2] = entityRecordSystem.toResourceId();
     systemIds[3] = locationSystem.toResourceId();
-    systemIds[4] = fuelSystem.toResourceId();
-    systemIds[5] = inventorySystem.toResourceId();
-    systemIds[6] = ephemeralInventorySystem.toResourceId();
-    systemIds[7] = mockSystemId;
+    systemIds[4] = inventorySystem.toResourceId();
+    systemIds[5] = ephemeralInventorySystem.toResourceId();
+    systemIds[6] = mockSystemId;
 
     entitySystem.registerClass(inventoryObjectClassId, systemIds);
 
@@ -179,9 +177,6 @@ contract EphemeralInventoryTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
       )
     );
@@ -398,7 +393,6 @@ contract EphemeralInventoryTest is MudTest {
 
     // Bring online and create and deposit items
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -472,7 +466,6 @@ contract EphemeralInventoryTest is MudTest {
 
     // Bring state to ONLINE
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -588,7 +581,6 @@ contract EphemeralInventoryTest is MudTest {
       alice,
       LocationData({ solarSystemId: 30000142, x: 100, y: 100, z: 100 })
     );
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -654,7 +646,6 @@ contract EphemeralInventoryTest is MudTest {
     itemParams[2] = InventoryItemParams({ smartObjectId: transferItemObjectId, quantity: 5 });
 
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -778,7 +769,6 @@ contract EphemeralInventoryTest is MudTest {
       alice,
       LocationData({ solarSystemId: 30000142, x: 100, y: 100, z: 100 })
     );
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -811,7 +801,6 @@ contract EphemeralInventoryTest is MudTest {
   function test_EphemeralInventory_EphemeralToInventoryTransfer() public {
     // First, bring inventory online (required for ephemeral operations)
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
 
     // Create items in the main inventory first
@@ -935,7 +924,6 @@ contract EphemeralInventoryTest is MudTest {
     // Create two ephemeral inventories
     // First, bring inventory online (required for ephemeral operations)
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 

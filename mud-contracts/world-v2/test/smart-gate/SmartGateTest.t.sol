@@ -21,7 +21,7 @@ import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/name
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, CharactersByAccount, OwnershipByObject, LocationData, SmartAssembly, SmartGateConfig, SmartGateConfigData, SmartGateLink, SmartGateLinkData, Fuel, FuelData, Location } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, CharactersByAccount, OwnershipByObject, LocationData, SmartAssembly, SmartGateConfig, SmartGateConfigData, SmartGateLink, SmartGateLinkData, Location } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -31,7 +31,6 @@ import { EphemeralInteractSystem, ephemeralInteractSystem } from "../../src/name
 import { InventoryInteractSystem, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 import { SmartGateSystem, smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 import { ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
@@ -88,10 +87,6 @@ contract SmartGateTest is MudTest {
   //entity record
   EntityRecordParams sourceEntityRecordParams;
   EntityRecordParams destinationEntityRecordParams;
-
-  uint256 fuelUnitVolume = 10;
-  uint256 fuelConsumptionIntervalInSeconds = 60;
-  uint256 fuelMaxCapacity = 1000000;
 
   uint256 maxDistance = 1; // will increase after testing failure
 
@@ -161,11 +156,6 @@ contract SmartGateTest is MudTest {
       volume: 10000
     });
 
-    // vm.startPrank(bob, deployer);
-    // fuelSystem.depositFuel(inventoryObjectId2, 10000);
-    // deployableSystem.bringOnline(inventoryObjectId2);
-    // vm.stopPrank();
-
     // Mock builder deployment of custom canJumpsystem
     bytes14 namespace = bytes14("spaceforalice");
     bytes16 name = bytes16("MockCanJumpCusto");
@@ -208,12 +198,6 @@ contract SmartGateTest is MudTest {
     assertEq(deployableStateData.updatedBlockNumber, 0);
     assertEq(deployableStateData.updatedBlockTime, 0);
 
-    // check fuel data before creating and anchoring
-    FuelData memory fuelData = Fuel.get(sourceGateId);
-    assertEq(fuelData.fuelUnitVolume, 0);
-    assertEq(fuelData.fuelConsumptionIntervalInSeconds, 0);
-    assertEq(fuelData.fuelMaxCapacity, 0);
-
     // check ownership data before creating and anchoring
     address owner = ownershipSystem.owner(sourceGateId);
     assertEq(owner, address(0));
@@ -231,19 +215,7 @@ contract SmartGateTest is MudTest {
       smartGateSystem.toResourceId(),
       abi.encodeCall(
         SmartGateSystem.createAndAnchorGate,
-        (
-          CreateAndAnchorParams(
-            sourceGateId,
-            "SG",
-            sourceEntityRecordParams,
-            alice,
-            fuelUnitVolume,
-            fuelConsumptionIntervalInSeconds,
-            fuelMaxCapacity,
-            sourceLocationParams
-          ),
-          maxDistance
-        )
+        (CreateAndAnchorParams(sourceGateId, "SG", sourceEntityRecordParams, alice, sourceLocationParams), maxDistance)
       )
     );
     vm.stopPrank();
@@ -273,12 +245,6 @@ contract SmartGateTest is MudTest {
     assertEq(deployableStateData.anchoredAt, block.timestamp);
     assertEq(deployableStateData.updatedBlockNumber, block.number);
     assertEq(deployableStateData.updatedBlockTime, block.timestamp);
-
-    // check fuel data after creating and anchoring
-    fuelData = Fuel.get(sourceGateId);
-    assertEq(fuelData.fuelUnitVolume, fuelUnitVolume);
-    assertEq(fuelData.fuelConsumptionIntervalInSeconds, fuelConsumptionIntervalInSeconds);
-    assertEq(fuelData.fuelMaxCapacity, fuelMaxCapacity);
 
     // check ownership data after creating and anchoring
     owner = ownershipSystem.owner(sourceGateId);
@@ -311,19 +277,7 @@ contract SmartGateTest is MudTest {
       smartGateSystem.toResourceId(),
       abi.encodeCall(
         SmartGateSystem.createAndAnchorGate,
-        (
-          CreateAndAnchorParams(
-            sourceGateId,
-            "SG",
-            sourceEntityRecordParams,
-            alice,
-            fuelUnitVolume,
-            fuelConsumptionIntervalInSeconds,
-            fuelMaxCapacity,
-            sourceLocationParams
-          ),
-          maxDistance
-        )
+        (CreateAndAnchorParams(sourceGateId, "SG", sourceEntityRecordParams, alice, sourceLocationParams), maxDistance)
       )
     );
 
@@ -339,16 +293,7 @@ contract SmartGateTest is MudTest {
       abi.encodeCall(
         SmartGateSystem.createAndAnchorGate,
         (
-          CreateAndAnchorParams(
-            destinationGateId,
-            "SG",
-            destinationEntityRecordParams,
-            bob,
-            fuelUnitVolume,
-            fuelConsumptionIntervalInSeconds,
-            fuelMaxCapacity,
-            destinationLocationParams
-          ),
+          CreateAndAnchorParams(destinationGateId, "SG", destinationEntityRecordParams, bob, destinationLocationParams),
           maxDistance
         )
       )
@@ -489,7 +434,6 @@ contract SmartGateTest is MudTest {
     );
 
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(sourceGateId, 1000);
     deployableSystem.bringOnline(sourceGateId);
     vm.stopPrank();
 
@@ -500,7 +444,6 @@ contract SmartGateTest is MudTest {
     );
 
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(destinationGateId, 1000);
     deployableSystem.bringOnline(destinationGateId);
     vm.stopPrank();
 
@@ -561,10 +504,7 @@ contract SmartGateTest is MudTest {
     vm.stopPrank();
 
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(sourceGateId, 1000);
     deployableSystem.bringOnline(sourceGateId);
-
-    fuelSystem.depositFuel(destinationGateId, 1000);
     deployableSystem.bringOnline(destinationGateId);
     vm.stopPrank();
 

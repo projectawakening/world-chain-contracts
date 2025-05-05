@@ -151,9 +151,6 @@ contract SmartAssemblyTest is MudTest {
       "Deployable",
       deployableEntityRecordParams,
       alice,
-      10,
-      60,
-      100000000,
       locationDataParams
     );
 

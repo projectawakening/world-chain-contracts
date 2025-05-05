@@ -38,32 +38,15 @@ struct RootCallWrapper {
 library DeployableSystemLib {
   error DeployableSystemLib_CallingFromRootSystem();
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
-  error Deployable_NoFuel(uint256 smartObjectId);
   error Deployable_StateTransitionPaused();
-  error Deployable_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
-  error Deployable_InvalidFuelConsumptionInterval(uint256 smartObjectId);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
   function createAndAnchor(DeployableSystemType self, CreateAndAnchorParams memory params) internal {
     return CallWrapper(self.toResourceId(), address(0)).createAndAnchor(params);
   }
 
-  function createDeployable(
-    DeployableSystemType self,
-    uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
-  ) internal {
-    return
-      CallWrapper(self.toResourceId(), address(0)).createDeployable(
-        smartObjectId,
-        owner,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity
-      );
+  function createDeployable(DeployableSystemType self, uint256 smartObjectId, address owner) internal {
+    return CallWrapper(self.toResourceId(), address(0)).createDeployable(smartObjectId, owner);
   }
 
   function destroyDeployable(DeployableSystemType self, uint256 smartObjectId) internal {
@@ -109,20 +92,13 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function createDeployable(
-    CallWrapper memory self,
-    uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
-  ) internal {
+  function createDeployable(CallWrapper memory self, uint256 smartObjectId, address owner) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createDeployable_uint256_address_uint256_uint256_uint256.createDeployable,
-      (smartObjectId, owner, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity)
+      _createDeployable_uint256_address.createDeployable,
+      (smartObjectId, owner)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -212,17 +188,10 @@ library DeployableSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function createDeployable(
-    RootCallWrapper memory self,
-    uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
-  ) internal {
+  function createDeployable(RootCallWrapper memory self, uint256 smartObjectId, address owner) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createDeployable_uint256_address_uint256_uint256_uint256.createDeployable,
-      (smartObjectId, owner, fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity)
+      _createDeployable_uint256_address.createDeployable,
+      (smartObjectId, owner)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
@@ -312,14 +281,8 @@ interface _createAndAnchor_CreateAndAnchorParams {
   function createAndAnchor(CreateAndAnchorParams memory params) external;
 }
 
-interface _createDeployable_uint256_address_uint256_uint256_uint256 {
-  function createDeployable(
-    uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
-  ) external;
+interface _createDeployable_uint256_address {
+  function createDeployable(uint256 smartObjectId, address owner) external;
 }
 
 interface _destroyDeployable_uint256 {

@@ -39,107 +39,107 @@ import { DECIMALS, ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/syst
 
 // Create a mock system to properly test system-to-system calls
 contract MockFuelInteractSystem is System {
-  function callConfigureFuelParameters(
-    uint256 smartObjectId,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity,
-      fuelAmount
-    );
-  }
+function callConfigureFuelParameters(
+uint256 smartObjectId,
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount
+) public {
+fuelSystem.configureFuelParameters(
+smartObjectId,
+fuelUnitVolume,
+fuelConsumptionIntervalInSeconds,
+fuelMaxCapacity,
+fuelAmount
+);
+}
 
-  function callSetFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) public {
-    fuelSystem.setFuelUnitVolume(smartObjectId, fuelUnitVolume);
-  }
+function callSetFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) public {
+fuelSystem.setFuelUnitVolume(smartObjectId, fuelUnitVolume);
+}
 
-  function callSetFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId,
-    uint256 fuelConsumptionIntervalInSeconds
-  ) public {
-    fuelSystem.setFuelConsumptionIntervalInSeconds(smartObjectId, fuelConsumptionIntervalInSeconds);
-  }
+function callSetFuelConsumptionIntervalInSeconds(
+uint256 smartObjectId,
+uint256 fuelConsumptionIntervalInSeconds
+) public {
+fuelSystem.setFuelConsumptionIntervalInSeconds(smartObjectId, fuelConsumptionIntervalInSeconds);
+}
 
-  function callSetFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) public {
-    fuelSystem.setFuelMaxCapacity(smartObjectId, fuelMaxCapacity);
-  }
+function callSetFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) public {
+fuelSystem.setFuelMaxCapacity(smartObjectId, fuelMaxCapacity);
+}
 
-  function callSetFuelAmount(uint256 smartObjectId, uint256 fuelAmountInWei) public {
-    fuelSystem.setFuelAmount(smartObjectId, fuelAmountInWei);
-  }
+function callSetFuelAmount(uint256 smartObjectId, uint256 fuelAmountInWei) public {
+fuelSystem.setFuelAmount(smartObjectId, fuelAmountInWei);
+}
 
-  function callDepositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
-    fuelSystem.depositFuel(smartObjectId, fuelAmount);
-  }
+function callDepositFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+fuelSystem.depositFuel(smartObjectId, fuelAmount);
+}
 
-  function callWithdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
-    fuelSystem.withdrawFuel(smartObjectId, fuelAmount);
-  }
+function callWithdrawFuel(uint256 smartObjectId, uint256 fuelAmount) public {
+fuelSystem.withdrawFuel(smartObjectId, fuelAmount);
+}
 
-  function callUpdateFuel(uint256 smartObjectId) public {
-    fuelSystem.updateFuel(smartObjectId);
-  }
+function callUpdateFuel(uint256 smartObjectId) public {
+fuelSystem.updateFuel(smartObjectId);
+}
 }
 
 contract FuelTest is MudTest {
-  using WorldResourceIdInstance for ResourceId;
+using WorldResourceIdInstance for ResourceId;
 
-  // Mock system address
-  // MockFuelInteractSystem fuelMockSystem;
-  // ResourceId fuelMockSystemId;
+// Mock system address
+// MockFuelInteractSystem fuelMockSystem;
+// ResourceId fuelMockSystemId;
 
-  IWorldWithContext public world;
+IWorldWithContext public world;
 
-  // Test variables
-  uint256 deployableObjectClassId;
-  uint256 smartObjectId;
-  bytes32 tenantId;
+// Test variables
+uint256 deployableObjectClassId;
+uint256 smartObjectId;
+bytes32 tenantId;
 
-  // Smart Object variables
-  uint256 constant SMART_OBJECT_ID = 1234;
-  uint256 constant SMART_OBJECT_TYPE_ID = 1235;
+// Smart Object variables
+uint256 constant SMART_OBJECT_ID = 1234;
+uint256 constant SMART_OBJECT_TYPE_ID = 1235;
 
-  // Test addresses
-  address deployer;
-  address alice;
+// Test addresses
+address deployer;
+address alice;
 
-  LocationData location;
-  EntityRecordParams entityRecordParams;
+LocationData location;
+EntityRecordParams entityRecordParams;
 
-  // Bounds for fuelUnitVolume
-  uint256 constant MIN_FUEL_UNIT_VOLUME = 1;
-  uint256 constant MAX_FUEL_UNIT_VOLUME = type(uint128).max - 1;
+// Bounds for fuelUnitVolume
+uint256 constant MIN_FUEL_UNIT_VOLUME = 1;
+uint256 constant MAX_FUEL_UNIT_VOLUME = type(uint128).max - 1;
 
-  // Bounds for timeElapsed
-  uint256 constant MIN_TIME_ELAPSED = 3;
-  uint256 constant MAX_TIME_ELAPSED = 100 * 365 days;
+// Bounds for timeElapsed
+uint256 constant MIN_TIME_ELAPSED = 3;
+uint256 constant MAX_TIME_ELAPSED = 100 \* 365 days;
 
-  // Bounds for fuelConsumptionIntervalInSeconds
-  uint256 constant MIN_FUEL_CONSUMPTION_INTERVAL = 2;
-  // MAX_FUEL_CONSUMPTION_INTERVAL will be calculated dynamically since it depends on timeElapsed
-  // and should be less than timeElapsed and (type(uint256).max / 1e18)
+// Bounds for fuelConsumptionIntervalInSeconds
+uint256 constant MIN_FUEL_CONSUMPTION_INTERVAL = 2;
+// MAX_FUEL_CONSUMPTION_INTERVAL will be calculated dynamically since it depends on timeElapsed
+// and should be less than timeElapsed and (type(uint256).max / 1e18)
 
-  // Bounds for fuelAmount
-  // Will be calculated dynamically as it depends on fuelConsumption
-  uint256 constant MAX_FUEL_AMOUNT = type(uint128).max / ONE_UNIT_IN_WEI;
+// Bounds for fuelAmount
+// Will be calculated dynamically as it depends on fuelConsumption
+uint256 constant MAX_FUEL_AMOUNT = type(uint128).max / ONE_UNIT_IN_WEI;
 
-  // Bounds for fuelMaxCapacity
-  // Lower bound depends on fuelAmount and fuelUnitVolume
-  uint256 constant MAX_FUEL_MAX_CAPACITY = type(uint256).max - 1;
+// Bounds for fuelMaxCapacity
+// Lower bound depends on fuelAmount and fuelUnitVolume
+uint256 constant MAX_FUEL_MAX_CAPACITY = type(uint256).max - 1;
 
-  function setUp() public virtual override {
-    vm.pauseGasMetering();
-    super.setUp();
-    // Deploy a new World
-    worldAddress = vm.envAddress("WORLD_ADDRESS");
-    world = IWorldWithContext(worldAddress);
-    StoreSwitch.setStoreAddress(worldAddress);
+function setUp() public virtual override {
+vm.pauseGasMetering();
+super.setUp();
+// Deploy a new World
+worldAddress = vm.envAddress("WORLD_ADDRESS");
+world = IWorldWithContext(worldAddress);
+StoreSwitch.setStoreAddress(worldAddress);
 
     // Initialize addresses
     string memory mnemonic = "test test test test test test test test test test test junk";
@@ -196,22 +196,23 @@ contract FuelTest is MudTest {
 
     vm.stopPrank();
     vm.resumeGasMetering();
-  }
 
-  function testConfigureFuelParameters(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(fuelConsumptionIntervalInSeconds > 1 && fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18));
-    vm.assume(fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function testConfigureFuelParameters(
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(fuelConsumptionIntervalInSeconds > 1 && fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18));
+vm.assume(fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+vm.assume(
+fuelMaxCapacity >= fuelAmount \* fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     // Create and anchor deployable
     vm.startPrank(alice, deployer);
@@ -221,9 +222,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -243,22 +241,23 @@ contract FuelTest is MudTest {
     assertEq(20, Fuel.getFuelConsumptionIntervalInSeconds(smartObjectId));
     assertEq(300, Fuel.getFuelMaxCapacity(smartObjectId));
     assertEq((30) * ONE_UNIT_IN_WEI, Fuel.getFuelAmount(smartObjectId));
-  }
 
-  function testSetFuelUnitVolume(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
-    vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function testSetFuelUnitVolume(
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
+vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+vm.assume(
+fuelMaxCapacity >= fuelAmount \* fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -268,9 +267,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -284,22 +280,23 @@ contract FuelTest is MudTest {
     vm.stopPrank();
 
     assertEq(10, Fuel.getFuelUnitVolume(smartObjectId));
-  }
 
-  function testSetFuelConsumptionIntervalInSeconds(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
-    vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function testSetFuelConsumptionIntervalInSeconds(
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
+vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+vm.assume(
+fuelMaxCapacity >= fuelAmount \* fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -309,9 +306,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -325,22 +319,23 @@ contract FuelTest is MudTest {
     vm.stopPrank();
 
     assertEq(20, Fuel.getFuelConsumptionIntervalInSeconds(smartObjectId));
-  }
 
-  function testSetFuelMaxCapacity(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
-    vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function testSetFuelMaxCapacity(
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
+vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+vm.assume(
+fuelMaxCapacity >= fuelAmount \* fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -350,9 +345,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -365,22 +357,23 @@ contract FuelTest is MudTest {
     vm.stopPrank();
 
     assertEq(type(uint256).max, Fuel.getFuelMaxCapacity(smartObjectId));
-  }
 
-  function testDepositFuel(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
-    vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function testDepositFuel(
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
+vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI);
+vm.assume(
+fuelMaxCapacity >= fuelAmount \* fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -390,9 +383,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -411,22 +401,20 @@ contract FuelTest is MudTest {
 
     assertEq(fuelAmount * ONE_UNIT_IN_WEI, Fuel.getFuelAmount(smartObjectId));
     assertEq(block.timestamp, Fuel.getLastUpdatedAt(smartObjectId));
-  }
 
-  function testDepositFuelTwice(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
-    vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / (2 * ONE_UNIT_IN_WEI)); // deposit twice so deivide by 2
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function testDepositFuelTwice(
+uint256 fuelAmount
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18) && fuelConsumptionIntervalInSeconds > 1);
+vm.assume(fuelAmount > 0 && fuelAmount < uint256(type(uint128).max) / (2 _ ONE_UNIT_IN_WEI)); // deposit twice so deivide by 2
+vm.assume(
+fuelMaxCapacity >= fuelAmount _ fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -436,9 +424,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -462,32 +447,33 @@ contract FuelTest is MudTest {
 
     assertEq((fuelAmount * ONE_UNIT_IN_WEI * 2) - ONE_UNIT_IN_WEI, Fuel.getFuelAmount(smartObjectId));
     assertEq(block.timestamp, Fuel.getLastUpdatedAt(smartObjectId));
-  }
 
-  function test_fuelConsumption(
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity,
-    uint256 fuelAmount,
-    uint256 timeElapsed
-  ) public {
-    vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
-    vm.assume(timeElapsed > 2 && timeElapsed < 100 * 365 days);
-    vm.assume(
-      fuelConsumptionIntervalInSeconds > 1 &&
-        fuelConsumptionIntervalInSeconds < timeElapsed &&
-        fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18)
-    );
-    uint256 fuelConsumption = (((timeElapsed * ONE_UNIT_IN_WEI) / fuelConsumptionIntervalInSeconds) +
-      (1 * ONE_UNIT_IN_WEI)); // bringing online consumes exactly one wei's worth of gas for tick purposes
-    vm.assume(
-      fuelAmount > fuelConsumption / ONE_UNIT_IN_WEI && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI
-    );
-    vm.assume(
-      fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
-        fuelMaxCapacity > fuelUnitVolume &&
-        fuelMaxCapacity < type(uint256).max
-    );
+}
+
+function test*fuelConsumption(
+uint256 fuelUnitVolume,
+uint256 fuelConsumptionIntervalInSeconds,
+uint256 fuelMaxCapacity,
+uint256 fuelAmount,
+uint256 timeElapsed
+) public {
+vm.assume(fuelUnitVolume > 0 && fuelUnitVolume < uint256(type(uint128).max));
+vm.assume(timeElapsed > 2 && timeElapsed < 100 * 365 days);
+vm.assume(
+fuelConsumptionIntervalInSeconds > 1 &&
+fuelConsumptionIntervalInSeconds < timeElapsed &&
+fuelConsumptionIntervalInSeconds < (type(uint256).max / 1e18)
+);
+uint256 fuelConsumption = (((timeElapsed _ ONE_UNIT_IN_WEI) / fuelConsumptionIntervalInSeconds) +
+(1 _ ONE*UNIT_IN_WEI)); // bringing online consumes exactly one wei's worth of gas for tick purposes
+vm.assume(
+fuelAmount > fuelConsumption / ONE_UNIT_IN_WEI && fuelAmount < uint256(type(uint128).max) / ONE_UNIT_IN_WEI
+);
+vm.assume(
+fuelMaxCapacity >= fuelAmount * fuelUnitVolume &&
+fuelMaxCapacity > fuelUnitVolume &&
+fuelMaxCapacity < type(uint256).max
+);
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -497,9 +483,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity,
         location
       )
     );
@@ -524,19 +507,20 @@ contract FuelTest is MudTest {
 
     assertEq((fuelAmount * ONE_UNIT_IN_WEI) - fuelConsumption, Fuel.getFuelAmount(smartObjectId));
     assertEq(block.timestamp, Fuel.getLastUpdatedAt(smartObjectId));
-  }
 
-  // test fuel runs out
-  function test_fuelConsumptionRunsOut(
-    uint256 _fuelUnitVolume,
-    uint256 _fuelConsumptionIntervalInSeconds,
-    uint256 _fuelAmount,
-    uint256 _timeElapsed
-  ) public {
-    // Use bound() for direct artificial range constraints to avoid fuzzer rejecting too many inputs
-    uint256 fuelUnitVolume = bound(_fuelUnitVolume, 1, 1000);
-    uint256 fuelConsumptionIntervalInSeconds = bound(_fuelConsumptionIntervalInSeconds, 60, 3600); // 1 minute to 1 hour
-    uint256 timeElapsed = bound(_timeElapsed, 1 days, 10 days);
+}
+
+// test fuel runs out
+function test_fuelConsumptionRunsOut(
+uint256 \_fuelUnitVolume,
+uint256 \_fuelConsumptionIntervalInSeconds,
+uint256 \_fuelAmount,
+uint256 \_timeElapsed
+) public {
+// Use bound() for direct artificial range constraints to avoid fuzzer rejecting too many inputs
+uint256 fuelUnitVolume = bound(\_fuelUnitVolume, 1, 1000);
+uint256 fuelConsumptionIntervalInSeconds = bound(\_fuelConsumptionIntervalInSeconds, 60, 3600); // 1 minute to 1 hour
+uint256 timeElapsed = bound(\_timeElapsed, 1 days, 10 days);
 
     // Calculate fuel consumption based on time and interval
     uint256 fuelConsumption = ((timeElapsed * ONE_UNIT_IN_WEI) / fuelConsumptionIntervalInSeconds) + ONE_UNIT_IN_WEI;
@@ -552,9 +536,6 @@ contract FuelTest is MudTest {
         "SSU",
         entityRecordParams,
         alice,
-        fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds,
-        fuelAmount * fuelUnitVolume * 2,
         location
       )
     );
@@ -574,16 +555,17 @@ contract FuelTest is MudTest {
     assertEq(0, Fuel.getFuelAmount(smartObjectId));
     assertEq(block.timestamp, Fuel.getLastUpdatedAt(smartObjectId));
     assertEq(uint8(State.ANCHORED), uint8(DeployableState.getCurrentState(smartObjectId)));
-  }
 
-  function test_fuelRefundDuringGlobalOffline(
-    uint256 _fuelAmount,
-    uint256 _timeElapsedBeforeOffline,
-    uint256 _globalOfflineDuration,
-    uint256 _timeElapsedAfterOffline
-  ) public {
-    // Directly use the bounded values in calculations without storing in new variables
-    // This reduces stack variable usage while ensuring proper input ranges
+}
+
+function test_fuelRefundDuringGlobalOffline(
+uint256 \_fuelAmount,
+uint256 \_timeElapsedBeforeOffline,
+uint256 \_globalOfflineDuration,
+uint256 \_timeElapsedAfterOffline
+) public {
+// Directly use the bounded values in calculations without storing in new variables
+// This reduces stack variable usage while ensuring proper input ranges
 
     vm.startPrank(alice, deployer);
     // Create and anchor deployable
@@ -593,9 +575,6 @@ contract FuelTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        100,
-        3600000000000, // Fixed value to avoid issues
-        bound(_fuelAmount, 100, 10000) * 100 * 2, // Direct calculation of capacity
         location
       )
     );
@@ -639,20 +618,21 @@ contract FuelTest is MudTest {
     assertEq(block.timestamp, Fuel.getLastUpdatedAt(smartObjectId));
     assertEq(uint8(State.ONLINE), uint8(DeployableState.getCurrentState(smartObjectId)));
     vm.stopPrank();
-  }
 
-  // Helper function to calculate expected fuel (reduces stack variables in main function)
-  function _calculateExpectedFuel(
-    uint256 startingFuelAmount,
-    uint256 startTime,
-    uint256 globalPauseTime,
-    uint256 globalResumeTime,
-    uint256 currentTime,
-    uint256 fuelConsumptionIntervalInSeconds
-  ) internal pure returns (uint256) {
-    // Calculate regular consumption for the total time elapsed
-    uint256 totalTimeElapsedSeconds = currentTime - startTime;
-    uint256 fuelConsumed = (totalTimeElapsedSeconds * ONE_UNIT_IN_WEI) / fuelConsumptionIntervalInSeconds;
+}
+
+// Helper function to calculate expected fuel (reduces stack variables in main function)
+function \_calculateExpectedFuel(
+uint256 startingFuelAmount,
+uint256 startTime,
+uint256 globalPauseTime,
+uint256 globalResumeTime,
+uint256 currentTime,
+uint256 fuelConsumptionIntervalInSeconds
+) internal pure returns (uint256) {
+// Calculate regular consumption for the total time elapsed
+uint256 totalTimeElapsedSeconds = currentTime - startTime;
+uint256 fuelConsumed = (totalTimeElapsedSeconds \* ONE_UNIT_IN_WEI) / fuelConsumptionIntervalInSeconds;
 
     // Calculate the global offline refund
     uint256 elapsedRefundTime = 0;
@@ -674,11 +654,12 @@ contract FuelTest is MudTest {
     } else {
       return startingFuelAmount - fuelConsumed;
     }
-  }
 
-  // Helper function to setup item records
-  function _setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
-    uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+}
+
+// Helper function to setup item records
+function \_setupEntityRecord(uint256 entityId, uint256 typeId, uint256 itemId, uint256 volume) internal {
+uint256 classId = uint256(keccak256(abi.encodePacked(tenantId, typeId)));
 
     if (itemId != 0) {
       // For singleton items
@@ -695,16 +676,17 @@ contract FuelTest is MudTest {
     if (!Entity.getExists(classId)) {
       entitySystem.registerClass(classId, new ResourceId[](0));
     }
-  }
 
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
-  }
+}
+
+// Helper function to calculate itemObjectId
+function \_calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
+if (isSingleton) {
+// For singleton items: hash of tenantId and itemId
+return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
+} else {
+// For non-singleton items: hash of typeId
+return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+}
+}
 }

@@ -21,12 +21,11 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Fuel, FuelData, Location, SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, Characters, CharactersData, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, SmartTurretConfig } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 import { SmartTurretSystem, smartTurretSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
 import { ownershipSystem } from "../../src/namespaces/evefrontier/codegen/systems/OwnershipSystemLib.sol";
@@ -145,11 +144,6 @@ contract SmartGateTest is MudTest {
   EntityMetadataParams charlieEntityMetadataParams;
 
   EntityRecordParams entityRecordParams;
-
-  // fuel params
-  uint256 fuelUnitVolume = 10;
-  uint256 fuelConsumptionIntervalInSeconds = 60;
-  uint256 fuelMaxCapacity = 1000000;
 
   function setUp() public virtual override {
     vm.pauseGasMetering();
@@ -297,12 +291,6 @@ contract SmartGateTest is MudTest {
     assertEq(deployableStateData.updatedBlockNumber, 0);
     assertEq(deployableStateData.updatedBlockTime, 0);
 
-    // check fuel data before creating and anchoring
-    FuelData memory fuelData = Fuel.get(smartObjectId);
-    assertEq(fuelData.fuelUnitVolume, 0);
-    assertEq(fuelData.fuelConsumptionIntervalInSeconds, 0);
-    assertEq(fuelData.fuelMaxCapacity, 0);
-
     // check ownership data before creating and anchoring
     address owner = ownershipSystem.owner(smartObjectId);
     assertEq(owner, address(0));
@@ -320,18 +308,7 @@ contract SmartGateTest is MudTest {
       smartTurretSystem.toResourceId(),
       abi.encodeCall(
         SmartTurretSystem.createAndAnchorTurret,
-        (
-          CreateAndAnchorParams(
-            smartObjectId,
-            "ST",
-            entityRecordParams,
-            alice,
-            fuelUnitVolume,
-            fuelConsumptionIntervalInSeconds,
-            fuelMaxCapacity,
-            locationParams
-          )
-        )
+        (CreateAndAnchorParams(smartObjectId, "ST", entityRecordParams, alice, locationParams))
       )
     );
     vm.stopPrank();
@@ -362,12 +339,6 @@ contract SmartGateTest is MudTest {
     assertEq(deployableStateData.updatedBlockNumber, block.number);
     assertEq(deployableStateData.updatedBlockTime, block.timestamp);
 
-    // check fuel data after creating and anchoring
-    fuelData = Fuel.get(smartObjectId);
-    assertEq(fuelData.fuelUnitVolume, fuelUnitVolume);
-    assertEq(fuelData.fuelConsumptionIntervalInSeconds, fuelConsumptionIntervalInSeconds);
-    assertEq(fuelData.fuelMaxCapacity, fuelMaxCapacity);
-
     // check ownership data after creating and anchoring
     owner = ownershipSystem.owner(smartObjectId);
     assertEq(owner, alice);
@@ -397,7 +368,6 @@ contract SmartGateTest is MudTest {
 
     // bring the turret online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
 
@@ -503,7 +473,6 @@ contract SmartGateTest is MudTest {
 
     // bring the turret online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
 

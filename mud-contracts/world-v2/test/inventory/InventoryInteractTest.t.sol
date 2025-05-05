@@ -27,7 +27,6 @@ import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefron
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { InventoryInteractSystem, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
 // Types and parameters
@@ -138,9 +137,6 @@ contract EphemeralInteractTest is MudTest {
               volume: 1000
             }),
             alice,
-            1,
-            10,
-            100000,
             LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
           ),
           capacity,
@@ -165,9 +161,6 @@ contract EphemeralInteractTest is MudTest {
               volume: 1000
             }),
             bob,
-            1,
-            10,
-            100000,
             LocationData({
               solarSystemId: 2, // Different solar system
               x: 2000, // Different coordinates
@@ -192,13 +185,11 @@ contract EphemeralInteractTest is MudTest {
 
     // Bring Alice's SSU online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
     // Bring Bob's SSU online
     vm.startPrank(bob, deployer);
-    fuelSystem.depositFuel(inventoryObjectId2, 10000);
     deployableSystem.bringOnline(inventoryObjectId2);
     vm.stopPrank();
 

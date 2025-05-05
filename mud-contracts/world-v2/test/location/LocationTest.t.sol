@@ -164,9 +164,6 @@ contract LocationTest is MudTest {
       "Deployable",
       EntityRecordParams(tenantId, SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, 1000),
       alice,
-      10,
-      60,
-      100000000,
       locationDataParams
     );
     vm.stopPrank();

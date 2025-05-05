@@ -29,7 +29,6 @@ import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/eve
 import { EphemeralInteractSystem, ephemeralInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
 // Types and parameters
@@ -152,9 +151,6 @@ contract EphemeralInteractTest is MudTest {
               volume: 1000
             }),
             alice,
-            1,
-            10,
-            100000,
             LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
           ),
           capacity,
@@ -174,7 +170,6 @@ contract EphemeralInteractTest is MudTest {
 
     // Bring online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 

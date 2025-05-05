@@ -31,7 +31,6 @@ import { InventorySystem, inventorySystem } from "../../src/namespaces/evefronti
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -121,17 +120,16 @@ contract InventoryOwnershipTest is MudTest {
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
-    ResourceId[] memory systemIds = new ResourceId[](10);
+    ResourceId[] memory systemIds = new ResourceId[](9);
     systemIds[0] = deployableSystem.toResourceId();
     systemIds[1] = smartAssemblySystem.toResourceId();
     systemIds[2] = entityRecordSystem.toResourceId();
     systemIds[3] = locationSystem.toResourceId();
-    systemIds[4] = fuelSystem.toResourceId();
-    systemIds[5] = inventorySystem.toResourceId();
-    systemIds[6] = ephemeralInventorySystem.toResourceId();
-    systemIds[7] = ownershipSystem.toResourceId();
-    systemIds[8] = inventoryOwnershipSystem.toResourceId();
-    systemIds[9] = mockSystemId;
+    systemIds[4] = inventorySystem.toResourceId();
+    systemIds[5] = ephemeralInventorySystem.toResourceId();
+    systemIds[6] = ownershipSystem.toResourceId();
+    systemIds[7] = inventoryOwnershipSystem.toResourceId();
+    systemIds[8] = mockSystemId;
 
     entitySystem.registerClass(inventoryObjectClassId, systemIds);
 
@@ -148,9 +146,6 @@ contract InventoryOwnershipTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
       )
     );
@@ -185,7 +180,6 @@ contract InventoryOwnershipTest is MudTest {
 
     // Bring deployable online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
     vm.resumeGasMetering();
