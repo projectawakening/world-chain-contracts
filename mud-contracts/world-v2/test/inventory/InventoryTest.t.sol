@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity, CharactersByAccount, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, DeployableState, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity, CharactersByAccount, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -149,9 +149,6 @@ contract InventoryTest is MudTest {
     // instantiate the smart objects
     entitySystem.instantiate(inventoryObjectClassId, smartObjectId, alice);
     entitySystem.instantiate(inventoryObjectClassId, secondObjectId, bob);
-
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for first inventory
     deployableSystem.createAndAnchor(
@@ -423,19 +420,6 @@ contract InventoryTest is MudTest {
 
     items[1] = InventoryItemParams({ smartObjectId: item2ObjectId, quantity: 2 });
     vm.pauseGasMetering();
-    // Test revert: game is paused
-    vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
-    GlobalDeployableState.setIsPaused(true);
-    vm.stopPrank();
-
-    vm.startPrank(alice, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    inventorySystem.depositInventory(smartObjectId, items);
-    vm.stopPrank();
-
-    vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
-    GlobalDeployableState.setIsPaused(false);
-    vm.stopPrank();
 
     // Test revert: incorrect state
     vm.startPrank(deployer); // Use deployer for DeployableState access
@@ -712,17 +696,6 @@ contract InventoryTest is MudTest {
       smartObjectId: transferItemObjectId,
       quantity: 1 // Withdraw 1 of 2
     });
-
-    // Test revert: game is paused
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(true);
-    vm.startPrank(alice, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    inventorySystem.withdrawInventory(smartObjectId, items);
-    vm.stopPrank();
-
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(false);
 
     // Test revert: incorrect state
     vm.prank(deployer);

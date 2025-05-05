@@ -300,22 +300,17 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for DeployableSystem
   function configureDeployableAccess() public {
-    bytes4[3] memory onlyDirectAdminSelectors = [
+    accessConfigSystem.configureAccess(
+      deployableSystem.toResourceId(),
       DeployableSystem.destroyDeployable.selector,
-      DeployableSystem.globalPause.selector,
-      DeployableSystem.globalResume.selector
-    ];
-
-    for (uint256 i = 0; i < onlyDirectAdminSelectors.length; i++) {
-      accessConfigSystem.configureAccess(
-        deployableSystem.toResourceId(),
-        onlyDirectAdminSelectors[i],
-        accessSystem.toResourceId(),
-        AccessSystem.onlyDirectAdmin.selector
+      accessSystem.toResourceId(),
+      AccessSystem.onlyDirectAdmin.selector
       );
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
-    }
+    accessConfigSystem.setAccessEnforcement(
+      deployableSystem.toResourceId(),
+      DeployableSystem.destroyDeployable.selector,
+      true
+    );
 
     bytes4[3] memory onlyAdminSupportedSelectors = [
       DeployableSystem.createAndAnchor.selector,

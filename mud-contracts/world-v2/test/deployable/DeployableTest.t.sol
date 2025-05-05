@@ -19,7 +19,7 @@ import { TagParams, ResourceRelationValue, TAG_TYPE_RESOURCE_RELATION } from "@e
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, EphemeralInventory, SmartAssembly, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, EphemeralInventory, SmartAssembly, Location, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -66,14 +66,6 @@ contract MockDeployableInteractSystem is System {
 
   function callBringOffline(uint256 smartObjectId) public {
     deployableSystem.bringOffline(smartObjectId);
-  }
-
-  function callGlobalPause() public {
-    deployableSystem.globalPause();
-  }
-
-  function callGlobalResume() public {
-    deployableSystem.globalResume();
   }
 }
 
@@ -162,21 +154,16 @@ contract DeployableTest is MudTest {
     // instantiate the smart object
     entitySystem.instantiate(deployableObjectClassId, smartObjectId, alice);
 
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
-
     // Configure access control to allow the mock system to call ownership system
     ResourceId deployableSystemId = deployableSystem.toResourceId();
-    bytes4[9] memory deployableFunctionSelectors = [
+    bytes4[7] memory deployableFunctionSelectors = [
       DeployableSystem.createAndAnchor.selector,
       DeployableSystem.createDeployable.selector,
       DeployableSystem.destroyDeployable.selector,
       DeployableSystem.anchor.selector,
       DeployableSystem.unanchor.selector,
       DeployableSystem.bringOnline.selector,
-      DeployableSystem.bringOffline.selector,
-      DeployableSystem.globalPause.selector,
-      DeployableSystem.globalResume.selector
+      DeployableSystem.bringOffline.selector
     ];
 
     for (uint i = 0; i < deployableFunctionSelectors.length; i++) {
@@ -625,28 +612,6 @@ contract DeployableTest is MudTest {
     // Verify updated block information
     assertEq(DeployableState.getUpdatedBlockNumber(smartObjectId), block.number);
     assertEq(DeployableState.getUpdatedBlockTime(smartObjectId), block.timestamp);
-  }
-
-  function test_GlobalPause() public {
-    vm.startPrank(deployer);
-    deployableSystem.globalPause();
-    vm.stopPrank();
-
-    // validate state changes
-    assertEq(GlobalDeployableState.getIsPaused(), true, "Deployables should be paused");
-    assertEq(GlobalDeployableState.getUpdatedBlockNumber(), block.number, "Updated block number should be set");
-    assertEq(GlobalDeployableState.getLastGlobalOffline(), block.timestamp, "Last global offline should be set");
-  }
-
-  function test_GlobalResume() public {
-    vm.startPrank(deployer);
-    deployableSystem.globalResume();
-    vm.stopPrank();
-
-    // validate state changes
-    assertEq(GlobalDeployableState.getIsPaused(), false, "Deployables should be resumed");
-    assertEq(GlobalDeployableState.getUpdatedBlockNumber(), block.number, "Updated block number should be set");
-    assertEq(GlobalDeployableState.getLastGlobalOnline(), block.timestamp, "Last global online should be set");
   }
 
   function test_Inventory_interaction() public {

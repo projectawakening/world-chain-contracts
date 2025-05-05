@@ -5,7 +5,7 @@ pragma solidity >=0.8.24;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 // Local namespace tables
-import { Fuel, FuelData, DeployableState, GlobalDeployableState, GlobalDeployableStateData } from "../../codegen/index.sol";
+import { Fuel, FuelData, DeployableState } from "../../codegen/index.sol";
 
 // Types and parameters
 import { State } from "../../../../codegen/common.sol";
@@ -320,9 +320,6 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelConsumed = ((block.timestamp - fuelData.lastUpdatedAt) * ONE_UNIT_IN_WEI) /
       oneFuelUnitConsumptionIntervalInSec;
 
-    // Subtract any global offline fuel refund from the consumed fuel.
-    fuelConsumed -= _globalOfflineFuelRefund(smartObjectId);
-
     // If the consumed fuel is greater than or equal to the current fuel amount, return 0.
     if (fuelConsumed >= fuelData.fuelAmount) {
       return 0;
@@ -330,30 +327,5 @@ contract FuelSystem is SmartObjectFramework {
 
     // Return the remaining fuel amount.
     return fuelData.fuelAmount - fuelConsumed;
-  }
-
-  /**
-   * @dev Calculate the global offline fuel refund for a given entity.
-   * @param smartObjectId on-chain id of the in-game deployable
-   * @return the amount of fuel to refund.
-   */
-  function _globalOfflineFuelRefund(uint256 smartObjectId) internal view returns (uint256) {
-    // Fetch the global deployable state data.
-    GlobalDeployableStateData memory globalData = GlobalDeployableState.get();
-
-    if (globalData.lastGlobalOffline == 0) return 0; // servers have never been shut down
-    if (DeployableState.getCurrentState(smartObjectId) != State.ONLINE) return 0; // no refunds if it's not running
-
-    uint256 bringOnlineTimestamp = DeployableState.getUpdatedBlockTime(smartObjectId);
-    if (bringOnlineTimestamp <= globalData.lastGlobalOffline) {
-      bringOnlineTimestamp = globalData.lastGlobalOffline;
-      uint256 lastGlobalOnline = globalData.lastGlobalOnline;
-      if (lastGlobalOnline < globalData.lastGlobalOffline) lastGlobalOnline = block.timestamp; // still ongoing
-
-      uint256 elapsedRefundTime = lastGlobalOnline - bringOnlineTimestamp; // amount of time spent online during server downtime
-      return (elapsedRefundTime * ONE_UNIT_IN_WEI) / Fuel.getFuelConsumptionIntervalInSeconds(smartObjectId);
-    } else {
-      return 0;
-    }
   }
 }

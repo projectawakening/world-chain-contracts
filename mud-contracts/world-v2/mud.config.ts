@@ -136,18 +136,6 @@ export default defineWorld({
          * DEPLOYABLE TABLES *
          ***************************/
         /**
-         * Used to store the Global state of the Deployable
-         */
-        GlobalDeployableState: {
-          schema: {
-            isPaused: "bool",
-            updatedBlockNumber: "uint256",
-            lastGlobalOffline: "uint256",
-            lastGlobalOnline: "uint256",
-          },
-          key: [],
-        },
-        /**
          * Used to store the current state of a deployable
          */
         DeployableState: {

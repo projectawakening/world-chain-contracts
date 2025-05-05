@@ -171,10 +171,6 @@ contract SmartGateTest is MudTest {
     world.registerSystem(customSystemId, customSystem, true);
 
     vm.stopPrank();
-
-    // allow global resume for deployable activity
-    vm.prank(deployer);
-    deployableSystem.globalResume();
     vm.resumeGasMetering();
   }
 

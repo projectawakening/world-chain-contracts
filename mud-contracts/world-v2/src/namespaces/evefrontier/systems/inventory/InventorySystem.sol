@@ -12,7 +12,7 @@ import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefr
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Tenant, EntityRecord, DeployableState, DeployableStateData, Inventory, InventoryData, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity } from "../../codegen/index.sol";
+import { Tenant, EntityRecord, DeployableState, DeployableStateData, Inventory, InventoryData, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -38,16 +38,6 @@ contract InventorySystem is SmartObjectFramework {
   error Inventory_InvalidItemObjectId(uint256 itemObjectId);
   error Inventory_InvalidItemDepositQuantity(uint256 itemObjectId, uint256 quantity);
   error Inventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
-
-  /**
-   * modifier to enforce inventory changes can happen only when the game server is running
-   */
-  modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused()) {
-      revert DeployableSystem.Deployable_StateTransitionPaused();
-    }
-    _;
-  }
 
   /**
    * @notice Set the storage capacity of an inventory associated with `smartObjectId`
@@ -105,7 +95,7 @@ contract InventorySystem is SmartObjectFramework {
   function depositInventory(
     uint256 smartObjectId,
     InventoryItemParams[] memory items
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     // Validate state (uses the primary inventory's associated smart object state)
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);
@@ -140,7 +130,7 @@ contract InventorySystem is SmartObjectFramework {
   function withdrawInventory(
     uint256 smartObjectId,
     InventoryItemParams[] memory items
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     // Validate state (uses the primary inventory's associated smart object state)
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);

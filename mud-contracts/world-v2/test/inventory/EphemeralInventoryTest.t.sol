@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import {Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
@@ -166,9 +166,6 @@ contract EphemeralInventoryTest is MudTest {
 
     // instantiate the smart object
     entitySystem.instantiate(inventoryObjectClassId, inventoryObjectId, alice);
-
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for inventory
     deployableSystem.createAndAnchor(
@@ -441,19 +438,7 @@ contract EphemeralInventoryTest is MudTest {
 
     items[1] = InventoryItemParams({ smartObjectId: item2ObjectId, quantity: 2 });
 
-    // Test revert: game is paused
     vm.startPrank(deployer);
-    GlobalDeployableState.setIsPaused(true);
-    vm.stopPrank();
-
-    vm.startPrank(bob, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    ephemeralInventorySystem.depositEphemeral(inventoryObjectId, bob, items);
-    vm.stopPrank();
-
-    vm.startPrank(deployer);
-    GlobalDeployableState.setIsPaused(false);
-
     DeployableState.setCurrentState(inventoryObjectId, State.ANCHORED);
     vm.stopPrank();
 
@@ -678,17 +663,6 @@ contract EphemeralInventoryTest is MudTest {
       smartObjectId: transferItemObjectId,
       quantity: 1 // Withdraw 1 of 5
     });
-
-    // Test revert: game is paused
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(true);
-    vm.startPrank(bob, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    ephemeralInventorySystem.withdrawEphemeral(inventoryObjectId, bob, items);
-    vm.stopPrank();
-
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(false);
 
     // Test revert: incorrect state
     vm.prank(deployer);

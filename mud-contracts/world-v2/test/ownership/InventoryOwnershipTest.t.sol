@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -135,9 +135,6 @@ contract InventoryOwnershipTest is MudTest {
 
     // instantiate the smart object
     entitySystem.instantiate(inventoryObjectClassId, smartObjectId, alice);
-
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for inventory
     deployableSystem.createAndAnchor(

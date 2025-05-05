@@ -13,7 +13,6 @@ import { SmartAssembly } from "./tables/SmartAssembly.sol";
 import { Characters, CharactersData } from "./tables/Characters.sol";
 import { CharactersByAccount } from "./tables/CharactersByAccount.sol";
 import { Location, LocationData } from "./tables/Location.sol";
-import { GlobalDeployableState, GlobalDeployableStateData } from "./tables/GlobalDeployableState.sol";
 import { DeployableState, DeployableStateData } from "./tables/DeployableState.sol";
 import { Fuel, FuelData } from "./tables/Fuel.sol";
 import { Inventory, InventoryData } from "./tables/Inventory.sol";

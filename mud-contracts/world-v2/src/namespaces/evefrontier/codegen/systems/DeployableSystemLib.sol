@@ -38,7 +38,6 @@ struct RootCallWrapper {
 library DeployableSystemLib {
   error DeployableSystemLib_CallingFromRootSystem();
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
-  error Deployable_StateTransitionPaused();
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
   function createAndAnchor(DeployableSystemType self, CreateAndAnchorParams memory params) internal {
@@ -72,14 +71,6 @@ library DeployableSystemLib {
 
   function unanchor(DeployableSystemType self, uint256 smartObjectId) internal {
     return CallWrapper(self.toResourceId(), address(0)).unanchor(smartObjectId);
-  }
-
-  function globalPause(DeployableSystemType self) internal {
-    return CallWrapper(self.toResourceId(), address(0)).globalPause();
-  }
-
-  function globalResume(DeployableSystemType self) internal {
-    return CallWrapper(self.toResourceId(), address(0)).globalResume();
   }
 
   function createAndAnchor(CallWrapper memory self, CreateAndAnchorParams memory params) internal {
@@ -163,26 +154,6 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function globalPause(CallWrapper memory self) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_globalPause.globalPause, ());
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function globalResume(CallWrapper memory self) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_globalResume.globalResume, ());
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
   function createAndAnchor(RootCallWrapper memory self, CreateAndAnchorParams memory params) internal {
     bytes memory systemCall = abi.encodeCall(_createAndAnchor_CreateAndAnchorParams.createAndAnchor, (params));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -226,16 +197,6 @@ library DeployableSystemLib {
 
   function unanchor(RootCallWrapper memory self, uint256 smartObjectId) internal {
     bytes memory systemCall = abi.encodeCall(_unanchor_uint256.unanchor, (smartObjectId));
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function globalPause(RootCallWrapper memory self) internal {
-    bytes memory systemCall = abi.encodeCall(_globalPause.globalPause, ());
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function globalResume(RootCallWrapper memory self) internal {
-    bytes memory systemCall = abi.encodeCall(_globalResume.globalResume, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -303,14 +264,6 @@ interface _anchor_uint256_address_LocationData {
 
 interface _unanchor_uint256 {
   function unanchor(uint256 smartObjectId) external;
-}
-
-interface _globalPause {
-  function globalPause() external;
-}
-
-interface _globalResume {
-  function globalResume() external;
 }
 
 using DeployableSystemLib for DeployableSystemType global;

@@ -10,7 +10,7 @@ import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/Ta
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -33,18 +33,7 @@ import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
  */
 contract DeployableSystem is SmartObjectFramework {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
-  error Deployable_StateTransitionPaused();
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
-
-  /**
-   * modifier to enforce deployable state changes can happen only when the game server is running
-   */
-  modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused()) {
-      revert Deployable_StateTransitionPaused();
-    }
-    _;
-  }
 
   /**
    * @dev creates and anchors a deployable smart object
@@ -70,7 +59,7 @@ contract DeployableSystem is SmartObjectFramework {
   function createDeployable(
     uint256 smartObjectId,
     address owner
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.NULL) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -119,7 +108,7 @@ contract DeployableSystem is SmartObjectFramework {
    */
   function destroyDeployable(
     uint256 smartObjectId
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -162,7 +151,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev brings a deployable smart object online
    * @param smartObjectId id of the smart object
    */
-  function bringOnline(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function bringOnline(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.ANCHORED) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -176,7 +165,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev brings a deployable smart object offline
    * @param smartObjectId id of the smart object
    */
-  function bringOffline(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function bringOffline(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.ONLINE) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -195,7 +184,7 @@ contract DeployableSystem is SmartObjectFramework {
     uint256 smartObjectId,
     address owner,
     LocationData memory locationData
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.UNANCHORED) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -220,7 +209,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev unanchors a smart deployable
    * @param smartObjectId on-chain of the deployable
    */
-  function unanchor(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function unanchor(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -260,24 +249,6 @@ contract DeployableSystem is SmartObjectFramework {
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 
     DeployableState.setIsValid(smartObjectId, false);
-  }
-
-  /**
-   * @dev brings all smart deployables online
-   */
-  function globalPause() public context access(0) scope(0) {
-    GlobalDeployableState.setIsPaused(true);
-    GlobalDeployableState.setUpdatedBlockNumber(block.number);
-    GlobalDeployableState.setLastGlobalOffline(block.timestamp);
-  }
-
-  /**
-   * @dev brings all smart deployables offline
-   */
-  function globalResume() public context access(0) scope(0) {
-    GlobalDeployableState.setIsPaused(false);
-    GlobalDeployableState.setUpdatedBlockNumber(block.number);
-    GlobalDeployableState.setLastGlobalOnline(block.timestamp);
   }
 
   /*******************************
