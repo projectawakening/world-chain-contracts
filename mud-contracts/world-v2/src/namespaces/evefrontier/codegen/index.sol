@@ -19,6 +19,7 @@ import { FuelEfficiencyConfig } from "./tables/FuelEfficiencyConfig.sol";
 import { FuelConsumptionState, FuelConsumptionStateData } from "./tables/FuelConsumptionState.sol";
 import { NetworkNode, NetworkNodeData } from "./tables/NetworkNode.sol";
 import { NetworkStructureConnection, NetworkStructureConnectionData } from "./tables/NetworkStructureConnection.sol";
+import { NetworkNodeByStructure } from "./tables/NetworkNodeByStructure.sol";
 import { AssemblyEnergyConfig } from "./tables/AssemblyEnergyConfig.sol";
 import { Inventory, InventoryData } from "./tables/Inventory.sol";
 import { InventoryItem, InventoryItemData } from "./tables/InventoryItem.sol";

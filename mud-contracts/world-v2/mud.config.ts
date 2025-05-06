@@ -208,6 +208,13 @@ export default defineWorld({
           },
           key: ["networkNodeId", "structureId"],
         },
+        NetworkNodeByStructure: {
+          schema: {
+            structureId: "uint256",
+            networkNodeId: "uint256",
+          },
+          key: ["structureId"],
+        },
         AssemblyEnergyConfig: {
           schema: {
             assemblyTypeId: "uint256", // typeId of the assembly,
@@ -215,6 +222,7 @@ export default defineWorld({
           },
           key: ["assemblyTypeId"],
         },
+        //TODO: Table for historical energy usage by block number
         /*******************
          * INVENTORY TABLES *
          *******************/

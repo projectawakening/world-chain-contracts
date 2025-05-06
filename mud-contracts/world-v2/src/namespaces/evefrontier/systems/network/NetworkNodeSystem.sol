@@ -13,10 +13,12 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 // Local namespace tables
 import { DeployableState, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, Initialize, EntityRecord } from "../../codegen/index.sol";
 
+// Local namespace systems
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
 
+// Types and parameters
 import { State, CreateAndAnchorParams } from "../deployable/types.sol";
 import { FuelParams } from "../fuel/types.sol";
 import { NETWORK_NODE } from "../constants.sol";
@@ -88,6 +90,9 @@ contract NetworkNodeSystem is SmartObjectFramework {
       block.timestamp, // connectedAt
       block.timestamp // lastEnergyUpdate
     );
+
+    // Record for reverse lookup
+    NetworkNodeByStructure.set(structureId, networkNodeId);
   }
 
   /**
