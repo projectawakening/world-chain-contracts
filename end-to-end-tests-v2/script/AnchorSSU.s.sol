@@ -34,6 +34,7 @@ contract AnchorSSU is Script {
     uint256 ephemeralCapacity = 100000000;
     uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
+    uint256 networkNodeId = 0;
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -56,7 +57,7 @@ contract AnchorSSU is Script {
       smartStorageUnitSystem.toResourceId(),
       abi.encodeCall(
         SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (deployableParams, storageCapacity, ephemeralCapacity)
+        (deployableParams, storageCapacity, ephemeralCapacity, networkNodeId)
       )
     );
 

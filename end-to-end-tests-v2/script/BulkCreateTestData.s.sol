@@ -32,6 +32,7 @@ contract BulkCreateTestData is Script {
   uint256 constant NON_SINGLETON_ITEM_TYPE_ID = 2500;
   uint256 constant SINGLETON_ITEM_BASE_ID = 2600;
   uint256 constant ITEM_VOLUME = 10;
+  uint256 constant NETWORK_NODE_ID = 0;
 
   // Helper function to derive private key
   function derivePrivateKey(uint256 index) internal pure returns (uint256) {
@@ -164,7 +165,12 @@ contract BulkCreateTestData is Script {
         locationData: locationParams
       });
 
-      smartStorageUnitSystem.createAndAnchorStorageUnit(deployableParams, storageCapacity, ephemeralCapacity);
+      smartStorageUnitSystem.createAndAnchorStorageUnit(
+        deployableParams,
+        storageCapacity,
+        ephemeralCapacity,
+        NETWORK_NODE_ID
+      );
 
       console.log("Created SSU for account:", accounts[i]);
     }
@@ -195,7 +201,7 @@ contract BulkCreateTestData is Script {
         locationData: locationData
       });
 
-      smartTurretSystem.createAndAnchorTurret(deployableParams);
+      smartTurretSystem.createAndAnchorTurret(deployableParams, NETWORK_NODE_ID);
 
       console.log("Created Smart Turret for account:", accounts[i]);
     }
@@ -260,8 +266,8 @@ contract BulkCreateTestData is Script {
         locationData: destinationGateLocation
       });
 
-      smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000);
-      smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000);
+      smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000, NETWORK_NODE_ID);
+      smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000, NETWORK_NODE_ID);
 
       console.log("Created Smart Gate pair for account:", accounts[i]);
     }

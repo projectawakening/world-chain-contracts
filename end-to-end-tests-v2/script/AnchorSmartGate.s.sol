@@ -25,7 +25,7 @@ contract AnchorSmartGate is Script {
     uint256 smartGateTypeId = vm.envUint("GATE_TYPE_ID");
     uint256 smartGate1ItemId = 1557;
     uint256 smartGate2ItemId = 1558;
-
+    uint256 networkNodeId = 0;
     uint256 smartGate1SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate1ItemId);
     uint256 smartGate2SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate2ItemId);
 
@@ -62,8 +62,8 @@ contract AnchorSmartGate is Script {
       locationData: destinationGateLocation
     });
 
-    smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000);
-    smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000);
+    smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000, networkNodeId);
+    smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000, networkNodeId);
     vm.stopBroadcast();
   }
 }
