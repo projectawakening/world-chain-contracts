@@ -16,9 +16,9 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-library AssemblyEnergyRequirement {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "AssemblyEnergyRe", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000417373656d626c79456e657267795265);
+library AssemblyEnergyConfig {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "AssemblyEnergyCo", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e74696572000000417373656d626c79456e65726779436f);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0020010020000000000000000000000000000000000000000000000000000000);

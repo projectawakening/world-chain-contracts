@@ -196,9 +196,21 @@ export default defineWorld({
           },
           key: ["smartObjectId"],
         },
-        AssemblyEnergyRequirement: {
+        NetworkStructureConnection: {
           schema: {
-            assemblyTypeId: "uint256", // Refer to SmartAssembly table for string value
+            networkNodeId: "uint256", // ID of the Network Node
+            structureId: "uint256", // ID of the connected structure
+            reservedEnergy: "uint256", // Energy reserved by this structure
+            isConnected: "bool", // Whether structure is currently connected
+            operationStatus: "State", // "Running", "Not running"
+            connectedAt: "uint256", // When the structure was connected
+            lastEnergyUpdate: "uint256", // Last time energy was counted for this structure
+          },
+          key: ["networkNodeId", "structureId"],
+        },
+        AssemblyEnergyConfig: {
+          schema: {
+            assemblyTypeId: "uint256", // typeId of the assembly,
             energyConstant: "uint256", // Fixed energy requirement in GJ/h
           },
           key: ["assemblyTypeId"],
