@@ -175,7 +175,8 @@ contract EphemeralInventoryTest is MudTest {
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0
     );
 
     // Configure access control to allow the mock system to call inventory system

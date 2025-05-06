@@ -23,7 +23,8 @@ interface INetworkNodeSystem {
   function evefrontier__createAndAnchorNetworkNode(
     CreateAndAnchorParams memory params,
     FuelParams memory fuelParams,
-    uint256 maxEnergyCapacity
+    uint256 maxEnergyCapacity,
+    uint256 currentProduction
   ) external;
 
   function evefrontier__connectStructure(uint256 networkNodeId, uint256 structureId) external;

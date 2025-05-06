@@ -17,6 +17,8 @@ interface IEveSystem {
 
   function evefrontier__registerSmartGateClass(uint256 typeId, uint256 volume) external;
 
+  function evefrontier__registerNetworkNodeClass(uint256 typeId, uint256 volume) external;
+
   function evefrontier__configureEntityRecordAccess() external;
 
   function evefrontier__configureSmartAssemblyAccess() external;

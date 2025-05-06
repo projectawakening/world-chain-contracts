@@ -48,7 +48,7 @@ contract MockSmartAssemblyInteractSystem is System {
   }
 
   function callCreateAndAnchor(CreateAndAnchorParams memory params) public {
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, 0);
   }
 }
 

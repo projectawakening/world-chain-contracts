@@ -40,8 +40,12 @@ library DeployableSystemLib {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
-  function createAndAnchor(DeployableSystemType self, CreateAndAnchorParams memory params) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndAnchor(params);
+  function createAndAnchor(
+    DeployableSystemType self,
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).createAndAnchor(params, networkNodeId);
   }
 
   function createDeployable(DeployableSystemType self, uint256 smartObjectId, address owner) internal {
@@ -73,11 +77,18 @@ library DeployableSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).unanchor(smartObjectId);
   }
 
-  function createAndAnchor(CallWrapper memory self, CreateAndAnchorParams memory params) internal {
+  function createAndAnchor(
+    CallWrapper memory self,
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
+  ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_createAndAnchor_CreateAndAnchorParams.createAndAnchor, (params));
+    bytes memory systemCall = abi.encodeCall(
+      _createAndAnchor_CreateAndAnchorParams_uint256.createAndAnchor,
+      (params, networkNodeId)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -154,8 +165,15 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function createAndAnchor(RootCallWrapper memory self, CreateAndAnchorParams memory params) internal {
-    bytes memory systemCall = abi.encodeCall(_createAndAnchor_CreateAndAnchorParams.createAndAnchor, (params));
+  function createAndAnchor(
+    RootCallWrapper memory self,
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _createAndAnchor_CreateAndAnchorParams_uint256.createAndAnchor,
+      (params, networkNodeId)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -238,8 +256,8 @@ library DeployableSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchor_CreateAndAnchorParams {
-  function createAndAnchor(CreateAndAnchorParams memory params) external;
+interface _createAndAnchor_CreateAndAnchorParams_uint256 {
+  function createAndAnchor(CreateAndAnchorParams memory params, uint256 networkNodeId) external;
 }
 
 interface _createDeployable_uint256_address {

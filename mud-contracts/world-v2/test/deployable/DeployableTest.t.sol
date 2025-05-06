@@ -41,7 +41,7 @@ import { ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/consta
 // Create a mock system to properly test system-to-system calls
 contract MockDeployableInteractSystem is System {
   function callCreateAndAnchor(CreateAndAnchorParams memory params) public {
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, 0);
   }
 
   function callCreateDeployable(uint256 smartObjectId, address owner) public {
@@ -189,7 +189,8 @@ contract DeployableTest is MudTest {
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0 // networkNodeId
     );
 
     // Verify smart assembly was created correctly
@@ -643,7 +644,8 @@ contract DeployableTest is MudTest {
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0 // networkNodeId
     );
 
     // check inventory was initialized
@@ -694,7 +696,8 @@ contract DeployableTest is MudTest {
         alice,
         LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 })
       ),
-      100
+      100, // networkNodeId
+      0 // networkNodeId
     );
 
     smartGateSystem.createAndAnchorGate(
@@ -710,7 +713,8 @@ contract DeployableTest is MudTest {
         alice,
         LocationData({ solarSystemId: 1, x: 2, y: 2, z: 2 })
       ),
-      100
+      100, // networkNodeId
+      0 // networkNodeId
     );
 
     // link the gates

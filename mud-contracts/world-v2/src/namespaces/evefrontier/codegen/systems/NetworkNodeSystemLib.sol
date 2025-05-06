@@ -49,10 +49,16 @@ library NetworkNodeSystemLib {
     NetworkNodeSystemType self,
     CreateAndAnchorParams memory params,
     FuelParams memory fuelParams,
-    uint256 maxEnergyCapacity
+    uint256 maxEnergyCapacity,
+    uint256 currentProduction
   ) internal {
     return
-      CallWrapper(self.toResourceId(), address(0)).createAndAnchorNetworkNode(params, fuelParams, maxEnergyCapacity);
+      CallWrapper(self.toResourceId(), address(0)).createAndAnchorNetworkNode(
+        params,
+        fuelParams,
+        maxEnergyCapacity,
+        currentProduction
+      );
   }
 
   function connectStructure(NetworkNodeSystemType self, uint256 networkNodeId, uint256 structureId) internal {
@@ -79,14 +85,15 @@ library NetworkNodeSystemLib {
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
     FuelParams memory fuelParams,
-    uint256 maxEnergyCapacity
+    uint256 maxEnergyCapacity,
+    uint256 currentProduction
   ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert NetworkNodeSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256.createAndAnchorNetworkNode,
-      (params, fuelParams, maxEnergyCapacity)
+      _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256_uint256.createAndAnchorNetworkNode,
+      (params, fuelParams, maxEnergyCapacity, currentProduction)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -161,11 +168,12 @@ library NetworkNodeSystemLib {
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
     FuelParams memory fuelParams,
-    uint256 maxEnergyCapacity
+    uint256 maxEnergyCapacity,
+    uint256 currentProduction
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256.createAndAnchorNetworkNode,
-      (params, fuelParams, maxEnergyCapacity)
+      _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256_uint256.createAndAnchorNetworkNode,
+      (params, fuelParams, maxEnergyCapacity, currentProduction)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
@@ -244,11 +252,12 @@ library NetworkNodeSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256 {
+interface _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256_uint256 {
   function createAndAnchorNetworkNode(
     CreateAndAnchorParams memory params,
     FuelParams memory fuelParams,
-    uint256 maxEnergyCapacity
+    uint256 maxEnergyCapacity,
+    uint256 currentProduction
   ) external;
 }
 

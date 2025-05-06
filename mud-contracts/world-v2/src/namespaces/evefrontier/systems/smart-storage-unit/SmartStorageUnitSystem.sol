@@ -17,19 +17,28 @@ import { CreateAndAnchorParams } from "../deployable/types.sol";
 import { SMART_STORAGE_UNIT } from "../constants.sol";
 
 contract SmartStorageUnitSystem is SmartObjectFramework {
+  /**
+   * @notice Create and anchor a Smart Storage Unit
+   * @param params CreateAndAnchorDeployableParams
+   * @param capacity is the capacity of the storage unit
+   * @param ephemeralCapacity is the ephemeral capacity of the storage unit
+   * @param networkNodeId is the id of the network node this storage unit is connected to
+   */
   function createAndAnchorStorageUnit(
     CreateAndAnchorParams memory params,
-    uint256 storageCapacity,
-    uint256 ephemeralStorageCapacity
+    uint256 capacity,
+    uint256 ephemeralCapacity,
+    uint256 networkNodeId
   ) public context access(params.smartObjectId) scope(getSmartStorageUnitClassId()) {
+    params.assemblyType = SMART_STORAGE_UNIT;
+
     entitySystem.instantiate(getSmartStorageUnitClassId(), params.smartObjectId, params.owner);
 
-    params.assemblyType = SMART_STORAGE_UNIT;
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, networkNodeId);
 
-    inventorySystem.setCapacity(params.smartObjectId, storageCapacity);
+    inventorySystem.setCapacity(params.smartObjectId, capacity);
 
-    inventorySystem.setEphemeralCapacity(params.smartObjectId, ephemeralStorageCapacity);
+    inventorySystem.setEphemeralCapacity(params.smartObjectId, ephemeralCapacity);
   }
 
   function getSmartStorageUnitClassId() public view returns (uint256) {

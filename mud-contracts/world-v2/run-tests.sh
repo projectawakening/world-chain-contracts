@@ -34,14 +34,16 @@ export EVE_TOKEN_ADMIN=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 export TENANT=TEST
 export CHARACTER_TYPE_ID=1
 export CHARACTER_VOLUME=0
-export SSU_TYPE_ID=2
+export SSU_TYPE_ID=77917
 export SSU_VOLUME=1000
-export DEPLOYABLE_TYPE_ID=3
+export DEPLOYABLE_TYPE_ID=77918
 export DEPLOYABLE_VOLUME=0
-export TURRET_TYPE_ID=4
+export TURRET_TYPE_ID=84556
 export TURRET_VOLUME=1000
-export GATE_TYPE_ID=5
+export GATE_TYPE_ID=84955
 export GATE_VOLUME=10000
+export NETWORK_NODE_TYPE_ID=88092
+export NETWORK_NODE_VOLUME=10000
 
 # Run deployments and tests
 echo "Running world-v2 upgrade on existing world..."

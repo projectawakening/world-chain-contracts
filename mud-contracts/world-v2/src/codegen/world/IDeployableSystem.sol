@@ -15,7 +15,7 @@ interface IDeployableSystem {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
-  function evefrontier__createAndAnchor(CreateAndAnchorParams memory params) external;
+  function evefrontier__createAndAnchor(CreateAndAnchorParams memory params, uint256 networkNodeId) external;
 
   function evefrontier__createDeployable(uint256 smartObjectId, address owner) external;
 

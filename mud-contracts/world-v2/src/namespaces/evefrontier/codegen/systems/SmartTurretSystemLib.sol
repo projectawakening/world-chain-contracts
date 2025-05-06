@@ -38,8 +38,12 @@ struct RootCallWrapper {
 library SmartTurretSystemLib {
   error SmartTurretSystemLib_CallingFromRootSystem();
 
-  function createAndAnchorTurret(SmartTurretSystemType self, CreateAndAnchorParams memory params) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorTurret(params);
+  function createAndAnchorTurret(
+    SmartTurretSystemType self,
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorTurret(params, networkNodeId);
   }
 
   function configureTurret(SmartTurretSystemType self, uint256 smartObjectId, ResourceId systemId) internal {
@@ -67,13 +71,17 @@ library SmartTurretSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).getSmartTurretClassId();
   }
 
-  function createAndAnchorTurret(CallWrapper memory self, CreateAndAnchorParams memory params) internal {
+  function createAndAnchorTurret(
+    CallWrapper memory self,
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
+  ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartTurretSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorTurret_CreateAndAnchorParams.createAndAnchorTurret,
-      (params)
+      _createAndAnchorTurret_CreateAndAnchorParams_uint256.createAndAnchorTurret,
+      (params, networkNodeId)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -144,10 +152,14 @@ library SmartTurretSystemLib {
     return abi.decode(result, (uint256));
   }
 
-  function createAndAnchorTurret(RootCallWrapper memory self, CreateAndAnchorParams memory params) internal {
+  function createAndAnchorTurret(
+    RootCallWrapper memory self,
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
+  ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorTurret_CreateAndAnchorParams.createAndAnchorTurret,
-      (params)
+      _createAndAnchorTurret_CreateAndAnchorParams_uint256.createAndAnchorTurret,
+      (params, networkNodeId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
@@ -231,8 +243,8 @@ library SmartTurretSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchorTurret_CreateAndAnchorParams {
-  function createAndAnchorTurret(CreateAndAnchorParams memory params) external;
+interface _createAndAnchorTurret_CreateAndAnchorParams_uint256 {
+  function createAndAnchorTurret(CreateAndAnchorParams memory params, uint256 networkNodeId) external;
 }
 
 interface _configureTurret_uint256_ResourceId {

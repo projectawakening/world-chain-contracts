@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, Initialize, EntityRecord } from "../../codegen/index.sol";
+import { DeployableState, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByStructure } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
@@ -41,13 +41,14 @@ contract NetworkNodeSystem is SmartObjectFramework {
   function createAndAnchorNetworkNode(
     CreateAndAnchorParams memory params,
     FuelParams memory fuelParams,
-    uint256 maxEnergyCapacity
-  ) public context access(params.smartObjectId) scope(getNetworkNodeClassId()) {
+    uint256 maxEnergyCapacity,
+    uint256 currentProduction
+  ) public context scope(getNetworkNodeClassId()) {
     params.assemblyType = NETWORK_NODE;
 
     entitySystem.instantiate(getNetworkNodeClassId(), params.smartObjectId, params.owner);
 
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, params.smartObjectId);
 
     // Configure fuel parameters (only Network Nodes have fuel)
     fuelSystem.configureFuelParameters(params.smartObjectId, fuelParams);
@@ -57,7 +58,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
       params.smartObjectId,
       true, // exists
       maxEnergyCapacity, // maxEnergyCapacity
-      maxEnergyCapacity, // energyProduced is same as maxEnergyCapacity for June Iteration
+      currentProduction, // currentProduction
       0, // totalReservedEnergy (starts at 0)
       block.timestamp // lastUpdatedAt
     );
@@ -68,10 +69,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param networkNodeId The ID of the Network Node
    * @param structureId The ID of the structure to connect
    */
-  function connectStructure(
-    uint256 networkNodeId,
-    uint256 structureId
-  ) public context access(networkNodeId) scope(networkNodeId) {
+  function connectStructure(uint256 networkNodeId, uint256 structureId) public context scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
@@ -100,10 +98,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param networkNodeId The ID of the Network Node
    * @param structureId The ID of the structure
    */
-  function onStructureOnline(
-    uint256 networkNodeId,
-    uint256 structureId
-  ) public context access(networkNodeId) scope(networkNodeId) {
+  function onStructureOnline(uint256 networkNodeId, uint256 structureId) public context scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
@@ -146,10 +141,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param networkNodeId The ID of the Network Node
    * @param structureId The ID of the structure
    */
-  function onStructureOffline(
-    uint256 networkNodeId,
-    uint256 structureId
-  ) public context access(networkNodeId) scope(networkNodeId) {
+  function onStructureOffline(uint256 networkNodeId, uint256 structureId) public context scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
@@ -180,7 +172,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Handles Network Node going offline
    * @param networkNodeId The ID of the Network Node
    */
-  function handleNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+  function handleNodeOffline(uint256 networkNodeId) public context scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }

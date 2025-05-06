@@ -144,7 +144,8 @@ contract InventoryOwnershipTest is MudTest {
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0 // networkNodeId
     );
 
     // Set capacity for inventory

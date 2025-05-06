@@ -33,7 +33,7 @@ import { SmartGateSystem, smartGateSystem } from "../codegen/systems/SmartGateSy
 import { OwnershipSystem, ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
 import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../codegen/systems/InventoryOwnershipSystemLib.sol";
 import { KillMailSystem, killMailSystem } from "../codegen/systems/KillMailSystemLib.sol";
-
+import { NetworkNodeSystem, networkNodeSystem } from "../codegen/systems/NetworkNodeSystemLib.sol";
 import { Initialize } from "../codegen/index.sol";
 import { IEveSystem } from "../interfaces/IEveSystem.sol";
 
@@ -62,7 +62,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](12);
+    ResourceId[] memory systemIds = new ResourceId[](13);
     systemIds[0] = smartStorageUnitSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -74,7 +74,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[8] = ephemeralInventorySystem.toResourceId();
     systemIds[9] = inventoryInteractSystem.toResourceId();
     systemIds[10] = ephemeralInteractSystem.toResourceId();
-    systemIds[11] = batchCallSystem;
+    systemIds[11] = networkNodeSystem.toResourceId();
+    systemIds[12] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
@@ -83,7 +84,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartTurretClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](8);
+    ResourceId[] memory systemIds = new ResourceId[](9);
     systemIds[0] = smartTurretSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -91,7 +92,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
-    systemIds[7] = batchCallSystem;
+    systemIds[7] = networkNodeSystem.toResourceId();
+    systemIds[8] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
@@ -100,8 +102,26 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartGateClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](8);
+    ResourceId[] memory systemIds = new ResourceId[](9);
     systemIds[0] = smartGateSystem.toResourceId();
+    systemIds[1] = deployableSystem.toResourceId();
+    systemIds[2] = smartAssemblySystem.toResourceId();
+    systemIds[3] = entityRecordSystem.toResourceId();
+    systemIds[4] = ownershipSystem.toResourceId();
+    systemIds[5] = fuelSystem.toResourceId();
+    systemIds[6] = locationSystem.toResourceId();
+    systemIds[7] = networkNodeSystem.toResourceId();
+    systemIds[8] = batchCallSystem;
+
+    uint256 classId = initialize(typeId, volume, systemIds);
+
+    ResourceId smartGateSystemId = smartGateSystem.toResourceId();
+    Initialize.set(smartGateSystemId, classId);
+  }
+
+  function registerNetworkNodeClass(uint256 typeId, uint256 volume) public {
+    ResourceId[] memory systemIds = new ResourceId[](8);
+    systemIds[0] = networkNodeSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
     systemIds[3] = entityRecordSystem.toResourceId();
@@ -111,9 +131,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[7] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
-
-    ResourceId smartGateSystemId = smartGateSystem.toResourceId();
-    Initialize.set(smartGateSystemId, classId);
+    ResourceId networkNodeSystemId = networkNodeSystem.toResourceId();
+    Initialize.set(networkNodeSystemId, classId);
   }
 
   // Configure access for all systems

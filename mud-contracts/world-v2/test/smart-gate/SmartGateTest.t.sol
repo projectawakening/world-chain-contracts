@@ -90,6 +90,9 @@ contract SmartGateTest is MudTest {
 
   uint256 maxDistance = 1; // will increase after testing failure
 
+  // New variables
+  uint256 networkNodeId;
+
   function setUp() public virtual override {
     vm.pauseGasMetering();
     // Deploy a new World
@@ -211,7 +214,11 @@ contract SmartGateTest is MudTest {
       smartGateSystem.toResourceId(),
       abi.encodeCall(
         SmartGateSystem.createAndAnchorGate,
-        (CreateAndAnchorParams(sourceGateId, "SG", sourceEntityRecordParams, alice, sourceLocationParams), maxDistance)
+        (
+          CreateAndAnchorParams(sourceGateId, "SG", sourceEntityRecordParams, alice, sourceLocationParams),
+          maxDistance,
+          0
+        )
       )
     );
     vm.stopPrank();
@@ -273,7 +280,11 @@ contract SmartGateTest is MudTest {
       smartGateSystem.toResourceId(),
       abi.encodeCall(
         SmartGateSystem.createAndAnchorGate,
-        (CreateAndAnchorParams(sourceGateId, "SG", sourceEntityRecordParams, alice, sourceLocationParams), maxDistance)
+        (
+          CreateAndAnchorParams(sourceGateId, "SG", sourceEntityRecordParams, alice, sourceLocationParams),
+          maxDistance,
+          0
+        )
       )
     );
 
@@ -290,7 +301,8 @@ contract SmartGateTest is MudTest {
         SmartGateSystem.createAndAnchorGate,
         (
           CreateAndAnchorParams(destinationGateId, "SG", destinationEntityRecordParams, bob, destinationLocationParams),
-          maxDistance
+          maxDistance,
+          0
         )
       )
     );

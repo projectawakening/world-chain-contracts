@@ -148,7 +148,7 @@ contract SmartStorageUnitTest is MudTest {
       smartStorageUnitSystem.toResourceId(),
       abi.encodeCall(
         SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (CreateAndAnchorParams(smartObjectId, "SSU", entityRecordParams, alice, locationParams), 1000, 1000)
+        (CreateAndAnchorParams(smartObjectId, "SSU", entityRecordParams, alice, locationParams), 1000, 1000, 0) // networkNodeId
       )
     );
     vm.stopPrank();

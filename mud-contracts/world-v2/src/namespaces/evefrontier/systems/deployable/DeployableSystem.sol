@@ -8,9 +8,10 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
+import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByStructure } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -19,11 +20,9 @@ import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLi
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
-
+import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
-import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
-import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
 
 /**
@@ -38,9 +37,11 @@ contract DeployableSystem is SmartObjectFramework {
   /**
    * @dev creates and anchors a deployable smart object
    * @param params struct containing all parameters for creating and anchoring a deployable
+   * @param networkNodeId the network node id of the deployable
    */
   function createAndAnchor(
-    CreateAndAnchorParams memory params
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
     // Create the smart assembly object
     smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
@@ -48,6 +49,13 @@ contract DeployableSystem is SmartObjectFramework {
     createDeployable(params.smartObjectId, params.owner);
 
     anchor(params.smartObjectId, params.owner, params.locationData);
+
+    if (networkNodeId != 0) {
+      networkNodeSystem.connectStructure(networkNodeId, params.smartObjectId);
+    } else {
+      //Incase of a network node, connect the structure to itself
+      networkNodeSystem.connectStructure(params.smartObjectId, params.smartObjectId);
+    }
   }
 
   /**
@@ -143,6 +151,8 @@ contract DeployableSystem is SmartObjectFramework {
 
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
+
+    //TODO: disconnect the structure from the network node and release the energy reserved by the deployable
   }
 
   /**
@@ -153,6 +163,12 @@ contract DeployableSystem is SmartObjectFramework {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.ANCHORED) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
+    }
+
+    //Check the energy requirement to bringOnline if the deployable is connected to a network node
+    uint256 networkNodeId = NetworkNodeByStructure.getNetworkNodeId(smartObjectId);
+    if (networkNodeId != 0) {
+      networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
     }
 
     //TODO: check if the deployable has enough energy to be brought online
@@ -167,6 +183,14 @@ contract DeployableSystem is SmartObjectFramework {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.ONLINE) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
+    }
+
+    //handle bringOffline
+    uint256 networkNodeId = NetworkNodeByStructure.getNetworkNodeId(smartObjectId);
+
+    //If the deployable is connected to a network node, release the energy
+    if (networkNodeId != 0) {
+      networkNodeSystem.onStructureOffline(networkNodeId, smartObjectId);
     }
 
     //TODO: release the energy reserved by the deployable
@@ -247,6 +271,8 @@ contract DeployableSystem is SmartObjectFramework {
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 
     DeployableState.setIsValid(smartObjectId, false);
+
+    //TODO: disconnect the structure from the network node and release the energy reserved by the deployable
   }
 
   /*******************************

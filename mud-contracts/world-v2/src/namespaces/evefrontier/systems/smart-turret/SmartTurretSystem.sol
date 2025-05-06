@@ -27,14 +27,17 @@ contract SmartTurretSystem is SmartObjectFramework {
   /**
    * @notice Create and anchor a Smart Turret
    * @param params CreateAndAnchorDeployableParams
+   * @param networkNodeId is the id of the network node this turret is connected to
    */
   function createAndAnchorTurret(
-    CreateAndAnchorParams memory params
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
   ) public context access(params.smartObjectId) scope(getSmartTurretClassId()) {
+    params.assemblyType = SMART_TURRET;
+
     entitySystem.instantiate(getSmartTurretClassId(), params.smartObjectId, params.owner);
 
-    params.assemblyType = SMART_TURRET;
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, networkNodeId);
   }
 
   /**

@@ -36,16 +36,18 @@ contract SmartGateSystem is SmartObjectFramework {
    * @notice Create and anchor a Smart Gate
    * @param params CreateAndAnchorDeployableParams
    * @param maxDistance is the maximum distance between two gates
+   * @param networkNodeId is the id of the network node this gate is connected to
    */
   function createAndAnchorGate(
     CreateAndAnchorParams memory params,
-    uint256 maxDistance
+    uint256 maxDistance,
+    uint256 networkNodeId
   ) public context access(params.smartObjectId) scope(getSmartGateClassId()) {
     params.assemblyType = SMART_GATE;
 
     entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.owner);
 
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, networkNodeId);
 
     SmartGateConfig.setMaxDistance(params.smartObjectId, maxDistance);
   }

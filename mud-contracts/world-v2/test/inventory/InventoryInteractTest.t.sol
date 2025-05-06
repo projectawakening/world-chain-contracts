@@ -137,7 +137,8 @@ contract EphemeralInteractTest is MudTest {
             LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
           ),
           capacity,
-          capacity
+          capacity,
+          0 // networkNodeId
         )
       )
     );
@@ -166,7 +167,8 @@ contract EphemeralInteractTest is MudTest {
             })
           ),
           capacity,
-          capacity
+          capacity,
+          0 // networkNodeId
         )
       )
     );

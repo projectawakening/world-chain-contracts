@@ -304,7 +304,7 @@ contract SmartGateTest is MudTest {
       smartTurretSystem.toResourceId(),
       abi.encodeCall(
         SmartTurretSystem.createAndAnchorTurret,
-        (CreateAndAnchorParams(smartObjectId, "ST", entityRecordParams, alice, locationParams))
+        (CreateAndAnchorParams(smartObjectId, "ST", entityRecordParams, alice, locationParams), 0) // networkNodeId
       )
     );
     vm.stopPrank();
