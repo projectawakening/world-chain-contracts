@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
 // Local namespace tables
-import {Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 

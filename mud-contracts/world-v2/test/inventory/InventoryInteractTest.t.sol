@@ -20,7 +20,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import {Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -116,7 +116,6 @@ contract EphemeralInteractTest is MudTest {
       SMART_OBJECT_ITEM_ID_2,
       true
     );
-
 
     // Setup first SSU for inventory (owned by Alice)
     uint256 capacity = 1000;

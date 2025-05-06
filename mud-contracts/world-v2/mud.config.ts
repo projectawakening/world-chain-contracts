@@ -161,12 +161,47 @@ export default defineWorld({
           schema: {
             smartObjectId: "uint256",
             fuelUnitVolume: "uint256",
-            fuelConsumptionIntervalInSeconds: "uint256",
+            fuelTypeId: "uint256", // Reference to fuel type
             fuelMaxCapacity: "uint256",
             fuelAmount: "uint256",
-            lastUpdatedAt: "uint256", // unix time in seconds
+            fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured by network node)
+            lastUpdatedAt: "uint256",
           },
           key: ["smartObjectId"],
+        },
+        FuelEfficiencyConfig: {
+          schema: {
+            fuelTypeId: "uint256", // Unique ID for each fuel type
+            efficiency: "uint256", // Efficiency as a percentage (0-100)
+          },
+          key: ["fuelTypeId"],
+        },
+        FuelConsumptionState: {
+          schema: {
+            smartObjectId: "uint256", // eg: Network Node ID
+            burnStartTime: "uint256", // Block timestamp when burn started, this time is reset for every unit of fuel consumed
+            burnState: "bool", // true if burn is active, false if not
+            fuelConsumptionTimeRemaining: "uint256", // Seconds remaining for current burn session, `CurrentBlockTime - (burnStartTime + fuelBurnRateInSeconds)` //updated every 5 mins
+          },
+          key: ["smartObjectId"],
+        },
+        NetworkNode: {
+          schema: {
+            smartObjectId: "uint256",
+            exists: "bool",
+            maxEnergyCapacity: "uint256",
+            energyProduced: "uint256", // Power/Energy generated per hour when burning fuel
+            totalReservedEnergy: "uint256", // Sum of all energy reserved by structuresconnected to the network node
+            lastUpdatedAt: "uint256",
+          },
+          key: ["smartObjectId"],
+        },
+        AssemblyEnergyRequirement: {
+          schema: {
+            assemblyTypeId: "uint256", // Refer to SmartAssembly table for string value
+            energyConstant: "uint256", // Fixed energy requirement in GJ/h
+          },
+          key: ["assemblyTypeId"],
         },
         /*******************
          * INVENTORY TABLES *

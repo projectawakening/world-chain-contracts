@@ -273,10 +273,10 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     bytes4[6] memory fuelOnlyAdminOrClassScopedSelectors = [
       FuelSystem.configureFuelParameters.selector,
       FuelSystem.setFuelUnitVolume.selector,
-      FuelSystem.setFuelConsumptionIntervalInSeconds.selector,
       FuelSystem.setFuelAmount.selector,
       FuelSystem.updateFuel.selector,
-      FuelSystem.setFuelMaxCapacity.selector
+      FuelSystem.setFuelMaxCapacity.selector,
+      FuelSystem.configureFuelEfficiency.selector
     ];
 
     for (uint256 i = 0; i < fuelOnlyAdminOrClassScopedSelectors.length; i++) {
@@ -289,13 +289,26 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), fuelOnlyAdminOrClassScopedSelectors[i], true);
     }
 
-    accessConfigSystem.configureAccess(
-      fuelSystem.toResourceId(),
+    bytes4[4] memory fuelOnlyAdminOrOwnerSupportedSelectors = [
       FuelSystem.depositFuel.selector,
-      accessSystem.toResourceId(),
-      AccessSystem.onlyAdminOrOwnerSupported.selector
-    );
-    accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), FuelSystem.depositFuel.selector, true);
+      FuelSystem.withdrawFuel.selector,
+      FuelSystem.startBurn.selector,
+      FuelSystem.stopBurn.selector
+    ];
+
+    for (uint256 i = 0; i < fuelOnlyAdminOrOwnerSupportedSelectors.length; i++) {
+      accessConfigSystem.configureAccess(
+        fuelSystem.toResourceId(),
+        fuelOnlyAdminOrOwnerSupportedSelectors[i],
+        accessSystem.toResourceId(),
+        AccessSystem.onlyAdminOrOwnerSupported.selector
+      );
+      accessConfigSystem.setAccessEnforcement(
+        fuelSystem.toResourceId(),
+        fuelOnlyAdminOrOwnerSupportedSelectors[i],
+        true
+      );
+    }
   }
 
   // Configure access for DeployableSystem
@@ -305,7 +318,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       DeployableSystem.destroyDeployable.selector,
       accessSystem.toResourceId(),
       AccessSystem.onlyDirectAdmin.selector
-      );
+    );
     accessConfigSystem.setAccessEnforcement(
       deployableSystem.toResourceId(),
       DeployableSystem.destroyDeployable.selector,

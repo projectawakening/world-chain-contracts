@@ -64,7 +64,6 @@ contract AnchorSmartTurret is Script {
     EntityRecordParams memory entityRecordParams,
     address owner
   ) public {
-
     LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
     CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
       smartObjectId: smartTurretSmartObjectId,

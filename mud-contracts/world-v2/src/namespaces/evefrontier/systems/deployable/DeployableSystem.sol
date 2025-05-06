@@ -106,9 +106,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev destroys a deployable smart object
    * @param smartObjectId id of the smart object
    */
-  function destroyDeployable(
-    uint256 smartObjectId
-  ) public context access(smartObjectId) scope(smartObjectId) {
+  function destroyDeployable(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
