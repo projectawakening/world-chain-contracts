@@ -107,7 +107,7 @@ contract EntityRecordTest is MudTest {
   bytes32 tenantId;
 
   // Smart Object Entity Record variables
-  uint256 constant SMART_CHARACTER_TYPE_ID = 1;
+  uint256 constant SMART_CHARACTER_TYPE_ID = 42000000100;
   uint256 constant SMART_CHARACTER_ITEM_ID = 1337;
   uint256 constant SMART_OBJECT_TYPE_ID = 1235;
   uint256 constant SMART_OBJECT_ID = 1234;
