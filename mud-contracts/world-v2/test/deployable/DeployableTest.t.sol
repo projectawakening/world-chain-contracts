@@ -31,6 +31,7 @@ import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/na
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { smartGateSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
+import { NetworkNodeSystem, networkNodeSystem } from "../../src/namespaces/evefrontier/codegen/systems/NetworkNodeSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -141,14 +142,14 @@ contract DeployableTest is MudTest {
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
-    ResourceId[] memory systemIds = new ResourceId[](6);
+    ResourceId[] memory systemIds = new ResourceId[](7);
     systemIds[0] = deployableSystem.toResourceId();
     systemIds[1] = smartAssemblySystem.toResourceId();
     systemIds[2] = entityRecordSystem.toResourceId();
     systemIds[3] = locationSystem.toResourceId();
     systemIds[4] = ownershipSystem.toResourceId();
-    systemIds[5] = mockSystemId;
-
+    systemIds[5] = networkNodeSystem.toResourceId();
+    systemIds[6] = mockSystemId;
     entitySystem.registerClass(deployableObjectClassId, systemIds);
 
     // instantiate the smart object

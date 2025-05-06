@@ -31,6 +31,8 @@ interface IEveSystem {
 
   function evefrontier__configureFuelAccess() external;
 
+  function evefrontier__configureNetworkNodeAccess() external;
+
   function evefrontier__configureDeployableAccess() external;
 
   function evefrontier__configureInventoryAccess() external;

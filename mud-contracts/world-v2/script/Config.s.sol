@@ -147,6 +147,7 @@ contract Config is Script {
     eveSystem.configureEntityRecordAccess();
     eveSystem.configureFuelAccess();
     eveSystem.configureLocationAccess();
+    eveSystem.configureNetworkNodeAccess();
     eveSystem.configureDeployableAccess();
     eveSystem.configureSmartAssemblyAccess();
     eveSystem.configureInventoryAccess();

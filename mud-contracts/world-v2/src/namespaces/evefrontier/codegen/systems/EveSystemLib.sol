@@ -80,6 +80,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureFuelAccess();
   }
 
+  function configureNetworkNodeAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureNetworkNodeAccess();
+  }
+
   function configureDeployableAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureDeployableAccess();
   }
@@ -236,6 +240,16 @@ library EveSystemLib {
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_configureFuelAccess.configureFuelAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureNetworkNodeAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureNetworkNodeAccess.configureNetworkNodeAccess, ());
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -401,6 +415,11 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function configureNetworkNodeAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureNetworkNodeAccess.configureNetworkNodeAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function configureDeployableAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureDeployableAccess.configureDeployableAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -526,6 +545,10 @@ interface _configureLocationAccess {
 
 interface _configureFuelAccess {
   function configureFuelAccess() external;
+}
+
+interface _configureNetworkNodeAccess {
+  function configureNetworkNodeAccess() external;
 }
 
 interface _configureDeployableAccess {

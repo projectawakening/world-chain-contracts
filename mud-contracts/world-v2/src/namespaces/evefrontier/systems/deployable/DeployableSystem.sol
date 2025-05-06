@@ -24,6 +24,7 @@ import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.so
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
 import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
+import { NETWORK_NODE } from "../constants.sol";
 
 /**
  * @title DeployableSystem
@@ -50,11 +51,8 @@ contract DeployableSystem is SmartObjectFramework {
 
     anchor(params.smartObjectId, params.owner, params.locationData);
 
-    if (networkNodeId != 0) {
+    if (networkNodeId != 0 && (params.smartObjectId != networkNodeId)) {
       networkNodeSystem.connectStructure(networkNodeId, params.smartObjectId);
-    } else {
-      //Incase of a network node, connect the structure to itself
-      networkNodeSystem.connectStructure(params.smartObjectId, params.smartObjectId);
     }
   }
 

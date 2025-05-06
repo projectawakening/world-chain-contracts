@@ -11,7 +11,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, FuelEfficiencyConfig, FuelConsumptionState } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Fuel, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, FuelEfficiencyConfig, FuelConsumptionState } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { NetworkNodeSystem, networkNodeSystem } from "../../src/namespaces/evefrontier/codegen/systems/NetworkNodeSystemLib.sol";
@@ -58,10 +58,10 @@ contract NetworkNodeEnergyTest is MudTest {
   FuelParams fuelParams;
 
   // Assembly Type IDs
-  uint256 constant NETWORK_NODE_TYPE_ID = 1;
-  uint256 constant SMART_GATE_TYPE_ID = 2;
-  uint256 constant SMART_STORAGE_UNIT_TYPE_ID = 3;
-  uint256 constant SMART_TURRET_TYPE_ID = 4;
+  uint256 constant NETWORK_NODE_TYPE_ID = 88092;
+  uint256 constant SMART_GATE_TYPE_ID = 84955;
+  uint256 constant SMART_STORAGE_UNIT_TYPE_ID = 77917;
+  uint256 constant SMART_TURRET_TYPE_ID = 84556;
 
   uint256 constant FUEL_TYPE_ID = 1;
 
@@ -143,7 +143,7 @@ contract NetworkNodeEnergyTest is MudTest {
   }
 
   function test_networkNodeDeploymentAndOperation() public {
-    vm.startPrank(deployer);
+    vm.startPrank(deployer, deployer);
 
     // 1. Deploy and anchor Network Node
     networkNodeSystem.createAndAnchorNetworkNode(
@@ -160,8 +160,8 @@ contract NetworkNodeEnergyTest is MudTest {
         locationData: LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
       }),
       fuelParams,
-      150, // maxEnergyCapacity
-      150 // currentProduction
+      80, // maxEnergyCapacity
+      80 // currentProduction
     );
 
     // Verify Network Node is created and anchored
@@ -188,94 +188,119 @@ contract NetworkNodeEnergyTest is MudTest {
       "Network Node should be online"
     );
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Should reserve 10 GJ for Network Node operation");
-    assertEq(NetworkNode.getEnergyProduced(networkNodeId), 10, "Should be producing 10 GJ");
+    assertEq(NetworkNode.getEnergyProduced(networkNodeId), 80, "Should be producing 80 GJ");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Total reserved energy should be 10 GJ");
+    assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should be 9 units");
 
     vm.stopPrank();
   }
 
-  // function test_structureDeploymentAndPowerManagement() public {
-  //     // First setup a running Network Node
-  //     test_networkNodeDeploymentAndOperation();
+  function test_structureDeploymentAndPowerManagement() public {
+    vm.pauseGasMetering();
+    // First setup a running Network Node
+    test_networkNodeDeploymentAndOperation();
 
-  //     vm.startPrank(alice);
+    vm.startPrank(deployer, deployer);
 
-  //     // 1. Deploy and connect Smart Gate
-  //     smartGateSystem.createAndAnchorGate(
-  //         CreateAndAnchorParams({
-  //             smartObjectId: smartGateId,
-  //             owner: alice,
-  //             tenantId: tenantId,
-  //             locationData: locationParams,
-  //             fuelParameters: FuelParams({
-  //                 fuelUnitVolume: 0,
-  //                 fuelTypeId: 0,
-  //                 fuelMaxCapacity: 0,
-  //                 fuelAmount: 0,
-  //                 fuelBurnRateInSeconds: 0
-  //             }),
-  //             assemblyType: "SG"
-  //         }),
-  //         10, // maxDistance
-  //         networkNodeId
-  //     );
+    // 1. Deploy and connect Smart Gate
+    smartGateSystem.createAndAnchorGate(
+      CreateAndAnchorParams({
+        smartObjectId: smartGateId,
+        owner: alice,
+        locationData: locationParams,
+        entityRecordParams: EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+          itemId: SMART_GATE_ID,
+          volume: 1000
+        }),
+        assemblyType: "SG"
+      }),
+      10, // maxDistance
+      networkNodeId
+    );
 
-  //     // Verify Smart Gate is connected
-  //     assertTrue(NetworkStructureConnection.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
-  //     assertEq(uint8(NetworkStructureConnection.getOperationStatus(networkNodeId, smartGateId)), uint8(State.ANCHORED), "Smart Gate should be anchored");
+    // Verify Smart Gate is connected
+    assertTrue(NetworkStructureConnection.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
+    assertEq(
+      uint8(NetworkStructureConnection.getOperationStatus(networkNodeId, smartGateId)),
+      uint8(State.ANCHORED),
+      "Smart Gate should be anchored"
+    );
 
-  //     // 2. Try to bring Smart Gate online (should succeed as Network Node has enough energy)
-  //     deployableSystem.bringOnline(smartGateId);
+    // 2. Try to bring Smart Gate online (should succeed as Network Node has enough energy)
+    deployableSystem.bringOnline(smartGateId);
 
-  //     // Verify Smart Gate is online and energy is reserved
-  //     assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ONLINE), "Smart Gate should be online");
-  //     assertEq(NetworkStructureConnection.getReservedEnergy(networkNodeId, smartGateId), 50, "Should reserve 50 GJ for Smart Gate");
-  //     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 60, "Total reserved energy should be 60 GJ (10 + 50)");
+    // Verify Smart Gate is online and energy is reserved
+    assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ONLINE), "Smart Gate should be online");
+    assertEq(
+      NetworkStructureConnection.getReservedEnergy(networkNodeId, smartGateId),
+      50,
+      "Should reserve 50 GJ for Smart Gate"
+    );
+    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 60, "Total reserved energy should be 60 GJ (10 + 50)");
 
-  //     // 3. Deploy Smart Storage Unit (should connect but fail to come online due to insufficient energy)
-  //     smartStorageUnitSystem.createAndAnchorStorageUnit(
-  //         CreateAndAnchorParams({
-  //             smartObjectId: smartStorageId,
-  //             owner: alice,
-  //             tenantId: tenantId,
-  //             locationData: locationParams,
-  //             fuelParameters: FuelParams({
-  //                 fuelUnitVolume: 0,
-  //                 fuelTypeId: 0,
-  //                 fuelMaxCapacity: 0,
-  //                 fuelAmount: 0,
-  //                 fuelBurnRateInSeconds: 0
-  //             }),
-  //             assemblyType: "SSU"
-  //         }),
-  //         1000, // storage capacity
-  //         1000, // ephemeral capacity
-  //         networkNodeId
-  //     );
+    // 3. Deploy Smart Storage Unit (should connect but fail to come online due to insufficient energy)
+    smartStorageUnitSystem.createAndAnchorStorageUnit(
+      CreateAndAnchorParams({
+        smartObjectId: smartStorageId,
+        owner: alice,
+        locationData: locationParams,
+        entityRecordParams: EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+          itemId: SMART_STORAGE_ID,
+          volume: 1000
+        }),
+        assemblyType: "SSU"
+      }),
+      1000, // storage capacity
+      1000, // ephemeral capacity
+      networkNodeId
+    );
 
-  //     // Verify Smart Storage Unit is connected but not online
-  //     assertTrue(NetworkStructureConnection.getIsConnected(networkNodeId, smartStorageId), "Smart Storage Unit should be connected");
+    // Verify Smart Storage Unit is connected but not online
+    assertTrue(
+      NetworkStructureConnection.getIsConnected(networkNodeId, smartStorageId),
+      "Smart Storage Unit should be connected"
+    );
 
-  //     // Try to bring Smart Storage Unit online (should fail as only 40 GJ available)
-  //     vm.expectRevert("Insufficient energy"); // Actual error message may vary
-  //     deployableSystem.bringOnline(smartStorageId);
+    // Try to bring Smart Storage Unit online (should fail as only 40 GJ available)
+    vm.expectRevert(
+      abi.encodeWithSelector(NetworkNodeSystem.NetworkNode_InsufficientEnergy.selector, networkNodeId, 30, 20)
+    );
+    deployableSystem.bringOnline(smartStorageId);
 
-  //     // 4. Stop Network Node fuel burn and verify all structures go offline
-  //     fuelSystem.stopBurn(networkNodeId);
+    // Advance time
+    vm.warp(block.timestamp + 3600);
 
-  //     // Advance time to consume remaining fuel
-  //     vm.warp(block.timestamp + 3600);
+    // Update fuel status
+    fuelSystem.updateFuel(networkNodeId);
 
-  //     // Update fuel status
-  //     fuelSystem.updateFuel(networkNodeId);
+    //Check the remaining fuel
+    assertEq(Fuel.getFuelAmount(networkNodeId), 8, "Fuel amount should be 8");
 
-  //     // Verify Network Node and all structures are offline
-  //     assertEq(uint8(DeployableState.getCurrentState(networkNodeId)), uint8(State.ANCHORED), "Network Node should be offline");
-  //     assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ANCHORED), "Smart Gate should be offline");
-  //     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 0, "No energy should be reserved");
+    // Advance time to consume remaining fuel
+    vm.warp(block.timestamp + (3600 * 8));
 
-  //     vm.stopPrank();
-  // }
+    // Update fuel status
+    fuelSystem.updateFuel(networkNodeId);
+
+    //Check the remaining fuel
+    assertEq(Fuel.getFuelAmount(networkNodeId), 0, "Fuel amount should be 0");
+
+    // Verify Network Node and all structures are offline
+    // assertEq(
+    //   uint8(DeployableState.getCurrentState(networkNodeId)),
+    //   uint8(State.ANCHORED),
+    //   "Network Node should be offline"
+    // );
+    //assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ANCHORED), "Smart Gate should be offline");
+    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 0, "No energy should be reserved");
+
+    vm.stopPrank();
+    vm.resumeGasMetering();
+  }
 
   // Helper function to calculate itemObjectId
   function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {

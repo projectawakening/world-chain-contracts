@@ -330,6 +330,21 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     }
   }
 
+  // Configure access for NetworkNodeSystem
+  function configureNetworkNodeAccess() public {
+    accessConfigSystem.configureAccess(
+      networkNodeSystem.toResourceId(),
+      NetworkNodeSystem.createAndAnchorNetworkNode.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyAdminSupportedAccess.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      networkNodeSystem.toResourceId(),
+      NetworkNodeSystem.createAndAnchorNetworkNode.selector,
+      true
+    );
+  }
+
   // Configure access for DeployableSystem
   function configureDeployableAccess() public {
     accessConfigSystem.configureAccess(

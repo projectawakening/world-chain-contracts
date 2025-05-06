@@ -43,7 +43,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
     FuelParams memory fuelParams,
     uint256 maxEnergyCapacity,
     uint256 currentProduction
-  ) public context scope(getNetworkNodeClassId()) {
+  ) public context access(params.smartObjectId) scope(getNetworkNodeClassId()) {
     params.assemblyType = NETWORK_NODE;
 
     entitySystem.instantiate(getNetworkNodeClassId(), params.smartObjectId, params.owner);
@@ -62,6 +62,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
       0, // totalReservedEnergy (starts at 0)
       block.timestamp // lastUpdatedAt
     );
+
+    NetworkNodeByStructure.set(params.smartObjectId, params.smartObjectId);
   }
 
   /**
@@ -69,7 +71,10 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param networkNodeId The ID of the Network Node
    * @param structureId The ID of the structure to connect
    */
-  function connectStructure(uint256 networkNodeId, uint256 structureId) public context scope(networkNodeId) {
+  function connectStructure(
+    uint256 networkNodeId,
+    uint256 structureId
+  ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
@@ -93,18 +98,19 @@ contract NetworkNodeSystem is SmartObjectFramework {
     NetworkNodeByStructure.set(structureId, networkNodeId);
   }
 
+  //TODO : Disconnect structure
+
   /**
    * @dev Handles a structure being brought online
    * @param networkNodeId The ID of the Network Node
    * @param structureId The ID of the structure
    */
-  function onStructureOnline(uint256 networkNodeId, uint256 structureId) public context scope(networkNodeId) {
+  function onStructureOnline(
+    uint256 networkNodeId,
+    uint256 structureId
+  ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
-    }
-
-    if (DeployableState.getCurrentState(networkNodeId) != State.ONLINE) {
-      revert NetworkNode_NotOnline(networkNodeId);
     }
 
     // Get energy requirement for this structure type
@@ -141,7 +147,10 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param networkNodeId The ID of the Network Node
    * @param structureId The ID of the structure
    */
-  function onStructureOffline(uint256 networkNodeId, uint256 structureId) public context scope(networkNodeId) {
+  function onStructureOffline(
+    uint256 networkNodeId,
+    uint256 structureId
+  ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
@@ -172,7 +181,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Handles Network Node going offline
    * @param networkNodeId The ID of the Network Node
    */
-  function handleNodeOffline(uint256 networkNodeId) public context scope(networkNodeId) {
+  function handleNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
@@ -180,6 +189,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
     // Reset total reserved energy
     NetworkNode.setTotalReservedEnergy(networkNodeId, 0);
     NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+
+    // deployableSystem.bringOffline(networkNodeId);
 
     // TODO: Get all connected structures and bring them offline
   }

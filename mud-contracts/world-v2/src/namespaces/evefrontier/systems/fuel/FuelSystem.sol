@@ -7,6 +7,9 @@ import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/in
 // Local namespace tables
 import { Fuel, FuelData, DeployableState, FuelConsumptionState, FuelEfficiencyConfig } from "../../codegen/index.sol";
 
+// Local namespace systems
+import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
+
 // Types and parameters
 import { State } from "../../../../codegen/common.sol";
 import { ONE_UNIT_IN_WEI } from "./../constants.sol";
@@ -290,8 +293,7 @@ contract FuelSystem is SmartObjectFramework {
    **************************/
   // Mock: handle out of fuel by calling NetworkNodeSystem to bring everything offline
   function _handleOutOfFuel(uint256 smartObjectId) internal {
-    // TODO: Integrate with NetworkNodeSystem
-    // For now, just a placeholder
+    networkNodeSystem.handleNodeOffline(smartObjectId);
   }
 
   function _updateFuel(uint256 smartObjectId) internal {
