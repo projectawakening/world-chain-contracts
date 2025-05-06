@@ -405,8 +405,8 @@ contract FuelTest is MudTest {
     assertEq(fuelAmount, 4);
     assertEq(actualRate, 1800); // 50% of 3600
 
-    // Advance time by 4 hours
-    vm.warp(block.timestamp + 14400);
+    // Advance time by 1 hour
+    vm.warp(block.timestamp + 3600);
 
     fuelSystem.updateFuel(smartObjectId);
     // Check state - should have consumed 2 units (due to 50% efficiency)

@@ -303,24 +303,20 @@ contract FuelSystem is SmartObjectFramework {
     ) = getCurrentFuelConsumptionStatus(smartObjectId);
 
     if (unitsToConsume > 0) {
-      if (fuelAmount >= unitsToConsume) {
-        // Consume units, reset burnStartTime and time remaining
-        fuelAmount -= unitsToConsume;
-        Fuel.setFuelAmount(smartObjectId, fuelAmount);
-        uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-        uint256 newBurnStartTime = burnStartTime + unitsToConsume * actualConsumptionRateInSeconds;
+      uint256 actualUnitsToConsume = unitsToConsume > fuelAmount ? fuelAmount : unitsToConsume;
+      fuelAmount -= actualUnitsToConsume;
+      Fuel.setFuelAmount(smartObjectId, fuelAmount);
+
+      uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
+      uint256 newBurnStartTime = burnStartTime + actualUnitsToConsume * actualConsumptionRateInSeconds;
+
+      if (fuelAmount == 0) {
+        FuelConsumptionState.set(smartObjectId, newBurnStartTime, false, 0);
+        _handleOutOfFuel(smartObjectId);
+      } else {
         uint256 newTimeRemaining = actualConsumptionRateInSeconds -
           ((block.timestamp > newBurnStartTime) ? (block.timestamp - newBurnStartTime) : 0);
         FuelConsumptionState.set(smartObjectId, newBurnStartTime, true, newTimeRemaining);
-      } else {
-        // Not enough fuel, consume what we can and stop
-        uint256 consumed = fuelAmount;
-        fuelAmount = 0;
-        Fuel.setFuelAmount(smartObjectId, 0);
-        uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-        uint256 newBurnStartTime = burnStartTime + consumed * actualConsumptionRateInSeconds;
-        FuelConsumptionState.set(smartObjectId, newBurnStartTime, false, 0);
-        _handleOutOfFuel(smartObjectId);
       }
     } else {
       // Not enough time for a full unit, just update time remaining
