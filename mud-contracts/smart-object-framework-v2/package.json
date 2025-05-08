@@ -20,7 +20,8 @@
     "entity-system-access": "forge script scripts/EntitySystemAccessConfig.s.sol:EntitySystemAccessConfig --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "role-management-access": "forge script scripts/RoleManagementSystemAccessConfig.s.sol:RoleManagementSystemAccessConfig --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vvv",
     "tag-system-access": "forge script scripts/TagSystemAccessConfig.s.sol:TagSystemAccessConfig --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vvv",
-    "configure-access": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && pnpm run sof-access && pnpm run entity-system-access && pnpm run role-management-access && pnpm run tag-system-access"
+    "configure-access": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && pnpm run sof-access && pnpm run entity-system-access && pnpm run role-management-access && pnpm run tag-system-access",
+    "update:batch-call-tag": "forge script scripts/AddBatchCallToAllClasses.s.sol:AddBatchCallToAllClasses --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vvv"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
