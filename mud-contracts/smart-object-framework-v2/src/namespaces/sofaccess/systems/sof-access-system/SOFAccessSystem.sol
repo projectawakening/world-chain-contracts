@@ -15,11 +15,7 @@ import { TagId, TagIdLib } from "../../../../libs/TagId.sol";
 
 import { TAG_TYPE_PROPERTY, TAG_TYPE_ENTITY_RELATION, TAG_TYPE_RESOURCE_RELATION, TAG_IDENTIFIER_CLASS, TagParams, EntityRelationValue, ResourceRelationValue } from "../../../evefrontier/systems/tag-system/types.sol";
 
-import { ISOFAccessSystem } from "../../interfaces/ISOFAccessSystem.sol";
 import { IWorldWithContext } from "../../../../IWorldWithContext.sol";
-
-import { IEntitySystem } from "../../../evefrontier/interfaces/IEntitySystem.sol";
-import { entitySystem } from "../../../evefrontier/codegen/systems/EntitySystemLib.sol";
 
 import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
 
@@ -28,8 +24,10 @@ import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.s
  * @author CCP Games
  * @dev Handles access control logic for SOF Systems (EntitySystem and TagSystem)
  */
-contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
+contract SOFAccessSystem is SmartObjectFramework {
   using WorldResourceIdInstance for ResourceId;
+
+  error SOFAccess_AccessDenied(uint256 entityId, address caller);
 
   /**
    * @notice Validates if caller has the required role to access an entity (and is directly calling)
@@ -253,6 +251,19 @@ contract SOFAccessSystem is ISOFAccessSystem, SmartObjectFramework {
       // entry point direct call case
       return;
     }
+
+    revert SOFAccess_AccessDenied(entityId, msgSender);
+  }
+
+  /**
+   * @notice Blocks all calls
+   * @param entityId The ID of the entity (class or object) to check
+   * @param targetCallData The calldata of the target function
+   * @dev Handles calls to EntitySystem.deleteClass, currently there are too many un-resolved data dependencies to allow for any access to this function
+   */
+  function noAllowances(uint256 entityId, bytes memory targetCallData) public view {
+    uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
+    (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);
 
     revert SOFAccess_AccessDenied(entityId, msgSender);
   }

@@ -1,5 +1,5 @@
 import { defineWorld } from "@latticexyz/world";
-import constants = require("./node_modules/@eveworld/common-constants/src/constants.json");
+import constants from "./node_modules/@eveworld/common-constants/src/constants.json";
 
 export default defineWorld({
   namespace: constants.namespace.FRONTIER_WORLD_DEPLOYMENT,

@@ -18,9 +18,10 @@ contract CreateMintERC20 is Script {
     IBaseWorld world = IBaseWorld(worldAddress);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    string memory namespace = "testeve";
-    string memory name = "Test Token";
-    string memory symbol = "EVE";
+    // these don't match the values in the .env file because this is an additional ERC20 deployment for testing
+    string memory namespace = "mytokentest";
+    string memory name = "My Test Token";
+    string memory symbol = "MTT";
     uint8 decimals = uint8(18);
     address to = address(0x123);
     uint256 amount = 10000000000;

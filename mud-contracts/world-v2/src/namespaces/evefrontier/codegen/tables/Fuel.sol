@@ -18,9 +18,10 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct FuelData {
   uint256 fuelUnitVolume;
-  uint256 fuelConsumptionIntervalInSeconds;
+  uint256 fuelTypeId;
   uint256 fuelMaxCapacity;
   uint256 fuelAmount;
+  uint256 fuelBurnRateInSeconds;
   uint256 lastUpdatedAt;
 }
 
@@ -29,12 +30,12 @@ library Fuel {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004675656c000000000000000000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x00a0050020202020200000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x00c0060020202020202000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, uint256, uint256, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x00a005001f1f1f1f1f0000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, uint256, uint256, uint256, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x00c006001f1f1f1f1f1f00000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -50,12 +51,13 @@ library Fuel {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](5);
+    fieldNames = new string[](6);
     fieldNames[0] = "fuelUnitVolume";
-    fieldNames[1] = "fuelConsumptionIntervalInSeconds";
+    fieldNames[1] = "fuelTypeId";
     fieldNames[2] = "fuelMaxCapacity";
     fieldNames[3] = "fuelAmount";
-    fieldNames[4] = "lastUpdatedAt";
+    fieldNames[4] = "fuelBurnRateInSeconds";
+    fieldNames[5] = "lastUpdatedAt";
   }
 
   /**
@@ -115,11 +117,9 @@ library Fuel {
   }
 
   /**
-   * @notice Get fuelConsumptionIntervalInSeconds.
+   * @notice Get fuelTypeId.
    */
-  function getFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId
-  ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
+  function getFuelTypeId(uint256 smartObjectId) internal view returns (uint256 fuelTypeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -128,11 +128,9 @@ library Fuel {
   }
 
   /**
-   * @notice Get fuelConsumptionIntervalInSeconds.
+   * @notice Get fuelTypeId.
    */
-  function _getFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId
-  ) internal view returns (uint256 fuelConsumptionIntervalInSeconds) {
+  function _getFuelTypeId(uint256 smartObjectId) internal view returns (uint256 fuelTypeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -141,41 +139,23 @@ library Fuel {
   }
 
   /**
-   * @notice Set fuelConsumptionIntervalInSeconds.
+   * @notice Set fuelTypeId.
    */
-  function setFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId,
-    uint256 fuelConsumptionIntervalInSeconds
-  ) internal {
+  function setFuelTypeId(uint256 smartObjectId, uint256 fuelTypeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(
-      _tableId,
-      _keyTuple,
-      1,
-      abi.encodePacked((fuelConsumptionIntervalInSeconds)),
-      _fieldLayout
-    );
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((fuelTypeId)), _fieldLayout);
   }
 
   /**
-   * @notice Set fuelConsumptionIntervalInSeconds.
+   * @notice Set fuelTypeId.
    */
-  function _setFuelConsumptionIntervalInSeconds(
-    uint256 smartObjectId,
-    uint256 fuelConsumptionIntervalInSeconds
-  ) internal {
+  function _setFuelTypeId(uint256 smartObjectId, uint256 fuelTypeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(
-      _tableId,
-      _keyTuple,
-      1,
-      abi.encodePacked((fuelConsumptionIntervalInSeconds)),
-      _fieldLayout
-    );
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((fuelTypeId)), _fieldLayout);
   }
 
   /**
@@ -263,13 +243,55 @@ library Fuel {
   }
 
   /**
+   * @notice Get fuelBurnRateInSeconds.
+   */
+  function getFuelBurnRateInSeconds(uint256 smartObjectId) internal view returns (uint256 fuelBurnRateInSeconds) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get fuelBurnRateInSeconds.
+   */
+  function _getFuelBurnRateInSeconds(uint256 smartObjectId) internal view returns (uint256 fuelBurnRateInSeconds) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set fuelBurnRateInSeconds.
+   */
+  function setFuelBurnRateInSeconds(uint256 smartObjectId, uint256 fuelBurnRateInSeconds) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((fuelBurnRateInSeconds)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set fuelBurnRateInSeconds.
+   */
+  function _setFuelBurnRateInSeconds(uint256 smartObjectId, uint256 fuelBurnRateInSeconds) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((fuelBurnRateInSeconds)), _fieldLayout);
+  }
+
+  /**
    * @notice Get lastUpdatedAt.
    */
   function getLastUpdatedAt(uint256 smartObjectId) internal view returns (uint256 lastUpdatedAt) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -280,7 +302,7 @@ library Fuel {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 4, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 5, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -291,7 +313,7 @@ library Fuel {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 5, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
   }
 
   /**
@@ -301,7 +323,7 @@ library Fuel {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 4, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 5, abi.encodePacked((lastUpdatedAt)), _fieldLayout);
   }
 
   /**
@@ -340,16 +362,18 @@ library Fuel {
   function set(
     uint256 smartObjectId,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelTypeId,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
+    uint256 fuelBurnRateInSeconds,
     uint256 lastUpdatedAt
   ) internal {
     bytes memory _staticData = encodeStatic(
       fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds,
+      fuelTypeId,
       fuelMaxCapacity,
       fuelAmount,
+      fuelBurnRateInSeconds,
       lastUpdatedAt
     );
 
@@ -368,16 +392,18 @@ library Fuel {
   function _set(
     uint256 smartObjectId,
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelTypeId,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
+    uint256 fuelBurnRateInSeconds,
     uint256 lastUpdatedAt
   ) internal {
     bytes memory _staticData = encodeStatic(
       fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds,
+      fuelTypeId,
       fuelMaxCapacity,
       fuelAmount,
+      fuelBurnRateInSeconds,
       lastUpdatedAt
     );
 
@@ -396,9 +422,10 @@ library Fuel {
   function set(uint256 smartObjectId, FuelData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.fuelUnitVolume,
-      _table.fuelConsumptionIntervalInSeconds,
+      _table.fuelTypeId,
       _table.fuelMaxCapacity,
       _table.fuelAmount,
+      _table.fuelBurnRateInSeconds,
       _table.lastUpdatedAt
     );
 
@@ -417,9 +444,10 @@ library Fuel {
   function _set(uint256 smartObjectId, FuelData memory _table) internal {
     bytes memory _staticData = encodeStatic(
       _table.fuelUnitVolume,
-      _table.fuelConsumptionIntervalInSeconds,
+      _table.fuelTypeId,
       _table.fuelMaxCapacity,
       _table.fuelAmount,
+      _table.fuelBurnRateInSeconds,
       _table.lastUpdatedAt
     );
 
@@ -442,21 +470,24 @@ library Fuel {
     pure
     returns (
       uint256 fuelUnitVolume,
-      uint256 fuelConsumptionIntervalInSeconds,
+      uint256 fuelTypeId,
       uint256 fuelMaxCapacity,
       uint256 fuelAmount,
+      uint256 fuelBurnRateInSeconds,
       uint256 lastUpdatedAt
     )
   {
     fuelUnitVolume = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    fuelConsumptionIntervalInSeconds = (uint256(Bytes.getBytes32(_blob, 32)));
+    fuelTypeId = (uint256(Bytes.getBytes32(_blob, 32)));
 
     fuelMaxCapacity = (uint256(Bytes.getBytes32(_blob, 64)));
 
     fuelAmount = (uint256(Bytes.getBytes32(_blob, 96)));
 
-    lastUpdatedAt = (uint256(Bytes.getBytes32(_blob, 128)));
+    fuelBurnRateInSeconds = (uint256(Bytes.getBytes32(_blob, 128)));
+
+    lastUpdatedAt = (uint256(Bytes.getBytes32(_blob, 160)));
   }
 
   /**
@@ -472,9 +503,10 @@ library Fuel {
   ) internal pure returns (FuelData memory _table) {
     (
       _table.fuelUnitVolume,
-      _table.fuelConsumptionIntervalInSeconds,
+      _table.fuelTypeId,
       _table.fuelMaxCapacity,
       _table.fuelAmount,
+      _table.fuelBurnRateInSeconds,
       _table.lastUpdatedAt
     ) = decodeStatic(_staticData);
   }
@@ -505,13 +537,14 @@ library Fuel {
    */
   function encodeStatic(
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelTypeId,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
+    uint256 fuelBurnRateInSeconds,
     uint256 lastUpdatedAt
   ) internal pure returns (bytes memory) {
     return
-      abi.encodePacked(fuelUnitVolume, fuelConsumptionIntervalInSeconds, fuelMaxCapacity, fuelAmount, lastUpdatedAt);
+      abi.encodePacked(fuelUnitVolume, fuelTypeId, fuelMaxCapacity, fuelAmount, fuelBurnRateInSeconds, lastUpdatedAt);
   }
 
   /**
@@ -522,16 +555,18 @@ library Fuel {
    */
   function encode(
     uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
+    uint256 fuelTypeId,
     uint256 fuelMaxCapacity,
     uint256 fuelAmount,
+    uint256 fuelBurnRateInSeconds,
     uint256 lastUpdatedAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData = encodeStatic(
       fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds,
+      fuelTypeId,
       fuelMaxCapacity,
       fuelAmount,
+      fuelBurnRateInSeconds,
       lastUpdatedAt
     );
 

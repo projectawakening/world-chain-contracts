@@ -2,21 +2,21 @@
 pragma solidity >=0.8.24;
 
 /**
- * @notice Holds the data for an inventory item
- * @dev InventoryItem structure
+ * @dev CreateInventoryItemParams structure
  */
-struct InventoryItem {
-  uint256 inventoryItemId;
-  address owner;
+struct CreateInventoryItemParams {
+  uint256 smartObjectId;
+  bytes32 tenantId;
   uint256 itemId;
   uint256 typeId;
   uint256 volume;
   uint256 quantity;
 }
 
-// TransferItem is a subset of InventoryItem for easier interfacing
-struct TransferItem {
-  uint256 inventoryItemId;
-  address owner; // current item owner before transfer
+/**
+ * @dev inventoryItemParams structure
+ */
+struct InventoryItemParams {
+  uint256 smartObjectId;
   uint256 quantity;
 }

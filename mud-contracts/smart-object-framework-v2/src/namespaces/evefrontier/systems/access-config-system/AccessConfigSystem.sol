@@ -10,7 +10,6 @@ import { AccessConfig } from "../../codegen/tables/AccessConfig.sol";
 import { Role } from "../../codegen/tables/Role.sol";
 import { CallAccess } from "../../codegen/tables/CallAccess.sol";
 
-import { IAccessConfigSystem } from "../../interfaces/IAccessConfigSystem.sol";
 import { IWorldWithContext } from "../../../../IWorldWithContext.sol";
 
 import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.sol";
@@ -20,8 +19,14 @@ import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.s
  * @author CCP Games
  * @dev Manage access logic configuration and enforcement for any world registered System/function target
  */
-contract AccessConfigSystem is IAccessConfigSystem, SmartObjectFramework {
+contract AccessConfigSystem is SmartObjectFramework {
   using WorldResourceIdInstance for ResourceId;
+
+  error AccessConfig_AccessDenied(ResourceId targetSystemId, address caller);
+  error AccessConfig_RoleAccessDenied(bytes32 roleId, address caller);
+  error AccessConfig_InvalidTargetSystem(ResourceId targetSystemId);
+  error AccessConfig_InvalidAccessSystem(ResourceId accessSystemId);
+  error AccessConfig_TargetNotConfigured(ResourceId targetSystemId, bytes4 targetFunctionId);
 
   function configureAccess(
     ResourceId targetSystemId,

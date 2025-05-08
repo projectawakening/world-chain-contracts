@@ -7,19 +7,20 @@ pragma solidity >=0.8.24;
  * @param itemId the itemId of the in-game entity
  * @param volume the volume of the in-game entity
  */
-struct EntityRecordData {
+struct EntityRecordParams {
+  bytes32 tenantId;
   uint256 typeId;
   uint256 itemId;
   uint256 volume;
 }
 
 /**
- * EntityMetadata system stores the metadata of an in game entity record on chain.
+ * EntityMetadataParams system stores the metadata of an in game entity record on chain.
  * @param name the name of the entity
  * @param dappURL stores the URL where the dapp for an entity is hosted
  * @param description the description of the entity
  */
-struct EntityMetadata {
+struct EntityMetadataParams {
   string name;
   string dappURL;
   string description;

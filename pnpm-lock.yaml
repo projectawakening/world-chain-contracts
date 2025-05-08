@@ -102,6 +102,12 @@ importers:
       '@eveworld/smart-object-framework-v2':
         specifier: link:../mud-contracts/smart-object-framework-v2
         version: link:../mud-contracts/smart-object-framework-v2
+      '@eveworld/standard-contracts-v2':
+        specifier: link:../standard-contracts-v2
+        version: link:../standard-contracts-v2
+      '@eveworld/world-core-v2':
+        specifier: link:../mud-contracts/core-v2
+        version: link:../mud-contracts/core-v2
       '@eveworld/world-v2':
         specifier: link:../mud-contracts/world-v2
         version: link:../mud-contracts/world-v2
@@ -122,7 +128,10 @@ importers:
         version: 2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7(zod@3.23.8)
       '@latticexyz/world-modules':
         specifier: 2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7
-        version: 2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7
+        version: 2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7(typescript@5.4.5)
+      '@openzeppelin/contracts':
+        specifier: ^5.0.1
+        version: 5.2.0
     devDependencies:
       '@types/debug':
         specifier: 4.1.7
@@ -224,6 +233,52 @@ importers:
       solhint-plugin-mud:
         specifier: 2.2.8
         version: 2.2.8
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
+
+  mud-contracts/core-v2:
+    dependencies:
+      '@latticexyz/cli':
+        specifier: 2.2.14
+        version: 2.2.14
+      '@latticexyz/schema-type':
+        specifier: 2.2.14
+        version: 2.2.14(typescript@5.4.5)(zod@3.23.8)
+      '@latticexyz/store':
+        specifier: 2.2.14
+        version: 2.2.14(@aws-sdk/client-kms@3.750.0)(asn1.js@5.4.1)(typescript@5.4.2)(zod@3.23.8)
+      '@latticexyz/world':
+        specifier: 2.2.14
+        version: 2.2.14(@aws-sdk/client-kms@3.750.0)(asn1.js@5.4.1)(typescript@5.4.2)(zod@3.23.8)
+      '@latticexyz/world-modules':
+        specifier: 2.2.14
+        version: 2.2.14(typescript@5.4.5)
+    devDependencies:
+      '@types/node':
+        specifier: ^18.15.11
+        version: 18.15.13
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
+        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
+        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
+      prettier:
+        specifier: 3.2.5
+        version: 3.2.5
+      prettier-plugin-solidity:
+        specifier: 1.3.1
+        version: 1.3.1(prettier@3.2.5)
+      solhint:
+        specifier: ^3.3.7
+        version: 3.3.7
+      solhint-config-mud:
+        specifier: 2.2.14
+        version: 2.2.14
+      solhint-plugin-mud:
+        specifier: 2.2.14
+        version: 2.2.14
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -398,9 +453,6 @@ importers:
 
   mud-contracts/world-v2:
     dependencies:
-      '@eveworld/common-constants':
-        specifier: 0.0.13
-        version: link:../common/constants
       '@eveworld/smart-object-framework-v2':
         specifier: link:../smart-object-framework-v2
         version: link:../smart-object-framework-v2
@@ -487,6 +539,52 @@ importers:
       ethers:
         specifier: ^6.11.1
         version: 6.11.1
+      husky:
+        specifier: ^9.0.11
+        version: 9.0.11
+      mocha:
+        specifier: ^11.0.1
+        version: 11.0.1
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      solhint:
+        specifier: ^4.5.2
+        version: 4.5.2
+      solhint-plugin-prettier:
+        specifier: ^0.1.0
+        version: 0.1.0(prettier-plugin-solidity@1.3.1)(prettier@3.2.5)
+
+  standard-contracts-v2:
+    dependencies:
+      '@eveworld/world-core-v2':
+        specifier: link:../mud-contracts/core-v2
+        version: link:../mud-contracts/core-v2
+      '@openzeppelin/contracts':
+        specifier: ^5.0.1
+        version: 5.2.0
+      prettier-plugin-solidity:
+        specifier: ^1.3.1
+        version: 1.3.1(prettier@3.2.5)
+      solc:
+        specifier: ^0.8.24
+        version: 0.8.24
+    devDependencies:
+      '@types/mocha':
+        specifier: ^10.0.6
+        version: 10.0.6
+      chai:
+        specifier: ^5.1.0
+        version: 5.1.0
+      ds-test:
+        specifier: https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0
+        version: github.com/dapphub/ds-test/e282159d5170298eb2455a6c05280ab5a73a4ef0
+      ethers:
+        specifier: ^6.11.1
+        version: 6.11.1
+      forge-std:
+        specifier: https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1
+        version: github.com/foundry-rs/forge-std/74cfb77e308dd188d2f58864aaf44963ae6b88b1
       husky:
         specifier: ^9.0.11
         version: 9.0.11
@@ -2324,6 +2422,18 @@ packages:
       - zod
     dev: false
 
+  /@latticexyz/schema-type@2.2.14(typescript@5.4.5)(zod@3.23.8):
+    resolution: {integrity: sha512-yivQx317ER4/t0QDX7keOWoNwIwk4YIB/Au4wuSY+BAdgY2XleZVHh9tPr8lN9t+WZMMc7HJj2duoT/5UmrB2Q==}
+    dependencies:
+      abitype: 1.0.6(typescript@5.4.5)(zod@3.23.8)
+      viem: 2.21.19(typescript@5.4.5)(zod@3.23.8)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+    dev: false
+
   /@latticexyz/schema-type@2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7(typescript@5.4.2)(zod@3.23.8):
     resolution: {integrity: sha512-dROiAhxQ4VTJZqOTp27Fz+DH0P72PtNNgfIV7avFsOSu0Sbvx6Hw2sVT1zsmYrEaqwn+iQLJYI42YAhgKAqESg==}
     dependencies:
@@ -3109,6 +3219,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@openzeppelin/contracts@5.2.0:
+    resolution: {integrity: sha512-bxjNie5z89W1Ea0NZLZluFh8PrFNn9DH8DQlujEok2yjsOlraUPKID5p1Wk3qdNbf6XkQ1Os2RvfiHrrXLHWKA==}
+    dev: false
 
   /@pkgjs/parseargs@0.11.0:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -7128,12 +7242,22 @@ packages:
       - debug
     dev: false
 
+  /solhint-config-mud@2.2.14:
+    resolution: {integrity: sha512-sixbU3FsOaDXGbrZft76RWqds7d4akc2YR8DV9vpb8kovDBvqjWpEc0XyQPHOpd8FXVTgh0fd6jYPeghBS9Cpw==}
+    dev: true
+
   /solhint-config-mud@2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7:
     resolution: {integrity: sha512-N6xQWWsoKs7FMsnp8H7GHUykF2IzaHe4r8Q8KaF3Hblpsn/3oO/AV9YA4jL7r+ppJ/baDqeAA/zK8SmpTf669Q==}
     dev: true
 
   /solhint-config-mud@2.2.8:
     resolution: {integrity: sha512-krAamILKmudTieeR1XRU2hLXNSXIiiJTF6g1hQKI/COa9XqE7zweQa0A7p95T0VEt6rMHi8+ScdEudXoNrDEIA==}
+    dev: true
+
+  /solhint-plugin-mud@2.2.14:
+    resolution: {integrity: sha512-6mkftf9yRk3DO/bvZZQzy9YSlWAlBs5EktpEMEHgxcebFnPEj7Dyj7K05a9a5h7tZbUM3Buw1qscoftR5/8gEQ==}
+    dependencies:
+      '@solidity-parser/parser': 0.16.2
     dev: true
 
   /solhint-plugin-mud@2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7:
@@ -7841,8 +7965,8 @@ packages:
   /webauthn-p256@0.0.5:
     resolution: {integrity: sha512-drMGNWKdaixZNobeORVIqq7k5DsRC9FnG201K2QjeOoQLmtSDaSsVZdkg6n5jUALJKcAG++zBPJXmv6hy0nWFg==}
     dependencies:
-      '@noble/curves': 1.4.0
-      '@noble/hashes': 1.4.0
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
     dev: false
 
   /which-boxed-primitive@1.1.1:

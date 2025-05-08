@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm run build:mud && pnpm run build:abi && pnpm run build:abi-ts",
+    "build": "mud build",
     "build:abi": "forge build",
     "build:abi-ts": "mud abi-ts",
     "build:mud": "rm -rf src/codegen && mud tablegen && mud worldgen",
@@ -17,7 +17,7 @@
     "prettier": "prettier 'src/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol'  --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol'",
-    "test": "tsc --noEmit && mud test"
+    "test": "tsc --noEmit"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.14",

@@ -9,19 +9,21 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface IEveSystem {
-  function evefrontier__registerSmartCharacterClass(uint256 typeId) external;
+  function evefrontier__registerSmartCharacterClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartStorageUnitClass(uint256 typeId) external;
+  function evefrontier__registerSmartStorageUnitClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartTurretClass(uint256 typeId) external;
+  function evefrontier__registerSmartTurretClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartGateClass(uint256 typeId) external;
+  function evefrontier__registerSmartGateClass(uint256 typeId, uint256 volume) external;
+
+  function evefrontier__registerNetworkNodeClass(uint256 typeId, uint256 volume) external;
 
   function evefrontier__configureEntityRecordAccess() external;
 
-  function evefrontier__configureStaticDataAccess() external;
-
   function evefrontier__configureSmartAssemblyAccess() external;
+
+  function evefrontier__configureOwnershipAccess() external;
 
   function evefrontier__configureSmartCharacterAccess() external;
 
@@ -29,11 +31,15 @@ interface IEveSystem {
 
   function evefrontier__configureFuelAccess() external;
 
+  function evefrontier__configureNetworkNodeAccess() external;
+
   function evefrontier__configureDeployableAccess() external;
 
   function evefrontier__configureInventoryAccess() external;
 
   function evefrontier__configureEphemeralInventoryAccess() external;
+
+  function evefrontier__configureEphemeralInteractAccess() external;
 
   function evefrontier__configureInventoryInteractAccess() external;
 
@@ -42,4 +48,6 @@ interface IEveSystem {
   function evefrontier__configureSmartTurretAccess() external;
 
   function evefrontier__configureSmartGateAccess() external;
+
+  function evefrontier__configureKillMailAccess() external;
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.24;
+pragma solidity >=0.8.20;
 
 import { Script } from "forge-std/Script.sol";
 
@@ -15,14 +15,9 @@ import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-p
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-import { ERC721MetadataData } from "../src/namespaces/evefrontier/codegen/tables/ERC721Metadata.sol";
 import { SmartCharacterSystem } from "../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-import { registerERC721 } from "../src/namespaces/evefrontier/systems/eve-erc721-puppet/registerERC721.sol";
-import { IERC721Mintable } from "../src/namespaces/evefrontier/systems/eve-erc721-puppet/IERC721Mintable.sol";
-import { StaticDataSystem } from "../src/namespaces/evefrontier/systems/static-data/StaticDataSystem.sol";
 import { DeployableSystem } from "../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
 
-import { StaticDataSystemLib, staticDataSystem } from "../src/namespaces/evefrontier/codegen/systems/StaticDataSystemLib.sol";
 import { SmartCharacterSystemLib, smartCharacterSystem } from "../src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { DeployableSystemLib, deployableSystem } from "../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 
@@ -42,8 +37,6 @@ contract PostDeploy is Script {
     // install all the necessary tokens
     _installPuppet(world);
     _createEVEToken(world);
-    _createCharacterToken(world);
-    _createDeployableToken(world);
 
     vm.stopBroadcast();
   }
@@ -82,39 +75,6 @@ contract PostDeploy is Script {
 
     console.log("minting to: ", address(to));
     console.log("amount: ", amount * 1 ether);
-  }
-
-  function _createCharacterToken(IBaseWorld world) internal {
-    string memory baseURI = vm.envString("BASE_URI");
-
-    // SmartCharacter
-    IERC721Mintable erc721SmartCharacter = registerERC721(
-      world,
-      "erc721charactr",
-      ERC721MetadataData({ name: "SmartCharacter", symbol: "SC", baseURI: baseURI })
-    );
-
-    console.log("Deploying Smart Character token with address: ", address(erc721SmartCharacter));
-
-    console.log("Setting baseURI for Smart Character token: ", baseURI);
-    staticDataSystem.setBaseURI(baseURI);
-    smartCharacterSystem.registerCharacterToken(address(erc721SmartCharacter));
-  }
-
-  function _createDeployableToken(IBaseWorld world) internal {
-    string memory baseURI = vm.envString("BASE_URI");
-
-    // SmartDeployable
-    IERC721Mintable erc721SmartDeployableToken = registerERC721(
-      world,
-      "erc721deploybl",
-      ERC721MetadataData({ name: "SmartDeployable", symbol: "SD", baseURI: baseURI })
-    );
-
-    console.log("Deploying Smart Deployable token with address: ", address(erc721SmartDeployableToken));
-
-    staticDataSystem.setBaseURI(baseURI);
-    deployableSystem.registerDeployableToken(address(erc721SmartDeployableToken));
   }
 
   function stringToBytes14(string memory str) public pure returns (bytes14) {

@@ -11,5 +11,13 @@
       "cache": true
     }
   },
-  "defaultBase": "main"
+  "defaultBase": "main",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "parallel": false
+      }
+    }
+  }
 }

@@ -9,6 +9,8 @@ pragma solidity >=0.8.24;
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISOFAccessSystem {
+  error SOFAccess_AccessDenied(uint256 entityId, address caller);
+
   function sofaccess__allowDirectAccessRoleOnly(uint256 entityId, bytes memory targetCallData) external view;
 
   function sofaccess__allowDirectClassAccessRoleOnly(uint256 entityId, bytes memory targetCallData) external view;
@@ -40,4 +42,6 @@ interface ISOFAccessSystem {
     uint256 entityId,
     bytes memory targetCallData
   ) external view;
+
+  function sofaccess__noAllowances(uint256 entityId, bytes memory targetCallData) external view;
 }

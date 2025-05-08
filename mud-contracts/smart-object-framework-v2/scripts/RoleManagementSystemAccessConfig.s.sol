@@ -42,7 +42,7 @@ contract RoleManagementSystemAccessConfig is Script {
       roleManagementSystem.toResourceId(),
       IRoleManagementSystem.scopedGrantRole.selector,
       sOFAccessSystem.toResourceId(),
-      ISOFAccessSystem.allowCallAccessOrClassScopedSystem.selector
+      ISOFAccessSystem.allowClassScopedSystemOnly.selector
     );
     accessConfigSystem.configureAccess(
       roleManagementSystem.toResourceId(),
@@ -93,5 +93,7 @@ contract RoleManagementSystemAccessConfig is Script {
       IRoleManagementSystem.scopedRevokeAll.selector,
       true
     );
+    
+    vm.stopBroadcast();
   }
 }

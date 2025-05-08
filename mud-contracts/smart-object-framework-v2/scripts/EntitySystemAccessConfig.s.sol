@@ -28,14 +28,14 @@ contract EntitySystemAccessConfig is Script {
     // EntitySystem.sol access configurations
     // set allowClassScopedSystemOrDirectClassAccessRole for setClassAccessRole
     accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
-    // set allowDirectClassAccessRoleOnly for deleteClass
-    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowDirectClassAccessRoleOnly.selector);
-    // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for instantiate
-    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrClassScopedSystemOrDirectClassAccessRole.selector);
+    // set noAllowances for deleteClass
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.noAllowances.selector);
+    // set allowClassScopedSystemOrDirectClassAccessRole for instantiate
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
     // set allowClassScopedSystemOrDirectAccessRole for setObjectAccessRole
     accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector);
-    // set allowCallAccessOrClassScopedSystemOrDirectClassAccessRole for deleteObject
-    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrClassScopedSystemOrDirectClassAccessRole.selector);
+    // set allowClassScopedSystemOrDirectClassAccessRole for deleteObject
+    accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
     // set allowCallAccessOnly for scopedRegisterClass
     accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOnly.selector);
 

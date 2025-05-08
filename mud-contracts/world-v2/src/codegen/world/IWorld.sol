@@ -8,18 +8,21 @@ import { IEveSystem } from "./IEveSystem.sol";
 import { IAccessSystem } from "./IAccessSystem.sol";
 import { IDeployableSystem } from "./IDeployableSystem.sol";
 import { IEntityRecordSystem } from "./IEntityRecordSystem.sol";
-import { IERC721System } from "./IERC721System.sol";
 import { IFuelSystem } from "./IFuelSystem.sol";
+import { IEphemeralInteractSystem } from "./IEphemeralInteractSystem.sol";
 import { IEphemeralInventorySystem } from "./IEphemeralInventorySystem.sol";
 import { IInventoryInteractSystem } from "./IInventoryInteractSystem.sol";
 import { IInventorySystem } from "./IInventorySystem.sol";
+import { IKillMailSystem } from "./IKillMailSystem.sol";
 import { ILocationSystem } from "./ILocationSystem.sol";
+import { INetworkNodeSystem } from "./INetworkNodeSystem.sol";
+import { IInventoryOwnershipSystem } from "./IInventoryOwnershipSystem.sol";
+import { IOwnershipSystem } from "./IOwnershipSystem.sol";
 import { ISmartAssemblySystem } from "./ISmartAssemblySystem.sol";
 import { ISmartCharacterSystem } from "./ISmartCharacterSystem.sol";
 import { ISmartGateSystem } from "./ISmartGateSystem.sol";
 import { ISmartStorageUnitSystem } from "./ISmartStorageUnitSystem.sol";
 import { ISmartTurretSystem } from "./ISmartTurretSystem.sol";
-import { IStaticDataSystem } from "./IStaticDataSystem.sol";
 
 /**
  * @title IWorld
@@ -34,16 +37,19 @@ interface IWorld is
   IAccessSystem,
   IDeployableSystem,
   IEntityRecordSystem,
-  IERC721System,
   IFuelSystem,
+  IEphemeralInteractSystem,
   IEphemeralInventorySystem,
   IInventoryInteractSystem,
   IInventorySystem,
+  IKillMailSystem,
   ILocationSystem,
+  INetworkNodeSystem,
+  IInventoryOwnershipSystem,
+  IOwnershipSystem,
   ISmartAssemblySystem,
   ISmartCharacterSystem,
   ISmartGateSystem,
   ISmartStorageUnitSystem,
-  ISmartTurretSystem,
-  IStaticDataSystem
+  ISmartTurretSystem
 {}

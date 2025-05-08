@@ -16,8 +16,6 @@ import { TagId, TagIdLib } from "../../../../libs/TagId.sol";
 
 import { TAG_TYPE_PROPERTY, TAG_TYPE_ENTITY_RELATION, TAG_TYPE_RESOURCE_RELATION, TAG_IDENTIFIER_CLASS, TAG_IDENTIFIER_OBJECT, TAG_IDENTIFIER_ENTITY_COUNT, TagParams, EntityRelationValue, ResourceRelationValue } from "../tag-system/types.sol";
 
-import { IEntitySystem } from "../../interfaces/IEntitySystem.sol";
-
 import { tagSystem } from "../../codegen/systems/TagSystemLib.sol";
 import { roleManagementSystem } from "../../codegen/systems/RoleManagementSystemLib.sol";
 
@@ -28,7 +26,14 @@ import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.s
  * @author CCP Games
  * @notice Manage Class and Object creation/deletion through the use of reference Ids { see, `libs/Id.sol` and `types/entityTypes.sol`}
  */
-contract EntitySystem is IEntitySystem, SmartObjectFramework {
+contract EntitySystem is SmartObjectFramework {
+  error Entity_InvalidEntityId(uint256 entityId);
+  error Entity_EntityAlreadyExists(uint256 entityId);
+  error Entity_EntityDoesNotExist(uint256 classId);
+  error Entity_PropertyTagNotFound(uint256 entityId, TagId tagId);
+  error Entity_EntityRelationsFound(uint256 classId, uint256 numOfTags);
+  error Entity_BadRoleConfirmation();
+  error Entity_RoleDoesNotExist(bytes32 role);
   /**
    * Common TagIds for Entity management
    */

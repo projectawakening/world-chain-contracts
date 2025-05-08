@@ -6,7 +6,8 @@
   "scripts": {
     "build": "mud build",
     "clean": "forge clean && rm -rf src/codegen && rm -rf out && rm -rf cache",
-    "deploy": "PRIVATE_KEY=$PRIVATE_KEY mud deploy --rpc $RPC_URL --alwaysRunPostDeploy",
+    "deploy": "PRIVATE_KEY=$PRIVATE_KEY && WORLD_ADDRESS=$WORLD_ADDRESS && RPC_URL=$RPC_URL && mud deploy --rpc $RPC_URL --alwaysRunPostDeploy",
+    "upgrade": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && mud deploy --rpc $RPC_URL --worldAddress $WORLD_ADDRESS",
     "deploy:garnet": "mud deploy --profile=garnet",
     "deploy:redstone": "mud deploy --profile=redstone",
     "dev": "mud dev-contracts",
@@ -14,8 +15,10 @@
     "prettier": "prettier 'src/**/*.sol' 'test/**/*.sol' './*.ts' --plugin=prettier-plugin-solidity --check",
     "fixFormat": "prettier 'src/**/*.sol' 'test/**/*' './*.ts' --plugin=prettier-plugin-solidity --write",
     "solhint": "solhint --config ./.solhint.json 'src/**/*.sol' --fix --quiet",
-    "test:world": "mud test --worldAddress $WORLD_ADDRESS --forgeOptions='--no-match-path=test/eve-erc721-puppet/ERC721.t.sol -vvv'",
-    "config-sof": "forge script script/ConfigSof.s.sol:ConfigSof --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
+    "test:world": "mud test --worldAddress $WORLD_ADDRESS --forgeOptions='--match-path=test/network-node/NetworkNodeTest.t.sol -vvv'",
+    "config": "forge script script/Config.s.sol:Config --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
+    "grant-admin-access": "forge script script/GrantAdminRole.s.sol:GrantAdminRole --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
+    "post-deploy": "forge script script/PostDeploy.s.sol:PostDeploy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "test": "chmod +x run-tests.sh && ./run-tests.sh"
   },
   "dependencies": {
@@ -25,7 +28,6 @@
     "@latticexyz/world": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/world-modules": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/gas-report": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@eveworld/common-constants": "0.0.13",
     "@eveworld/smart-object-framework-v2": "link:../smart-object-framework-v2"
   },
   "devDependencies": {
@@ -39,14 +41,5 @@
     "solhint-config-mud": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "solhint-plugin-mud": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "typescript": "^5.4.5"
-  },
-  "pnpm": {
-    "overrides": {
-      "follow-redirects@<1.15.6": ">=1.15.6",
-      "ejs@<3.1.10": ">=3.1.10",
-      "ws@<8.17.1": ">=8.17.1",
-      "braces@<3.0.3": ">=3.0.3",
-      "fast-xml-parser@4.4.1": ">=4.4.1"
-    }
   }
 }

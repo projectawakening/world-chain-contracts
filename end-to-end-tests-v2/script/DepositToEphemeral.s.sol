@@ -3,80 +3,76 @@ pragma solidity >=0.8.24;
 import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
-import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
-import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { InventoryItem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
-import { EphemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/EphemeralInventorySystem.sol";
+import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+import { Tenant, EphemeralInvItemData, EphemeralInvItem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
-import { EntityRecordData, EntityMetadata } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { SmartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
-
-import { fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
-import { smartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
-import { ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
+import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
+import { CreateInventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
+import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract DepositToEphemeral is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
     // Load the private key from the `PRIVATE_KEY` environment variable (in .env)
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    string memory mnemonic = "test test test test test test test test test test test junk";
-    uint256 alice = vm.deriveKey(mnemonic, 2);
-    uint256 bob = vm.deriveKey(mnemonic, 3);
+    address deployer = vm.addr(deployerPrivateKey);
 
-    address ephemeralInvOwner1 = vm.addr(alice);
-    address ephemeralInvOwner2 = vm.addr(bob);
+    string memory mnemonic = "test test test test test test test test test test test junk";
+    uint256 bobPrivateKey = vm.deriveKey(mnemonic, 3);
+    address bob = vm.addr(bobPrivateKey);
+
+    IWorldWithContext world = IWorldWithContext(worldAddress);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
-    IBaseWorld world = IBaseWorld(worldAddress);
 
-    uint256 tribeId = 100;
-    EntityRecordData memory entityRecord = EntityRecordData({ typeId: 123, itemId: 234, volume: 100 });
+    bytes32 tenantId = Tenant.get();
+    uint256 ssuItemId = 1244;
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
-    EntityMetadata memory entityRecordMetadata = EntityMetadata({
-      name: "name",
-      dappURL: "dappURL",
-      description: "description"
+    CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
+
+    uint256 SINGLETON_ITEM_TYPE_ID = 9000; // same singeton type as in DepositToInventory.s.sol
+    // previous singleton is already owned by alice's ssu inventory, so we must use a new singleton item id
+    uint256 NEW_SINGLETON_ITEM_ID = 77; // new singleton item id
+    uint256 NON_SINGLETON_ITEM_TYPE_ID = 9090; // same non-singleton type as in DepositToInventory.s.sol
+    uint256 ITEM_VOLUME = 10; // same item volume as in DepositToInventory.s.sol
+
+    uint256 newSingletonObjectId = ObjectIdLib.calculateSingletonId(tenantId, NEW_SINGLETON_ITEM_ID);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
+
+    items[0] = CreateInventoryItemParams({
+      smartObjectId: newSingletonObjectId,
+      tenantId: tenantId,
+      typeId: SINGLETON_ITEM_TYPE_ID,
+      itemId: NEW_SINGLETON_ITEM_ID,
+      quantity: 1,
+      volume: ITEM_VOLUME
     });
 
-    smartCharacterSystem.createCharacter(567, ephemeralInvOwner1, tribeId, entityRecord, entityRecordMetadata);
-    smartCharacterSystem.createCharacter(897, ephemeralInvOwner2, tribeId, entityRecord, entityRecordMetadata);
-
-    uint256 smartObjectId = uint256(keccak256(abi.encode("item:<tenant_id>-<db_id>-00001")));
-    InventoryItem[] memory items = new InventoryItem[](2);
-    items[0] = InventoryItem({
-      inventoryItemId: 456,
-      owner: ephemeralInvOwner1,
-      itemId: 22,
-      typeId: 3,
-      volume: 10,
-      quantity: 3
-    });
-
-    items[1] = InventoryItem({
-      inventoryItemId: 789,
-      owner: ephemeralInvOwner1,
+    // Second item: non-singleton item
+    items[1] = CreateInventoryItemParams({
+      smartObjectId: nonSingletonObjectId,
+      tenantId: tenantId,
+      typeId: NON_SINGLETON_ITEM_TYPE_ID,
       itemId: 0,
-      typeId: 34,
-      volume: 10,
-      quantity: 10
+      quantity: 13,
+      volume: ITEM_VOLUME
     });
 
-    ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInvOwner1, items);
+    // createAndDepositEphemeral is a validated call, validated calls must be made from the deployer account via delegation using world.callFrom
+    world.callFrom(
+      bob,
+      ephemeralInventorySystem.toResourceId(),
+      abi.encodeCall(EphemeralInventorySystem.createAndDepositEphemeral, (ssuSmartObjectId, bob, items))
+    );
 
-    items = new InventoryItem[](1);
-    items[0] = InventoryItem({
-      inventoryItemId: 888,
-      owner: ephemeralInvOwner2,
-      itemId: 0,
-      typeId: 35,
-      volume: 10,
-      quantity: 300
-    });
+    EphemeralInvItemData memory itemData = EphemeralInvItem.get(ssuSmartObjectId, bob, newSingletonObjectId);
+    console.log("Expected 1, Singleton item quantity:", itemData.quantity); // should be 1
 
-    ephemeralInventorySystem.createAndDepositItemsToEphemeralInventory(smartObjectId, ephemeralInvOwner2, items);
+    EphemeralInvItemData memory itemData2 = EphemeralInvItem.get(ssuSmartObjectId, bob, nonSingletonObjectId);
+    console.log("Expected 13, Non-singleton item quantity:", itemData2.quantity); // should be 13
 
     vm.stopBroadcast();
   }
