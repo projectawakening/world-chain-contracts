@@ -12,7 +12,7 @@ import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefr
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, DeployableState, Inventory, EphemeralInvCapacity, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EntityRecord, InventoryByEphemeral, Tenant, OwnershipByObject } from "../../codegen/index.sol";
+import { DeployableState, Inventory, EphemeralInvCapacity, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EntityRecord, InventoryByEphemeral, Tenant, OwnershipByObject } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
@@ -42,15 +42,6 @@ contract EphemeralInventorySystem is SmartObjectFramework {
   error EphemeralInventory_NonExistentEntityRecord(string message, uint256 smartObjectId);
   error EphemeralInventory_InvalidSmartObjectId(uint256 smartObjectId);
   error EphemeralInventory_InvalidEphemeralOwner(uint256 smartObjectId, address ephemeralOwner);
-  /**
-   * modifier to enforce inventory changes can happen only when the game server is running
-   */
-  modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused()) {
-      revert DeployableSystem.Deployable_StateTransitionPaused();
-    }
-    _;
-  }
 
   /**
    * @notice Generate a unique ephemeral smart object id given an associated smart object and ephemeral owner (this is used for ownership data tracking)
@@ -99,7 +90,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     // Ensure the entity exists
     if (!Entity.getExists(smartObjectId)) {
       revert EphemeralInventory_InvalidSmartObjectId(smartObjectId);
@@ -173,7 +164,7 @@ contract EphemeralInventorySystem is SmartObjectFramework {
     uint256 smartObjectId,
     address ephemeralOwner,
     InventoryItemParams[] memory items
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     // Validate state (uses the associated smart object's state. This entails that the associated smart object exists and is anchored or online.
     {
       State currentState = DeployableState.getCurrentState(smartObjectId);

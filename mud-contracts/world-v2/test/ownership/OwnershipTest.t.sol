@@ -19,8 +19,7 @@ import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/name
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, InventoryItem, InventoryByItem, OwnershipByObject, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, DeployableState, DeployableStateData, InventoryItemData, InventoryItem, InventoryByItem, OwnershipByObject, EphemeralInvCapacity, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, InventoryByEphemeral } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -31,7 +30,6 @@ import { InventorySystem, inventorySystem } from "../../src/namespaces/evefronti
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -121,24 +119,20 @@ contract OwnershipTest is MudTest {
     // Register the system with the world
     world.registerSystem(mockSystemId, mockSystem, true);
 
-    ResourceId[] memory systemIds = new ResourceId[](9);
+    ResourceId[] memory systemIds = new ResourceId[](8);
     systemIds[0] = deployableSystem.toResourceId();
     systemIds[1] = smartAssemblySystem.toResourceId();
     systemIds[2] = entityRecordSystem.toResourceId();
     systemIds[3] = locationSystem.toResourceId();
-    systemIds[4] = fuelSystem.toResourceId();
-    systemIds[5] = inventorySystem.toResourceId();
-    systemIds[6] = ephemeralInventorySystem.toResourceId();
-    systemIds[7] = ownershipSystem.toResourceId();
-    systemIds[8] = mockSystemId;
+    systemIds[4] = inventorySystem.toResourceId();
+    systemIds[5] = ephemeralInventorySystem.toResourceId();
+    systemIds[6] = ownershipSystem.toResourceId();
+    systemIds[7] = mockSystemId;
 
     entitySystem.registerClass(inventoryObjectClassId, systemIds);
 
     // instantiate the smart object
     entitySystem.instantiate(inventoryObjectClassId, smartObjectId, alice);
-
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for inventory
     deployableSystem.createAndAnchor(
@@ -147,11 +141,9 @@ contract OwnershipTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0 // networkNodeId
     );
 
     // Set capacity for inventory
@@ -184,7 +176,6 @@ contract OwnershipTest is MudTest {
 
     // Bring deployable online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
     vm.resumeGasMetering();

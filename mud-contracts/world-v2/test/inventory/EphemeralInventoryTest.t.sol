@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, DeployableState, InventoryItem, EphemeralInvCapacity, CharactersByAccount, LocationData, InventoryByEphemeral, InventoryByEphemeralData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
@@ -31,7 +31,6 @@ import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../../src/na
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 
 // Types and parameters
@@ -154,23 +153,19 @@ contract EphemeralInventoryTest is MudTest {
     // Register class and setup smart object state
     inventoryObjectClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_OBJECT_TYPE_ID)));
 
-    ResourceId[] memory systemIds = new ResourceId[](8);
+    ResourceId[] memory systemIds = new ResourceId[](7);
     systemIds[0] = deployableSystem.toResourceId();
     systemIds[1] = smartAssemblySystem.toResourceId();
     systemIds[2] = entityRecordSystem.toResourceId();
     systemIds[3] = locationSystem.toResourceId();
-    systemIds[4] = fuelSystem.toResourceId();
-    systemIds[5] = inventorySystem.toResourceId();
-    systemIds[6] = ephemeralInventorySystem.toResourceId();
-    systemIds[7] = mockSystemId;
+    systemIds[4] = inventorySystem.toResourceId();
+    systemIds[5] = ephemeralInventorySystem.toResourceId();
+    systemIds[6] = mockSystemId;
 
     entitySystem.registerClass(inventoryObjectClassId, systemIds);
 
     // instantiate the smart object
     entitySystem.instantiate(inventoryObjectClassId, inventoryObjectId, alice);
-
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
 
     // Setup deployable state for inventory
     deployableSystem.createAndAnchor(
@@ -179,11 +174,9 @@ contract EphemeralInventoryTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0
     );
 
     // Configure access control to allow the mock system to call inventory system
@@ -398,7 +391,6 @@ contract EphemeralInventoryTest is MudTest {
 
     // Bring online and create and deposit items
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -447,19 +439,7 @@ contract EphemeralInventoryTest is MudTest {
 
     items[1] = InventoryItemParams({ smartObjectId: item2ObjectId, quantity: 2 });
 
-    // Test revert: game is paused
     vm.startPrank(deployer);
-    GlobalDeployableState.setIsPaused(true);
-    vm.stopPrank();
-
-    vm.startPrank(bob, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    ephemeralInventorySystem.depositEphemeral(inventoryObjectId, bob, items);
-    vm.stopPrank();
-
-    vm.startPrank(deployer);
-    GlobalDeployableState.setIsPaused(false);
-
     DeployableState.setCurrentState(inventoryObjectId, State.ANCHORED);
     vm.stopPrank();
 
@@ -472,7 +452,6 @@ contract EphemeralInventoryTest is MudTest {
 
     // Bring state to ONLINE
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -588,7 +567,6 @@ contract EphemeralInventoryTest is MudTest {
       alice,
       LocationData({ solarSystemId: 30000142, x: 100, y: 100, z: 100 })
     );
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -654,7 +632,6 @@ contract EphemeralInventoryTest is MudTest {
     itemParams[2] = InventoryItemParams({ smartObjectId: transferItemObjectId, quantity: 5 });
 
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -687,17 +664,6 @@ contract EphemeralInventoryTest is MudTest {
       smartObjectId: transferItemObjectId,
       quantity: 1 // Withdraw 1 of 5
     });
-
-    // Test revert: game is paused
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(true);
-    vm.startPrank(bob, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    ephemeralInventorySystem.withdrawEphemeral(inventoryObjectId, bob, items);
-    vm.stopPrank();
-
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(false);
 
     // Test revert: incorrect state
     vm.prank(deployer);
@@ -778,7 +744,6 @@ contract EphemeralInventoryTest is MudTest {
       alice,
       LocationData({ solarSystemId: 30000142, x: 100, y: 100, z: 100 })
     );
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
@@ -811,7 +776,6 @@ contract EphemeralInventoryTest is MudTest {
   function test_EphemeralInventory_EphemeralToInventoryTransfer() public {
     // First, bring inventory online (required for ephemeral operations)
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
 
     // Create items in the main inventory first
@@ -935,7 +899,6 @@ contract EphemeralInventoryTest is MudTest {
     // Create two ephemeral inventories
     // First, bring inventory online (required for ephemeral operations)
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 

@@ -48,9 +48,10 @@ library SmartGateSystemLib {
   function createAndAnchorGate(
     SmartGateSystemType self,
     CreateAndAnchorParams memory params,
-    uint256 maxDistance
+    uint256 maxDistance,
+    uint256 networkNodeId
   ) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorGate(params, maxDistance);
+    return CallWrapper(self.toResourceId(), address(0)).createAndAnchorGate(params, maxDistance, networkNodeId);
   }
 
   function linkGates(SmartGateSystemType self, uint256 sourceGateId, uint256 destinationGateId) internal {
@@ -113,14 +114,15 @@ library SmartGateSystemLib {
   function createAndAnchorGate(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
-    uint256 maxDistance
+    uint256 maxDistance,
+    uint256 networkNodeId
   ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorGate_CreateAndAnchorParams_uint256.createAndAnchorGate,
-      (params, maxDistance)
+      _createAndAnchorGate_CreateAndAnchorParams_uint256_uint256.createAndAnchorGate,
+      (params, maxDistance, networkNodeId)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -289,11 +291,12 @@ library SmartGateSystemLib {
   function createAndAnchorGate(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
-    uint256 maxDistance
+    uint256 maxDistance,
+    uint256 networkNodeId
   ) internal {
     bytes memory systemCall = abi.encodeCall(
-      _createAndAnchorGate_CreateAndAnchorParams_uint256.createAndAnchorGate,
-      (params, maxDistance)
+      _createAndAnchorGate_CreateAndAnchorParams_uint256_uint256.createAndAnchorGate,
+      (params, maxDistance, networkNodeId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
@@ -435,8 +438,12 @@ library SmartGateSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createAndAnchorGate_CreateAndAnchorParams_uint256 {
-  function createAndAnchorGate(CreateAndAnchorParams memory params, uint256 maxDistance) external;
+interface _createAndAnchorGate_CreateAndAnchorParams_uint256_uint256 {
+  function createAndAnchorGate(
+    CreateAndAnchorParams memory params,
+    uint256 maxDistance,
+    uint256 networkNodeId
+  ) external;
 }
 
 interface _linkGates_uint256_uint256 {

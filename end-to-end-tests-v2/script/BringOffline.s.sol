@@ -11,7 +11,7 @@ import { deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract BringOffline is Script {
-  // assumes CreateAndAnchor.s.sol and Deposit fuel and bring online has been run
+  // assumes CreateAndAnchor.s.sol and bring online has been run
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -28,7 +28,7 @@ contract BringOffline is Script {
 
     // currently bringOffline can be made by ADMIN or by owner of the SSU directly
     vm.startBroadcast(deployerPrivateKey);
-    deployableSystem.bringOffline(ssuSmartObjectId); // needs to have some fuel in it to work, else it will just let the state to offline
+    deployableSystem.bringOffline(ssuSmartObjectId);
     console.log("Deployable brought offline by ADMIN");
     console.log("Deployable state should be 2:", uint8(DeployableState.getCurrentState(ssuSmartObjectId)));
 

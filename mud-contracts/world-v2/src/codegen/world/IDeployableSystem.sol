@@ -13,21 +13,11 @@ import { LocationData } from "../../namespaces/evefrontier/codegen/index.sol";
  */
 interface IDeployableSystem {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
-  error Deployable_NoFuel(uint256 smartObjectId);
-  error Deployable_StateTransitionPaused();
-  error Deployable_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
-  error Deployable_InvalidFuelConsumptionInterval(uint256 smartObjectId);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
 
-  function evefrontier__createAndAnchor(CreateAndAnchorParams memory params) external;
+  function evefrontier__createAndAnchor(CreateAndAnchorParams memory params, uint256 networkNodeId) external;
 
-  function evefrontier__createDeployable(
-    uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
-  ) external;
+  function evefrontier__createDeployable(uint256 smartObjectId, address owner) external;
 
   function evefrontier__destroyDeployable(uint256 smartObjectId) external;
 
@@ -38,8 +28,4 @@ interface IDeployableSystem {
   function evefrontier__anchor(uint256 smartObjectId, address owner, LocationData memory locationData) external;
 
   function evefrontier__unanchor(uint256 smartObjectId) external;
-
-  function evefrontier__globalPause() external;
-
-  function evefrontier__globalResume() external;
 }

@@ -18,7 +18,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { CallAccess } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, DeployableState, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity, CharactersByAccount, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, DeployableState, InventoryItemData, InventoryItem, InventoryByItem, EphemeralInvCapacity, CharactersByAccount, LocationData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 import { State } from "../../src/codegen/common.sol";
 
 // Local namespace systems
@@ -150,9 +150,6 @@ contract InventoryTest is MudTest {
     entitySystem.instantiate(inventoryObjectClassId, smartObjectId, alice);
     entitySystem.instantiate(inventoryObjectClassId, secondObjectId, bob);
 
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
-
     // Setup deployable state for first inventory
     deployableSystem.createAndAnchor(
       CreateAndAnchorParams(
@@ -160,11 +157,9 @@ contract InventoryTest is MudTest {
         "SSU",
         EntityRecordParams({ tenantId: tenantId, typeId: SMART_OBJECT_TYPE_ID, itemId: SMART_OBJECT_ID, volume: 1000 }),
         alice,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0 // networkNodeId
     );
 
     // Setup deployable state for second inventory
@@ -179,11 +174,9 @@ contract InventoryTest is MudTest {
           volume: 1000
         }),
         bob,
-        1,
-        10,
-        100000,
         LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
-      )
+      ),
+      0 // networkNodeId
     );
 
     // Configure access control to allow the mock system to call inventory system
@@ -429,19 +422,6 @@ contract InventoryTest is MudTest {
 
     items[1] = InventoryItemParams({ smartObjectId: item2ObjectId, quantity: 2 });
     vm.pauseGasMetering();
-    // Test revert: game is paused
-    vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
-    GlobalDeployableState.setIsPaused(true);
-    vm.stopPrank();
-
-    vm.startPrank(alice, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    inventorySystem.depositInventory(smartObjectId, items);
-    vm.stopPrank();
-
-    vm.startPrank(deployer); // Use deployer for GlobalDeployableState access
-    GlobalDeployableState.setIsPaused(false);
-    vm.stopPrank();
 
     // Test revert: incorrect state
     vm.startPrank(deployer); // Use deployer for DeployableState access
@@ -718,17 +698,6 @@ contract InventoryTest is MudTest {
       smartObjectId: transferItemObjectId,
       quantity: 1 // Withdraw 1 of 2
     });
-
-    // Test revert: game is paused
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(true);
-    vm.startPrank(alice, deployer);
-    vm.expectRevert(abi.encodeWithSelector(DeployableSystem.Deployable_StateTransitionPaused.selector));
-    inventorySystem.withdrawInventory(smartObjectId, items);
-    vm.stopPrank();
-
-    vm.prank(deployer);
-    GlobalDeployableState.setIsPaused(false);
 
     // Test revert: incorrect state
     vm.prank(deployer);

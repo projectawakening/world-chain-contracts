@@ -12,7 +12,7 @@ import { deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/
 import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 contract BringOnline is Script {
-  // assumes CreateAndAnchor.s.sol and Deposit fuel has been run
+  // assumes CreateAndAnchor.s.sol is run first
 
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -27,7 +27,6 @@ contract BringOnline is Script {
 
     // currently bringOnline can be made by ADMIN or by owner of the SSU directly
     vm.startBroadcast(deployerPrivateKey);
-    // we have already fueld the SSU in the DepositFuel.s.sol script
     deployableSystem.bringOnline(ssuSmartObjectId);
     console.log("Deployable brought online by ADMIN");
     console.log("Deployable state:", uint8(DeployableState.getCurrentState(ssuSmartObjectId)));
@@ -36,7 +35,6 @@ contract BringOnline is Script {
     vm.stopBroadcast();
 
     vm.startBroadcast(alicePrivateKey);
-    // we have already fueld the SSU in the DepositFuel.s.sol script
     deployableSystem.bringOnline(ssuSmartObjectId);
     console.log("Deployable brought online by owner");
     console.log("Deployable state:", uint8(DeployableState.getCurrentState(ssuSmartObjectId)));

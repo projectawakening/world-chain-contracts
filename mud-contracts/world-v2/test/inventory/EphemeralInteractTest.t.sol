@@ -20,7 +20,7 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EphemeralItemTransfer, EphemeralItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, EphemeralInventory, EphemeralInvItem, EphemeralInvItemData, EphemeralItemTransfer, EphemeralItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -29,7 +29,6 @@ import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/eve
 import { EphemeralInteractSystem, ephemeralInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
 // Types and parameters
@@ -132,9 +131,6 @@ contract EphemeralInteractTest is MudTest {
       true
     );
 
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
-
     // Setup SSU for inventory
     uint256 capacity = 1000;
     world.call(
@@ -152,13 +148,11 @@ contract EphemeralInteractTest is MudTest {
               volume: 1000
             }),
             alice,
-            1,
-            10,
-            100000,
             LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
           ),
           capacity,
-          capacity
+          capacity,
+          0 // networkNodeId
         )
       )
     );
@@ -174,7 +168,6 @@ contract EphemeralInteractTest is MudTest {
 
     // Bring online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 

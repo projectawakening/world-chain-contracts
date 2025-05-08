@@ -6,7 +6,6 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
 import { Tenant, LocationData } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { SmartGateSystem, smartGateSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
-import { FuelSystem, fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
 import { CreateAndAnchorParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/types.sol";
 import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -26,10 +25,7 @@ contract AnchorSmartGate is Script {
     uint256 smartGateTypeId = vm.envUint("GATE_TYPE_ID");
     uint256 smartGate1ItemId = 1557;
     uint256 smartGate2ItemId = 1558;
-    uint256 fuelUnitVolume = 10;
-    uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 100000000;
-
+    uint256 networkNodeId = 0;
     uint256 smartGate1SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate1ItemId);
     uint256 smartGate2SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate2ItemId);
 
@@ -55,9 +51,6 @@ contract AnchorSmartGate is Script {
       assemblyType: "SG",
       entityRecordParams: sourceGateEntityRecordParams,
       owner: alice,
-      fuelUnitVolume: fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity: fuelMaxCapacity,
       locationData: sourceGateLocation
     });
 
@@ -66,18 +59,11 @@ contract AnchorSmartGate is Script {
       assemblyType: "SG",
       entityRecordParams: destinationGateEntityRecordParams,
       owner: alice,
-      fuelUnitVolume: fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity: fuelMaxCapacity,
       locationData: destinationGateLocation
     });
 
-    smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000);
-    smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000);
-
-    fuelSystem.depositFuel(smartGate1SmartObjectId, 10000);
-    fuelSystem.depositFuel(smartGate2SmartObjectId, 10000);
-
+    smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000, networkNodeId);
+    smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000, networkNodeId);
     vm.stopBroadcast();
   }
 }

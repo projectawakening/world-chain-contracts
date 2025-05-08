@@ -5,7 +5,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { IBaseWorld } from "@latticexyz/world/src/codegen/interfaces/IBaseWorld.sol";
 
-import { Tenant, GlobalDeployableState, LocationData } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
+import { Tenant, LocationData } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
@@ -27,21 +27,14 @@ contract AnchorSSU is Script {
     vm.startBroadcast(deployerPrivateKey);
     IBaseWorld world = IBaseWorld(worldAddress);
 
-    // check global state and resume if needed
-    if (GlobalDeployableState.getIsPaused() == false) {
-      deployableSystem.globalResume();
-    }
-
     bytes32 tenantId = Tenant.get();
     uint256 ssuTypeId = vm.envUint("SSU_TYPE_ID");
     uint256 ssuItemId = 1244;
-    uint256 fuelUnitVolume = 10;
-    uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 100000000;
     uint256 storageCapacity = 100000000;
     uint256 ephemeralCapacity = 100000000;
     uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
+    uint256 networkNodeId = 0;
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -55,9 +48,6 @@ contract AnchorSSU is Script {
       assemblyType: "SSU",
       entityRecordParams: entityRecordParams,
       owner: alice,
-      fuelUnitVolume: fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity: fuelMaxCapacity,
       locationData: locationParams
     });
 
@@ -67,7 +57,7 @@ contract AnchorSSU is Script {
       smartStorageUnitSystem.toResourceId(),
       abi.encodeCall(
         SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (deployableParams, storageCapacity, ephemeralCapacity)
+        (deployableParams, storageCapacity, ephemeralCapacity, networkNodeId)
       )
     );
 

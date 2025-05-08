@@ -13,7 +13,7 @@ import { TargetPriority, Turret, SmartTurretTarget, AggressionParams } from "../
  * @dev This interface is automatically generated from the corresponding system contract. Do not edit manually.
  */
 interface ISmartTurretSystem {
-  function evefrontier__createAndAnchorTurret(CreateAndAnchorParams memory params) external;
+  function evefrontier__createAndAnchorTurret(CreateAndAnchorParams memory params, uint256 networkNodeId) external;
 
   function evefrontier__configureTurret(uint256 smartObjectId, ResourceId systemId) external;
 

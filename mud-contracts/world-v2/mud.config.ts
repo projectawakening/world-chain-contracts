@@ -136,18 +136,6 @@ export default defineWorld({
          * DEPLOYABLE TABLES *
          ***************************/
         /**
-         * Used to store the Global state of the Deployable
-         */
-        GlobalDeployableState: {
-          schema: {
-            isPaused: "bool",
-            updatedBlockNumber: "uint256",
-            lastGlobalOffline: "uint256",
-            lastGlobalOnline: "uint256",
-          },
-          key: [],
-        },
-        /**
          * Used to store the current state of a deployable
          */
         DeployableState: {
@@ -173,13 +161,68 @@ export default defineWorld({
           schema: {
             smartObjectId: "uint256",
             fuelUnitVolume: "uint256",
-            fuelConsumptionIntervalInSeconds: "uint256",
+            fuelTypeId: "uint256", // Reference to fuel type
             fuelMaxCapacity: "uint256",
             fuelAmount: "uint256",
-            lastUpdatedAt: "uint256", // unix time in seconds
+            fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured by network node)
+            lastUpdatedAt: "uint256",
           },
           key: ["smartObjectId"],
         },
+        FuelEfficiencyConfig: {
+          schema: {
+            fuelTypeId: "uint256", // Unique ID for each fuel type
+            efficiency: "uint256", // Efficiency as a percentage (0-100)
+          },
+          key: ["fuelTypeId"],
+        },
+        FuelConsumptionState: {
+          schema: {
+            smartObjectId: "uint256", // eg: Network Node ID
+            burnStartTime: "uint256", // Block timestamp when burn started, this time is reset for every unit of fuel consumed
+            burnState: "bool", // true if burn is active, false if not
+            fuelConsumptionTimeRemaining: "uint256", // Seconds remaining for current burn session, `CurrentBlockTime - (burnStartTime + fuelBurnRateInSeconds)` //updated every 5 mins
+          },
+          key: ["smartObjectId"],
+        },
+        NetworkNode: {
+          schema: {
+            smartObjectId: "uint256",
+            exists: "bool",
+            maxEnergyCapacity: "uint256",
+            energyProduced: "uint256", // Power/Energy generated per hour when burning fuel
+            totalReservedEnergy: "uint256", // Sum of all energy reserved by structuresconnected to the network node
+            lastUpdatedAt: "uint256",
+          },
+          key: ["smartObjectId"],
+        },
+        NetworkStructureConnection: {
+          schema: {
+            networkNodeId: "uint256", // ID of the Network Node
+            structureId: "uint256", // ID of the connected structure
+            reservedEnergy: "uint256", // Energy reserved by this structure
+            isConnected: "bool", // Whether structure is currently connected
+            operationStatus: "State", // "Running", "Not running"
+            connectedAt: "uint256", // When the structure was connected
+            lastEnergyUpdate: "uint256", // Last time energy was counted for this structure
+          },
+          key: ["networkNodeId", "structureId"],
+        },
+        NetworkNodeByStructure: {
+          schema: {
+            structureId: "uint256",
+            networkNodeId: "uint256",
+          },
+          key: ["structureId"],
+        },
+        AssemblyEnergyConfig: {
+          schema: {
+            assemblyTypeId: "uint256", // typeId of the assembly,
+            energyConstant: "uint256", // Fixed energy requirement in GJ/h
+          },
+          key: ["assemblyTypeId"],
+        },
+        //TODO: Table for historical energy usage by block number
         /*******************
          * INVENTORY TABLES *
          *******************/

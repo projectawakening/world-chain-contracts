@@ -44,7 +44,7 @@ contract MockLocationInteractSystem is System {
   }
 
   function callCreateAndAnchor(CreateAndAnchorParams memory params) public {
-    deployableSystem.createAndAnchor(params);
+    deployableSystem.createAndAnchor(params, 0);
   }
 
   function callAnchor(uint256 smartObjectId, address owner, LocationData memory location) public {
@@ -164,9 +164,6 @@ contract LocationTest is MudTest {
       "Deployable",
       EntityRecordParams(tenantId, SMART_OBJECT_TYPE_ID, DEPLOYABLE_OBJECT_ID, 1000),
       alice,
-      10,
-      60,
-      100000000,
       locationDataParams
     );
     vm.stopPrank();

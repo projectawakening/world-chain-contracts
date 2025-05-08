@@ -8,25 +8,23 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
+import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, GlobalDeployableStateData, DeployableState, DeployableStateData, CharactersByAccount, Fuel, FuelData, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByStructure } from "../../codegen/index.sol";
 
 // Local namespace systems
-import { FuelSystem } from "../fuel/FuelSystem.sol";
 import { LocationSystem } from "../location/LocationSystem.sol";
 import { locationSystem } from "../../codegen/systems/LocationSystemLib.sol";
 import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLib.sol";
-import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
-
+import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
-import { DECIMALS, ONE_UNIT_IN_WEI } from "./../constants.sol";
-import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
+import { NETWORK_NODE } from "../constants.sol";
 
 /**
  * @title DeployableSystem
@@ -35,41 +33,27 @@ import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
  */
 contract DeployableSystem is SmartObjectFramework {
   error Deployable_IncorrectState(uint256 smartObjectId, State currentState);
-  error Deployable_NoFuel(uint256 smartObjectId);
-  error Deployable_StateTransitionPaused();
-  error Deployable_TooMuchFuelDeposited(uint256 smartObjectId, uint256 amountDeposited);
-  error Deployable_InvalidFuelConsumptionInterval(uint256 smartObjectId);
   error Deployable_InvalidObjectOwner(string message, address smartObjectOwner, uint256 smartObjectId);
-
-  /**
-   * modifier to enforce deployable state changes can happen only when the game server is running
-   */
-  modifier onlyActive() {
-    if (GlobalDeployableState.getIsPaused()) {
-      revert Deployable_StateTransitionPaused();
-    }
-    _;
-  }
 
   /**
    * @dev creates and anchors a deployable smart object
    * @param params struct containing all parameters for creating and anchoring a deployable
+   * @param networkNodeId the network node id of the deployable
    */
   function createAndAnchor(
-    CreateAndAnchorParams memory params
+    CreateAndAnchorParams memory params,
+    uint256 networkNodeId
   ) public context access(params.smartObjectId) scope(params.smartObjectId) {
     // Create the smart assembly object
     smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
-    createDeployable(
-      params.smartObjectId,
-      params.owner,
-      params.fuelUnitVolume,
-      params.fuelConsumptionIntervalInSeconds,
-      params.fuelMaxCapacity
-    );
+    createDeployable(params.smartObjectId, params.owner);
 
     anchor(params.smartObjectId, params.owner, params.locationData);
+
+    if (networkNodeId != 0 && (params.smartObjectId != networkNodeId)) {
+      networkNodeSystem.connectStructure(networkNodeId, params.smartObjectId);
+    }
   }
 
   /**
@@ -77,24 +61,14 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev creates a new deployable smart object
    * @param smartObjectId id of the smart object
    * @param owner the owner of the smart object
-   * @param fuelUnitVolume the fuel unit volume in wei
-   * @param fuelConsumptionIntervalInSeconds the fuel consumption per minute in wei
-   * @param fuelMaxCapacity the fuel max capacity in wei
    */
   function createDeployable(
     uint256 smartObjectId,
-    address owner,
-    uint256 fuelUnitVolume,
-    uint256 fuelConsumptionIntervalInSeconds,
-    uint256 fuelMaxCapacity
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+    address owner
+  ) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.NULL) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
-    }
-
-    if (fuelConsumptionIntervalInSeconds < 1) {
-      revert Deployable_InvalidFuelConsumptionInterval(smartObjectId);
     }
 
     // revert if the given smart object owner is not a valid character
@@ -132,23 +106,13 @@ contract DeployableSystem is SmartObjectFramework {
       block.number,
       block.timestamp
     );
-
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity,
-      0
-    );
   }
 
   /**
    * @dev destroys a deployable smart object
    * @param smartObjectId id of the smart object
    */
-  function destroyDeployable(
-    uint256 smartObjectId
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function destroyDeployable(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -185,25 +149,27 @@ contract DeployableSystem is SmartObjectFramework {
 
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
+
+    //TODO: disconnect the structure from the network node and release the energy reserved by the deployable
   }
 
   /**
    * @dev brings a deployable smart object online
    * @param smartObjectId id of the smart object
    */
-  function bringOnline(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function bringOnline(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.ANCHORED) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    fuelSystem.updateFuel(smartObjectId);
+    //Check the energy requirement to bringOnline if the deployable is connected to a network node
+    uint256 networkNodeId = NetworkNodeByStructure.getNetworkNodeId(smartObjectId);
+    if (networkNodeId != 0) {
+      networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
+    }
 
-    uint256 currentFuel = Fuel.getFuelAmount(smartObjectId);
-    if (currentFuel < ONE_UNIT_IN_WEI) revert Deployable_NoFuel(smartObjectId);
-
-    fuelSystem.setFuelAmount(smartObjectId, currentFuel - ONE_UNIT_IN_WEI);
-
+    //TODO: check if the deployable has enough energy to be brought online
     _setDeployableState(smartObjectId, previousState, State.ONLINE);
   }
 
@@ -211,13 +177,21 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev brings a deployable smart object offline
    * @param smartObjectId id of the smart object
    */
-  function bringOffline(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function bringOffline(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.ONLINE) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    fuelSystem.updateFuel(smartObjectId);
+    //handle bringOffline
+    uint256 networkNodeId = NetworkNodeByStructure.getNetworkNodeId(smartObjectId);
+
+    //If the deployable is connected to a network node, release the energy
+    if (networkNodeId != 0) {
+      networkNodeSystem.onStructureOffline(networkNodeId, smartObjectId);
+    }
+
+    //TODO: release the energy reserved by the deployable
     _bringOffline(smartObjectId, previousState);
   }
 
@@ -230,7 +204,7 @@ contract DeployableSystem is SmartObjectFramework {
     uint256 smartObjectId,
     address owner,
     LocationData memory locationData
-  ) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (previousState != State.UNANCHORED) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -255,7 +229,7 @@ contract DeployableSystem is SmartObjectFramework {
    * @dev unanchors a smart deployable
    * @param smartObjectId on-chain of the deployable
    */
-  function unanchor(uint256 smartObjectId) public onlyActive context access(smartObjectId) scope(smartObjectId) {
+  function unanchor(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     State previousState = DeployableState.getCurrentState(smartObjectId);
     if (!(previousState == State.ANCHORED || previousState == State.ONLINE)) {
       revert Deployable_IncorrectState(smartObjectId, previousState);
@@ -295,24 +269,8 @@ contract DeployableSystem is SmartObjectFramework {
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 
     DeployableState.setIsValid(smartObjectId, false);
-  }
 
-  /**
-   * @dev brings all smart deployables online
-   */
-  function globalPause() public context access(0) scope(0) {
-    GlobalDeployableState.setIsPaused(true);
-    GlobalDeployableState.setUpdatedBlockNumber(block.number);
-    GlobalDeployableState.setLastGlobalOffline(block.timestamp);
-  }
-
-  /**
-   * @dev brings all smart deployables offline
-   */
-  function globalResume() public context access(0) scope(0) {
-    GlobalDeployableState.setIsPaused(false);
-    GlobalDeployableState.setUpdatedBlockNumber(block.number);
-    GlobalDeployableState.setLastGlobalOnline(block.timestamp);
+    //TODO: disconnect the structure from the network node and release the energy reserved by the deployable
   }
 
   /*******************************

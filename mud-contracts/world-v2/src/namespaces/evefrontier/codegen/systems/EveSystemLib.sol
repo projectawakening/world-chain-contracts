@@ -52,6 +52,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).registerSmartGateClass(typeId, volume);
   }
 
+  function registerNetworkNodeClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerNetworkNodeClass(typeId, volume);
+  }
+
   function configureEntityRecordAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureEntityRecordAccess();
   }
@@ -74,6 +78,10 @@ library EveSystemLib {
 
   function configureFuelAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureFuelAccess();
+  }
+
+  function configureNetworkNodeAccess(EveSystemType self) internal {
+    return CallWrapper(self.toResourceId(), address(0)).configureNetworkNodeAccess();
   }
 
   function configureDeployableAccess(EveSystemType self) internal {
@@ -164,6 +172,19 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function registerNetworkNodeClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _registerNetworkNodeClass_uint256_uint256.registerNetworkNodeClass,
+      (typeId, volume)
+    );
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function configureEntityRecordAccess(CallWrapper memory self) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
@@ -219,6 +240,16 @@ library EveSystemLib {
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_configureFuelAccess.configureFuelAccess, ());
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function configureNetworkNodeAccess(CallWrapper memory self) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_configureNetworkNodeAccess.configureNetworkNodeAccess, ());
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -346,6 +377,14 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function registerNetworkNodeClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _registerNetworkNodeClass_uint256_uint256.registerNetworkNodeClass,
+      (typeId, volume)
+    );
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function configureEntityRecordAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureEntityRecordAccess.configureEntityRecordAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -373,6 +412,11 @@ library EveSystemLib {
 
   function configureFuelAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureFuelAccess.configureFuelAccess, ());
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function configureNetworkNodeAccess(RootCallWrapper memory self) internal {
+    bytes memory systemCall = abi.encodeCall(_configureNetworkNodeAccess.configureNetworkNodeAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -475,6 +519,10 @@ interface _registerSmartGateClass_uint256_uint256 {
   function registerSmartGateClass(uint256 typeId, uint256 volume) external;
 }
 
+interface _registerNetworkNodeClass_uint256_uint256 {
+  function registerNetworkNodeClass(uint256 typeId, uint256 volume) external;
+}
+
 interface _configureEntityRecordAccess {
   function configureEntityRecordAccess() external;
 }
@@ -497,6 +545,10 @@ interface _configureLocationAccess {
 
 interface _configureFuelAccess {
   function configureFuelAccess() external;
+}
+
+interface _configureNetworkNodeAccess {
+  function configureNetworkNodeAccess() external;
 }
 
 interface _configureDeployableAccess {

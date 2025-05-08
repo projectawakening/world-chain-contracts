@@ -13,7 +13,6 @@ import { SmartCharacterSystem, smartCharacterSystem } from "@eveworld/world-v2/s
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { SmartTurretSystem, smartTurretSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
 import { SmartGateSystem, smartGateSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
-import { FuelSystem, fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystem, inventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
@@ -33,6 +32,7 @@ contract BulkCreateTestData is Script {
   uint256 constant NON_SINGLETON_ITEM_TYPE_ID = 2500;
   uint256 constant SINGLETON_ITEM_BASE_ID = 2600;
   uint256 constant ITEM_VOLUME = 10;
+  uint256 constant NETWORK_NODE_ID = 0;
 
   // Helper function to derive private key
   function derivePrivateKey(uint256 index) internal pure returns (uint256) {
@@ -84,12 +84,7 @@ contract BulkCreateTestData is Script {
     createSmartGates(count, accounts);
     vm.stopBroadcast();
 
-    // Step 5: Deployer deposits fuel to all deployables
-    vm.startBroadcast(deployerPrivateKey);
-    depositFuelToAll(count);
-    vm.stopBroadcast();
-
-    // Step 6: Each character brings their own deployables online
+    // Step 5: Each character brings their own deployables online
     for (uint256 i = 0; i < count; i++) {
       uint256 accountPrivateKey = derivePrivateKey(i);
       vm.startBroadcast(accountPrivateKey);
@@ -97,10 +92,10 @@ contract BulkCreateTestData is Script {
       vm.stopBroadcast();
     }
 
-    // Step 7: Register delegations from each account to the deployer
+    // Step 6: Register delegations from each account to the deployer
     registerDelegations(count, accounts, deployer);
 
-    // Step 8: Deployer deposits to each character's inventory (one account at a time)
+    // Step 7: Deployer deposits to each character's inventory (one account at a time)
     for (uint256 i = 0; i < count; i++) {
       vm.startBroadcast(deployerPrivateKey);
       depositToInventoryForAccount(i, accounts);
@@ -146,9 +141,6 @@ contract BulkCreateTestData is Script {
   function createSSUs(uint256 count, address[] memory accounts) internal {
     bytes32 tenantId = Tenant.get();
     uint256 ssuTypeId = vm.envUint("SSU_TYPE_ID");
-    uint256 fuelUnitVolume = 10;
-    uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 100000000;
     uint256 storageCapacity = 100000000;
     uint256 ephemeralCapacity = 100000000;
 
@@ -170,13 +162,15 @@ contract BulkCreateTestData is Script {
         assemblyType: "SSU",
         entityRecordParams: entityRecordParams,
         owner: accounts[i],
-        fuelUnitVolume: fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity: fuelMaxCapacity,
         locationData: locationParams
       });
 
-      smartStorageUnitSystem.createAndAnchorStorageUnit(deployableParams, storageCapacity, ephemeralCapacity);
+      smartStorageUnitSystem.createAndAnchorStorageUnit(
+        deployableParams,
+        storageCapacity,
+        ephemeralCapacity,
+        NETWORK_NODE_ID
+      );
 
       console.log("Created SSU for account:", accounts[i]);
     }
@@ -185,9 +179,6 @@ contract BulkCreateTestData is Script {
   function createSmartTurrets(uint256 count, address[] memory accounts) internal {
     bytes32 tenantId = Tenant.get();
     uint256 smartTurretTypeId = vm.envUint("TURRET_TYPE_ID");
-    uint256 fuelUnitVolume = 10;
-    uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 100000000;
 
     for (uint256 i = 0; i < count; i++) {
       uint256 turretItemId = TURRET_BASE_ITEM_ID + i;
@@ -207,13 +198,10 @@ contract BulkCreateTestData is Script {
         assemblyType: "ST",
         entityRecordParams: entityRecordParams,
         owner: accounts[i],
-        fuelUnitVolume: fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity: fuelMaxCapacity,
         locationData: locationData
       });
 
-      smartTurretSystem.createAndAnchorTurret(deployableParams);
+      smartTurretSystem.createAndAnchorTurret(deployableParams, NETWORK_NODE_ID);
 
       console.log("Created Smart Turret for account:", accounts[i]);
     }
@@ -222,9 +210,6 @@ contract BulkCreateTestData is Script {
   function createSmartGates(uint256 count, address[] memory accounts) internal {
     bytes32 tenantId = Tenant.get();
     uint256 smartGateTypeId = vm.envUint("GATE_TYPE_ID");
-    uint256 fuelUnitVolume = 10;
-    uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 100000000;
 
     // Create pairs of gates (source and destination)
     for (uint256 i = 0; i < count; i += 2) {
@@ -270,9 +255,6 @@ contract BulkCreateTestData is Script {
         assemblyType: "SG",
         entityRecordParams: sourceGateEntityRecordParams,
         owner: accounts[i],
-        fuelUnitVolume: fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity: fuelMaxCapacity,
         locationData: sourceGateLocation
       });
 
@@ -281,51 +263,14 @@ contract BulkCreateTestData is Script {
         assemblyType: "SG",
         entityRecordParams: destinationGateEntityRecordParams,
         owner: accounts[i], // Same owner as source gate
-        fuelUnitVolume: fuelUnitVolume,
-        fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-        fuelMaxCapacity: fuelMaxCapacity,
         locationData: destinationGateLocation
       });
 
-      smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000);
-      smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000);
+      smartGateSystem.createAndAnchorGate(sourceGateDeployableParams, 100000000, NETWORK_NODE_ID);
+      smartGateSystem.createAndAnchorGate(destinationGateDeployableParams, 100000000, NETWORK_NODE_ID);
 
       console.log("Created Smart Gate pair for account:", accounts[i]);
     }
-  }
-
-  function depositFuelToAll(uint256 count) internal {
-    bytes32 tenantId = Tenant.get();
-
-    // Deposit fuel to SSUs
-    for (uint256 i = 0; i < count; i++) {
-      uint256 ssuItemId = SSU_BASE_ITEM_ID + i;
-      uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
-      fuelSystem.depositFuel(ssuSmartObjectId, 10000);
-    }
-
-    // Deposit fuel to Smart Turrets
-    for (uint256 i = 0; i < count; i++) {
-      uint256 turretItemId = TURRET_BASE_ITEM_ID + i;
-      uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
-      fuelSystem.depositFuel(turretSmartObjectId, 10000);
-    }
-
-    // Deposit fuel to Smart Gates
-    for (uint256 i = 0; i < count; i += 2) {
-      if (i + 1 >= count) break;
-
-      uint256 sourceGateItemId = GATE_BASE_ITEM_ID + i;
-      uint256 destinationGateItemId = GATE_BASE_ITEM_ID + i + 1;
-
-      uint256 sourceGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, sourceGateItemId);
-      uint256 destinationGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, destinationGateItemId);
-
-      fuelSystem.depositFuel(sourceGateSmartObjectId, 10000);
-      fuelSystem.depositFuel(destinationGateSmartObjectId, 10000);
-    }
-
-    console.log("Deposited fuel to all deployables");
   }
 
   function bringOnlineForAccount(uint256 index, uint256 count, address[] memory accounts) internal {

@@ -13,8 +13,9 @@ import { CreateAndAnchorParams } from "../../namespaces/evefrontier/systems/depl
 interface ISmartStorageUnitSystem {
   function evefrontier__createAndAnchorStorageUnit(
     CreateAndAnchorParams memory params,
-    uint256 storageCapacity,
-    uint256 ephemeralStorageCapacity
+    uint256 capacity,
+    uint256 ephemeralCapacity,
+    uint256 networkNodeId
   ) external;
 
   function evefrontier__getSmartStorageUnitClassId() external view returns (uint256);

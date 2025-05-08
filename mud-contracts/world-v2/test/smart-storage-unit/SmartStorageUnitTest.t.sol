@@ -62,10 +62,6 @@ contract SmartStorageUnitTest is MudTest {
   //entity record
   EntityRecordParams entityRecordParams;
 
-  uint256 fuelUnitVolume = 10;
-  uint256 fuelConsumptionIntervalInSeconds = 60;
-  uint256 fuelMaxCapacity = 1000000;
-
   function setUp() public virtual override {
     vm.pauseGasMetering();
     // Deploy a new World
@@ -103,10 +99,6 @@ contract SmartStorageUnitTest is MudTest {
     });
 
     vm.stopPrank();
-
-    // allow global resume for deployable activity
-    vm.prank(deployer);
-    deployableSystem.globalResume();
     vm.resumeGasMetering();
   }
 
@@ -134,12 +126,6 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(deployableStateData.updatedBlockNumber, 0);
     assertEq(deployableStateData.updatedBlockTime, 0);
 
-    // check fuel data before creating and anchoring
-    FuelData memory fuelData = Fuel.get(smartObjectId);
-    assertEq(fuelData.fuelUnitVolume, 0);
-    assertEq(fuelData.fuelConsumptionIntervalInSeconds, 0);
-    assertEq(fuelData.fuelMaxCapacity, 0);
-
     // check ownership data before creating and anchoring
     address owner = ownershipSystem.owner(smartObjectId);
     assertEq(owner, address(0));
@@ -162,20 +148,7 @@ contract SmartStorageUnitTest is MudTest {
       smartStorageUnitSystem.toResourceId(),
       abi.encodeCall(
         SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (
-          CreateAndAnchorParams(
-            smartObjectId,
-            "SSU",
-            entityRecordParams,
-            alice,
-            fuelUnitVolume,
-            fuelConsumptionIntervalInSeconds,
-            fuelMaxCapacity,
-            locationParams
-          ),
-          1000,
-          1000
-        )
+        (CreateAndAnchorParams(smartObjectId, "SSU", entityRecordParams, alice, locationParams), 1000, 1000, 0) // networkNodeId
       )
     );
     vm.stopPrank();
@@ -205,12 +178,6 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(deployableStateData.anchoredAt, block.timestamp);
     assertEq(deployableStateData.updatedBlockNumber, block.number);
     assertEq(deployableStateData.updatedBlockTime, block.timestamp);
-
-    // check fuel data before creating and anchoring
-    fuelData = Fuel.get(smartObjectId);
-    assertEq(fuelData.fuelUnitVolume, fuelUnitVolume);
-    assertEq(fuelData.fuelConsumptionIntervalInSeconds, fuelConsumptionIntervalInSeconds);
-    assertEq(fuelData.fuelMaxCapacity, fuelMaxCapacity);
 
     // check ownership data before creating and anchoring
     owner = ownershipSystem.owner(smartObjectId);

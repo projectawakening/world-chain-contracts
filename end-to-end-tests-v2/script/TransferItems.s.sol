@@ -11,7 +11,6 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { Tenant, InventoryItemData, InventoryItem, LocationData, CharactersByAccount } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/index.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
-import { FuelSystem, fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { InventorySystem, inventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { EphemeralInventorySystem, ephemeralInventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/EphemeralInventorySystemLib.sol";
 import { InventoryInteractSystem, inventoryInteractSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
@@ -165,12 +164,9 @@ contract TransferItems is Script {
     uint256 ssuItemId
   ) public {
     uint256 ssuTypeId = vm.envUint("SSU_TYPE_ID");
-    uint256 fuelUnitVolume = 10;
-    uint256 fuelConsumptionIntervalInSeconds = 60;
-    uint256 fuelMaxCapacity = 100000000;
     uint256 storageCapacity = 100000000;
     uint256 ephemeralCapacity = 100000000;
-
+    uint256 networkNodeId = 0;
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
@@ -185,9 +181,6 @@ contract TransferItems is Script {
       assemblyType: "SSU",
       entityRecordParams: entityRecordParams,
       owner: invOwner,
-      fuelUnitVolume: fuelUnitVolume,
-      fuelConsumptionIntervalInSeconds: fuelConsumptionIntervalInSeconds,
-      fuelMaxCapacity: fuelMaxCapacity,
       locationData: locationParams
     });
 
@@ -196,14 +189,8 @@ contract TransferItems is Script {
       smartStorageUnitSystem.toResourceId(),
       abi.encodeCall(
         SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (deployableParams, storageCapacity, ephemeralCapacity)
+        (deployableParams, storageCapacity, ephemeralCapacity, networkNodeId)
       )
-    );
-
-    world.callFrom(
-      invOwner,
-      fuelSystem.toResourceId(),
-      abi.encodeCall(FuelSystem.depositFuel, (ssuSmartObjectId, 1000))
     );
 
     world.callFrom(

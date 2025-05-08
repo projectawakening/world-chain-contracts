@@ -91,7 +91,7 @@ contract Config is Script {
     eveSystem.registerSmartStorageUnitClass(vm.envUint("SSU_TYPE_ID"), vm.envUint("SSU_VOLUME"));
     eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"), vm.envUint("TURRET_VOLUME"));
     eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"), vm.envUint("GATE_VOLUME"));
-
+    eveSystem.registerNetworkNodeClass(vm.envUint("NETWORK_NODE_TYPE_ID"), vm.envUint("NETWORK_NODE_VOLUME"));
   }
 
   function _initializeWorldAccess() internal {
@@ -147,6 +147,7 @@ contract Config is Script {
     eveSystem.configureEntityRecordAccess();
     eveSystem.configureFuelAccess();
     eveSystem.configureLocationAccess();
+    eveSystem.configureNetworkNodeAccess();
     eveSystem.configureDeployableAccess();
     eveSystem.configureSmartAssemblyAccess();
     eveSystem.configureInventoryAccess();

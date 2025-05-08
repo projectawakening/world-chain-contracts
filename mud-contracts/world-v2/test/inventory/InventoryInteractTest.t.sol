@@ -20,14 +20,13 @@ import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace tables
-import { GlobalDeployableState, Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Inventory, Tenant, EntityRecord, InventoryItem, CharactersByAccount, LocationData, InventoryItemTransfer, InventoryItemTransferData } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { InventoryInteractSystem, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
-import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
 // Types and parameters
@@ -118,9 +117,6 @@ contract EphemeralInteractTest is MudTest {
       true
     );
 
-    // Make sure deploy system is active
-    GlobalDeployableState.setIsPaused(false);
-
     // Setup first SSU for inventory (owned by Alice)
     uint256 capacity = 1000;
     world.call(
@@ -138,13 +134,11 @@ contract EphemeralInteractTest is MudTest {
               volume: 1000
             }),
             alice,
-            1,
-            10,
-            100000,
             LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
           ),
           capacity,
-          capacity
+          capacity,
+          0 // networkNodeId
         )
       )
     );
@@ -165,9 +159,6 @@ contract EphemeralInteractTest is MudTest {
               volume: 1000
             }),
             bob,
-            1,
-            10,
-            100000,
             LocationData({
               solarSystemId: 2, // Different solar system
               x: 2000, // Different coordinates
@@ -176,7 +167,8 @@ contract EphemeralInteractTest is MudTest {
             })
           ),
           capacity,
-          capacity
+          capacity,
+          0 // networkNodeId
         )
       )
     );
@@ -192,13 +184,11 @@ contract EphemeralInteractTest is MudTest {
 
     // Bring Alice's SSU online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(inventoryObjectId, 10000);
     deployableSystem.bringOnline(inventoryObjectId);
     vm.stopPrank();
 
     // Bring Bob's SSU online
     vm.startPrank(bob, deployer);
-    fuelSystem.depositFuel(inventoryObjectId2, 10000);
     deployableSystem.bringOnline(inventoryObjectId2);
     vm.stopPrank();
 

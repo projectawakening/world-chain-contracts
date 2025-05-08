@@ -13,8 +13,5 @@ struct CreateAndAnchorParams {
   string assemblyType;
   EntityRecordParams entityRecordParams;
   address owner;
-  uint256 fuelUnitVolume;
-  uint256 fuelConsumptionIntervalInSeconds;
-  uint256 fuelMaxCapacity;
   LocationData locationData;
 }

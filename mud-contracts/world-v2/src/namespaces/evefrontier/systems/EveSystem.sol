@@ -33,7 +33,7 @@ import { SmartGateSystem, smartGateSystem } from "../codegen/systems/SmartGateSy
 import { OwnershipSystem, ownershipSystem } from "../codegen/systems/OwnershipSystemLib.sol";
 import { InventoryOwnershipSystem, inventoryOwnershipSystem } from "../codegen/systems/InventoryOwnershipSystemLib.sol";
 import { KillMailSystem, killMailSystem } from "../codegen/systems/KillMailSystemLib.sol";
-
+import { NetworkNodeSystem, networkNodeSystem } from "../codegen/systems/NetworkNodeSystemLib.sol";
 import { Initialize } from "../codegen/index.sol";
 import { IEveSystem } from "../interfaces/IEveSystem.sol";
 
@@ -62,7 +62,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](12);
+    ResourceId[] memory systemIds = new ResourceId[](13);
     systemIds[0] = smartStorageUnitSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -74,7 +74,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[8] = ephemeralInventorySystem.toResourceId();
     systemIds[9] = inventoryInteractSystem.toResourceId();
     systemIds[10] = ephemeralInteractSystem.toResourceId();
-    systemIds[11] = batchCallSystem;
+    systemIds[11] = networkNodeSystem.toResourceId();
+    systemIds[12] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
@@ -83,7 +84,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartTurretClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](8);
+    ResourceId[] memory systemIds = new ResourceId[](9);
     systemIds[0] = smartTurretSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -91,7 +92,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
-    systemIds[7] = batchCallSystem;
+    systemIds[7] = networkNodeSystem.toResourceId();
+    systemIds[8] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
 
@@ -100,8 +102,26 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
   }
 
   function registerSmartGateClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](8);
+    ResourceId[] memory systemIds = new ResourceId[](9);
     systemIds[0] = smartGateSystem.toResourceId();
+    systemIds[1] = deployableSystem.toResourceId();
+    systemIds[2] = smartAssemblySystem.toResourceId();
+    systemIds[3] = entityRecordSystem.toResourceId();
+    systemIds[4] = ownershipSystem.toResourceId();
+    systemIds[5] = fuelSystem.toResourceId();
+    systemIds[6] = locationSystem.toResourceId();
+    systemIds[7] = networkNodeSystem.toResourceId();
+    systemIds[8] = batchCallSystem;
+
+    uint256 classId = initialize(typeId, volume, systemIds);
+
+    ResourceId smartGateSystemId = smartGateSystem.toResourceId();
+    Initialize.set(smartGateSystemId, classId);
+  }
+
+  function registerNetworkNodeClass(uint256 typeId, uint256 volume) public {
+    ResourceId[] memory systemIds = new ResourceId[](8);
+    systemIds[0] = networkNodeSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
     systemIds[3] = entityRecordSystem.toResourceId();
@@ -111,9 +131,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[7] = batchCallSystem;
 
     uint256 classId = initialize(typeId, volume, systemIds);
-
-    ResourceId smartGateSystemId = smartGateSystem.toResourceId();
-    Initialize.set(smartGateSystemId, classId);
+    ResourceId networkNodeSystemId = networkNodeSystem.toResourceId();
+    Initialize.set(networkNodeSystemId, classId);
   }
 
   // Configure access for all systems
@@ -273,10 +292,10 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     bytes4[6] memory fuelOnlyAdminOrClassScopedSelectors = [
       FuelSystem.configureFuelParameters.selector,
       FuelSystem.setFuelUnitVolume.selector,
-      FuelSystem.setFuelConsumptionIntervalInSeconds.selector,
       FuelSystem.setFuelAmount.selector,
       FuelSystem.updateFuel.selector,
-      FuelSystem.setFuelMaxCapacity.selector
+      FuelSystem.setFuelMaxCapacity.selector,
+      FuelSystem.configureFuelEfficiency.selector
     ];
 
     for (uint256 i = 0; i < fuelOnlyAdminOrClassScopedSelectors.length; i++) {
@@ -289,33 +308,56 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), fuelOnlyAdminOrClassScopedSelectors[i], true);
     }
 
-    accessConfigSystem.configureAccess(
-      fuelSystem.toResourceId(),
+    bytes4[4] memory fuelOnlyAdminOrOwnerSupportedSelectors = [
       FuelSystem.depositFuel.selector,
+      FuelSystem.withdrawFuel.selector,
+      FuelSystem.startBurn.selector,
+      FuelSystem.stopBurn.selector
+    ];
+
+    for (uint256 i = 0; i < fuelOnlyAdminOrOwnerSupportedSelectors.length; i++) {
+      accessConfigSystem.configureAccess(
+        fuelSystem.toResourceId(),
+        fuelOnlyAdminOrOwnerSupportedSelectors[i],
+        accessSystem.toResourceId(),
+        AccessSystem.onlyAdminOrOwnerSupported.selector
+      );
+      accessConfigSystem.setAccessEnforcement(
+        fuelSystem.toResourceId(),
+        fuelOnlyAdminOrOwnerSupportedSelectors[i],
+        true
+      );
+    }
+  }
+
+  // Configure access for NetworkNodeSystem
+  function configureNetworkNodeAccess() public {
+    accessConfigSystem.configureAccess(
+      networkNodeSystem.toResourceId(),
+      NetworkNodeSystem.createAndAnchorNetworkNode.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyAdminOrOwnerSupported.selector
+      AccessSystem.onlyAdminSupportedAccess.selector
     );
-    accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), FuelSystem.depositFuel.selector, true);
+    accessConfigSystem.setAccessEnforcement(
+      networkNodeSystem.toResourceId(),
+      NetworkNodeSystem.createAndAnchorNetworkNode.selector,
+      true
+    );
   }
 
   // Configure access for DeployableSystem
   function configureDeployableAccess() public {
-    bytes4[3] memory onlyDirectAdminSelectors = [
+    accessConfigSystem.configureAccess(
+      deployableSystem.toResourceId(),
       DeployableSystem.destroyDeployable.selector,
-      DeployableSystem.globalPause.selector,
-      DeployableSystem.globalResume.selector
-    ];
-
-    for (uint256 i = 0; i < onlyDirectAdminSelectors.length; i++) {
-      accessConfigSystem.configureAccess(
-        deployableSystem.toResourceId(),
-        onlyDirectAdminSelectors[i],
-        accessSystem.toResourceId(),
-        AccessSystem.onlyDirectAdmin.selector
-      );
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
-      accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyDirectAdminSelectors[i], true);
-    }
+      accessSystem.toResourceId(),
+      AccessSystem.onlyDirectAdmin.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      deployableSystem.toResourceId(),
+      DeployableSystem.destroyDeployable.selector,
+      true
+    );
 
     bytes4[3] memory onlyAdminSupportedSelectors = [
       DeployableSystem.createAndAnchor.selector,
