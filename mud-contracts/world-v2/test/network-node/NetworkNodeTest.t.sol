@@ -186,7 +186,7 @@ contract NetworkNodeEnergyTest is MudTest {
       uint8(State.ONLINE),
       "Network Node should be online"
     );
-   
+
     assertEq(NetworkNode.getEnergyProduced(networkNodeId), 80, "Should be producing 80 GJ");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Total reserved energy should be 10 GJ");
     assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should be 9 units");
@@ -227,6 +227,11 @@ contract NetworkNodeEnergyTest is MudTest {
       "Smart Gate should be anchored"
     );
 
+    // Verify connectedAssemblies array after connecting Smart Gate
+    uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+    assertEq(connectedAssemblies.length, 1, "Should have 1 connected assembly");
+    assertEq(connectedAssemblies[0], smartGateId, "Connected assembly should be Smart Gate");
+
     // 2. Try to bring Smart Gate online (should succeed as Network Node has enough energy)
     deployableSystem.bringOnline(smartGateId);
 
@@ -263,6 +268,12 @@ contract NetworkNodeEnergyTest is MudTest {
       NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartStorageId),
       "Smart Storage Unit should be connected"
     );
+
+    // Verify connectedAssemblies array after connecting Smart Storage Unit
+    connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+    assertEq(connectedAssemblies.length, 2, "Should have 2 connected assemblies");
+    assertEq(connectedAssemblies[0], smartGateId, "First connected assembly should be Smart Gate");
+    assertEq(connectedAssemblies[1], smartStorageId, "Second connected assembly should be Smart Storage Unit");
 
     // Try to bring Smart Storage Unit online (should fail as only 40 GJ available)
     vm.expectRevert(

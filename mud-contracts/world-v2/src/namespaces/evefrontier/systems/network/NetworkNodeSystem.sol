@@ -60,7 +60,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
       maxEnergyCapacity, // maxEnergyCapacity
       currentProduction, // currentProduction
       0, // totalReservedEnergy (starts at 0)
-      block.timestamp // lastUpdatedAt
+      block.timestamp, // lastUpdatedAt
+      new uint256[](0) // connectedAssemblies
     );
   }
 
@@ -94,9 +95,13 @@ contract NetworkNodeSystem is SmartObjectFramework {
 
     // Record for reverse lookup
     NetworkNodeByAssembly.set(assemblyId, networkNodeId);
+
+    //Add assemblyId to the list of connected assemblies
+    NetworkNode.pushConnectedAssemblies(networkNodeId, assemblyId);
   }
 
   //TODO : Disconnect structure
+  //When a structure is disconnected from a network node, update the NetworkNode table and NetworkNodeAssemblyLink table
 
   /**
    * @dev Handles a structure being brought online
@@ -114,14 +119,14 @@ contract NetworkNodeSystem is SmartObjectFramework {
     uint256 assemblyTypeId;
 
     //If structure is connected to a network node, get the energy requirement of the structure
-    if(NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+    if (NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
       assemblyTypeId = EntityRecord.getTypeId(assemblyId);
     } else {
       //If structure is not connected to a network node, get the energy requirement of the network node
       assemblyTypeId = EntityRecord.getTypeId(networkNodeId);
     }
 
-    uint256 energyRequired =  AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
+    uint256 energyRequired = AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
 
     // Check if we have enough energy available
     uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
@@ -142,7 +147,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev Handles a structure being brought offline
+   * @dev Update energy status by assembly on offline
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the structure
    */
@@ -153,45 +158,67 @@ contract NetworkNodeSystem is SmartObjectFramework {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
-
-    if (networkNodeId == assemblyId) {
-      handleNodeOffline(networkNodeId);
-    } else {
-      if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
-        revert NetworkNode_AssemblyNotConnected(networkNodeId, assemblyId);
-      }
-
-      // Get current reserved energy for this structure
-      uint256 structureEnergy = NetworkNodeAssemblyLink.getReservedEnergy(networkNodeId, assemblyId);
-
-      // Update structure connection
-      NetworkNodeAssemblyLink.setReservedEnergy(networkNodeId, assemblyId, 0);
-      NetworkNodeAssemblyLink.setOperationStatus(networkNodeId, assemblyId, State.ANCHORED);
-      NetworkNodeAssemblyLink.setLastEnergyUpdate(networkNodeId, assemblyId, block.timestamp);
-
-      // Update total reserved energy
-      uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
-      NetworkNode.setTotalReservedEnergy(networkNodeId, currentReserved - structureEnergy);
-      NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
-    }
+    _handleAssemblyOffline(networkNodeId, assemblyId);
   }
 
   /**
-   * @dev Handles Network Node going offline
+   * @dev Update energy status and diconnect all structures from the network node
    * @param networkNodeId The ID of the Network Node
    */
-  function handleNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+  function onNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
+    //make sure there is no connected assemblies
+    uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+    for (uint256 i = 0; i < connectedAssemblies.length; i++) {
+      _handleAssemblyOffline(networkNodeId, connectedAssemblies[i]); //release energy
+    }
+
+    _handleNodeOffline(networkNodeId);
+  }
+
+  //INTERNAL FUNCTIONS
+  /**
+   * @dev Internal function to handle network node going offline
+   * @param networkNodeId The ID of the Network Node
+   */
+  function _handleNodeOffline(uint256 networkNodeId) internal {
     // Reset total reserved energy
+    NetworkNode.setEnergyProduced(networkNodeId, 0);
     NetworkNode.setTotalReservedEnergy(networkNodeId, 0);
     NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+  }
 
-    // deployableSystem.bringOffline(networkNodeId);
+  /**
+   * @dev Internal function to handle a single assembly going offline
+   * @param networkNodeId The ID of the Network Node
+   * @param assemblyId The ID of the assembly
+   */
+  function _handleAssemblyOffline(uint256 networkNodeId, uint256 assemblyId) internal {
+    uint256 releasedEnergy = NetworkNodeAssemblyLink.getReservedEnergy(networkNodeId, assemblyId);
+    if (releasedEnergy > 0) {
+      _updateTotalReservedEnergy(networkNodeId, releasedEnergy);
+    }
 
-    // TODO: Get all connected structures and bring them offline
+    // Update assembly connection
+    NetworkNodeAssemblyLink.setReservedEnergy(networkNodeId, assemblyId, 0);
+    NetworkNodeAssemblyLink.setOperationStatus(networkNodeId, assemblyId, State.ANCHORED);
+    NetworkNodeAssemblyLink.setLastEnergyUpdate(networkNodeId, assemblyId, block.timestamp);
+  }
+
+  /**
+   * @dev Internal function to update total reserved energy
+   * @param networkNodeId The ID of the Network Node
+   * @param energyChange The amount of energy to add (positive) or subtract (negative)
+   */
+  function _updateTotalReservedEnergy(uint256 networkNodeId, uint256 energyChange) internal {
+    uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
+    uint256 newReserved = currentReserved > energyChange ? currentReserved - energyChange : 0;
+
+    NetworkNode.setTotalReservedEnergy(networkNodeId, newReserved);
+    NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
   }
 
   function getNetworkNodeClassId() public view returns (uint256) {

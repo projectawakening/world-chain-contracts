@@ -193,6 +193,7 @@ export default defineWorld({
             energyProduced: "uint256", // Power/Energy generated per hour when burning fuel
             totalReservedEnergy: "uint256", // Sum of all energy reserved by structuresconnected to the network node
             lastUpdatedAt: "uint256",
+            connectedAssemblies: "uint256[]", // List of assemblyIds connected to the network node
           },
           key: ["smartObjectId"],
         },
@@ -200,9 +201,9 @@ export default defineWorld({
           schema: {
             networkNodeId: "uint256", // ID of the Network Node
             assemblyId: "uint256", // ID of the connected assembly
-            reservedEnergy: "uint256", // Energy reserved by this assembly
+            reservedEnergy: "uint256", // Energy reserved by this assembly //TODO: this can be got from energy config table
             isConnected: "bool", // Whether assembly is currently connected
-            operationStatus: "State", // "Running", "Not running"
+            operationStatus: "State", // "Running", "Not running" //TODO: can be removed
             connectedAt: "uint256", // When the assembly was connected
             lastEnergyUpdate: "uint256", // Last time energy was counted for this assembly
           },

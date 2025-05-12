@@ -11,7 +11,7 @@ import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly,NetworkNode , NetworkNodeAssemblyLink} from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly, NetworkNode, NetworkNodeAssemblyLink } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -167,7 +167,7 @@ contract DeployableSystem is SmartObjectFramework {
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
-    }else if(NetworkNode.getExists(smartObjectId)){
+    } else if (NetworkNode.getExists(smartObjectId)) {
       networkNodeSystem.onStructureOnline(smartObjectId, 0);
     }
 
@@ -185,19 +185,14 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    //handle bringOffline
-    //if its a network node, handle onNetworkNodeOffline
-    //if its a structure, handle onStructureOffline
-
-
-    uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId); //TODO: get network node Id if its a network node  
-
-    //If the deployable is connected to a network node, release the energy
-    if (networkNodeId != 0) {
+    uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
+    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOffline(networkNodeId, smartObjectId);
+    } else if (NetworkNode.getExists(smartObjectId)) {
+      networkNodeSystem.onNodeOffline(smartObjectId); //Release energy for all connected assemblies and network node
+      _handleNodeOffline(smartObjectId); //Bring all connected assemblies and network node offline
     }
 
-    //TODO: release the energy reserved by the deployable
     _bringOffline(smartObjectId, previousState);
   }
 
@@ -282,6 +277,27 @@ contract DeployableSystem is SmartObjectFramework {
   /*******************************
    * INTERNAL DEPLOYABLE METHODS *
    *******************************/
+
+  /**
+   * @dev On network node offine, it should bring all connected structures offline
+   * This function is defined here to avoid recursive calls
+   * @param networkNodeId The ID of the Network Node
+   */
+  function _handleNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+    //Bring all connected structures offline
+    State previousState = DeployableState.getCurrentState(networkNodeId);
+    if (previousState == State.ONLINE) {
+      uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+      for (uint256 i = 0; i < connectedAssemblies.length; i++) {
+        State structureState = DeployableState.getCurrentState(connectedAssemblies[i]);
+        if (structureState == State.ONLINE) {
+          _bringOffline(connectedAssemblies[i], previousState);
+        }
+      }
+     //Bring the network node offline
+     _bringOffline(networkNodeId, previousState);
+    }
+  }
 
   /**
    * @dev brings offline smart deployable (internal method)

@@ -73,8 +73,8 @@ library NetworkNodeSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).onStructureOffline(networkNodeId, assemblyId);
   }
 
-  function handleNodeOffline(NetworkNodeSystemType self, uint256 networkNodeId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).handleNodeOffline(networkNodeId);
+  function onNodeOffline(NetworkNodeSystemType self, uint256 networkNodeId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).onNodeOffline(networkNodeId);
   }
 
   function getNetworkNodeClassId(NetworkNodeSystemType self) internal view returns (uint256) {
@@ -139,11 +139,11 @@ library NetworkNodeSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function handleNodeOffline(CallWrapper memory self, uint256 networkNodeId) internal {
+  function onNodeOffline(CallWrapper memory self, uint256 networkNodeId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert NetworkNodeSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_handleNodeOffline_uint256.handleNodeOffline, (networkNodeId));
+    bytes memory systemCall = abi.encodeCall(_onNodeOffline_uint256.onNodeOffline, (networkNodeId));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -202,8 +202,8 @@ library NetworkNodeSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function handleNodeOffline(RootCallWrapper memory self, uint256 networkNodeId) internal {
-    bytes memory systemCall = abi.encodeCall(_handleNodeOffline_uint256.handleNodeOffline, (networkNodeId));
+  function onNodeOffline(RootCallWrapper memory self, uint256 networkNodeId) internal {
+    bytes memory systemCall = abi.encodeCall(_onNodeOffline_uint256.onNodeOffline, (networkNodeId));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -273,8 +273,8 @@ interface _onStructureOffline_uint256_uint256 {
   function onStructureOffline(uint256 networkNodeId, uint256 assemblyId) external;
 }
 
-interface _handleNodeOffline_uint256 {
-  function handleNodeOffline(uint256 networkNodeId) external;
+interface _onNodeOffline_uint256 {
+  function onNodeOffline(uint256 networkNodeId) external;
 }
 
 interface _getNetworkNodeClassId {

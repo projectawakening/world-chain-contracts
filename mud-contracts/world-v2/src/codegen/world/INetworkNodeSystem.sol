@@ -33,7 +33,7 @@ interface INetworkNodeSystem {
 
   function evefrontier__onStructureOffline(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__handleNodeOffline(uint256 networkNodeId) external;
+  function evefrontier__onNodeOffline(uint256 networkNodeId) external;
 
   function evefrontier__getNetworkNodeClassId() external view returns (uint256);
 }
