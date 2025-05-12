@@ -169,11 +169,10 @@ contract FuelSystem is SmartObjectFramework {
    */
   function stopBurn(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     bool burnState = FuelConsumptionState.getBurnState(smartObjectId);
-    if (!burnState) {
-      revert Fuel_BurnAlreadyStopped(smartObjectId);
+    if (burnState) {
+      FuelConsumptionState.set(smartObjectId, FuelConsumptionState.getBurnStartTime(smartObjectId), false, 0);
+      Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
     }
-    FuelConsumptionState.set(smartObjectId, FuelConsumptionState.getBurnStartTime(smartObjectId), false, 0);
-    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 
   //TODO : Implement PauseBurn

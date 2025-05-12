@@ -170,14 +170,8 @@ contract NetworkNodeEnergyTest is MudTest {
       "Network Node should be anchored"
     );
 
-    // 2. Start burning fuel
+    // 2. Deposit fuel and bring Network Node online (should automatically start burning fuel)
     fuelSystem.depositFuel(networkNodeId, FUEL_TYPE_ID, 10);
-    fuelSystem.startBurn(networkNodeId);
-
-    // Verify burn session started
-    assertTrue(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be active");
-
-    // 3. Try to bring Network Node online (should succeed as it has energy from burning fuel)
     deployableSystem.bringOnline(networkNodeId);
 
     // Verify Network Node is online and consuming its own energy
@@ -186,7 +180,7 @@ contract NetworkNodeEnergyTest is MudTest {
       uint8(State.ONLINE),
       "Network Node should be online"
     );
-
+    assertTrue(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be active");
     assertEq(NetworkNode.getEnergyProduced(networkNodeId), 80, "Should be producing 80 GJ");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Total reserved energy should be 10 GJ");
     assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should be 9 units");
@@ -290,12 +284,12 @@ contract NetworkNodeEnergyTest is MudTest {
     assertEq(Fuel.getFuelAmount(networkNodeId), 0, "Fuel amount should be 0");
 
     // Verify Network Node and all structures are offline
-    // assertEq(
-    //   uint8(DeployableState.getCurrentState(networkNodeId)),
-    //   uint8(State.ANCHORED),
-    //   "Network Node should be offline"
-    // );
-    //assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ANCHORED), "Smart Gate should be offline");
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ANCHORED),
+      "Network Node should be offline"
+    );
+    assertFalse(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be stopped");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 0, "No energy should be reserved");
 
     vm.stopPrank();

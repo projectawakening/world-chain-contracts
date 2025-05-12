@@ -25,6 +25,7 @@ import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.so
 import { State, CreateAndAnchorParams } from "./types.sol";
 import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
 import { NETWORK_NODE } from "../constants.sol";
+import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 
 /**
  * @title DeployableSystem
@@ -168,10 +169,11 @@ contract DeployableSystem is SmartObjectFramework {
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
+      // For network nodes, start burning fuel before bringing online
+      fuelSystem.startBurn(smartObjectId);
       networkNodeSystem.onStructureOnline(smartObjectId, 0);
     }
 
-    //TODO: check if the deployable has enough energy to be brought online
     _setDeployableState(smartObjectId, previousState, State.ONLINE);
   }
 
@@ -189,8 +191,10 @@ contract DeployableSystem is SmartObjectFramework {
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOffline(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
-      networkNodeSystem.onNodeOffline(smartObjectId); //Release energy for all connected assemblies and network node
-      _handleNodeOffline(smartObjectId); //Bring all connected assemblies and network node offline
+      // For network nodes, stop burning fuel before bringing offline
+      fuelSystem.stopBurn(smartObjectId);
+      networkNodeSystem.onNodeOffline(smartObjectId);
+      _handleNodeOffline(smartObjectId);
     }
 
     _bringOffline(smartObjectId, previousState);
