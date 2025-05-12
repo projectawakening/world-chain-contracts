@@ -16,9 +16,9 @@ import { Schema } from "@latticexyz/store/src/Schema.sol";
 import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/EncodedLengths.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
-library NetworkNodeByStructure {
-  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "NetworkNodeByStr", typeId: RESOURCE_TABLE });`
-  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004e6574776f726b4e6f64654279537472);
+library NetworkNodeByAssembly {
+  // Hex below is the result of `WorldResourceIdLib.encode({ namespace: "evefrontier", name: "NetworkNodeByAss", typeId: RESOURCE_TABLE });`
+  ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004e6574776f726b4e6f64654279417373);
 
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0020010020000000000000000000000000000000000000000000000000000000);
@@ -34,7 +34,7 @@ library NetworkNodeByStructure {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "structureId";
+    keyNames[0] = "assemblyId";
   }
 
   /**
@@ -63,9 +63,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Get networkNodeId.
    */
-  function getNetworkNodeId(uint256 structureId) internal view returns (uint256 networkNodeId) {
+  function getNetworkNodeId(uint256 assemblyId) internal view returns (uint256 networkNodeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -74,9 +74,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Get networkNodeId.
    */
-  function _getNetworkNodeId(uint256 structureId) internal view returns (uint256 networkNodeId) {
+  function _getNetworkNodeId(uint256 assemblyId) internal view returns (uint256 networkNodeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -85,9 +85,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Get networkNodeId.
    */
-  function get(uint256 structureId) internal view returns (uint256 networkNodeId) {
+  function get(uint256 assemblyId) internal view returns (uint256 networkNodeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -96,9 +96,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Get networkNodeId.
    */
-  function _get(uint256 structureId) internal view returns (uint256 networkNodeId) {
+  function _get(uint256 assemblyId) internal view returns (uint256 networkNodeId) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -107,9 +107,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Set networkNodeId.
    */
-  function setNetworkNodeId(uint256 structureId, uint256 networkNodeId) internal {
+  function setNetworkNodeId(uint256 assemblyId, uint256 networkNodeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((networkNodeId)), _fieldLayout);
   }
@@ -117,9 +117,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Set networkNodeId.
    */
-  function _setNetworkNodeId(uint256 structureId, uint256 networkNodeId) internal {
+  function _setNetworkNodeId(uint256 assemblyId, uint256 networkNodeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((networkNodeId)), _fieldLayout);
   }
@@ -127,9 +127,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Set networkNodeId.
    */
-  function set(uint256 structureId, uint256 networkNodeId) internal {
+  function set(uint256 assemblyId, uint256 networkNodeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((networkNodeId)), _fieldLayout);
   }
@@ -137,9 +137,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Set networkNodeId.
    */
-  function _set(uint256 structureId, uint256 networkNodeId) internal {
+  function _set(uint256 assemblyId, uint256 networkNodeId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((networkNodeId)), _fieldLayout);
   }
@@ -147,9 +147,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 structureId) internal {
+  function deleteRecord(uint256 assemblyId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -157,9 +157,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 structureId) internal {
+  function _deleteRecord(uint256 assemblyId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -190,9 +190,9 @@ library NetworkNodeByStructure {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 structureId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 assemblyId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(structureId));
+    _keyTuple[0] = bytes32(uint256(assemblyId));
 
     return _keyTuple;
   }

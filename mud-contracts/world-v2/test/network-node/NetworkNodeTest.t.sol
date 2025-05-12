@@ -11,7 +11,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { Fuel, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, FuelEfficiencyConfig, FuelConsumptionState } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Fuel, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, FuelEfficiencyConfig, FuelConsumptionState } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { NetworkNodeSystem, networkNodeSystem } from "../../src/namespaces/evefrontier/codegen/systems/NetworkNodeSystemLib.sol";
@@ -194,7 +194,7 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.stopPrank();
   }
 
-  function test_structureDeploymentAndPowerManagement() public {
+  function test_assemblyDeploymentAndEnergyManagement() public {
     vm.pauseGasMetering();
     // First setup a running Network Node
     test_networkNodeDeploymentAndOperation();
@@ -220,9 +220,9 @@ contract NetworkNodeEnergyTest is MudTest {
     );
 
     // Verify Smart Gate is connected
-    assertTrue(NetworkStructureConnection.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
+    assertTrue(NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
     assertEq(
-      uint8(NetworkStructureConnection.getOperationStatus(networkNodeId, smartGateId)),
+      uint8(NetworkNodeAssemblyLink.getOperationStatus(networkNodeId, smartGateId)),
       uint8(State.ANCHORED),
       "Smart Gate should be anchored"
     );
@@ -233,7 +233,7 @@ contract NetworkNodeEnergyTest is MudTest {
     // Verify Smart Gate is online and energy is reserved
     assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ONLINE), "Smart Gate should be online");
     assertEq(
-      NetworkStructureConnection.getReservedEnergy(networkNodeId, smartGateId),
+      NetworkNodeAssemblyLink.getReservedEnergy(networkNodeId, smartGateId),
       50,
       "Should reserve 50 GJ for Smart Gate"
     );
@@ -260,7 +260,7 @@ contract NetworkNodeEnergyTest is MudTest {
 
     // Verify Smart Storage Unit is connected but not online
     assertTrue(
-      NetworkStructureConnection.getIsConnected(networkNodeId, smartStorageId),
+      NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartStorageId),
       "Smart Storage Unit should be connected"
     );
 

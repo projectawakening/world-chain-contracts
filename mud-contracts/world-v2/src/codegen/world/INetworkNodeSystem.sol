@@ -16,8 +16,8 @@ interface INetworkNodeSystem {
   error NetworkNode_DoesNotExist(uint256 smartObjectId);
   error NetworkNode_InsufficientEnergy(uint256 networkNodeId, uint256 required, uint256 available);
   error NetworkNode_NotOnline(uint256 networkNodeId);
-  error NetworkNode_StructureNotConnected(uint256 networkNodeId, uint256 structureId);
-  error NetworkNode_StructureAlreadyConnected(uint256 networkNodeId, uint256 structureId);
+  error NetworkNode_AssemblyNotConnected(uint256 networkNodeId, uint256 assemblyId);
+  error NetworkNode_AssemblyAlreadyConnected(uint256 networkNodeId, uint256 assemblyId);
   error NetworkNode_NotConfigured(uint256 smartObjectId);
 
   function evefrontier__createAndAnchorNetworkNode(
@@ -27,11 +27,11 @@ interface INetworkNodeSystem {
     uint256 currentProduction
   ) external;
 
-  function evefrontier__connectStructure(uint256 networkNodeId, uint256 structureId) external;
+  function evefrontier__connectStructure(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__onStructureOnline(uint256 networkNodeId, uint256 structureId) external;
+  function evefrontier__onStructureOnline(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__onStructureOffline(uint256 networkNodeId, uint256 structureId) external;
+  function evefrontier__onStructureOffline(uint256 networkNodeId, uint256 assemblyId) external;
 
   function evefrontier__handleNodeOffline(uint256 networkNodeId) external;
 

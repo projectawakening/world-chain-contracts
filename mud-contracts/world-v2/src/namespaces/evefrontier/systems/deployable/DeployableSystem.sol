@@ -11,7 +11,7 @@ import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByStructure } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly,NetworkNode } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -51,7 +51,7 @@ contract DeployableSystem is SmartObjectFramework {
 
     anchor(params.smartObjectId, params.owner, params.locationData);
 
-    if (networkNodeId != 0 && (params.smartObjectId != networkNodeId)) {
+    if (NetworkNode.getExists(params.smartObjectId)) {
       networkNodeSystem.connectStructure(networkNodeId, params.smartObjectId);
     }
   }
@@ -163,9 +163,9 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    //Check the energy requirement to bringOnline if the deployable is connected to a network node
-    uint256 networkNodeId = NetworkNodeByStructure.getNetworkNodeId(smartObjectId);
-    if (networkNodeId != 0) {
+    //Check the energy requirement to bringOnline if the deployable is connected to a network node or if it is a network node
+    uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
+    if (NetworkNode.getExists(networkNodeId) || NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
     }
 
@@ -184,7 +184,11 @@ contract DeployableSystem is SmartObjectFramework {
     }
 
     //handle bringOffline
-    uint256 networkNodeId = NetworkNodeByStructure.getNetworkNodeId(smartObjectId);
+    //if its a network node, handle onNetworkNodeOffline
+    //if its a structure, handle onStructureOffline
+
+
+    uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId); //TODO: get network node Id if its a network node  
 
     //If the deployable is connected to a network node, release the energy
     if (networkNodeId != 0) {

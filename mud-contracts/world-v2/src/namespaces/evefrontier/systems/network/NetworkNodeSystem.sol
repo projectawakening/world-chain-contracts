@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByStructure } from "../../codegen/index.sol";
+import { DeployableState, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByAssembly } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
@@ -28,8 +28,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
   error NetworkNode_DoesNotExist(uint256 smartObjectId);
   error NetworkNode_InsufficientEnergy(uint256 networkNodeId, uint256 required, uint256 available);
   error NetworkNode_NotOnline(uint256 networkNodeId);
-  error NetworkNode_StructureNotConnected(uint256 networkNodeId, uint256 structureId);
-  error NetworkNode_StructureAlreadyConnected(uint256 networkNodeId, uint256 structureId);
+  error NetworkNode_AssemblyNotConnected(uint256 networkNodeId, uint256 assemblyId);
+  error NetworkNode_AssemblyAlreadyConnected(uint256 networkNodeId, uint256 assemblyId);
   error NetworkNode_NotConfigured(uint256 smartObjectId);
 
   /**
@@ -62,31 +62,29 @@ contract NetworkNodeSystem is SmartObjectFramework {
       0, // totalReservedEnergy (starts at 0)
       block.timestamp // lastUpdatedAt
     );
-
-    NetworkNodeByStructure.set(params.smartObjectId, params.smartObjectId);
   }
 
   /**
    * @dev Connects a structure to a Network Node
    * @param networkNodeId The ID of the Network Node
-   * @param structureId The ID of the structure to connect
+   * @param assemblyId The ID of the structure to connect
    */
   function connectStructure(
     uint256 networkNodeId,
-    uint256 structureId
+    uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
-    if (NetworkStructureConnection.getIsConnected(networkNodeId, structureId)) {
-      revert NetworkNode_StructureAlreadyConnected(networkNodeId, structureId);
+    if (NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+      revert NetworkNode_AssemblyAlreadyConnected(networkNodeId, assemblyId);
     }
 
     // Record the connection
-    NetworkStructureConnection.set(
+    NetworkNodeAssemblyLink.set(
       networkNodeId,
-      structureId,
+      assemblyId,
       0, // reservedEnergy (set when brought online)
       true, // isConnected
       State.ANCHORED, // operationStatus
@@ -95,7 +93,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
     );
 
     // Record for reverse lookup
-    NetworkNodeByStructure.set(structureId, networkNodeId);
+    NetworkNodeByAssembly.set(assemblyId, networkNodeId);
   }
 
   //TODO : Disconnect structure
@@ -103,24 +101,24 @@ contract NetworkNodeSystem is SmartObjectFramework {
   /**
    * @dev Handles a structure being brought online
    * @param networkNodeId The ID of the Network Node
-   * @param structureId The ID of the structure
+   * @param assemblyId The ID of the structure
    */
   function onStructureOnline(
     uint256 networkNodeId,
-    uint256 structureId
+    uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
     // Get energy requirement for this structure type
-    uint256 assemblyTypeId = EntityRecord.getTypeId(structureId);
+    uint256 assemblyTypeId = EntityRecord.getTypeId(assemblyId);
     uint256 energyRequired = AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
 
     // network node id and the structure id are the same to get the energy requirement of the network node
-    if (networkNodeId != structureId) {
-      if (!NetworkStructureConnection.getIsConnected(networkNodeId, structureId)) {
-        revert NetworkNode_StructureNotConnected(networkNodeId, structureId);
+    if (networkNodeId != assemblyId) {
+      if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+        revert NetworkNode_AssemblyNotConnected(networkNodeId, assemblyId);
       }
     }
 
@@ -133,9 +131,9 @@ contract NetworkNodeSystem is SmartObjectFramework {
     }
 
     // Update structure connection with reserved energy
-    NetworkStructureConnection.setReservedEnergy(networkNodeId, structureId, energyRequired);
-    NetworkStructureConnection.setOperationStatus(networkNodeId, structureId, State.ONLINE);
-    NetworkStructureConnection.setLastEnergyUpdate(networkNodeId, structureId, block.timestamp);
+    NetworkNodeAssemblyLink.setReservedEnergy(networkNodeId, assemblyId, energyRequired);
+    NetworkNodeAssemblyLink.setOperationStatus(networkNodeId, assemblyId, State.ONLINE);
+    NetworkNodeAssemblyLink.setLastEnergyUpdate(networkNodeId, assemblyId, block.timestamp);
 
     // Update total reserved energy
     NetworkNode.setTotalReservedEnergy(networkNodeId, currentReserved + energyRequired);
@@ -145,30 +143,30 @@ contract NetworkNodeSystem is SmartObjectFramework {
   /**
    * @dev Handles a structure being brought offline
    * @param networkNodeId The ID of the Network Node
-   * @param structureId The ID of the structure
+   * @param assemblyId The ID of the structure
    */
   function onStructureOffline(
     uint256 networkNodeId,
-    uint256 structureId
+    uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
-    if (networkNodeId == structureId) {
+    if (networkNodeId == assemblyId) {
       handleNodeOffline(networkNodeId);
     } else {
-      if (!NetworkStructureConnection.getIsConnected(networkNodeId, structureId)) {
-        revert NetworkNode_StructureNotConnected(networkNodeId, structureId);
+      if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+        revert NetworkNode_AssemblyNotConnected(networkNodeId, assemblyId);
       }
 
       // Get current reserved energy for this structure
-      uint256 structureEnergy = NetworkStructureConnection.getReservedEnergy(networkNodeId, structureId);
+      uint256 structureEnergy = NetworkNodeAssemblyLink.getReservedEnergy(networkNodeId, assemblyId);
 
       // Update structure connection
-      NetworkStructureConnection.setReservedEnergy(networkNodeId, structureId, 0);
-      NetworkStructureConnection.setOperationStatus(networkNodeId, structureId, State.ANCHORED);
-      NetworkStructureConnection.setLastEnergyUpdate(networkNodeId, structureId, block.timestamp);
+      NetworkNodeAssemblyLink.setReservedEnergy(networkNodeId, assemblyId, 0);
+      NetworkNodeAssemblyLink.setOperationStatus(networkNodeId, assemblyId, State.ANCHORED);
+      NetworkNodeAssemblyLink.setLastEnergyUpdate(networkNodeId, assemblyId, block.timestamp);
 
       // Update total reserved energy
       uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
