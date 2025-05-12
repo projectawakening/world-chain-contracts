@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByAssembly } from "../../codegen/index.sol";
+import { DeployableState, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByAssembly, NetworkNodeEnergyHistory } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
@@ -136,6 +136,9 @@ contract NetworkNodeSystem is SmartObjectFramework {
     // Update total reserved energy
     NetworkNode.setTotalReservedEnergy(networkNodeId, currentReserved + energyRequired);
     NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+
+    // Update energy history
+    updateEnergyHistory(networkNodeId);
   }
 
   /**
@@ -171,6 +174,14 @@ contract NetworkNodeSystem is SmartObjectFramework {
     _handleNodeOffline(networkNodeId);
   }
 
+  /**
+   * @dev Updates the energy history for a network node
+   * @param networkNodeId The ID of the Network Node
+   */
+  function updateEnergyHistory(uint256 networkNodeId) internal {
+    NetworkNodeEnergyHistory.set(networkNodeId, block.timestamp, NetworkNode.getTotalReservedEnergy(networkNodeId));
+  }
+
   //INTERNAL FUNCTIONS
   /**
    * @dev Internal function to handle network node going offline
@@ -181,6 +192,9 @@ contract NetworkNodeSystem is SmartObjectFramework {
     NetworkNode.setEnergyProduced(networkNodeId, 0);
     NetworkNode.setTotalReservedEnergy(networkNodeId, 0);
     NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+
+    // Update energy history
+    updateEnergyHistory(networkNodeId);
   }
 
   /**
@@ -198,6 +212,9 @@ contract NetworkNodeSystem is SmartObjectFramework {
 
       NetworkNode.setTotalReservedEnergy(networkNodeId, newReserved);
       NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+
+      // Update energy history
+      updateEnergyHistory(networkNodeId);
     }
   }
 

@@ -220,7 +220,14 @@ export default defineWorld({
           },
           key: ["assemblyTypeId"],
         },
-        //TODO: Table for historical energy usage by block number
+        NetworkNodeEnergyHistory: {
+          schema: {
+            networkNodeId: "uint256",
+            timestamp: "uint256",
+            totalReservedEnergy: "uint256",
+          },
+          key: ["networkNodeId", "timestamp"],
+        },
         /*******************
          * INVENTORY TABLES *
          *******************/

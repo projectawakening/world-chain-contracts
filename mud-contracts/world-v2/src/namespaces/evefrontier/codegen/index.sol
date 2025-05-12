@@ -21,6 +21,7 @@ import { NetworkNode, NetworkNodeData } from "./tables/NetworkNode.sol";
 import { NetworkNodeAssemblyLink, NetworkNodeAssemblyLinkData } from "./tables/NetworkNodeAssemblyLink.sol";
 import { NetworkNodeByAssembly } from "./tables/NetworkNodeByAssembly.sol";
 import { AssemblyEnergyConfig } from "./tables/AssemblyEnergyConfig.sol";
+import { NetworkNodeEnergyHistory } from "./tables/NetworkNodeEnergyHistory.sol";
 import { Inventory, InventoryData } from "./tables/Inventory.sol";
 import { InventoryItem, InventoryItemData } from "./tables/InventoryItem.sol";
 import { InventoryItemTransfer, InventoryItemTransferData } from "./tables/InventoryItemTransfer.sol";
