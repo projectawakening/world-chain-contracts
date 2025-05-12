@@ -167,7 +167,7 @@ contract DeployableSystem is SmartObjectFramework {
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
-    }else {
+    }else if(NetworkNode.getExists(smartObjectId)){
       networkNodeSystem.onStructureOnline(smartObjectId, 0);
     }
 
