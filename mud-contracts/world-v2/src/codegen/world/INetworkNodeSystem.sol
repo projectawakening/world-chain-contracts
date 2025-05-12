@@ -27,11 +27,11 @@ interface INetworkNodeSystem {
     uint256 currentProduction
   ) external;
 
-  function evefrontier__connectStructure(uint256 networkNodeId, uint256 assemblyId) external;
+  function evefrontier__connectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__onStructureOnline(uint256 networkNodeId, uint256 assemblyId) external;
+  function evefrontier__onAssemblyOnline(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__onStructureOffline(uint256 networkNodeId, uint256 assemblyId) external;
+  function evefrontier__onAssemblyOffline(uint256 networkNodeId, uint256 assemblyId) external;
 
   function evefrontier__onNodeOffline(uint256 networkNodeId) external;
 

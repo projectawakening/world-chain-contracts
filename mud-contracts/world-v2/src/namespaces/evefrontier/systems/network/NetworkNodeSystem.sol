@@ -66,11 +66,11 @@ contract NetworkNodeSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev Connects a structure to a Network Node
+   * @dev Connects a assembly to a Network Node
    * @param networkNodeId The ID of the Network Node
-   * @param assemblyId The ID of the structure to connect
+   * @param assemblyId The ID of the assembly to connect
    */
-  function connectStructure(
+  function connectAssembly(
     uint256 networkNodeId,
     uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
@@ -97,15 +97,15 @@ contract NetworkNodeSystem is SmartObjectFramework {
     NetworkNode.pushConnectedAssemblies(networkNodeId, assemblyId);
   }
 
-  //TODO : Disconnect structure
-  //When a structure is disconnected from a network node, update the NetworkNode table and NetworkNodeAssemblyLink table
+  //TODO : Disconnect assembly
+  //When a assembly is disconnected from a network node, update the NetworkNode table and NetworkNodeAssemblyLink table
 
   /**
-   * @dev Handles a structure being brought online
+   * @dev Handles a assembly being brought online
    * @param networkNodeId The ID of the Network Node
-   * @param assemblyId The ID of the structure
+   * @param assemblyId The ID of the assembly
    */
-  function onStructureOnline(
+  function onAssemblyOnline(
     uint256 networkNodeId,
     uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
@@ -115,11 +115,11 @@ contract NetworkNodeSystem is SmartObjectFramework {
 
     uint256 assemblyTypeId;
 
-    //If structure is connected to a network node, get the energy requirement of the structure
+    //If assembly is connected to a network node, get the energy requirement of the assembly
     if (NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
       assemblyTypeId = EntityRecord.getTypeId(assemblyId);
     } else {
-      //If structure is not connected to a network node, get the energy requirement of the network node
+      //If assembly is not connected to a network node, get the energy requirement of the network node
       assemblyTypeId = EntityRecord.getTypeId(networkNodeId);
     }
 
@@ -144,9 +144,9 @@ contract NetworkNodeSystem is SmartObjectFramework {
   /**
    * @dev Update energy status by assembly on offline
    * @param networkNodeId The ID of the Network Node
-   * @param assemblyId The ID of the structure
+   * @param assemblyId The ID of the assembly
    */
-  function onStructureOffline(
+  function onAssemblyOffline(
     uint256 networkNodeId,
     uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
@@ -157,7 +157,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev Update energy status and diconnect all structures from the network node
+   * @dev Update energy status and diconnect all assemblies from the network node
    * @param networkNodeId The ID of the Network Node
    */
   function onNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {

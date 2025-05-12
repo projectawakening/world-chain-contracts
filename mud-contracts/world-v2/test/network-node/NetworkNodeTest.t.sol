@@ -288,7 +288,7 @@ contract NetworkNodeEnergyTest is MudTest {
     //Check the remaining fuel
     assertEq(Fuel.getFuelAmount(networkNodeId), 0, "Fuel amount should be 0");
 
-    // Verify Network Node and all structures are offline
+    // Verify Network Node and all assemblies are offline
     assertEq(
       uint8(DeployableState.getCurrentState(networkNodeId)),
       uint8(State.ANCHORED),

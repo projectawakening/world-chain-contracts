@@ -61,16 +61,16 @@ library NetworkNodeSystemLib {
       );
   }
 
-  function connectStructure(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).connectStructure(networkNodeId, assemblyId);
+  function connectAssembly(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).connectAssembly(networkNodeId, assemblyId);
   }
 
-  function onStructureOnline(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).onStructureOnline(networkNodeId, assemblyId);
+  function onAssemblyOnline(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).onAssemblyOnline(networkNodeId, assemblyId);
   }
 
-  function onStructureOffline(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
-    return CallWrapper(self.toResourceId(), address(0)).onStructureOffline(networkNodeId, assemblyId);
+  function onAssemblyOffline(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
+    return CallWrapper(self.toResourceId(), address(0)).onAssemblyOffline(networkNodeId, assemblyId);
   }
 
   function onNodeOffline(NetworkNodeSystemType self, uint256 networkNodeId) internal {
@@ -100,12 +100,12 @@ library NetworkNodeSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function connectStructure(CallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
+  function connectAssembly(CallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert NetworkNodeSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _connectStructure_uint256_uint256.connectStructure,
+      _connectAssembly_uint256_uint256.connectAssembly,
       (networkNodeId, assemblyId)
     );
     self.from == address(0)
@@ -113,12 +113,12 @@ library NetworkNodeSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function onStructureOnline(CallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
+  function onAssemblyOnline(CallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert NetworkNodeSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onStructureOnline_uint256_uint256.onStructureOnline,
+      _onAssemblyOnline_uint256_uint256.onAssemblyOnline,
       (networkNodeId, assemblyId)
     );
     self.from == address(0)
@@ -126,12 +126,12 @@ library NetworkNodeSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function onStructureOffline(CallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
+  function onAssemblyOffline(CallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert NetworkNodeSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _onStructureOffline_uint256_uint256.onStructureOffline,
+      _onAssemblyOffline_uint256_uint256.onAssemblyOffline,
       (networkNodeId, assemblyId)
     );
     self.from == address(0)
@@ -178,25 +178,25 @@ library NetworkNodeSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function connectStructure(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
+  function connectAssembly(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     bytes memory systemCall = abi.encodeCall(
-      _connectStructure_uint256_uint256.connectStructure,
+      _connectAssembly_uint256_uint256.connectAssembly,
       (networkNodeId, assemblyId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function onStructureOnline(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
+  function onAssemblyOnline(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     bytes memory systemCall = abi.encodeCall(
-      _onStructureOnline_uint256_uint256.onStructureOnline,
+      _onAssemblyOnline_uint256_uint256.onAssemblyOnline,
       (networkNodeId, assemblyId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function onStructureOffline(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
+  function onAssemblyOffline(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     bytes memory systemCall = abi.encodeCall(
-      _onStructureOffline_uint256_uint256.onStructureOffline,
+      _onAssemblyOffline_uint256_uint256.onAssemblyOffline,
       (networkNodeId, assemblyId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -261,16 +261,16 @@ interface _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256_u
   ) external;
 }
 
-interface _connectStructure_uint256_uint256 {
-  function connectStructure(uint256 networkNodeId, uint256 assemblyId) external;
+interface _connectAssembly_uint256_uint256 {
+  function connectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
 }
 
-interface _onStructureOnline_uint256_uint256 {
-  function onStructureOnline(uint256 networkNodeId, uint256 assemblyId) external;
+interface _onAssemblyOnline_uint256_uint256 {
+  function onAssemblyOnline(uint256 networkNodeId, uint256 assemblyId) external;
 }
 
-interface _onStructureOffline_uint256_uint256 {
-  function onStructureOffline(uint256 networkNodeId, uint256 assemblyId) external;
+interface _onAssemblyOffline_uint256_uint256 {
+  function onAssemblyOffline(uint256 networkNodeId, uint256 assemblyId) external;
 }
 
 interface _onNodeOffline_uint256 {
