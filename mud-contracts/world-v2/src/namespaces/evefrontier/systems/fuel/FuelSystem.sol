@@ -253,15 +253,16 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelTypeId); // 0-100
     fuelAmount = Fuel.getFuelAmount(smartObjectId);
 
-    if (!burnState || burnStartTime == 0) {
+    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < 60) {
       return (0, 0, 0, fuelAmount);
     }
 
-    actualConsumptionRateInSeconds = (fuelBurnRateInSeconds * fuelEfficiency) / 100;
-    //Divide by 0 check
-    if (actualConsumptionRateInSeconds == 0) {
-      return (0, 0, 0, fuelAmount);
+    if(fuelEfficiency > 10 && fuelEfficiency <= 100) {
+      actualConsumptionRateInSeconds = (fuelBurnRateInSeconds * fuelEfficiency) / 100;
+    }else {
+      actualConsumptionRateInSeconds = fuelBurnRateInSeconds;
     }
+
 
     uint256 currentTime = block.timestamp;
     uint256 elapsed = currentTime > burnStartTime ? currentTime - burnStartTime : 0;
@@ -290,7 +291,7 @@ contract FuelSystem is SmartObjectFramework {
     //If its network node call the handleNodeOffline function else call deployable offline function
     if (NetworkNode.getExists(smartObjectId) && DeployableState.getCurrentState(smartObjectId) == State.ONLINE) {
       networkNodeSystem.handleNodeOffline(smartObjectId);
-    } else if (DeployableState.getCurrentState(smartObjectId) == State.ONLINE) {
+    } else if (DeployableState.getCurrentState(smartObjectId) == State.ONLINE) { //Case if some structure isn't a network node but has fuel and its online
       deployableSystem.bringOffline(smartObjectId);
     }
   }

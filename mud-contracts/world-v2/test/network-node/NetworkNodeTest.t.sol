@@ -147,7 +147,7 @@ contract NetworkNodeEnergyTest is MudTest {
     networkNodeSystem.createAndAnchorNetworkNode(
       CreateAndAnchorParams({
         smartObjectId: networkNodeId,
-        assemblyType: "NN",
+        assemblyType: "NWN",
         entityRecordParams: EntityRecordParams({
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
@@ -186,7 +186,7 @@ contract NetworkNodeEnergyTest is MudTest {
       uint8(State.ONLINE),
       "Network Node should be online"
     );
-    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Should reserve 10 GJ for Network Node operation");
+   
     assertEq(NetworkNode.getEnergyProduced(networkNodeId), 80, "Should be producing 80 GJ");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Total reserved energy should be 10 GJ");
     assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should be 9 units");

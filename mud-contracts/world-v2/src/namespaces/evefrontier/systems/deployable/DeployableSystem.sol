@@ -11,7 +11,7 @@ import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces
 import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
 
 // Local namespace tables
-import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly,NetworkNode } from "../../codegen/index.sol";
+import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly,NetworkNode , NetworkNodeAssemblyLink} from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -51,7 +51,7 @@ contract DeployableSystem is SmartObjectFramework {
 
     anchor(params.smartObjectId, params.owner, params.locationData);
 
-    if (NetworkNode.getExists(params.smartObjectId)) {
+    if (NetworkNode.getExists(networkNodeId)) {
       networkNodeSystem.connectStructure(networkNodeId, params.smartObjectId);
     }
   }
@@ -165,8 +165,10 @@ contract DeployableSystem is SmartObjectFramework {
 
     //Check the energy requirement to bringOnline if the deployable is connected to a network node or if it is a network node
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
-    if (NetworkNode.getExists(networkNodeId) || NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
       networkNodeSystem.onStructureOnline(networkNodeId, smartObjectId);
+    }else {
+      networkNodeSystem.onStructureOnline(smartObjectId, 0);
     }
 
     //TODO: check if the deployable has enough energy to be brought online

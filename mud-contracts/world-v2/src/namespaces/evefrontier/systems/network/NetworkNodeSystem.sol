@@ -111,16 +111,17 @@ contract NetworkNodeSystem is SmartObjectFramework {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
-    // Get energy requirement for this structure type
-    uint256 assemblyTypeId = EntityRecord.getTypeId(assemblyId);
-    uint256 energyRequired = AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
+    uint256 assemblyTypeId;
 
-    // network node id and the structure id are the same to get the energy requirement of the network node
-    if (networkNodeId != assemblyId) {
-      if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
-        revert NetworkNode_AssemblyNotConnected(networkNodeId, assemblyId);
-      }
+    //If structure is connected to a network node, get the energy requirement of the structure
+    if(NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+      assemblyTypeId = EntityRecord.getTypeId(assemblyId);
+    } else {
+      //If structure is not connected to a network node, get the energy requirement of the network node
+      assemblyTypeId = EntityRecord.getTypeId(networkNodeId);
     }
+
+    uint256 energyRequired =  AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
 
     // Check if we have enough energy available
     uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
