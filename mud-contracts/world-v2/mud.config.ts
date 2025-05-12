@@ -21,6 +21,15 @@ export default defineWorld({
     evefrontier: {
       tables: {
         /**
+         * World version table
+         */
+        WorldVersion: {
+          schema: {
+            version: "string",
+          },
+          key: [],
+        },
+        /**
          * Class Id table
          */
         Initialize: {

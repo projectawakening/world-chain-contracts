@@ -30,7 +30,9 @@ import { IEveSystem } from "../src/namespaces/evefrontier/interfaces/IEveSystem.
 import { FuelSystem, fuelSystem } from "../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 import { smartAssemblySystem } from "../src/namespaces/evefrontier/codegen/systems/SmartAssemblySystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
-import { Tenant } from "../src/namespaces/evefrontier/codegen/tables/Tenant.sol";
+import { Tenant, WorldVersion } from "../src/namespaces/evefrontier/codegen/index.sol";
+
+
 
 contract Config is Script {
   function run(address worldAddress) public {
@@ -49,8 +51,14 @@ contract Config is Script {
     _initializeSofAccessConfig();
     _initializeClassRegistry();
     _initializeWorldAccess();
+    _setWorldVersion();
 
     vm.stopBroadcast();
+  }
+
+  function _setWorldVersion() internal {
+    string memory worldVersion = vm.envString("WORLD_VERSION");
+    WorldVersion.set(worldVersion);
   }
 
   function _initializeSofAccessConfig() internal {
