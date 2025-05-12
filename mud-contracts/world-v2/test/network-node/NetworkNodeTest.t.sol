@@ -123,9 +123,7 @@ contract NetworkNodeEnergyTest is MudTest {
     // Setup fuel parameters for Type B fuel (10/hr consumption, 10 GJ output)
     fuelParams = FuelParams({
       fuelUnitVolume: 100,
-      fuelTypeId: FUEL_TYPE_ID,
       fuelMaxCapacity: 1000,
-      fuelAmount: 10,
       fuelBurnRateInSeconds: 3600 // 1 hour
     });
 
@@ -173,6 +171,7 @@ contract NetworkNodeEnergyTest is MudTest {
     );
 
     // 2. Start burning fuel
+    fuelSystem.depositFuel(networkNodeId, FUEL_TYPE_ID, 10);
     fuelSystem.startBurn(networkNodeId);
 
     // Verify burn session started

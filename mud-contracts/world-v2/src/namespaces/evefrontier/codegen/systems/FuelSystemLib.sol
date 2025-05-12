@@ -51,6 +51,7 @@ library FuelSystemLib {
   error Fuel_InvalidFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency, uint256 min, uint256 max);
   error Fuel_BurnAlreadyStopped(uint256 smartObjectId);
   error Fuel_BurnNotActive(uint256 smartObjectId);
+  error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelTypeId, uint256 newFuelTypeId);
 
   function configureFuelParameters(FuelSystemType self, uint256 smartObjectId, FuelParams memory fuelParams) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureFuelParameters(smartObjectId, fuelParams);
@@ -60,8 +61,8 @@ library FuelSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).configureFuelEfficiency(fuelTypeId, fuelEfficiency);
   }
 
-  function depositFuel(FuelSystemType self, uint256 smartObjectId, uint256 fuelAmount) internal {
-    return CallWrapper(self.toResourceId(), address(0)).depositFuel(smartObjectId, fuelAmount);
+  function depositFuel(FuelSystemType self, uint256 smartObjectId, uint256 fuelTypeId, uint256 fuelAmount) internal {
+    return CallWrapper(self.toResourceId(), address(0)).depositFuel(smartObjectId, fuelTypeId, fuelAmount);
   }
 
   function withdrawFuel(FuelSystemType self, uint256 smartObjectId, uint256 fuelAmount) internal {
@@ -82,10 +83,6 @@ library FuelSystemLib {
 
   function setFuelMaxCapacity(FuelSystemType self, uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
     return CallWrapper(self.toResourceId(), address(0)).setFuelMaxCapacity(smartObjectId, fuelMaxCapacity);
-  }
-
-  function setFuelAmount(FuelSystemType self, uint256 smartObjectId, uint256 fuelAmount) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setFuelAmount(smartObjectId, fuelAmount);
   }
 
   function updateFuel(FuelSystemType self, uint256 smartObjectId) internal {
@@ -133,11 +130,19 @@ library FuelSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function depositFuel(CallWrapper memory self, uint256 smartObjectId, uint256 fuelAmount) internal {
+  function depositFuel(
+    CallWrapper memory self,
+    uint256 smartObjectId,
+    uint256 fuelTypeId,
+    uint256 fuelAmount
+  ) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert FuelSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_depositFuel_uint256_uint256.depositFuel, (smartObjectId, fuelAmount));
+    bytes memory systemCall = abi.encodeCall(
+      _depositFuel_uint256_uint256_uint256.depositFuel,
+      (smartObjectId, fuelTypeId, fuelAmount)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -199,16 +204,6 @@ library FuelSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function setFuelAmount(CallWrapper memory self, uint256 smartObjectId, uint256 fuelAmount) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert FuelSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_setFuelAmount_uint256_uint256.setFuelAmount, (smartObjectId, fuelAmount));
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
   function updateFuel(CallWrapper memory self, uint256 smartObjectId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert FuelSystemLib_CallingFromRootSystem();
@@ -264,8 +259,16 @@ library FuelSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function depositFuel(RootCallWrapper memory self, uint256 smartObjectId, uint256 fuelAmount) internal {
-    bytes memory systemCall = abi.encodeCall(_depositFuel_uint256_uint256.depositFuel, (smartObjectId, fuelAmount));
+  function depositFuel(
+    RootCallWrapper memory self,
+    uint256 smartObjectId,
+    uint256 fuelTypeId,
+    uint256 fuelAmount
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _depositFuel_uint256_uint256_uint256.depositFuel,
+      (smartObjectId, fuelTypeId, fuelAmount)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -297,11 +300,6 @@ library FuelSystemLib {
       _setFuelMaxCapacity_uint256_uint256.setFuelMaxCapacity,
       (smartObjectId, fuelMaxCapacity)
     );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function setFuelAmount(RootCallWrapper memory self, uint256 smartObjectId, uint256 fuelAmount) internal {
-    bytes memory systemCall = abi.encodeCall(_setFuelAmount_uint256_uint256.setFuelAmount, (smartObjectId, fuelAmount));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -373,8 +371,8 @@ interface _configureFuelEfficiency_uint256_uint256 {
   function configureFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency) external;
 }
 
-interface _depositFuel_uint256_uint256 {
-  function depositFuel(uint256 smartObjectId, uint256 fuelAmount) external;
+interface _depositFuel_uint256_uint256_uint256 {
+  function depositFuel(uint256 smartObjectId, uint256 fuelTypeId, uint256 fuelAmount) external;
 }
 
 interface _withdrawFuel_uint256_uint256 {
@@ -395,10 +393,6 @@ interface _setFuelUnitVolume_uint256_uint256 {
 
 interface _setFuelMaxCapacity_uint256_uint256 {
   function setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) external;
-}
-
-interface _setFuelAmount_uint256_uint256 {
-  function setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) external;
 }
 
 interface _updateFuel_uint256 {

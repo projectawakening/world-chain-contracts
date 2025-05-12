@@ -5,14 +5,14 @@ pragma solidity >=0.8.24;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 // Local namespace tables
-import { Fuel, FuelData, DeployableState, FuelConsumptionState, FuelEfficiencyConfig } from "../../codegen/index.sol";
+import { Fuel, FuelData, DeployableState, FuelConsumptionState, FuelEfficiencyConfig, NetworkNode } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
-
+import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 // Types and parameters
 import { State } from "../../../../codegen/common.sol";
-import { ONE_UNIT_IN_WEI } from "./../constants.sol";
+import { ONE_UNIT_IN_WEI, NETWORK_NODE } from "./../constants.sol";
 import { FuelParams } from "./types.sol";
 /**
  * @title FuelSystem
@@ -35,6 +35,7 @@ contract FuelSystem is SmartObjectFramework {
   error Fuel_InvalidFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency, uint256 min, uint256 max);
   error Fuel_BurnAlreadyStopped(uint256 smartObjectId);
   error Fuel_BurnNotActive(uint256 smartObjectId);
+  error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelTypeId, uint256 newFuelTypeId);
 
   /**
    * @dev sets fuel parameters for a Network Node
@@ -56,16 +57,13 @@ contract FuelSystem is SmartObjectFramework {
     if (fuelParams.fuelBurnRateInSeconds < 60 || fuelParams.fuelBurnRateInSeconds > uint256(type(uint128).max)) {
       revert Fuel_InvalidFuelBurnRate(smartObjectId, fuelParams.fuelBurnRateInSeconds, 60, uint256(type(uint128).max));
     }
-    if (fuelParams.fuelTypeId == 0 || fuelParams.fuelTypeId > uint256(type(uint128).max)) {
-      revert Fuel_InvalidFuelTypeId(smartObjectId, fuelParams.fuelTypeId, 1, uint256(type(uint128).max));
-    }
 
     Fuel.set(
       smartObjectId,
       fuelParams.fuelUnitVolume,
-      fuelParams.fuelTypeId,
+      0, //Set to 0 as we don't know the what type of fuel is deposited yet
       fuelParams.fuelMaxCapacity,
-      fuelParams.fuelAmount,
+      0, //Initial fuel amount is 0
       fuelParams.fuelBurnRateInSeconds,
       block.timestamp
     );
@@ -89,12 +87,30 @@ contract FuelSystem is SmartObjectFramework {
   /**
    * @dev deposit an amount of fuel to a deployable
    * @param smartObjectId on-chain id of the deployable
+   * @param fuelTypeId the type of fuel used
    * @param fuelAmount of fuel in full units
    */
   function depositFuel(
     uint256 smartObjectId,
+    uint256 fuelTypeId,
     uint256 fuelAmount
   ) public context access(smartObjectId) scope(smartObjectId) {
+
+    if (fuelTypeId == 0 || fuelTypeId > uint256(type(uint128).max)) {
+      revert Fuel_InvalidFuelTypeId(smartObjectId, fuelTypeId, 1, uint256(type(uint128).max));
+    }
+
+    if (fuelAmount == 0) {
+      revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 1, type(uint256).max);
+    }
+
+    //cannot deposit fuel of different type unless the fuelAmount is 0
+    if (Fuel.getFuelTypeId(smartObjectId) != 0 && Fuel.getFuelTypeId(smartObjectId) != fuelTypeId) {
+      if (Fuel.getFuelAmount(smartObjectId) != 0) {
+        revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelTypeId(smartObjectId), fuelTypeId);
+      }
+    }
+
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
     uint256 currentVolume = Fuel.getFuelUnitVolume(smartObjectId);
@@ -105,6 +121,7 @@ contract FuelSystem is SmartObjectFramework {
       revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, projectedCapacity, fuelMaxCapacity);
     }
 
+    Fuel.setFuelTypeId(smartObjectId, fuelTypeId);
     Fuel.setFuelAmount(smartObjectId, currentFuelAmount + fuelAmount);
     Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
@@ -206,37 +223,14 @@ contract FuelSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev sets the current fuel amount
-   * @param smartObjectId on-chain id of the in-game deployable
-   * @param fuelAmount the new fuel amount in WEI. This will rest the existing fuel amount
-   */
-  function setFuelAmount(
-    uint256 smartObjectId,
-    uint256 fuelAmount
-  ) public context access(smartObjectId) scope(smartObjectId) {
-    uint256 currentVolume = Fuel.getFuelUnitVolume(smartObjectId);
-    uint256 currentMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
-    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
-
-    uint256 projectedCapacity = (fuelAmount + currentFuelAmount) * currentVolume;
-
-    if (projectedCapacity > currentMaxCapacity) {
-      revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, projectedCapacity, currentMaxCapacity);
-    }
-
-    Fuel.setFuelAmount(smartObjectId, fuelAmount);
-    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
-  }
-
-  /**
    * @dev updates the amount of fuel on tables (allows event firing through table write op)
    * TODO: this could be a class-level hook that we attach to all and any function related to smart-deployables,
    * or that compose with it
    * @param smartObjectId on-chain id of the in-game deployable
    */
   function updateFuel(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
-    //Update only if burn is active
-    if (FuelConsumptionState.getBurnState(smartObjectId)) {
+    //Update only if there is enough fuel and burn is active
+    if (Fuel.getFuelAmount(smartObjectId) > 0 && FuelConsumptionState.getBurnState(smartObjectId)) {
       _updateFuel(smartObjectId);
     }
   }
@@ -293,7 +287,12 @@ contract FuelSystem is SmartObjectFramework {
    **************************/
   // Mock: handle out of fuel by calling NetworkNodeSystem to bring everything offline
   function _handleOutOfFuel(uint256 smartObjectId) internal {
-    networkNodeSystem.handleNodeOffline(smartObjectId);
+    //If its network node call the handleNodeOffline function else call deployable offline function
+    if (NetworkNode.getExists(smartObjectId) && DeployableState.getCurrentState(smartObjectId) == State.ONLINE) {
+      networkNodeSystem.handleNodeOffline(smartObjectId);
+    } else if (DeployableState.getCurrentState(smartObjectId) == State.ONLINE) {
+      deployableSystem.bringOffline(smartObjectId);
+    }
   }
 
   function _updateFuel(uint256 smartObjectId) internal {

@@ -26,12 +26,13 @@ interface IFuelSystem {
   error Fuel_InvalidFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency, uint256 min, uint256 max);
   error Fuel_BurnAlreadyStopped(uint256 smartObjectId);
   error Fuel_BurnNotActive(uint256 smartObjectId);
+  error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelTypeId, uint256 newFuelTypeId);
 
   function evefrontier__configureFuelParameters(uint256 smartObjectId, FuelParams memory fuelParams) external;
 
   function evefrontier__configureFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency) external;
 
-  function evefrontier__depositFuel(uint256 smartObjectId, uint256 fuelAmount) external;
+  function evefrontier__depositFuel(uint256 smartObjectId, uint256 fuelTypeId, uint256 fuelAmount) external;
 
   function evefrontier__withdrawFuel(uint256 smartObjectId, uint256 fuelAmount) external;
 
@@ -42,8 +43,6 @@ interface IFuelSystem {
   function evefrontier__setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) external;
 
   function evefrontier__setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) external;
-
-  function evefrontier__setFuelAmount(uint256 smartObjectId, uint256 fuelAmount) external;
 
   function evefrontier__updateFuel(uint256 smartObjectId) external;
 
