@@ -5,15 +5,22 @@ pragma solidity >=0.8.24;
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
 // Local namespace tables
-import { Fuel, FuelData, DeployableState, FuelConsumptionState, FuelEfficiencyConfig, NetworkNode } from "../../codegen/index.sol";
+import { Fuel, FuelData, DeployableState, FuelConsumptionState, FuelEfficiencyConfig, NetworkNode, Tenant, EntityRecord } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { entityRecordSystem } from "../../codegen/systems/EntityRecordSystemLib.sol";
+import { SmartAssemblySystem } from "../smart-assembly/SmartAssemblySystem.sol";
+
 // Types and parameters
 import { State } from "../../../../codegen/common.sol";
 import { ONE_UNIT_IN_WEI, NETWORK_NODE } from "./../constants.sol";
 import { FuelParams } from "./types.sol";
+import { EntityRecordParams } from "../entity-record/types.sol";
+
+import { ObjectIdLib } from "../../libraries/ObjectIdLib.sol";
+
 /**
  * @title FuelSystem
  * @author CCP Games
@@ -31,11 +38,12 @@ contract FuelSystem is SmartObjectFramework {
   );
   error Fuel_InsufficientFuel(uint256 smartObjectId, uint256 fuelAmount, uint256 availableFuel);
   error Fuel_InvalidFuelBurnRate(uint256 smartObjectId, uint256 fuelBurnRateInSeconds, uint256 min, uint256 max);
-  error Fuel_InvalidFuelTypeId(uint256 smartObjectId, uint256 fuelTypeId, uint256 min, uint256 max);
-  error Fuel_InvalidFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency, uint256 min, uint256 max);
+  error Fuel_InvalidFuelTypeId(uint256 smartObjectId, uint256 fuelSmartObjectId);
+  error Fuel_InvalidFuelEfficiency(uint256 fuelSmartObjectId, uint256 fuelEfficiency, uint256 min, uint256 max);
   error Fuel_BurnAlreadyStopped(uint256 smartObjectId);
   error Fuel_BurnNotActive(uint256 smartObjectId);
-  error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelTypeId, uint256 newFuelTypeId);
+  error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelSmartObjectId, uint256 newFuelSmartObjectId);
+  error Fuel_InvalidFuelSmartObjectId(uint256 smartObjectId, uint256 fuelSmartObjectId);
 
   /**
    * @dev sets fuel parameters for a Network Node
@@ -46,10 +54,6 @@ contract FuelSystem is SmartObjectFramework {
     uint256 smartObjectId,
     FuelParams memory fuelParams
   ) public context access(smartObjectId) scope(smartObjectId) {
-    // parameter restrictions based on preventing overflow / underflow maths
-    if (fuelParams.fuelUnitVolume == 0 || fuelParams.fuelUnitVolume > uint256(type(uint128).max)) {
-      revert Fuel_InvalidFuelUnitVolume(smartObjectId, fuelParams.fuelUnitVolume, 1, uint256(type(uint128).max));
-    }
     if (fuelParams.fuelMaxCapacity == 0 || fuelParams.fuelMaxCapacity > uint256(type(uint128).max)) {
       revert Fuel_InvalidFuelMaxCapacity(smartObjectId, fuelParams.fuelMaxCapacity, 1, uint256(type(uint128).max));
     }
@@ -58,45 +62,53 @@ contract FuelSystem is SmartObjectFramework {
       revert Fuel_InvalidFuelBurnRate(smartObjectId, fuelParams.fuelBurnRateInSeconds, 60, uint256(type(uint128).max));
     }
 
-    Fuel.set(
-      smartObjectId,
-      fuelParams.fuelUnitVolume,
-      0, //Set to 0 as we don't know the what type of fuel is deposited yet
-      fuelParams.fuelMaxCapacity,
-      0, //Initial fuel amount is 0
-      fuelParams.fuelBurnRateInSeconds,
-      block.timestamp
-    );
+    Fuel.setFuelMaxCapacity(smartObjectId, fuelParams.fuelMaxCapacity);
+    Fuel.setFuelBurnRateInSeconds(smartObjectId, fuelParams.fuelBurnRateInSeconds);
+    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 
   /**
    * @dev configure fuel efficiency for a fuel type
-   * @param fuelTypeId the type of fuel used
+   * @param smartObjectId on-chain id of the deployable
+   * @param fuelEntityParams the parameters of the fuel
    * @param fuelEfficiency the efficiency of the fuel
+   * TODO: access control for this function
    */
-  function configureFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency) public {
-    if (fuelTypeId == 0 || fuelTypeId > uint256(type(uint128).max)) {
-      revert Fuel_InvalidFuelTypeId(fuelTypeId, fuelEfficiency, 1, uint256(type(uint128).max));
+  function configureFuelEfficiency(
+    uint256 smartObjectId,
+    EntityRecordParams memory fuelEntityParams,
+    uint256 fuelEfficiency
+  ) public {
+    bytes32 tenantId = Tenant.get();
+
+    if (tenantId != fuelEntityParams.tenantId) {
+      revert SmartAssemblySystem.SmartAssembly_InvalidTenantId(smartObjectId, fuelEntityParams.tenantId);
+    }
+
+    if (ObjectIdLib.calculateNonSingletonId(tenantId, fuelEntityParams.typeId) != smartObjectId) {
+      revert Fuel_InvalidFuelTypeId(smartObjectId, fuelEntityParams.typeId);
     }
     if (fuelEfficiency < 10 || fuelEfficiency > 100) {
-      revert Fuel_InvalidFuelEfficiency(fuelTypeId, fuelEfficiency, 10, 100);
+      revert Fuel_InvalidFuelEfficiency(smartObjectId, fuelEfficiency, 10, 100);
     }
-    FuelEfficiencyConfig.set(fuelTypeId, fuelEfficiency);
+
+    entityRecordSystem.createRecord(smartObjectId, fuelEntityParams);
+    FuelEfficiencyConfig.set(smartObjectId, fuelEfficiency);
   }
 
   /**
    * @dev deposit an amount of fuel to a deployable
    * @param smartObjectId on-chain id of the deployable
-   * @param fuelTypeId the type of fuel used
+   * @param fuelSmartObjectId the smart object id of the fuel
    * @param fuelAmount of fuel in full units
    */
   function depositFuel(
     uint256 smartObjectId,
-    uint256 fuelTypeId,
+    uint256 fuelSmartObjectId,
     uint256 fuelAmount
   ) public context access(smartObjectId) scope(smartObjectId) {
-    if (fuelTypeId == 0 || fuelTypeId > uint256(type(uint128).max)) {
-      revert Fuel_InvalidFuelTypeId(smartObjectId, fuelTypeId, 1, uint256(type(uint128).max));
+    if (EntityRecord.getExists(fuelSmartObjectId) == false) {
+      revert Fuel_InvalidFuelSmartObjectId(smartObjectId, fuelSmartObjectId);
     }
 
     if (fuelAmount == 0) {
@@ -104,9 +116,11 @@ contract FuelSystem is SmartObjectFramework {
     }
 
     //cannot deposit fuel of different type unless the fuelAmount is 0
-    if (Fuel.getFuelTypeId(smartObjectId) != 0 && Fuel.getFuelTypeId(smartObjectId) != fuelTypeId) {
+    if (
+      Fuel.getFuelSmartObjectId(smartObjectId) != 0 && Fuel.getFuelSmartObjectId(smartObjectId) != fuelSmartObjectId
+    ) {
       if (Fuel.getFuelAmount(smartObjectId) != 0) {
-        revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelTypeId(smartObjectId), fuelTypeId);
+        revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
       }
     }
 
@@ -114,13 +128,14 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
     uint256 currentVolume = Fuel.getFuelUnitVolume(smartObjectId);
 
+    currentVolume = currentVolume == 0 ? 1 : currentVolume;
     uint256 projectedCapacity = (currentFuelAmount + fuelAmount) * currentVolume;
 
     if (projectedCapacity > fuelMaxCapacity) {
       revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, projectedCapacity, fuelMaxCapacity);
     }
 
-    Fuel.setFuelTypeId(smartObjectId, fuelTypeId);
+    Fuel.setFuelSmartObjectId(smartObjectId, fuelSmartObjectId);
     Fuel.setFuelAmount(smartObjectId, currentFuelAmount + fuelAmount);
     Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
@@ -247,8 +262,8 @@ contract FuelSystem is SmartObjectFramework {
     uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
     bool burnState = FuelConsumptionState.getBurnState(smartObjectId);
     uint256 fuelBurnRateInSeconds = Fuel.getFuelBurnRateInSeconds(smartObjectId);
-    uint256 fuelTypeId = Fuel.getFuelTypeId(smartObjectId);
-    uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelTypeId); // 0-100
+    uint256 fuelSmartObjectId = Fuel.getFuelSmartObjectId(smartObjectId);
+    uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId); // 0-100
     fuelAmount = Fuel.getFuelAmount(smartObjectId);
 
     if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < 60) {

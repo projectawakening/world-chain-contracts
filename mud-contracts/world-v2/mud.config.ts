@@ -161,7 +161,7 @@ export default defineWorld({
           schema: {
             smartObjectId: "uint256",
             fuelUnitVolume: "uint256",
-            fuelTypeId: "uint256", // Reference to fuel type
+            fuelSmartObjectId: "uint256", // Smart object id of the fuel
             fuelMaxCapacity: "uint256",
             fuelAmount: "uint256",
             fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured by network node)
@@ -171,10 +171,10 @@ export default defineWorld({
         },
         FuelEfficiencyConfig: {
           schema: {
-            fuelTypeId: "uint256", // Unique ID for each fuel type
+            smartObjectId: "uint256",
             efficiency: "uint256", // Efficiency as a percentage (0-100)
           },
-          key: ["fuelTypeId"],
+          key: ["smartObjectId"],
         },
         FuelConsumptionState: {
           schema: {

@@ -100,6 +100,7 @@ contract Config is Script {
     CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, ephemeralInventorySystem.getAddress(), true);
     CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartCharacterSystem.getAddress(), true);
     CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartAssemblySystem.getAddress(), true);
+    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, fuelSystem.getAddress(), true);
 
     // InventorySystem.sol
     bytes4[2] memory inventoryFunctionSelectors = [

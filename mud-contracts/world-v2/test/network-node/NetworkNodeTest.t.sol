@@ -47,12 +47,14 @@ contract NetworkNodeEnergyTest is MudTest {
   uint256 smartGateId;
   uint256 smartStorageId;
   uint256 smartTurretId;
+  uint256 fuelSmartObjectId;
 
   // Location data
   LocationData locationParams;
 
   // Entity record params
   EntityRecordParams entityRecordParams;
+  EntityRecordParams fuelEntityRecordParams;
 
   // Fuel params
   FuelParams fuelParams;
@@ -111,6 +113,8 @@ contract NetworkNodeEnergyTest is MudTest {
       true
     );
 
+    fuelSmartObjectId = _calculateObjectId(FUEL_TYPE_ID, 0, false);
+
     locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     entityRecordParams = EntityRecordParams({
@@ -120,15 +124,16 @@ contract NetworkNodeEnergyTest is MudTest {
       volume: 1000
     });
 
+    fuelEntityRecordParams = EntityRecordParams({ tenantId: tenantId, typeId: FUEL_TYPE_ID, itemId: 0, volume: 1000 });
+
     // Setup fuel parameters for Type B fuel (10/hr consumption, 10 GJ output)
     fuelParams = FuelParams({
-      fuelUnitVolume: 100,
       fuelMaxCapacity: 1000,
       fuelBurnRateInSeconds: 3600 // 1 hour
     });
 
     // Configure fuel efficiency for type 1 (100% efficiency)
-    fuelSystem.configureFuelEfficiency(FUEL_TYPE_ID, 100);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
 
     // Configure energy requirements for different assembly types
     AssemblyEnergyConfig.setEnergyConstant(NETWORK_NODE_TYPE_ID, 10); // Network Node requires 10 GJ
@@ -171,7 +176,7 @@ contract NetworkNodeEnergyTest is MudTest {
     );
 
     // 2. Deposit fuel and bring Network Node online (should automatically start burning fuel)
-    fuelSystem.depositFuel(networkNodeId, FUEL_TYPE_ID, 10);
+    fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
     deployableSystem.bringOnline(networkNodeId);
 
     // Verify Network Node is online and consuming its own energy
