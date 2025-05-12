@@ -28,23 +28,28 @@ contract SetSOFCallAccess is Script {
 
     vm.startBroadcast(deployerPrivateKey);
 
-    // TagSystem.sol
-    CallAccess.set(tagSystem.toResourceId(), ITagSystem.setTag.selector, entitySystem.getAddress(), true);
-    CallAccess.set(tagSystem.toResourceId(), ITagSystem.removeTag.selector, entitySystem.getAddress(), true);
+    runSetSOFCallAccess(worldAddress);
 
-    // RoleManagementSystem.sol
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedCreateRole.selector,
-      entitySystem.getAddress(),
-      true
-    );
-    CallAccess.set(
-      roleManagementSystem.toResourceId(),
-      IRoleManagementSystem.scopedRevokeAll.selector,
-      entitySystem.getAddress(),
-      true
-    );
     vm.stopBroadcast();
   }
+}
+
+function runSetSOFCallAccess(address worldAddress) {
+  // TagSystem.sol
+  CallAccess.set(tagSystem.toResourceId(), ITagSystem.setTag.selector, entitySystem.getAddress(), true);
+  CallAccess.set(tagSystem.toResourceId(), ITagSystem.removeTag.selector, entitySystem.getAddress(), true);
+
+  // RoleManagementSystem.sol
+  CallAccess.set(
+    roleManagementSystem.toResourceId(),
+    IRoleManagementSystem.scopedCreateRole.selector,
+    entitySystem.getAddress(),
+    true
+  );
+  CallAccess.set(
+    roleManagementSystem.toResourceId(),
+    IRoleManagementSystem.scopedRevokeAll.selector,
+    entitySystem.getAddress(),
+    true
+  );
 }
