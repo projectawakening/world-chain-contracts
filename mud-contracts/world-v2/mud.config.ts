@@ -201,11 +201,8 @@ export default defineWorld({
           schema: {
             networkNodeId: "uint256", // ID of the Network Node
             assemblyId: "uint256", // ID of the connected assembly
-            reservedEnergy: "uint256", // Energy reserved by this assembly //TODO: this can be got from energy config table
             isConnected: "bool", // Whether assembly is currently connected
-            operationStatus: "State", // "Running", "Not running" //TODO: can be removed
             connectedAt: "uint256", // When the assembly was connected
-            lastEnergyUpdate: "uint256", // Last time energy was counted for this assembly
           },
           key: ["networkNodeId", "assemblyId"],
         },

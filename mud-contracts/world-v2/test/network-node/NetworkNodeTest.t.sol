@@ -221,11 +221,6 @@ contract NetworkNodeEnergyTest is MudTest {
 
     // Verify Smart Gate is connected
     assertTrue(NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
-    assertEq(
-      uint8(NetworkNodeAssemblyLink.getOperationStatus(networkNodeId, smartGateId)),
-      uint8(State.ANCHORED),
-      "Smart Gate should be anchored"
-    );
 
     // Verify connectedAssemblies array after connecting Smart Gate
     uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
@@ -237,11 +232,6 @@ contract NetworkNodeEnergyTest is MudTest {
 
     // Verify Smart Gate is online and energy is reserved
     assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ONLINE), "Smart Gate should be online");
-    assertEq(
-      NetworkNodeAssemblyLink.getReservedEnergy(networkNodeId, smartGateId),
-      50,
-      "Should reserve 50 GJ for Smart Gate"
-    );
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 60, "Total reserved energy should be 60 GJ (10 + 50)");
 
     // 3. Deploy Smart Storage Unit (should connect but fail to come online due to insufficient energy)

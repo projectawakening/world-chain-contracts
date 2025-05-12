@@ -86,11 +86,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
     NetworkNodeAssemblyLink.set(
       networkNodeId,
       assemblyId,
-      0, // reservedEnergy (set when brought online)
       true, // isConnected
-      State.ANCHORED, // operationStatus
-      block.timestamp, // connectedAt
-      block.timestamp // lastEnergyUpdate
+      block.timestamp // connectedAt
     );
 
     // Record for reverse lookup
@@ -135,11 +132,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
     if (currentReserved + energyRequired > maxCapacity) {
       revert NetworkNode_InsufficientEnergy(networkNodeId, energyRequired, maxCapacity - currentReserved);
     }
-
-    // Update structure connection with reserved energy
-    NetworkNodeAssemblyLink.setReservedEnergy(networkNodeId, assemblyId, energyRequired);
-    NetworkNodeAssemblyLink.setOperationStatus(networkNodeId, assemblyId, State.ONLINE);
-    NetworkNodeAssemblyLink.setLastEnergyUpdate(networkNodeId, assemblyId, block.timestamp);
 
     // Update total reserved energy
     NetworkNode.setTotalReservedEnergy(networkNodeId, currentReserved + energyRequired);
@@ -197,28 +189,16 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param assemblyId The ID of the assembly
    */
   function _handleAssemblyOffline(uint256 networkNodeId, uint256 assemblyId) internal {
-    uint256 releasedEnergy = NetworkNodeAssemblyLink.getReservedEnergy(networkNodeId, assemblyId);
+    uint256 assemblyTypeId = EntityRecord.getTypeId(assemblyId);
+    uint256 releasedEnergy = AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
+
     if (releasedEnergy > 0) {
-      _updateTotalReservedEnergy(networkNodeId, releasedEnergy);
+      uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
+      uint256 newReserved = currentReserved > releasedEnergy ? currentReserved - releasedEnergy : 0;
+
+      NetworkNode.setTotalReservedEnergy(networkNodeId, newReserved);
+      NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
     }
-
-    // Update assembly connection
-    NetworkNodeAssemblyLink.setReservedEnergy(networkNodeId, assemblyId, 0);
-    NetworkNodeAssemblyLink.setOperationStatus(networkNodeId, assemblyId, State.ANCHORED);
-    NetworkNodeAssemblyLink.setLastEnergyUpdate(networkNodeId, assemblyId, block.timestamp);
-  }
-
-  /**
-   * @dev Internal function to update total reserved energy
-   * @param networkNodeId The ID of the Network Node
-   * @param energyChange The amount of energy to add (positive) or subtract (negative)
-   */
-  function _updateTotalReservedEnergy(uint256 networkNodeId, uint256 energyChange) internal {
-    uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
-    uint256 newReserved = currentReserved > energyChange ? currentReserved - energyChange : 0;
-
-    NetworkNode.setTotalReservedEnergy(networkNodeId, newReserved);
-    NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
   }
 
   function getNetworkNodeClassId() public view returns (uint256) {

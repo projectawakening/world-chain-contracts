@@ -294,8 +294,8 @@ contract DeployableSystem is SmartObjectFramework {
           _bringOffline(connectedAssemblies[i], previousState);
         }
       }
-     //Bring the network node offline
-     _bringOffline(networkNodeId, previousState);
+      //Bring the network node offline
+      _bringOffline(networkNodeId, previousState);
     }
   }
 
