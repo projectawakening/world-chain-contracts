@@ -19,6 +19,8 @@
     "config": "forge script script/Config.s.sol:Config --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "grant-admin-access": "forge script script/GrantAdminRole.s.sol:GrantAdminRole --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "post-deploy": "forge script script/PostDeploy.s.sol:PostDeploy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
+    "configure-fuel": "forge script script/ConfigureFuel.s.sol:ConfigureFuel --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
+    "configure-energy": "forge script script/ConfigureEnergy.s.sol:ConfigureEnergy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "test": "chmod +x run-tests.sh && ./run-tests.sh"
   },
   "dependencies": {
