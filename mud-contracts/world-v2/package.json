@@ -24,24 +24,24 @@
     "test": "chmod +x run-tests.sh && ./run-tests.sh"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/schema-type": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/store": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/world": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/world-modules": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/gas-report": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
+    "@latticexyz/cli": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/schema-type": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/store": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/world": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/world-modules": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/gas-report": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
     "@eveworld/smart-object-framework-v2": "link:../smart-object-framework-v2"
   },
   "devDependencies": {
-    "@latticexyz/gas-report": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
+    "@latticexyz/gas-report": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
     "@types/node": "^18.15.11",
     "ds-test": "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0",
     "forge-std": "https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1",
     "prettier": "3.2.5",
     "prettier-plugin-solidity": "1.3.1",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "solhint-plugin-mud": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
+    "solhint-config-mud": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "solhint-plugin-mud": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
     "typescript": "^5.4.5"
   }
 }

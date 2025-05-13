@@ -8,6 +8,7 @@ import { CreateInventoryItemParams, InventoryItemParams } from "../../systems/in
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { IWorldCall } from "@latticexyz/world/src/IWorldKernel.sol";
 import { SystemCall } from "@latticexyz/world/src/SystemCall.sol";
+import { WorldContextConsumerLib } from "@latticexyz/world/src/WorldContext.sol";
 import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
@@ -207,7 +208,7 @@ library InventorySystemLib {
   }
 
   function callAsRoot(InventorySystemType self) internal view returns (RootCallWrapper memory) {
-    return RootCallWrapper(self.toResourceId(), msg.sender);
+    return RootCallWrapper(self.toResourceId(), WorldContextConsumerLib._msgSender());
   }
 
   function callAsRootFrom(InventorySystemType self, address from) internal pure returns (RootCallWrapper memory) {
