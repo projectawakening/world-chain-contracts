@@ -161,19 +161,19 @@ export default defineWorld({
           key: ["smartObjectId"],
         },
         /*******************
-         * FUEL TABLE *
+         * INVENTORY TABLE FOR FUEL *
          *******************/
         /**
          * Used to store the fuel balance of a Deployable
          */
         Fuel: {
+          //This is kind of a inventory to store fuel for a deployable
           schema: {
-            smartObjectId: "uint256",
-            fuelUnitVolume: "uint256",
-            fuelSmartObjectId: "uint256", // Smart object id of the fuel
-            fuelMaxCapacity: "uint256",
-            fuelAmount: "uint256",
-            fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured by network node)
+            smartObjectId: "uint256", // smartObjectId of the deployable
+            fuelSmartObjectId: "uint256", // smartObjectId of the fuelType
+            fuelMaxCapacity: "uint256", // max fuel capacity of the deployable
+            fuelAmount: "uint256", // current fuel amount of the deployable
+            fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured per deployable eg: network node)
             lastUpdatedAt: "uint256",
           },
           key: ["smartObjectId"],

@@ -46,8 +46,6 @@ interface IFuelSystem {
 
   function evefrontier__stopBurn(uint256 smartObjectId) external;
 
-  function evefrontier__setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) external;
-
   function evefrontier__setFuelMaxCapacity(uint256 smartObjectId, uint256 fuelMaxCapacity) external;
 
   function evefrontier__updateFuel(uint256 smartObjectId) external;

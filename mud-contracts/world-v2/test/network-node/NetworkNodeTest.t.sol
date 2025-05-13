@@ -121,14 +121,14 @@ contract NetworkNodeEnergyTest is MudTest {
       tenantId: tenantId,
       typeId: EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
       itemId: NETWORK_NODE_ID,
-      volume: 1000
+      volume: 100
     });
 
-    fuelEntityRecordParams = EntityRecordParams({ tenantId: tenantId, typeId: FUEL_TYPE_ID, itemId: 0, volume: 1000 });
+    fuelEntityRecordParams = EntityRecordParams({ tenantId: tenantId, typeId: FUEL_TYPE_ID, itemId: 0, volume: 100 });
 
     // Setup fuel parameters for Type B fuel (10/hr consumption, 10 GJ output)
     fuelParams = FuelParams({
-      fuelMaxCapacity: 1000,
+      fuelMaxCapacity: 10000,
       fuelBurnRateInSeconds: 3600 // 1 hour
     });
 
@@ -157,7 +157,7 @@ contract NetworkNodeEnergyTest is MudTest {
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
           itemId: NETWORK_NODE_ID,
-          volume: 1000
+          volume: 100
         }),
         owner: alice,
         locationData: LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
@@ -210,7 +210,7 @@ contract NetworkNodeEnergyTest is MudTest {
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
           itemId: SMART_GATE_ID,
-          volume: 1000
+          volume: 100
         }),
         assemblyType: "SG"
       }),
@@ -243,7 +243,7 @@ contract NetworkNodeEnergyTest is MudTest {
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
           itemId: SMART_STORAGE_ID,
-          volume: 1000
+          volume: 100
         }),
         assemblyType: "SSU"
       }),

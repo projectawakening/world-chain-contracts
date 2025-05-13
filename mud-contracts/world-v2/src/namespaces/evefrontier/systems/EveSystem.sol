@@ -289,9 +289,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for FuelSystem
   function configureFuelAccess() public {
-    bytes4[5] memory fuelOnlyAdminOrClassScopedSelectors = [
+    bytes4[4] memory fuelOnlyAdminOrClassScopedSelectors = [
       FuelSystem.configureFuelParameters.selector,
-      FuelSystem.setFuelUnitVolume.selector,
       FuelSystem.updateFuel.selector,
       FuelSystem.setFuelMaxCapacity.selector,
       FuelSystem.configureFuelEfficiency.selector

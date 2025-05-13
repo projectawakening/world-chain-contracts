@@ -79,6 +79,7 @@ contract FuelTest is MudTest {
   uint256 smartObjectId;
   bytes32 tenantId;
   uint256 fuelSmartObjectId;
+  uint256 fuelSmartObjectId2;
   uint256 invalidFuelSmartObjectId;
 
   // Smart Object variables
@@ -92,6 +93,7 @@ contract FuelTest is MudTest {
   LocationData location;
   EntityRecordParams entityRecordParams;
   EntityRecordParams fuelEntityRecordParams;
+  EntityRecordParams fuelEntityRecordParams2;
 
   // Bounds for fuelUnitVolume
   uint256 constant MIN_FUEL_UNIT_VOLUME = 1;
@@ -108,6 +110,7 @@ contract FuelTest is MudTest {
   uint256 constant MAX_FUEL_MAX_CAPACITY = type(uint128).max;
 
   uint256 constant TEST_FUEL_TYPE_ID = 1;
+  uint256 constant TEST_FUEL_TYPE_ID_2 = 2;
   uint256 constant INVALID_FUEL_TYPE_ID = 2;
 
   function setUp() public virtual override {
@@ -136,8 +139,9 @@ contract FuelTest is MudTest {
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
     fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, TEST_FUEL_TYPE_ID);
+    fuelSmartObjectId2 = ObjectIdLib.calculateNonSingletonId(tenantId, TEST_FUEL_TYPE_ID_2);
 
-    invalidFuelSmartObjectId = _calculateObjectId(INVALID_FUEL_TYPE_ID, 0, false);
+    invalidFuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, INVALID_FUEL_TYPE_ID);
 
     // Create resource ID for the mock system
     bytes14 namespace = bytes14("evefrontier");
@@ -175,7 +179,14 @@ contract FuelTest is MudTest {
       tenantId: tenantId,
       typeId: TEST_FUEL_TYPE_ID,
       itemId: 0,
-      volume: 10
+      volume: 100
+    });
+
+    fuelEntityRecordParams2 = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: TEST_FUEL_TYPE_ID_2,
+      itemId: 0,
+      volume: 100
     });
 
     location = LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 });
@@ -196,10 +207,7 @@ contract FuelTest is MudTest {
       FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
     );
 
-    fuelSystem.setFuelUnitVolume(smartObjectId, 1000);
-
     // Verify configuration
-    assertEq(Fuel.getFuelUnitVolume(smartObjectId), 1000);
     assertEq(Fuel.getFuelMaxCapacity(smartObjectId), 10000);
     assertEq(Fuel.getFuelBurnRateInSeconds(smartObjectId), 3600);
     assertEq(Fuel.getFuelAmount(smartObjectId), 0);
@@ -261,7 +269,7 @@ contract FuelTest is MudTest {
     fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
+      FuelParams({ fuelMaxCapacity: 1000, fuelBurnRateInSeconds: 3600 })
     );
 
     // Test deposit
@@ -278,17 +286,26 @@ contract FuelTest is MudTest {
     );
     fuelSystem.depositFuel(smartObjectId, invalidFuelSmartObjectId, 8); // Invalid fuel type id
 
-    //TODO: fix this test after confirming id generation format
-    // vm.expectRevert(
-    //   abi.encodeWithSelector(FuelSystem.Fuel_ExceedsMaxCapacity.selector, smartObjectId, 8, 11000, 10000)
-    // );
-    // fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 8); // Would exceed max capacity
+    vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_ExceedsMaxCapacity.selector, smartObjectId, 8, 1100, 1000));
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 8); // Would exceed max capacity
 
-    // vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 4, 1, 3));
-    // fuelSystem.withdrawFuel(smartObjectId, 4); // Not enough fuel
+    vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 4, 1, 3));
+    fuelSystem.withdrawFuel(smartObjectId, 4); // Not enough fuel
 
-    // vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 0, 1, 3));
-    // fuelSystem.withdrawFuel(smartObjectId, 0); // Cannot withdraw 0
+    vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 0, 1, 3));
+    fuelSystem.withdrawFuel(smartObjectId, 0); // Cannot withdraw 0
+
+    //deposit for Fuel_TypeMismatch
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId2, fuelEntityRecordParams2, 100);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        FuelSystem.Fuel_TypeMismatch.selector,
+        smartObjectId,
+        fuelSmartObjectId,
+        fuelSmartObjectId2
+      )
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1); // Type mismatch
 
     vm.stopPrank();
   }

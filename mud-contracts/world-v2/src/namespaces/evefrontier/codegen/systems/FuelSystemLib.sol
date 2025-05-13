@@ -94,10 +94,6 @@ library FuelSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).stopBurn(smartObjectId);
   }
 
-  function setFuelUnitVolume(FuelSystemType self, uint256 smartObjectId, uint256 fuelUnitVolume) internal {
-    return CallWrapper(self.toResourceId(), address(0)).setFuelUnitVolume(smartObjectId, fuelUnitVolume);
-  }
-
   function setFuelMaxCapacity(FuelSystemType self, uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
     return CallWrapper(self.toResourceId(), address(0)).setFuelMaxCapacity(smartObjectId, fuelMaxCapacity);
   }
@@ -195,19 +191,6 @@ library FuelSystemLib {
     if (address(_world()) == address(this)) revert FuelSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(_stopBurn_uint256.stopBurn, (smartObjectId));
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function setFuelUnitVolume(CallWrapper memory self, uint256 smartObjectId, uint256 fuelUnitVolume) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert FuelSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _setFuelUnitVolume_uint256_uint256.setFuelUnitVolume,
-      (smartObjectId, fuelUnitVolume)
-    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -314,14 +297,6 @@ library FuelSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function setFuelUnitVolume(RootCallWrapper memory self, uint256 smartObjectId, uint256 fuelUnitVolume) internal {
-    bytes memory systemCall = abi.encodeCall(
-      _setFuelUnitVolume_uint256_uint256.setFuelUnitVolume,
-      (smartObjectId, fuelUnitVolume)
-    );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
   function setFuelMaxCapacity(RootCallWrapper memory self, uint256 smartObjectId, uint256 fuelMaxCapacity) internal {
     bytes memory systemCall = abi.encodeCall(
       _setFuelMaxCapacity_uint256_uint256.setFuelMaxCapacity,
@@ -416,10 +391,6 @@ interface _startBurn_uint256 {
 
 interface _stopBurn_uint256 {
   function stopBurn(uint256 smartObjectId) external;
-}
-
-interface _setFuelUnitVolume_uint256_uint256 {
-  function setFuelUnitVolume(uint256 smartObjectId, uint256 fuelUnitVolume) external;
 }
 
 interface _setFuelMaxCapacity_uint256_uint256 {

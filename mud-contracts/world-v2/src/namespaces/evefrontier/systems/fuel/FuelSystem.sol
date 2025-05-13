@@ -107,7 +107,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelSmartObjectId,
     uint256 fuelAmount
   ) public context access(smartObjectId) scope(smartObjectId) {
-    if (EntityRecord.getExists(fuelSmartObjectId) == false) {
+    if (!EntityRecord.getExists(fuelSmartObjectId)) {
       revert Fuel_InvalidFuelSmartObjectId(smartObjectId, fuelSmartObjectId);
     }
 
@@ -126,7 +126,7 @@ contract FuelSystem is SmartObjectFramework {
 
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
-    uint256 currentVolume = Fuel.getFuelUnitVolume(smartObjectId);
+    uint256 currentVolume = EntityRecord.getVolume(fuelSmartObjectId);
 
     currentVolume = currentVolume == 0 ? 1 : currentVolume;
     uint256 projectedCapacity = (currentFuelAmount + fuelAmount) * currentVolume;
@@ -193,32 +193,6 @@ contract FuelSystem is SmartObjectFramework {
   //TODO : Implement PauseBurn
 
   /**
-   * @dev sets the volume of a single unit of fuel
-   * @param smartObjectId on-chain id of the in-game deployable
-   * @param fuelUnitVolume the volume of a single unit of fuel
-   */
-  function setFuelUnitVolume(
-    uint256 smartObjectId,
-    uint256 fuelUnitVolume
-  ) public context access(smartObjectId) scope(smartObjectId) {
-    // max settable fuel unit volume is current maxCapacity / current fuel amount, must increase the max capacity or decrease the fuel amount for higher values
-    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
-    if (fuelUnitVolume == 0 || fuelUnitVolume * currentFuelAmount > Fuel.getFuelMaxCapacity(smartObjectId)) {
-      if (currentFuelAmount != 0) {
-        revert Fuel_InvalidFuelUnitVolume(
-          smartObjectId,
-          fuelUnitVolume,
-          1,
-          Fuel.getFuelMaxCapacity(smartObjectId) / currentFuelAmount
-        );
-      } else {
-        revert Fuel_InvalidFuelUnitVolume(smartObjectId, fuelUnitVolume, 1, Fuel.getFuelMaxCapacity(smartObjectId));
-      }
-    }
-    Fuel.setFuelUnitVolume(smartObjectId, fuelUnitVolume);
-  }
-
-  /**
    * @dev sets the maximum fuel capacity of the object
    * @param smartObjectId on-chain id of the in-game deployable
    * @param fuelMaxCapacity the maximum fuel capacity of the object
@@ -227,7 +201,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 smartObjectId,
     uint256 fuelMaxCapacity
   ) public context access(smartObjectId) scope(smartObjectId) {
-    uint256 currentCapacityUsage = Fuel.getFuelAmount(smartObjectId) * Fuel.getFuelUnitVolume(smartObjectId);
+    uint256 currentCapacityUsage = Fuel.getFuelAmount(smartObjectId) * EntityRecord.getVolume(smartObjectId);
     // minimum settable fuel max capacity is the current capacity usage, must reduce the fuel amount or the unit volume for lower values
     if (fuelMaxCapacity < currentCapacityUsage) {
       revert Fuel_InvalidFuelMaxCapacity(smartObjectId, fuelMaxCapacity, currentCapacityUsage, type(uint256).max);
