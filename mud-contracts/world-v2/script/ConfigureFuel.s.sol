@@ -11,8 +11,10 @@ import { FuelSystem, fuelSystem } from "../src/namespaces/evefrontier/codegen/sy
 import { ObjectIdLib } from "../src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 import { EntityRecordParams } from "../src/namespaces/evefrontier/systems/entity-record/types.sol";
 
-
 contract ConfigureFuel is Script {
+  error ArrayLengthMismatch(uint256 fuelTypeIdsLength, uint256 fuelEfficienciesLength, uint256 fuelVolumesLength);
+  error EmptyArray();
+
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
 
@@ -23,13 +25,19 @@ contract ConfigureFuel is Script {
     uint256[] memory fuelEfficiencies = vm.envUint("FUEL_EFFICIENCY", ",");
     uint256[] memory fuelVolumes = vm.envUint("FUEL_VOLUME", ",");
 
+    // Validate array lengths
+    if (fuelTypeIds.length == 0 || fuelEfficiencies.length == 0 || fuelVolumes.length == 0) {
+      revert EmptyArray();
+    }
+
+    if (fuelTypeIds.length != fuelEfficiencies.length || fuelTypeIds.length != fuelVolumes.length) {
+      revert ArrayLengthMismatch(fuelTypeIds.length, fuelEfficiencies.length, fuelVolumes.length);
+    }
+
     bytes32 tenantId = Tenant.get();
 
     for (uint256 i = 0; i < fuelTypeIds.length; i++) {
-      uint256 fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(
-        tenantId,
-        fuelTypeIds[i]
-      );
+      uint256 fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, fuelTypeIds[i]);
 
       EntityRecordParams memory fuelEntityRecordParams = EntityRecordParams({
         tenantId: tenantId,
@@ -40,11 +48,7 @@ contract ConfigureFuel is Script {
       
       vm.startBroadcast(deployerPrivateKey);
 
-      fuelSystem.configureFuelEfficiency(
-        fuelSmartObjectId,
-        fuelEntityRecordParams,
-        fuelEfficiencies[i]
-      );
+      fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, fuelEfficiencies[i]);
       
       vm.stopBroadcast();
     } 
