@@ -24,13 +24,13 @@ contract EntitySystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runEntitySystemAccessConfig(worldAddress);
+    runEntitySystemAccessConfig();
 
     vm.stopBroadcast();
   }
 }
 
-function runEntitySystemAccessConfig(address worldAddress) {
+function runEntitySystemAccessConfig() {
   // EntitySystem.sol access configurations
   // set allowClassScopedSystemOrDirectClassAccessRole for setClassAccessRole
   accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);

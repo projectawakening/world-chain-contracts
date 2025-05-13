@@ -24,13 +24,13 @@ contract TagSystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runTagSystemAccessConfig(worldAddress);
+    runTagSystemAccessConfig();
 
     vm.stopBroadcast();
   }
 }
 
-function runTagSystemAccessConfig(address worldAddress) {
+function runTagSystemAccessConfig() {
   // Tag System access configurations
   // set allowCallAccessOrDirectAccessRole for setTag
   accessConfigSystem.configureAccess(tagSystem.toResourceId(), ITagSystem.setTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);

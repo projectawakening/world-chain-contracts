@@ -24,13 +24,13 @@ contract RoleManagementSystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runRoleManagementSystemAccessConfig(worldAddress);
+    runRoleManagementSystemAccessConfig();
 
     vm.stopBroadcast();
   }
 }
 
-function runRoleManagementSystemAccessConfig(address worldAddress) {
+function runRoleManagementSystemAccessConfig() {
   // RoleManagementSystem.sol access config and enforcement
   accessConfigSystem.configureAccess(
     roleManagementSystem.toResourceId(),

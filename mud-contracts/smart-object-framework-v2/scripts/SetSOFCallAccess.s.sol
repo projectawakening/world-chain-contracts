@@ -28,13 +28,13 @@ contract SetSOFCallAccess is Script {
 
     vm.startBroadcast(deployerPrivateKey);
 
-    runSetSOFCallAccess(worldAddress);
+    runSetSOFCallAccess();
 
     vm.stopBroadcast();
   }
 }
 
-function runSetSOFCallAccess(address worldAddress) {
+function runSetSOFCallAccess() {
   // TagSystem.sol
   CallAccess.set(tagSystem.toResourceId(), ITagSystem.setTag.selector, entitySystem.getAddress(), true);
   CallAccess.set(tagSystem.toResourceId(), ITagSystem.removeTag.selector, entitySystem.getAddress(), true);

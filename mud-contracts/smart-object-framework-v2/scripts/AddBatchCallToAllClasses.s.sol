@@ -31,13 +31,13 @@ contract AddBatchCallToAllClasses is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runAddBatchCallToAllClasses(worldAddress);
+    runAddBatchCallToAllClasses();
 
     vm.stopBroadcast();
   }
 }
 
-function runAddBatchCallToAllClasses(address worldAddress) {
+function runAddBatchCallToAllClasses() {
   TagId batchCallTagId = TagIdLib.encode(TAG_TYPE_RESOURCE_RELATION, bytes30(ResourceId.unwrap(BATCH_CALL_SYSTEM_ID)));
   TagParams memory batchCallResourceTag = TagParams(
     batchCallTagId,
