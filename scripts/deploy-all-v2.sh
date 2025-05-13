@@ -63,5 +63,15 @@ pnpm nx grant-admin-access @eveworld/world-v2
 wait
 echo "==================== Admin access granted ===================="
 
+echo "==================== Configuring fuel ===================="
+pnpm nx configure-fuel @eveworld/world-v2
+wait
+echo "==================== Fuel configured ===================="
+
+echo "==================== Configuring energy ===================="
+pnpm nx configure-energy @eveworld/world-v2
+wait
+echo "==================== Energy configured ===================="
+
 echo "World address: $WORLD_ADDRESS"
 echo "Trusted forwarder address: $FORWARDER_ADDRESS"
