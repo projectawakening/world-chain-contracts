@@ -14,7 +14,7 @@ import { IRoleManagementSystem } from "../src/namespaces/evefrontier/interfaces/
 import { ISOFAccessSystem } from "../src/namespaces/sofaccess/interfaces/ISOFAccessSystem.sol";
 
 contract RoleManagementSystemAccessConfig is Script {
-  function runRoleManagementSystemAccessConfig(address worldAddress) public {
+  function run(address worldAddress) public {
     IWorldKernel world = IWorldKernel(worldAddress);
     StoreSwitch.setStoreAddress(worldAddress);
 
