@@ -47,7 +47,7 @@ contract TagSystem is SmartObjectFramework {
    */
   function setTags(uint256 entityId, TagParams[] memory tagParams) public {
     for (uint i = 0; i < tagParams.length; i++) {
-      _setTag(entityId, tagParams[i]);
+      setTag(entityId, tagParams[i]);
     }
   }
 
@@ -69,7 +69,7 @@ contract TagSystem is SmartObjectFramework {
    */
   function removeTags(uint256 entityId, TagId[] memory tagIds) public {
     for (uint i = 0; i < tagIds.length; i++) {
-      _removeTag(entityId, tagIds[i]);
+      removeTag(entityId, tagIds[i]);
     }
   }
 
