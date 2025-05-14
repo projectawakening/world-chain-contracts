@@ -12,17 +12,13 @@ import { ObjectIdLib } from "@eveworld/world-v2/src/namespaces/evefrontier/libra
 import { SmartCharacterSystem, smartCharacterSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartCharacterSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
 import { SmartTurretSystem, smartTurretSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartTurretSystemLib.sol";
-import { SmartGateSystem, smartGateSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/SmartGateSystemLib.sol";
 import { DeployableSystem, deployableSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
-import { InventorySystem, inventorySystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { NetworkNodeSystem, networkNodeSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/NetworkNodeSystemLib.sol";
 import { FuelSystem, fuelSystem } from "@eveworld/world-v2/src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
 
 import { CreateAndAnchorParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/deployable/types.sol";
 import { EntityRecordParams, EntityMetadataParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/entity-record/types.sol";
-import { CreateInventoryItemParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/inventory/types.sol";
 import { FuelParams } from "@eveworld/world-v2/src/namespaces/evefrontier/systems/fuel/types.sol";
-
 
 contract NetworkNodeTestData is Script {
   // Global variables for item IDs
@@ -51,22 +47,23 @@ contract NetworkNodeTestData is Script {
     // Note: Remove this when you run the script second time
     vm.startBroadcast(deployerPrivateKey);
     createCharacter(alice);
-  
+
     // Step 2: Deployer creates Network Node
     bytes32 tenantId = Tenant.get();
     uint256 networkNodeId = ObjectIdLib.calculateSingletonId(tenantId, NETWORK_NODE_ID);
     console.log("networkNodeId", networkNodeId);
     // createNetworkNode(alice, networkNodeId);
-  
+
     // Step 3: Deployer creates SSUs for each character
     createSSU(alice, networkNodeId);
-  
+
     // Step 4: Deployer creates Smart Turrets for each character
     createSmartTurret(alice, networkNodeId);
 
     // Step 5: Deployer creates other assemblies
-    createPrinter(alice, networkNodeId);
-    createPortableRefinery(alice, networkNodeId);
+    //TODO: Uncomment this when the functionality is working
+    // createPrinter(alice, networkNodeId);
+    // createPortableRefinery(alice, networkNodeId);
     vm.stopBroadcast();
 
     // Step 6: Each character brings their own deployables online
@@ -86,39 +83,39 @@ contract NetworkNodeTestData is Script {
     bytes32 tenantId = Tenant.get();
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
 
-     uint256 characterItemId = CHARACTER_BASE_ITEM_ID;
-      uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
+    uint256 characterItemId = CHARACTER_BASE_ITEM_ID;
+    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
 
-      EntityRecordParams memory entityRecordParams = EntityRecordParams({
-        tenantId: tenantId,
-        typeId: characterTypeId,
-        itemId: characterItemId,
-        volume: 0
-      });
+    EntityRecordParams memory entityRecordParams = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: characterTypeId,
+      itemId: characterItemId,
+      volume: 0
+    });
 
-      EntityMetadataParams memory entityRecordMetadataParams = EntityMetadataParams({
-        name: "Character",
-        dappURL: "xxx",
-        description: "Test character"
-      });
+    EntityMetadataParams memory entityRecordMetadataParams = EntityMetadataParams({
+      name: "Character",
+      dappURL: "xxx",
+      description: "Test character"
+    });
 
-      uint256 tribeId = 100; // Distribute across 3 tribes
+    uint256 tribeId = 100; // Distribute across 3 tribes
 
-      smartCharacterSystem.createCharacter(
-        characterSmartObjectId,
-        account,
-        tribeId,
-        entityRecordParams,
-        entityRecordMetadataParams
-      );
+    smartCharacterSystem.createCharacter(
+      characterSmartObjectId,
+      account,
+      tribeId,
+      entityRecordParams,
+      entityRecordMetadataParams
+    );
 
-      console.log("Created character for account:", account);
+    console.log("Created character for account:", account);
   }
 
   function createNetworkNode(address account, uint256 networkNodeSmartObjectId) internal {
     bytes32 tenantId = Tenant.get();
     uint256 networkNodeTypeId = vm.envUint("NETWORK_NODE_TYPE_ID");
-   
+
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
@@ -141,7 +138,8 @@ contract NetworkNodeTestData is Script {
       fuelBurnRateInSeconds: 3600 // 1 hour
     });
 
-    networkNodeSystem.createAndAnchorNetworkNode(deployableParams,
+    networkNodeSystem.createAndAnchorNetworkNode(
+      deployableParams,
       fuelParams,
       80, // maxEnergyCapacity
       80 // currentProduction
@@ -156,63 +154,62 @@ contract NetworkNodeTestData is Script {
     uint256 storageCapacity = 100000000;
     uint256 ephemeralCapacity = 100000000;
 
-      uint256 ssuItemId = SSU_BASE_ITEM_ID;
-      uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuItemId = SSU_BASE_ITEM_ID;
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
 
-      LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
+    LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
-      EntityRecordParams memory entityRecordParams = EntityRecordParams({
-        tenantId: tenantId,
-        typeId: ssuTypeId,
-        itemId: ssuItemId,
-        volume: 10
-      });
+    EntityRecordParams memory entityRecordParams = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: ssuTypeId,
+      itemId: ssuItemId,
+      volume: 10
+    });
 
-      CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
-        smartObjectId: ssuSmartObjectId,
-        assemblyType: "SSU",
-        entityRecordParams: entityRecordParams,
-        owner: account,
-        locationData: locationParams
-      });
+    CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
+      smartObjectId: ssuSmartObjectId,
+      assemblyType: "SSU",
+      entityRecordParams: entityRecordParams,
+      owner: account,
+      locationData: locationParams
+    });
 
-      smartStorageUnitSystem.createAndAnchorStorageUnit(
-        deployableParams,
-        storageCapacity,
-        ephemeralCapacity,
-        networkNodeId
-      );
+    smartStorageUnitSystem.createAndAnchorStorageUnit(
+      deployableParams,
+      storageCapacity,
+      ephemeralCapacity,
+      networkNodeId
+    );
 
-      console.log("Created SSU for account:", account);
+    console.log("Created SSU for account:", account);
   }
 
   function createSmartTurret(address account, uint256 networkNodeId) internal {
     bytes32 tenantId = Tenant.get();
     uint256 smartTurretTypeId = vm.envUint("TURRET_TYPE_ID");
 
+    uint256 turretItemId = TURRET_BASE_ITEM_ID;
+    uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
+    LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
-      uint256 turretItemId = TURRET_BASE_ITEM_ID;
-      uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
-      LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
+    EntityRecordParams memory entityRecordParams = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: smartTurretTypeId,
+      itemId: turretItemId,
+      volume: 10
+    });
 
-      EntityRecordParams memory entityRecordParams = EntityRecordParams({
-        tenantId: tenantId,
-        typeId: smartTurretTypeId,
-        itemId: turretItemId,
-        volume: 10
-      });
+    CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
+      smartObjectId: turretSmartObjectId,
+      assemblyType: "ST",
+      entityRecordParams: entityRecordParams,
+      owner: account,
+      locationData: locationData
+    });
 
-      CreateAndAnchorParams memory deployableParams = CreateAndAnchorParams({
-        smartObjectId: turretSmartObjectId,
-        assemblyType: "ST",
-        entityRecordParams: entityRecordParams,
-        owner: account,
-        locationData: locationData
-      });
+    smartTurretSystem.createAndAnchorTurret(deployableParams, networkNodeId);
 
-      smartTurretSystem.createAndAnchorTurret(deployableParams, networkNodeId);
-
-      console.log("Created Smart Turret for account:", account);
+    console.log("Created Smart Turret for account:", account);
   }
 
   function createPrinter(address account, uint256 networkNodeId) internal {
