@@ -56,6 +56,10 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).registerNetworkNodeClass(typeId, volume);
   }
 
+  function registerDeployableClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerDeployableClass(typeId, volume);
+  }
+
   function configureEntityRecordAccess(EveSystemType self) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureEntityRecordAccess();
   }
@@ -178,6 +182,19 @@ library EveSystemLib {
 
     bytes memory systemCall = abi.encodeCall(
       _registerNetworkNodeClass_uint256_uint256.registerNetworkNodeClass,
+      (typeId, volume)
+    );
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function registerDeployableClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _registerDeployableClass_uint256_uint256.registerDeployableClass,
       (typeId, volume)
     );
     self.from == address(0)
@@ -385,6 +402,14 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function registerDeployableClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _registerDeployableClass_uint256_uint256.registerDeployableClass,
+      (typeId, volume)
+    );
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function configureEntityRecordAccess(RootCallWrapper memory self) internal {
     bytes memory systemCall = abi.encodeCall(_configureEntityRecordAccess.configureEntityRecordAccess, ());
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -521,6 +546,10 @@ interface _registerSmartGateClass_uint256_uint256 {
 
 interface _registerNetworkNodeClass_uint256_uint256 {
   function registerNetworkNodeClass(uint256 typeId, uint256 volume) external;
+}
+
+interface _registerDeployableClass_uint256_uint256 {
+  function registerDeployableClass(uint256 typeId, uint256 volume) external;
 }
 
 interface _configureEntityRecordAccess {

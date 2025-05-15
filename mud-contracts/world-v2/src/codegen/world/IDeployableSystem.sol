@@ -29,5 +29,7 @@ interface IDeployableSystem {
 
   function evefrontier__unanchor(uint256 smartObjectId) external;
 
+  function evefrontier__getDeployableClassId() external view returns (uint256);
+
   function evefrontier___handleNodeOffline(uint256 networkNodeId) external;
 }
