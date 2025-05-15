@@ -44,17 +44,15 @@ library InstallSOFLib {
     );
   }
 
-  /**
-   * @dev Public library function makes this an atomic delegatecall,
-   * to preventing possible issues with installation being spread across multiple transactions.
-   */
+  // TODO not atomic, module would be better
+  // (making this func public messes up forge's address prank/broadcast)
   function _installUsingProvidedSystems(
     AccessConfigSystem accessConfigSystemAddress,
     EntitySystem entitySystemAddress,
     RoleManagementSystem roleManagementSystemAddress,
     TagSystem tagSystemAddress,
     SOFAccessSystem sOFAccessSystemAddress
-  ) public {
+  ) internal {
     // TODO in a newer MUD version you can use `worldRegistrationSystem` and avoid `_world` entirely
     IBaseWorld world = IBaseWorld(WorldContextConsumerLib._world());
 
