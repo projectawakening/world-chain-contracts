@@ -77,6 +77,10 @@ library DeployableSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).unanchor(smartObjectId);
   }
 
+  function _handleNodeOffline(DeployableSystemType self, uint256 networkNodeId) internal {
+    return CallWrapper(self.toResourceId(), address(0))._handleNodeOffline(networkNodeId);
+  }
+
   function createAndAnchor(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -165,6 +169,16 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function _handleNodeOffline(CallWrapper memory self, uint256 networkNodeId) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(__handleNodeOffline_uint256._handleNodeOffline, (networkNodeId));
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
   function createAndAnchor(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -215,6 +229,11 @@ library DeployableSystemLib {
 
   function unanchor(RootCallWrapper memory self, uint256 smartObjectId) internal {
     bytes memory systemCall = abi.encodeCall(_unanchor_uint256.unanchor, (smartObjectId));
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function _handleNodeOffline(RootCallWrapper memory self, uint256 networkNodeId) internal {
+    bytes memory systemCall = abi.encodeCall(__handleNodeOffline_uint256._handleNodeOffline, (networkNodeId));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -282,6 +301,10 @@ interface _anchor_uint256_address_LocationData {
 
 interface _unanchor_uint256 {
   function unanchor(uint256 smartObjectId) external;
+}
+
+interface __handleNodeOffline_uint256 {
+  function _handleNodeOffline(uint256 networkNodeId) external;
 }
 
 using DeployableSystemLib for DeployableSystemType global;

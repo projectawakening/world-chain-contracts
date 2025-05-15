@@ -34,7 +34,7 @@ library FuelEfficiencyConfig {
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
     keyNames = new string[](1);
-    keyNames[0] = "fuelTypeId";
+    keyNames[0] = "smartObjectId";
   }
 
   /**
@@ -63,9 +63,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Get efficiency.
    */
-  function getEfficiency(uint256 fuelTypeId) internal view returns (uint256 efficiency) {
+  function getEfficiency(uint256 smartObjectId) internal view returns (uint256 efficiency) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -74,9 +74,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Get efficiency.
    */
-  function _getEfficiency(uint256 fuelTypeId) internal view returns (uint256 efficiency) {
+  function _getEfficiency(uint256 smartObjectId) internal view returns (uint256 efficiency) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -85,9 +85,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Get efficiency.
    */
-  function get(uint256 fuelTypeId) internal view returns (uint256 efficiency) {
+  function get(uint256 smartObjectId) internal view returns (uint256 efficiency) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -96,9 +96,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Get efficiency.
    */
-  function _get(uint256 fuelTypeId) internal view returns (uint256 efficiency) {
+  function _get(uint256 smartObjectId) internal view returns (uint256 efficiency) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (uint256(bytes32(_blob)));
@@ -107,9 +107,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Set efficiency.
    */
-  function setEfficiency(uint256 fuelTypeId, uint256 efficiency) internal {
+  function setEfficiency(uint256 smartObjectId, uint256 efficiency) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((efficiency)), _fieldLayout);
   }
@@ -117,9 +117,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Set efficiency.
    */
-  function _setEfficiency(uint256 fuelTypeId, uint256 efficiency) internal {
+  function _setEfficiency(uint256 smartObjectId, uint256 efficiency) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((efficiency)), _fieldLayout);
   }
@@ -127,9 +127,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Set efficiency.
    */
-  function set(uint256 fuelTypeId, uint256 efficiency) internal {
+  function set(uint256 smartObjectId, uint256 efficiency) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((efficiency)), _fieldLayout);
   }
@@ -137,9 +137,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Set efficiency.
    */
-  function _set(uint256 fuelTypeId, uint256 efficiency) internal {
+  function _set(uint256 smartObjectId, uint256 efficiency) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((efficiency)), _fieldLayout);
   }
@@ -147,9 +147,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(uint256 fuelTypeId) internal {
+  function deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -157,9 +157,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(uint256 fuelTypeId) internal {
+  function _deleteRecord(uint256 smartObjectId) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -190,9 +190,9 @@ library FuelEfficiencyConfig {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(uint256 fuelTypeId) internal pure returns (bytes32[] memory) {
+  function encodeKeyTuple(uint256 smartObjectId) internal pure returns (bytes32[] memory) {
     bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = bytes32(uint256(fuelTypeId));
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
 
     return _keyTuple;
   }

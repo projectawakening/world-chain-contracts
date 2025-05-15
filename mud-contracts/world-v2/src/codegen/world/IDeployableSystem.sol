@@ -28,4 +28,6 @@ interface IDeployableSystem {
   function evefrontier__anchor(uint256 smartObjectId, address owner, LocationData memory locationData) external;
 
   function evefrontier__unanchor(uint256 smartObjectId) external;
+
+  function evefrontier___handleNodeOffline(uint256 networkNodeId) external;
 }

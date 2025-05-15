@@ -26,7 +26,7 @@ export PRIVATE_KEY="$private_key"
 echo " - Deploying standard contracts..." | tee -a $LOG_FILE
 pnpm nx run @eveworld/standard-contracts-v2:deploy >> $LOG_FILE 2>&1
 wait
-show_progress 1 9 "Standard contracts deployed"
+show_progress 1 11 "Standard contracts deployed"
 
 export FORWARDER_ADDRESS=$(cat ./standard-contracts-v2/broadcast/Deploy.s.sol/$chain_id/run-latest.json | jq '.transactions|first|.contractAddress' | tr -d \") 
 
@@ -40,7 +40,7 @@ if [ -z "$world_address" ]; then
     echo "No world address parameter set - Deploying a new world..." | tee -a $LOG_FILE
     pnpm nx deploy @eveworld/world-core-v2 >> $LOG_FILE 2>&1
     wait
-    show_progress 2 9 "World core deployed"
+    show_progress 2 11 "World core deployed"
     world_address=$(cat ./mud-contracts/core-v2/deploys/$chain_id/latest.json | jq '.worldAddress' | tr -d \")
     export WORLD_ADDRESS="$world_address"
 else
@@ -49,7 +49,7 @@ else
     echo "World address parameter set - Updating the world @ ${WORLD_ADDRESS}..." | tee -a $LOG_FILE
     pnpm nx deploy @eveworld/world-core-v2 --worldAddress '${WORLD_ADDRESS}' >> $LOG_FILE 2>&1
     wait
-    show_progress 2 9 "World core deployed"
+    show_progress 2 11 "World core deployed"
 fi
 
 echo " - World address: $WORLD_ADDRESS" | tee -a $LOG_FILE
@@ -59,35 +59,35 @@ echo " - Configuring trusted forwarder within the world" | tee -a $LOG_FILE
 pnpm nx setForwarder @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 3 9 "Trusted forwarder configured"
+show_progress 3 11 "Trusted forwarder configured"
 
 #4 Deploy smart object framework v2
 echo " - Installing smart object framework v2 into world" | tee -a $LOG_FILE
 pnpm nx deploy @eveworld/smart-object-framework-v2 --worldAddress '${WORLD_ADDRESS}' >> $LOG_FILE 2>&1
 
 wait
-show_progress 4 9 "Smart object framework v2 deployed"
+show_progress 4 11 "Smart object framework v2 deployed"
 
 #5 Deploy world v2
 echo " - Deploying world v2" | tee -a $LOG_FILE
 deployment_output=$(pnpm nx deploy @eveworld/world-v2 --worldAddress '${WORLD_ADDRESS}' 2>&1 | tee -a $LOG_FILE)
 
 wait
-show_progress 5 9 "World v2 deployed"
+show_progress 5 11 "World v2 deployed"
 
 #6 Configure Smart Object Framework access control
 echo " - Configuring access control for smart object framework v2" | tee -a $LOG_FILE
 pnpm nx configure-access @eveworld/smart-object-framework-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 6 9 "Configured smart object framework v2 access control" 
+show_progress 6 11 "Configured smart object framework v2 access control" 
 
 #7 Configure Smart Object Framework v2 Rules for World v2
 echo " - Configuring Smart Object Framework v2 Rules for World v2" | tee -a $LOG_FILE
 pnpm nx config @eveworld/world-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 7 9 "Configured Smart Object Framework v2 Rules for World v2"
+show_progress 7 11 "Configured Smart Object Framework v2 Rules for World v2"
 
 # Extract the ERC20 token address from the output
 eve_token_address=$(echo "$deployment_output" \
@@ -101,21 +101,36 @@ fi
 export EVE_TOKEN_ADDRESS="$eve_token_address"
 
 wait
-show_progress 7 9 "EVE token deployed"
+show_progress 7 11 "EVE token deployed"
 
 #8 Delegate Namespace Access and Grant Admin Access to 
 echo " - Delegating namespace access to forwarder contract" | tee -a $LOG_FILE
 pnpm nx delegateNamespaceAccess @eveworld/world-core-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 8 9 "Namespace access delegated"
+show_progress 8 11 "Namespace access delegated"
 
 #9 Grant Admin Access to list of addresses
 echo " - Granting admin access to list of addresses" | tee -a $LOG_FILE
 pnpm nx grant-admin-access @eveworld/world-v2 >> $LOG_FILE 2>&1
 
 wait
-show_progress 9 9 "Admin access granted"
+show_progress 9 11 "Admin access granted"
+
+#10 Configure Fuel
+echo " - Configuring fuel" | tee -a $LOG_FILE
+pnpm nx configure-fuel @eveworld/world-v2 >> $LOG_FILE 2>&1
+
+wait
+show_progress 10 10 "Fuel configured"
+
+#11 Configure Energy
+echo " - Configuring energy" | tee -a $LOG_FILE
+pnpm nx configure-energy @eveworld/world-v2 >> $LOG_FILE 2>&1
+
+wait
+show_progress 11 11 "Energy configured"
+
 
 echo " - Collecting ABIs" | tee -a $LOG_FILE
 mkdir -p abis

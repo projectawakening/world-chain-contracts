@@ -30,13 +30,13 @@ import { EphemeralInventorySystem, ephemeralInventorySystem } from "../../src/na
 import { LocationSystem, locationSystem } from "../../src/namespaces/evefrontier/codegen/systems/LocationSystemLib.sol";
 import { EntityRecordSystem, entityRecordSystem } from "../../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { FuelSystem, fuelSystem } from "../../src/namespaces/evefrontier/codegen/systems/FuelSystemLib.sol";
-
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
 import { State } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
-import { CreateAndAnchorParams } from "../../src/namespaces/evefrontier/systems/deployable/types.sol";
 import { FuelParams } from "../../src/namespaces/evefrontier/systems/fuel/types.sol";
 import { DECIMALS, ONE_UNIT_IN_WEI } from "../../src/namespaces/evefrontier/systems/constants.sol";
+
+import { ObjectIdLib } from "../../src/namespaces/evefrontier/libraries/ObjectIdLib.sol";
 
 // Create a mock system to properly test system-to-system calls
 contract MockFuelInteractSystem is System {
@@ -44,8 +44,12 @@ contract MockFuelInteractSystem is System {
     fuelSystem.configureFuelParameters(smartObjectId, fuelParams);
   }
 
-  function callConfigureFuelEfficiency(uint256 fuelTypeId, uint256 fuelEfficiency) public {
-    fuelSystem.configureFuelEfficiency(fuelTypeId, fuelEfficiency);
+  function callConfigureFuelEfficiency(
+    uint256 smartObjectId,
+    EntityRecordParams memory fuelEntityRecordParams,
+    uint256 fuelEfficiency
+  ) public {
+    fuelSystem.configureFuelEfficiency(smartObjectId, fuelEntityRecordParams, fuelEfficiency);
   }
 
   function callStartBurn(uint256 smartObjectId) public {
@@ -74,6 +78,9 @@ contract FuelTest is MudTest {
   uint256 deployableObjectClassId;
   uint256 smartObjectId;
   bytes32 tenantId;
+  uint256 fuelSmartObjectId;
+  uint256 fuelSmartObjectId2;
+  uint256 invalidFuelSmartObjectId;
 
   // Smart Object variables
   uint256 constant SMART_OBJECT_ID = 1234;
@@ -85,6 +92,8 @@ contract FuelTest is MudTest {
 
   LocationData location;
   EntityRecordParams entityRecordParams;
+  EntityRecordParams fuelEntityRecordParams;
+  EntityRecordParams fuelEntityRecordParams2;
 
   // Bounds for fuelUnitVolume
   uint256 constant MIN_FUEL_UNIT_VOLUME = 1;
@@ -101,6 +110,8 @@ contract FuelTest is MudTest {
   uint256 constant MAX_FUEL_MAX_CAPACITY = type(uint128).max;
 
   uint256 constant TEST_FUEL_TYPE_ID = 1;
+  uint256 constant TEST_FUEL_TYPE_ID_2 = 2;
+  uint256 constant INVALID_FUEL_TYPE_ID = 2;
 
   function setUp() public virtual override {
     vm.pauseGasMetering();
@@ -127,6 +138,11 @@ contract FuelTest is MudTest {
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
+    fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, TEST_FUEL_TYPE_ID);
+    fuelSmartObjectId2 = ObjectIdLib.calculateNonSingletonId(tenantId, TEST_FUEL_TYPE_ID_2);
+
+    invalidFuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, INVALID_FUEL_TYPE_ID);
+
     // Create resource ID for the mock system
     bytes14 namespace = bytes14("evefrontier");
     bytes16 name = bytes16("MockFuelInteract");
@@ -147,7 +163,6 @@ contract FuelTest is MudTest {
     systemIds[4] = fuelSystem.toResourceId();
     systemIds[5] = ownershipSystem.toResourceId();
     systemIds[6] = fuelMockSystemId;
-
     entitySystem.registerClass(deployableObjectClassId, systemIds);
 
     // instantiate the smart object
@@ -160,6 +175,20 @@ contract FuelTest is MudTest {
       volume: 1000
     });
 
+    fuelEntityRecordParams = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: TEST_FUEL_TYPE_ID,
+      itemId: 0,
+      volume: 100
+    });
+
+    fuelEntityRecordParams2 = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: TEST_FUEL_TYPE_ID_2,
+      itemId: 0,
+      volume: 100
+    });
+
     location = LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 });
 
     vm.stopPrank();
@@ -170,68 +199,20 @@ contract FuelTest is MudTest {
     vm.startPrank(deployer);
 
     // Configure fuel efficiency first
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 100);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
 
     // Test valid configuration
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 5
-      })
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
     );
 
     // Verify configuration
-    assertEq(Fuel.getFuelTypeId(smartObjectId), TEST_FUEL_TYPE_ID);
-    assertEq(Fuel.getFuelUnitVolume(smartObjectId), 1000);
     assertEq(Fuel.getFuelMaxCapacity(smartObjectId), 10000);
     assertEq(Fuel.getFuelBurnRateInSeconds(smartObjectId), 3600);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 5);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
 
     // Test invalid configurations
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        FuelSystem.Fuel_InvalidFuelTypeId.selector,
-        smartObjectId,
-        0,
-        1,
-        uint256(type(uint128).max)
-      )
-    );
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      FuelParams({
-        fuelTypeId: 0,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 5
-      })
-    );
-
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        FuelSystem.Fuel_InvalidFuelUnitVolume.selector,
-        smartObjectId,
-        0,
-        1,
-        uint256(type(uint128).max)
-      )
-    );
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 0,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 5
-      })
-    );
-
     vm.expectRevert(
       abi.encodeWithSelector(
         FuelSystem.Fuel_InvalidFuelMaxCapacity.selector,
@@ -241,16 +222,7 @@ contract FuelTest is MudTest {
         uint256(type(uint128).max)
       )
     );
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 0,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 5
-      })
-    );
+    fuelSystem.configureFuelParameters(smartObjectId, FuelParams({ fuelMaxCapacity: 0, fuelBurnRateInSeconds: 3600 }));
 
     vm.expectRevert(
       abi.encodeWithSelector(
@@ -263,13 +235,7 @@ contract FuelTest is MudTest {
     );
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 30,
-        fuelAmount: 5
-      })
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 30 })
     );
 
     vm.stopPrank();
@@ -279,19 +245,19 @@ contract FuelTest is MudTest {
     vm.startPrank(deployer);
 
     // Test valid configuration
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 80);
-    assertEq(FuelEfficiencyConfig.getEfficiency(TEST_FUEL_TYPE_ID), 80);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 80);
+    assertEq(FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId), 80);
 
     // Test invalid configurations
     vm.expectRevert(
-      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelTypeId.selector, 0, 80, 1, uint256(type(uint128).max))
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelTypeId.selector, 1, fuelEntityRecordParams.typeId)
     );
-    fuelSystem.configureFuelEfficiency(0, 80); // Invalid fuel type
+    fuelSystem.configureFuelEfficiency(1, fuelEntityRecordParams, 80); // Invalid fuel type
 
     vm.expectRevert(
-      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelEfficiency.selector, TEST_FUEL_TYPE_ID, 101, 10, 100)
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelEfficiency.selector, fuelSmartObjectId, 101, 10, 100)
     );
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 101); // Efficiency > 100
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 101); // Efficiency > 100
 
     vm.stopPrank();
   }
@@ -300,20 +266,14 @@ contract FuelTest is MudTest {
     vm.startPrank(deployer);
 
     // Setup initial configuration
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 100);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 0
-      })
+      FuelParams({ fuelMaxCapacity: 1000, fuelBurnRateInSeconds: 3600 })
     );
 
     // Test deposit
-    fuelSystem.depositFuel(smartObjectId, 5);
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
     assertEq(Fuel.getFuelAmount(smartObjectId), 5);
 
     // Test withdraw
@@ -322,15 +282,30 @@ contract FuelTest is MudTest {
 
     // Test invalid operations
     vm.expectRevert(
-      abi.encodeWithSelector(FuelSystem.Fuel_ExceedsMaxCapacity.selector, smartObjectId, 8, 11000, 10000)
+      abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelSmartObjectId.selector, smartObjectId, invalidFuelSmartObjectId)
     );
-    fuelSystem.depositFuel(smartObjectId, 8); // Would exceed max capacity
+    fuelSystem.depositFuel(smartObjectId, invalidFuelSmartObjectId, 8); // Invalid fuel type id
+
+    vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_ExceedsMaxCapacity.selector, smartObjectId, 8, 1100, 1000));
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 8); // Would exceed max capacity
 
     vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 4, 1, 3));
     fuelSystem.withdrawFuel(smartObjectId, 4); // Not enough fuel
 
     vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 0, 1, 3));
     fuelSystem.withdrawFuel(smartObjectId, 0); // Cannot withdraw 0
+
+    //deposit for Fuel_TypeMismatch
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId2, fuelEntityRecordParams2, 100);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        FuelSystem.Fuel_TypeMismatch.selector,
+        smartObjectId,
+        fuelSmartObjectId,
+        fuelSmartObjectId2
+      )
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1); // Type mismatch
 
     vm.stopPrank();
   }
@@ -339,19 +314,14 @@ contract FuelTest is MudTest {
     vm.startPrank(deployer);
 
     // Setup initial configuration
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 100);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 5
-      })
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
     );
 
     // Start burn
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
     fuelSystem.startBurn(smartObjectId);
 
     // Verify burn started
@@ -385,18 +355,13 @@ contract FuelTest is MudTest {
     vm.startPrank(deployer);
 
     // Setup with 50% efficiency
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 50);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 50);
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 5
-      })
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
     );
 
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
     fuelSystem.startBurn(smartObjectId);
 
     // Verify initial state
@@ -419,17 +384,12 @@ contract FuelTest is MudTest {
     vm.startPrank(deployer);
 
     // Setup with minimal fuel
-    fuelSystem.configureFuelEfficiency(TEST_FUEL_TYPE_ID, 100);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
     fuelSystem.configureFuelParameters(
       smartObjectId,
-      FuelParams({
-        fuelTypeId: TEST_FUEL_TYPE_ID,
-        fuelUnitVolume: 1000,
-        fuelMaxCapacity: 10000,
-        fuelBurnRateInSeconds: 3600,
-        fuelAmount: 2
-      })
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
     );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 2);
     fuelSystem.startBurn(smartObjectId);
 
     // Advance time beyond available fuel

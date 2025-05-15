@@ -21,6 +21,15 @@ export default defineWorld({
     evefrontier: {
       tables: {
         /**
+         * World version table
+         */
+        WorldVersion: {
+          schema: {
+            version: "string",
+          },
+          key: [],
+        },
+        /**
          * Class Id table
          */
         Initialize: {
@@ -152,29 +161,29 @@ export default defineWorld({
           key: ["smartObjectId"],
         },
         /*******************
-         * FUEL TABLE *
+         * INVENTORY TABLE FOR FUEL *
          *******************/
         /**
          * Used to store the fuel balance of a Deployable
          */
         Fuel: {
+          //This is kind of a inventory to store fuel for a deployable
           schema: {
-            smartObjectId: "uint256",
-            fuelUnitVolume: "uint256",
-            fuelTypeId: "uint256", // Reference to fuel type
-            fuelMaxCapacity: "uint256",
-            fuelAmount: "uint256",
-            fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured by network node)
+            smartObjectId: "uint256", // smartObjectId of the deployable
+            fuelSmartObjectId: "uint256", // smartObjectId of the fuelType
+            fuelMaxCapacity: "uint256", // max fuel capacity of the deployable
+            fuelAmount: "uint256", // current fuel amount of the deployable
+            fuelBurnRateInSeconds: "uint256", // How long 1 unit burns (configured per deployable eg: network node)
             lastUpdatedAt: "uint256",
           },
           key: ["smartObjectId"],
         },
         FuelEfficiencyConfig: {
           schema: {
-            fuelTypeId: "uint256", // Unique ID for each fuel type
+            smartObjectId: "uint256",
             efficiency: "uint256", // Efficiency as a percentage (0-100)
           },
-          key: ["fuelTypeId"],
+          key: ["smartObjectId"],
         },
         FuelConsumptionState: {
           schema: {
@@ -193,27 +202,25 @@ export default defineWorld({
             energyProduced: "uint256", // Power/Energy generated per hour when burning fuel
             totalReservedEnergy: "uint256", // Sum of all energy reserved by structuresconnected to the network node
             lastUpdatedAt: "uint256",
+            connectedAssemblies: "uint256[]", // List of assemblyIds connected to the network node
           },
           key: ["smartObjectId"],
         },
-        NetworkStructureConnection: {
+        NetworkNodeAssemblyLink: {
           schema: {
             networkNodeId: "uint256", // ID of the Network Node
-            structureId: "uint256", // ID of the connected structure
-            reservedEnergy: "uint256", // Energy reserved by this structure
-            isConnected: "bool", // Whether structure is currently connected
-            operationStatus: "State", // "Running", "Not running"
-            connectedAt: "uint256", // When the structure was connected
-            lastEnergyUpdate: "uint256", // Last time energy was counted for this structure
+            assemblyId: "uint256", // ID of the connected assembly
+            isConnected: "bool", // Whether assembly is currently connected
+            connectedAt: "uint256", // When the assembly was connected
           },
-          key: ["networkNodeId", "structureId"],
+          key: ["networkNodeId", "assemblyId"],
         },
-        NetworkNodeByStructure: {
+        NetworkNodeByAssembly: {
           schema: {
-            structureId: "uint256",
+            assemblyId: "uint256",
             networkNodeId: "uint256",
           },
-          key: ["structureId"],
+          key: ["assemblyId"],
         },
         AssemblyEnergyConfig: {
           schema: {
@@ -222,7 +229,14 @@ export default defineWorld({
           },
           key: ["assemblyTypeId"],
         },
-        //TODO: Table for historical energy usage by block number
+        NetworkNodeEnergyHistory: {
+          schema: {
+            networkNodeId: "uint256",
+            timestamp: "uint256",
+            totalReservedEnergy: "uint256",
+          },
+          key: ["networkNodeId", "timestamp"],
+        },
         /*******************
          * INVENTORY TABLES *
          *******************/

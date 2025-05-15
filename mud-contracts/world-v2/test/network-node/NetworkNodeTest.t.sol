@@ -11,7 +11,7 @@ import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
-import { Fuel, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, NetworkNode, NetworkNodeData, NetworkStructureConnection, AssemblyEnergyConfig, FuelEfficiencyConfig, FuelConsumptionState } from "../../src/namespaces/evefrontier/codegen/index.sol";
+import { Fuel, Tenant, EntityRecord, EntityRecordData, DeployableState, DeployableStateData, CharactersByAccount, LocationData, SmartAssembly, Location, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, FuelEfficiencyConfig, FuelConsumptionState } from "../../src/namespaces/evefrontier/codegen/index.sol";
 
 import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefrontier/codegen/systems/DeployableSystemLib.sol";
 import { NetworkNodeSystem, networkNodeSystem } from "../../src/namespaces/evefrontier/codegen/systems/NetworkNodeSystemLib.sol";
@@ -47,12 +47,14 @@ contract NetworkNodeEnergyTest is MudTest {
   uint256 smartGateId;
   uint256 smartStorageId;
   uint256 smartTurretId;
+  uint256 fuelSmartObjectId;
 
   // Location data
   LocationData locationParams;
 
   // Entity record params
   EntityRecordParams entityRecordParams;
+  EntityRecordParams fuelEntityRecordParams;
 
   // Fuel params
   FuelParams fuelParams;
@@ -111,26 +113,27 @@ contract NetworkNodeEnergyTest is MudTest {
       true
     );
 
+    fuelSmartObjectId = _calculateObjectId(FUEL_TYPE_ID, 0, false);
+
     locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
       typeId: EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
       itemId: NETWORK_NODE_ID,
-      volume: 1000
+      volume: 100
     });
+
+    fuelEntityRecordParams = EntityRecordParams({ tenantId: tenantId, typeId: FUEL_TYPE_ID, itemId: 0, volume: 100 });
 
     // Setup fuel parameters for Type B fuel (10/hr consumption, 10 GJ output)
     fuelParams = FuelParams({
-      fuelUnitVolume: 100,
-      fuelTypeId: FUEL_TYPE_ID,
-      fuelMaxCapacity: 1000,
-      fuelAmount: 10,
+      fuelMaxCapacity: 10000,
       fuelBurnRateInSeconds: 3600 // 1 hour
     });
 
     // Configure fuel efficiency for type 1 (100% efficiency)
-    fuelSystem.configureFuelEfficiency(FUEL_TYPE_ID, 100);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
 
     // Configure energy requirements for different assembly types
     AssemblyEnergyConfig.setEnergyConstant(NETWORK_NODE_TYPE_ID, 10); // Network Node requires 10 GJ
@@ -149,12 +152,12 @@ contract NetworkNodeEnergyTest is MudTest {
     networkNodeSystem.createAndAnchorNetworkNode(
       CreateAndAnchorParams({
         smartObjectId: networkNodeId,
-        assemblyType: "NN",
+        assemblyType: "NWN",
         entityRecordParams: EntityRecordParams({
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
           itemId: NETWORK_NODE_ID,
-          volume: 1000
+          volume: 100
         }),
         owner: alice,
         locationData: LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
@@ -172,13 +175,8 @@ contract NetworkNodeEnergyTest is MudTest {
       "Network Node should be anchored"
     );
 
-    // 2. Start burning fuel
-    fuelSystem.startBurn(networkNodeId);
-
-    // Verify burn session started
-    assertTrue(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be active");
-
-    // 3. Try to bring Network Node online (should succeed as it has energy from burning fuel)
+    // 2. Deposit fuel and bring Network Node online (should automatically start burning fuel)
+    fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
     deployableSystem.bringOnline(networkNodeId);
 
     // Verify Network Node is online and consuming its own energy
@@ -187,7 +185,7 @@ contract NetworkNodeEnergyTest is MudTest {
       uint8(State.ONLINE),
       "Network Node should be online"
     );
-    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Should reserve 10 GJ for Network Node operation");
+    assertTrue(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be active");
     assertEq(NetworkNode.getEnergyProduced(networkNodeId), 80, "Should be producing 80 GJ");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Total reserved energy should be 10 GJ");
     assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should be 9 units");
@@ -195,7 +193,7 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.stopPrank();
   }
 
-  function test_structureDeploymentAndPowerManagement() public {
+  function test_assemblyDeploymentAndEnergyManagement() public {
     vm.pauseGasMetering();
     // First setup a running Network Node
     test_networkNodeDeploymentAndOperation();
@@ -212,7 +210,7 @@ contract NetworkNodeEnergyTest is MudTest {
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
           itemId: SMART_GATE_ID,
-          volume: 1000
+          volume: 100
         }),
         assemblyType: "SG"
       }),
@@ -221,23 +219,18 @@ contract NetworkNodeEnergyTest is MudTest {
     );
 
     // Verify Smart Gate is connected
-    assertTrue(NetworkStructureConnection.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
-    assertEq(
-      uint8(NetworkStructureConnection.getOperationStatus(networkNodeId, smartGateId)),
-      uint8(State.ANCHORED),
-      "Smart Gate should be anchored"
-    );
+    assertTrue(NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
+
+    // Verify connectedAssemblies array after connecting Smart Gate
+    uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+    assertEq(connectedAssemblies.length, 1, "Should have 1 connected assembly");
+    assertEq(connectedAssemblies[0], smartGateId, "Connected assembly should be Smart Gate");
 
     // 2. Try to bring Smart Gate online (should succeed as Network Node has enough energy)
     deployableSystem.bringOnline(smartGateId);
 
     // Verify Smart Gate is online and energy is reserved
     assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ONLINE), "Smart Gate should be online");
-    assertEq(
-      NetworkStructureConnection.getReservedEnergy(networkNodeId, smartGateId),
-      50,
-      "Should reserve 50 GJ for Smart Gate"
-    );
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 60, "Total reserved energy should be 60 GJ (10 + 50)");
 
     // 3. Deploy Smart Storage Unit (should connect but fail to come online due to insufficient energy)
@@ -250,7 +243,7 @@ contract NetworkNodeEnergyTest is MudTest {
           tenantId: tenantId,
           typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
           itemId: SMART_STORAGE_ID,
-          volume: 1000
+          volume: 100
         }),
         assemblyType: "SSU"
       }),
@@ -261,9 +254,15 @@ contract NetworkNodeEnergyTest is MudTest {
 
     // Verify Smart Storage Unit is connected but not online
     assertTrue(
-      NetworkStructureConnection.getIsConnected(networkNodeId, smartStorageId),
+      NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartStorageId),
       "Smart Storage Unit should be connected"
     );
+
+    // Verify connectedAssemblies array after connecting Smart Storage Unit
+    connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+    assertEq(connectedAssemblies.length, 2, "Should have 2 connected assemblies");
+    assertEq(connectedAssemblies[0], smartGateId, "First connected assembly should be Smart Gate");
+    assertEq(connectedAssemblies[1], smartStorageId, "Second connected assembly should be Smart Storage Unit");
 
     // Try to bring Smart Storage Unit online (should fail as only 40 GJ available)
     vm.expectRevert(
@@ -289,13 +288,13 @@ contract NetworkNodeEnergyTest is MudTest {
     //Check the remaining fuel
     assertEq(Fuel.getFuelAmount(networkNodeId), 0, "Fuel amount should be 0");
 
-    // Verify Network Node and all structures are offline
-    // assertEq(
-    //   uint8(DeployableState.getCurrentState(networkNodeId)),
-    //   uint8(State.ANCHORED),
-    //   "Network Node should be offline"
-    // );
-    //assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ANCHORED), "Smart Gate should be offline");
+    // Verify Network Node and all assemblies are offline
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ANCHORED),
+      "Network Node should be offline"
+    );
+    assertFalse(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be stopped");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 0, "No energy should be reserved");
 
     vm.stopPrank();

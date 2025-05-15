@@ -2,7 +2,7 @@
 pragma solidity >=0.8.24;
 
 /**
- * @dev CreateInventoryItemParams structure
+ * @dev CreateInventoryItemParams struct
  */
 struct CreateInventoryItemParams {
   uint256 smartObjectId;
@@ -14,7 +14,7 @@ struct CreateInventoryItemParams {
 }
 
 /**
- * @dev inventoryItemParams structure
+ * @dev inventoryItemParams struct
  */
 struct InventoryItemParams {
   uint256 smartObjectId;

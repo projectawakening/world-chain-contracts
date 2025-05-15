@@ -386,7 +386,6 @@ contract InventoryTest is MudTest {
 
     // Bring online and create and deposit items
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     inventorySystem.createAndDepositInventory(smartObjectId, items);
     vm.stopPrank();
@@ -437,7 +436,6 @@ contract InventoryTest is MudTest {
 
     // Bring state to ONLINE
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
 
@@ -507,7 +505,6 @@ contract InventoryTest is MudTest {
 
     // bring second object online
     vm.startPrank(bob, deployer);
-    fuelSystem.depositFuel(secondObjectId, 10000);
     deployableSystem.bringOnline(secondObjectId);
     vm.stopPrank();
 
@@ -672,7 +669,6 @@ contract InventoryTest is MudTest {
     itemParams[2] = InventoryItemParams({ smartObjectId: transferItemObjectId, quantity: 2 });
 
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     inventorySystem.depositInventory(smartObjectId, itemParams);
     vm.stopPrank();
@@ -769,7 +765,6 @@ contract InventoryTest is MudTest {
 
     // Re-anchor and bring online - this recreates the smart object with a new version
     deployableSystem.anchor(smartObjectId, alice, LocationData({ solarSystemId: 30000142, x: 100, y: 100, z: 100 }));
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
 
@@ -807,7 +802,6 @@ contract InventoryTest is MudTest {
     itemParams[2] = InventoryItemParams({ smartObjectId: transferItemObjectId, quantity: 2 });
     vm.pauseGasMetering();
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     inventorySystem.depositInventory(smartObjectId, itemParams);
     vm.stopPrank();
@@ -881,12 +875,10 @@ contract InventoryTest is MudTest {
 
     // Bring both inventories online
     vm.startPrank(alice, deployer);
-    fuelSystem.depositFuel(smartObjectId, 10000);
     deployableSystem.bringOnline(smartObjectId);
     vm.stopPrank();
 
     vm.startPrank(bob, deployer);
-    fuelSystem.depositFuel(secondObjectId, 10000);
     deployableSystem.bringOnline(secondObjectId);
     vm.stopPrank();
 

@@ -45,6 +45,8 @@ export GATE_VOLUME=10000
 export NETWORK_NODE_TYPE_ID=88092
 export NETWORK_NODE_VOLUME=10000
 
+export WORLD_VERSION=0.1.0
+
 # Run deployments and tests
 echo "Running world-v2 upgrade on existing world..."
 pnpm run upgrade || { echo "Upgrade failed"; kill $ANVIL_PID; exit 1; }

@@ -22,6 +22,7 @@ struct NetworkNodeData {
   uint256 energyProduced;
   uint256 totalReservedEnergy;
   uint256 lastUpdatedAt;
+  uint256[] connectedAssemblies;
 }
 
 library NetworkNode {
@@ -29,12 +30,12 @@ library NetworkNode {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004e6574776f726b4e6f64650000000000);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0081050001202020200000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0081050101202020200000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (bool, uint256, uint256, uint256, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x00810500601f1f1f1f0000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (bool, uint256, uint256, uint256, uint256, uint256[])
+  Schema constant _valueSchema = Schema.wrap(0x00810501601f1f1f1f8100000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -50,12 +51,13 @@ library NetworkNode {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](5);
+    fieldNames = new string[](6);
     fieldNames[0] = "exists";
     fieldNames[1] = "maxEnergyCapacity";
     fieldNames[2] = "energyProduced";
     fieldNames[3] = "totalReservedEnergy";
     fieldNames[4] = "lastUpdatedAt";
+    fieldNames[5] = "connectedAssemblies";
   }
 
   /**
@@ -283,6 +285,168 @@ library NetworkNode {
   }
 
   /**
+   * @notice Get connectedAssemblies.
+   */
+  function getConnectedAssemblies(uint256 smartObjectId) internal view returns (uint256[] memory connectedAssemblies) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
+    return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_uint256());
+  }
+
+  /**
+   * @notice Get connectedAssemblies.
+   */
+  function _getConnectedAssemblies(uint256 smartObjectId) internal view returns (uint256[] memory connectedAssemblies) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
+    return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_uint256());
+  }
+
+  /**
+   * @notice Set connectedAssemblies.
+   */
+  function setConnectedAssemblies(uint256 smartObjectId, uint256[] memory connectedAssemblies) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((connectedAssemblies)));
+  }
+
+  /**
+   * @notice Set connectedAssemblies.
+   */
+  function _setConnectedAssemblies(uint256 smartObjectId, uint256[] memory connectedAssemblies) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((connectedAssemblies)));
+  }
+
+  /**
+   * @notice Get the length of connectedAssemblies.
+   */
+  function lengthConnectedAssemblies(uint256 smartObjectId) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
+    unchecked {
+      return _byteLength / 32;
+    }
+  }
+
+  /**
+   * @notice Get the length of connectedAssemblies.
+   */
+  function _lengthConnectedAssemblies(uint256 smartObjectId) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
+    unchecked {
+      return _byteLength / 32;
+    }
+  }
+
+  /**
+   * @notice Get an item of connectedAssemblies.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function getItemConnectedAssemblies(uint256 smartObjectId, uint256 _index) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 32, (_index + 1) * 32);
+      return (uint256(bytes32(_blob)));
+    }
+  }
+
+  /**
+   * @notice Get an item of connectedAssemblies.
+   * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
+   */
+  function _getItemConnectedAssemblies(uint256 smartObjectId, uint256 _index) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 32, (_index + 1) * 32);
+      return (uint256(bytes32(_blob)));
+    }
+  }
+
+  /**
+   * @notice Push an element to connectedAssemblies.
+   */
+  function pushConnectedAssemblies(uint256 smartObjectId, uint256 _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
+  }
+
+  /**
+   * @notice Push an element to connectedAssemblies.
+   */
+  function _pushConnectedAssemblies(uint256 smartObjectId, uint256 _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
+  }
+
+  /**
+   * @notice Pop an element from connectedAssemblies.
+   */
+  function popConnectedAssemblies(uint256 smartObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 32);
+  }
+
+  /**
+   * @notice Pop an element from connectedAssemblies.
+   */
+  function _popConnectedAssemblies(uint256 smartObjectId) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 32);
+  }
+
+  /**
+   * @notice Update an element of connectedAssemblies at `_index`.
+   */
+  function updateConnectedAssemblies(uint256 smartObjectId, uint256 _index, uint256 _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _encoded = abi.encodePacked((_element));
+      StoreSwitch.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 32), uint40(_encoded.length), _encoded);
+    }
+  }
+
+  /**
+   * @notice Update an element of connectedAssemblies at `_index`.
+   */
+  function _updateConnectedAssemblies(uint256 smartObjectId, uint256 _index, uint256 _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    unchecked {
+      bytes memory _encoded = abi.encodePacked((_element));
+      StoreCore.spliceDynamicData(_tableId, _keyTuple, 0, uint40(_index * 32), uint40(_encoded.length), _encoded);
+    }
+  }
+
+  /**
    * @notice Get the full data.
    */
   function get(uint256 smartObjectId) internal view returns (NetworkNodeData memory _table) {
@@ -321,7 +485,8 @@ library NetworkNode {
     uint256 maxEnergyCapacity,
     uint256 energyProduced,
     uint256 totalReservedEnergy,
-    uint256 lastUpdatedAt
+    uint256 lastUpdatedAt,
+    uint256[] memory connectedAssemblies
   ) internal {
     bytes memory _staticData = encodeStatic(
       exists,
@@ -331,8 +496,8 @@ library NetworkNode {
       lastUpdatedAt
     );
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(connectedAssemblies);
+    bytes memory _dynamicData = encodeDynamic(connectedAssemblies);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -349,7 +514,8 @@ library NetworkNode {
     uint256 maxEnergyCapacity,
     uint256 energyProduced,
     uint256 totalReservedEnergy,
-    uint256 lastUpdatedAt
+    uint256 lastUpdatedAt,
+    uint256[] memory connectedAssemblies
   ) internal {
     bytes memory _staticData = encodeStatic(
       exists,
@@ -359,8 +525,8 @@ library NetworkNode {
       lastUpdatedAt
     );
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(connectedAssemblies);
+    bytes memory _dynamicData = encodeDynamic(connectedAssemblies);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -380,8 +546,8 @@ library NetworkNode {
       _table.lastUpdatedAt
     );
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(_table.connectedAssemblies);
+    bytes memory _dynamicData = encodeDynamic(_table.connectedAssemblies);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -401,8 +567,8 @@ library NetworkNode {
       _table.lastUpdatedAt
     );
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(_table.connectedAssemblies);
+    bytes memory _dynamicData = encodeDynamic(_table.connectedAssemblies);
 
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
@@ -438,15 +604,30 @@ library NetworkNode {
   }
 
   /**
+   * @notice Decode the tightly packed blob of dynamic data using the encoded lengths.
+   */
+  function decodeDynamic(
+    EncodedLengths _encodedLengths,
+    bytes memory _blob
+  ) internal pure returns (uint256[] memory connectedAssemblies) {
+    uint256 _start;
+    uint256 _end;
+    unchecked {
+      _end = _encodedLengths.atIndex(0);
+    }
+    connectedAssemblies = (SliceLib.getSubslice(_blob, _start, _end).decodeArray_uint256());
+  }
+
+  /**
    * @notice Decode the tightly packed blobs using this table's field layout.
    * @param _staticData Tightly packed static fields.
-   *
-   *
+   * @param _encodedLengths Encoded lengths of dynamic fields.
+   * @param _dynamicData Tightly packed dynamic fields.
    */
   function decode(
     bytes memory _staticData,
-    EncodedLengths,
-    bytes memory
+    EncodedLengths _encodedLengths,
+    bytes memory _dynamicData
   ) internal pure returns (NetworkNodeData memory _table) {
     (
       _table.exists,
@@ -455,6 +636,8 @@ library NetworkNode {
       _table.totalReservedEnergy,
       _table.lastUpdatedAt
     ) = decodeStatic(_staticData);
+
+    (_table.connectedAssemblies) = decodeDynamic(_encodedLengths, _dynamicData);
   }
 
   /**
@@ -492,6 +675,25 @@ library NetworkNode {
   }
 
   /**
+   * @notice Tightly pack dynamic data lengths using this table's schema.
+   * @return _encodedLengths The lengths of the dynamic fields (packed into a single bytes32 value).
+   */
+  function encodeLengths(uint256[] memory connectedAssemblies) internal pure returns (EncodedLengths _encodedLengths) {
+    // Lengths are effectively checked during copy by 2**40 bytes exceeding gas limits
+    unchecked {
+      _encodedLengths = EncodedLengthsLib.pack(connectedAssemblies.length * 32);
+    }
+  }
+
+  /**
+   * @notice Tightly pack dynamic (variable length) data using this table's schema.
+   * @return The dynamic data, encoded into a sequence of bytes.
+   */
+  function encodeDynamic(uint256[] memory connectedAssemblies) internal pure returns (bytes memory) {
+    return abi.encodePacked(EncodeArray.encode((connectedAssemblies)));
+  }
+
+  /**
    * @notice Encode all of a record's fields.
    * @return The static (fixed length) data, encoded into a sequence of bytes.
    * @return The lengths of the dynamic fields (packed into a single bytes32 value).
@@ -502,7 +704,8 @@ library NetworkNode {
     uint256 maxEnergyCapacity,
     uint256 energyProduced,
     uint256 totalReservedEnergy,
-    uint256 lastUpdatedAt
+    uint256 lastUpdatedAt,
+    uint256[] memory connectedAssemblies
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
     bytes memory _staticData = encodeStatic(
       exists,
@@ -512,8 +715,8 @@ library NetworkNode {
       lastUpdatedAt
     );
 
-    EncodedLengths _encodedLengths;
-    bytes memory _dynamicData;
+    EncodedLengths _encodedLengths = encodeLengths(connectedAssemblies);
+    bytes memory _dynamicData = encodeDynamic(connectedAssemblies);
 
     return (_staticData, _encodedLengths, _dynamicData);
   }
