@@ -52,7 +52,7 @@ contract NetworkNodeTestData is Script {
     bytes32 tenantId = Tenant.get();
     uint256 networkNodeId = ObjectIdLib.calculateSingletonId(tenantId, NETWORK_NODE_ID);
     console.log("networkNodeId", networkNodeId);
-    // createNetworkNode(alice, networkNodeId);
+    createNetworkNode(alice, networkNodeId);
 
     // Step 3: Deployer creates SSUs for each character
     createSSU(alice, networkNodeId);
@@ -62,8 +62,8 @@ contract NetworkNodeTestData is Script {
 
     // Step 5: Deployer creates other assemblies
     //TODO: Uncomment this when the functionality is working
-    // createPrinter(alice, networkNodeId);
-    // createPortableRefinery(alice, networkNodeId);
+    createPrinter(alice, networkNodeId);
+    createPortableRefinery(alice, networkNodeId);
     vm.stopBroadcast();
 
     // Step 6: Each character brings their own deployables online
