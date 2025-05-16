@@ -48,7 +48,7 @@ contract DeployableSystem is SmartObjectFramework {
   function createAndAnchor(
     CreateAndAnchorParams memory params,
     uint256 networkNodeId
-  ) public context access(params.smartObjectId) scope(getDeployableClassId()) {
+  ) public context access(params.smartObjectId) scope(0) {
     //TODO: this is not the correct way to use SOF, its a temporary  solution to allow deployables that does not have a proper class
     //If the smartObject is not part of any class, then default to the deployable class
     if (!Entity.getExists(params.smartObjectId)) {
