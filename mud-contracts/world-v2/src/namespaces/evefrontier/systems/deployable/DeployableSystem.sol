@@ -20,7 +20,7 @@ import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLi
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
-import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
+import { NetworkNodeSystem, networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
 import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
@@ -52,6 +52,7 @@ contract DeployableSystem is SmartObjectFramework {
 
     anchor(params.smartObjectId, params.owner, params.locationData);
 
+    // Handle network node connection if provided
     if (NetworkNode.getExists(networkNodeId)) {
       networkNodeSystem.connectAssembly(networkNodeId, params.smartObjectId);
     }
@@ -148,10 +149,20 @@ contract DeployableSystem is SmartObjectFramework {
     address owner = ownershipSystem.owner(smartObjectId);
     ownershipSystem.removeOwner(smartObjectId, owner);
 
+    uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
+    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+      networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
+      networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
+    } else if (NetworkNode.getExists(smartObjectId)) {
+      // For network nodes, stop burning fuel before bringing offline
+      fuelSystem.stopBurn(smartObjectId); //stop fuel consumption
+      networkNodeSystem.releaseNetworkNodeEnergy(smartObjectId); //release energy
+      _handleNodeOffline(smartObjectId); //bring offline all connected assemblies
+      networkNodeSystem.disconnectNetworkNode(smartObjectId);
+    }
+
     _setDeployableState(smartObjectId, previousState, State.DESTROYED);
     DeployableState.setIsValid(smartObjectId, false);
-
-    //TODO: disconnect the assembly from the network node and release the energy reserved by the deployable
   }
 
   /**
@@ -167,13 +178,12 @@ contract DeployableSystem is SmartObjectFramework {
     //Check the energy requirement to bringOnline if the deployable is connected to a network node or if it is a network node
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
-      networkNodeSystem.onAssemblyOnline(networkNodeId, smartObjectId);
+      networkNodeSystem.reserveAssemblyEnergy(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
       // For network nodes, start burning fuel before bringing online
       fuelSystem.startBurn(smartObjectId);
-      networkNodeSystem.onAssemblyOnline(smartObjectId, 0);
+      networkNodeSystem.reserveNetworkNodeEnergy(smartObjectId);
     }
-
     _setDeployableState(smartObjectId, previousState, State.ONLINE);
   }
 
@@ -189,12 +199,12 @@ contract DeployableSystem is SmartObjectFramework {
 
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
-      networkNodeSystem.onAssemblyOffline(networkNodeId, smartObjectId);
+      networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
       // For network nodes, stop burning fuel before bringing offline
       fuelSystem.stopBurn(smartObjectId);
-      networkNodeSystem.onNodeOffline(smartObjectId);
-      _handleNodeOffline(smartObjectId);
+      networkNodeSystem.releaseNetworkNodeEnergy(smartObjectId); //energy handling
+      _handleNodeOffline(smartObjectId); //state handling
     }
 
     _bringOffline(smartObjectId, previousState);
@@ -240,8 +250,6 @@ contract DeployableSystem is SmartObjectFramework {
       revert Deployable_IncorrectState(smartObjectId, previousState);
     }
 
-    _setDeployableState(smartObjectId, previousState, State.UNANCHORED);
-
     // increment the inventory data version (this will make ALL previous inventory item data stale)
     // reset the used capacity to 0
     // TODO: the following is a candidate for hook logic and optimization
@@ -267,15 +275,26 @@ contract DeployableSystem is SmartObjectFramework {
       smartGateSystem.unlinkGates(smartObjectId, destinationGateId);
     }
 
+    locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
+
+    uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
+    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+      networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
+      networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
+    } else if (NetworkNode.getExists(smartObjectId)) {
+      // For network nodes, stop burning fuel before bringing offline
+      fuelSystem.stopBurn(smartObjectId); //stop fuel consumption
+      networkNodeSystem.releaseNetworkNodeEnergy(smartObjectId); //release energy
+      _handleNodeOffline(smartObjectId); //bring offline all connected assemblies
+      networkNodeSystem.disconnectNetworkNode(smartObjectId);
+    }
+
+    _setDeployableState(smartObjectId, previousState, State.UNANCHORED);
+    DeployableState.setIsValid(smartObjectId, false);
+
     // Remove ownership tracking through OwnershipSystem
     address owner = OwnershipHelper.getOwner(smartObjectId);
     ownershipSystem.removeOwner(smartObjectId, owner);
-
-    locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
-
-    DeployableState.setIsValid(smartObjectId, false);
-
-    //TODO: disconnect the assembly from the network node and release the energy reserved by the deployable
   }
 
   /*******************************
@@ -285,21 +304,17 @@ contract DeployableSystem is SmartObjectFramework {
   /**
    * @dev On network node offine, it should bring all connected assemblies offline
    * This function is defined here to avoid recursive calls
-   * @param networkNodeId The ID of the Network Node
+   * @param networkNodeId The smartObjectId of the Network Node
    */
   function _handleNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     //Bring all connected assemblies offline
-    State previousState = DeployableState.getCurrentState(networkNodeId);
-    if (previousState == State.ONLINE) {
-      uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
-      for (uint256 i = 0; i < connectedAssemblies.length; i++) {
-        State assemblyState = DeployableState.getCurrentState(connectedAssemblies[i]);
-        if (assemblyState == State.ONLINE) {
-          _bringOffline(connectedAssemblies[i], previousState);
-        }
+
+    uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+    for (uint256 i = 0; i < connectedAssemblies.length; i++) {
+      State previousState = DeployableState.getCurrentState(connectedAssemblies[i]);
+      if (previousState == State.ONLINE) {
+        _bringOffline(connectedAssemblies[i], previousState);
       }
-      //Bring the network node offline
-      _bringOffline(networkNodeId, previousState);
     }
   }
 

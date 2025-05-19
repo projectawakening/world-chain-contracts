@@ -29,11 +29,19 @@ interface INetworkNodeSystem {
 
   function evefrontier__connectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__onAssemblyOnline(uint256 networkNodeId, uint256 assemblyId) external;
+  function evefrontier__disconnectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
 
-  function evefrontier__onAssemblyOffline(uint256 networkNodeId, uint256 assemblyId) external;
+  function evefrontier__disconnectNetworkNode(uint256 networkNodeId) external;
 
-  function evefrontier__onNodeOffline(uint256 networkNodeId) external;
+  function evefrontier__reserveAssemblyEnergy(uint256 networkNodeId, uint256 assemblyId) external;
+
+  function evefrontier__reserveNetworkNodeEnergy(uint256 networkNodeId) external;
+
+  function evefrontier__releaseAssemblyEnergy(uint256 networkNodeId, uint256 assemblyId) external;
+
+  function evefrontier__releaseNetworkNodeEnergy(uint256 networkNodeId) external;
+
+  function evefrontier__updateEnergyHistory(uint256 networkNodeId) external;
 
   function evefrontier__getNetworkNodeClassId() external view returns (uint256);
 }

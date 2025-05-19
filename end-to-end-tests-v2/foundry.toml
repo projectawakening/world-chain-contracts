@@ -4,11 +4,43 @@ evm_version="cancun"
 ffi = false
 fuzz_runs = 256
 optimizer = true
-optimizer_runs = 300
+optimizer_runs = 200
 via_ir = true
+verbosity = 1
+src = 'script'
+out = 'out'
+cache = true
+cache_path = "cache"
+incremental = true
+
+[profile.default.ir]
+optimize = true
+optimize_yul = true
+allow_paths = [
+  "../mud-contracts/core-v2",
+  "../mud-contracts/smart-object-framework-v2",
+  "../mud-contracts/world-v2",
+  "node_modules/@latticexyz/world/src",
+  "node_modules/@latticexyz/store/src",
+  "node_modules/@latticexyz/schema-type/src",
+  "node_modules/@latticexyz/world-modules/src",
+  "node_modules/@openzeppelin/contracts",
+  "../standard-contracts-v2/src"
+]
+
+[profile.dev]
+solc = "0.8.24"
+evm_version="cancun"
+ffi = false
+fuzz_runs = 256
+optimizer = true
+optimizer_runs = 100
+via_ir = false
 verbosity = 2
 src = 'script'
 out = 'out'
+cache = true
+cache_path = "cache"
 allow_paths = [
   "../mud-contracts/core-v2",
   "../mud-contracts/smart-object-framework-v2",

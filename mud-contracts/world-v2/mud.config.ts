@@ -210,6 +210,7 @@ export default defineWorld({
           schema: {
             networkNodeId: "uint256", // ID of the Network Node
             assemblyId: "uint256", // ID of the connected assembly
+            connectedAssemblyIndex: "uint256", // Index of the assembly in the connectedAssemblies array
             isConnected: "bool", // Whether assembly is currently connected
             connectedAt: "uint256", // When the assembly was connected
           },

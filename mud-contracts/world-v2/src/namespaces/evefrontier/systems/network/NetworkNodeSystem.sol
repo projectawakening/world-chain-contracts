@@ -69,6 +69,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Connects a assembly to a Network Node
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly to connect
+   * TODO: change access control to only allow admin or deployable system
    */
   function connectAssembly(
     uint256 networkNodeId,
@@ -82,10 +83,13 @@ contract NetworkNodeSystem is SmartObjectFramework {
       revert NetworkNode_AssemblyAlreadyConnected(networkNodeId, assemblyId);
     }
 
+    uint256 connectedAssemblyLength = NetworkNode.getConnectedAssemblies(networkNodeId).length;
+
     // Record the connection
     NetworkNodeAssemblyLink.set(
       networkNodeId,
       assemblyId,
+      connectedAssemblyLength, // Index of the assembly in the connectedAssemblies array
       true, // isConnected
       block.timestamp // connectedAt
     );
@@ -97,15 +101,13 @@ contract NetworkNodeSystem is SmartObjectFramework {
     NetworkNode.pushConnectedAssemblies(networkNodeId, assemblyId);
   }
 
-  //TODO : Disconnect assembly
-  //When a assembly is disconnected from a network node, update the NetworkNode table and NetworkNodeAssemblyLink table
-
   /**
-   * @dev Handles a assembly being brought online
+   * @dev Disconnects a assembly from a Network Node
    * @param networkNodeId The ID of the Network Node
-   * @param assemblyId The ID of the assembly
+   * @param assemblyId The ID of the assembly to disconnect
+   * TODO: change access control to only allow admin or deployable system
    */
-  function onAssemblyOnline(
+  function disconnectAssembly(
     uint256 networkNodeId,
     uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
@@ -113,97 +115,77 @@ contract NetworkNodeSystem is SmartObjectFramework {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
-    uint256 assemblyTypeId;
-
-    //If assembly is connected to a network node, get the energy requirement of the assembly
     if (NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
-      assemblyTypeId = EntityRecord.getTypeId(assemblyId);
-    } else {
-      //If assembly is not connected to a network node, get the energy requirement of the network node
-      assemblyTypeId = EntityRecord.getTypeId(networkNodeId);
+      uint256 assemblyIndex = NetworkNodeAssemblyLink.getConnectedAssemblyIndex(networkNodeId, assemblyId);
+      uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
+
+      uint256 lastElement = connectedAssemblies[connectedAssemblies.length - 1];
+      NetworkNode.updateConnectedAssemblies(networkNodeId, assemblyIndex, lastElement);
+      NetworkNode.popConnectedAssemblies(networkNodeId);
+      NetworkNodeAssemblyLink.setConnectedAssemblyIndex(networkNodeId, lastElement, assemblyIndex);
+
+      _deleteConnectedAssembly(networkNodeId, assemblyId);
+    }
+  }
+
+  /**
+   * @dev Disconnects all assemblies from a Network Node
+   * @param networkNodeId The ID of the Network Node
+   * TODO: change access control to only allow admin or deployable system
+   */
+  function disconnectNetworkNode(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+    if (!NetworkNode.getExists(networkNodeId)) {
+      revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
-    uint256 energyRequired = AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
+    uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
 
-    // Check if we have enough energy available
-    uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
-    uint256 maxCapacity = NetworkNode.getMaxEnergyCapacity(networkNodeId);
-
-    if (currentReserved + energyRequired > maxCapacity) {
-      //TODO: change this to currentProduction
-      revert NetworkNode_InsufficientEnergy(networkNodeId, energyRequired, maxCapacity - currentReserved);
+    //TODO: find efficient way to do this
+    for (uint256 i = 0; i < connectedAssemblies.length; i++) {
+      uint256 assemblyId = connectedAssemblies[i];
+      _deleteConnectedAssembly(networkNodeId, assemblyId);
     }
 
-    // Update total reserved energy
-    NetworkNode.setTotalReservedEnergy(networkNodeId, currentReserved + energyRequired);
-    NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+    NetworkNode.setConnectedAssemblies(networkNodeId, new uint256[](0));
+  }
 
-    // Update energy history
-    updateEnergyHistory(networkNodeId);
+  /**
+   * @dev Handles a assembly being brought online
+   * @param networkNodeId The ID of the Network Node
+   * @param assemblyId The ID of the assembly
+   * TODO: change access control to only allow admin or deployable system
+   */
+  function reserveAssemblyEnergy(
+    uint256 networkNodeId,
+    uint256 assemblyId
+  ) public context access(networkNodeId) scope(networkNodeId) {
+    uint256 assemblyTypeId = EntityRecord.getTypeId(assemblyId);
+    _reserveEnergy(networkNodeId, assemblyTypeId);
+  }
+
+  /**
+   * @dev Handles a network node being brought online
+   * @param networkNodeId SmartObjectId of the Network Node
+   * TODO: change access control to only allow admin or deployable system
+   */
+  function reserveNetworkNodeEnergy(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+    uint256 assemblyTypeId = EntityRecord.getTypeId(networkNodeId);
+    _reserveEnergy(networkNodeId, assemblyTypeId);
   }
 
   /**
    * @dev Update energy status by assembly on offline
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly
+   * TODO: change access control to only allow admin or deployable system
    */
-  function onAssemblyOffline(
+  function releaseAssemblyEnergy(
     uint256 networkNodeId,
     uint256 assemblyId
   ) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
-    _handleAssemblyOffline(networkNodeId, assemblyId);
-  }
-
-  /**
-   * @dev Update energy status and diconnect all assemblies from the network node
-   * @param networkNodeId The ID of the Network Node
-   */
-  function onNodeOffline(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
-    if (!NetworkNode.getExists(networkNodeId)) {
-      revert NetworkNode_DoesNotExist(networkNodeId);
-    }
-
-    //make sure there is no connected assemblies
-    uint256[] memory connectedAssemblies = NetworkNode.getConnectedAssemblies(networkNodeId);
-    for (uint256 i = 0; i < connectedAssemblies.length; i++) {
-      _handleAssemblyOffline(networkNodeId, connectedAssemblies[i]); //release energy
-    }
-
-    _handleNodeOffline(networkNodeId);
-  }
-
-  /**
-   * @dev Updates the energy history for a network node
-   * @param networkNodeId The ID of the Network Node
-   */
-  function updateEnergyHistory(uint256 networkNodeId) internal {
-    NetworkNodeEnergyHistory.set(networkNodeId, block.timestamp, NetworkNode.getTotalReservedEnergy(networkNodeId));
-  }
-
-  //INTERNAL FUNCTIONS
-  /**
-   * @dev Internal function to handle network node going offline
-   * @param networkNodeId The ID of the Network Node
-   */
-  function _handleNodeOffline(uint256 networkNodeId) internal {
-    // Reset total reserved energy
-    NetworkNode.setEnergyProduced(networkNodeId, 0);
-    NetworkNode.setTotalReservedEnergy(networkNodeId, 0);
-    NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
-
-    // Update energy history
-    updateEnergyHistory(networkNodeId);
-  }
-
-  /**
-   * @dev Internal function to handle a single assembly going offline
-   * @param networkNodeId The ID of the Network Node
-   * @param assemblyId The ID of the assembly
-   */
-  function _handleAssemblyOffline(uint256 networkNodeId, uint256 assemblyId) internal {
     uint256 assemblyTypeId = EntityRecord.getTypeId(assemblyId);
     uint256 releasedEnergy = AssemblyEnergyConfig.getEnergyConstant(assemblyTypeId);
 
@@ -219,11 +201,72 @@ contract NetworkNodeSystem is SmartObjectFramework {
     }
   }
 
+  /**
+   * @dev Update energy status and diconnect all assemblies from the network node
+   * @param networkNodeId The ID of the Network Node
+   * TODO: change access control to only allow admin or deployable system
+   */
+  function releaseNetworkNodeEnergy(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+    if (!NetworkNode.getExists(networkNodeId)) {
+      revert NetworkNode_DoesNotExist(networkNodeId);
+    }
+
+    // Reset total reserved energy
+    NetworkNode.setEnergyProduced(networkNodeId, 0);
+    NetworkNode.setTotalReservedEnergy(networkNodeId, 0);
+    NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+
+    // Update energy history
+    updateEnergyHistory(networkNodeId);
+  }
+
+  /**
+   * @dev Updates the energy history for a network node
+   * @param networkNodeId SmartObjectId of the Network Node
+   * TODO: change access control to only allow admin or deployable system
+   */
+  function updateEnergyHistory(uint256 networkNodeId) public {
+    NetworkNodeEnergyHistory.set(networkNodeId, block.timestamp, NetworkNode.getTotalReservedEnergy(networkNodeId));
+  }
+
   function getNetworkNodeClassId() public view returns (uint256) {
     return Initialize.get(networkNodeSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {
     return IWorldWithContext(_world());
+  }
+
+  /*******************************
+   * INTERNAL FUNCTIONS *
+   *******************************/
+  /**
+   * @dev Handles a assembly being brought online
+   * @param networkNodeId SmartObjectId of the Network Node
+   * @param assemblyId SmartObjectId of the assembly
+   */
+  function _reserveEnergy(uint256 networkNodeId, uint256 assemblyId) internal {
+    uint256 energyRequired = AssemblyEnergyConfig.getEnergyConstant(assemblyId);
+
+    // Check if we have enough energy available
+    uint256 currentReserved = NetworkNode.getTotalReservedEnergy(networkNodeId);
+    uint256 currentProduction = NetworkNode.getEnergyProduced(networkNodeId);
+
+    if (currentReserved + energyRequired > currentProduction) {
+      //TODO: change this to currentProduction
+      revert NetworkNode_InsufficientEnergy(networkNodeId, energyRequired, currentProduction - currentReserved);
+    }
+
+    // Update total reserved energy
+    NetworkNode.setTotalReservedEnergy(networkNodeId, currentReserved + energyRequired);
+    NetworkNode.setLastUpdatedAt(networkNodeId, block.timestamp);
+
+    // Update energy history
+    updateEnergyHistory(networkNodeId);
+  }
+
+  function _deleteConnectedAssembly(uint256 networkNodeId, uint256 assemblyId) internal {
+    NetworkNodeAssemblyLink.deleteRecord(networkNodeId, assemblyId);
+    NetworkNodeByAssembly.deleteRecord(assemblyId);
   }
 }

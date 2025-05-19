@@ -17,6 +17,7 @@ import { EncodedLengths, EncodedLengthsLib } from "@latticexyz/store/src/Encoded
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
 struct NetworkNodeAssemblyLinkData {
+  uint256 connectedAssemblyIndex;
   bool isConnected;
   uint256 connectedAt;
 }
@@ -26,12 +27,12 @@ library NetworkNodeAssemblyLink {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004e6574776f726b4e6f6465417373656d);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0021020001200000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0041030020012000000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256, uint256)
   Schema constant _keySchema = Schema.wrap(0x004002001f1f0000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (bool, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x00210200601f0000000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, bool, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x004103001f601f00000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -48,9 +49,10 @@ library NetworkNodeAssemblyLink {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](2);
-    fieldNames[0] = "isConnected";
-    fieldNames[1] = "connectedAt";
+    fieldNames = new string[](3);
+    fieldNames[0] = "connectedAssemblyIndex";
+    fieldNames[1] = "isConnected";
+    fieldNames[2] = "connectedAt";
   }
 
   /**
@@ -68,6 +70,66 @@ library NetworkNodeAssemblyLink {
   }
 
   /**
+   * @notice Get connectedAssemblyIndex.
+   */
+  function getConnectedAssemblyIndex(
+    uint256 networkNodeId,
+    uint256 assemblyId
+  ) internal view returns (uint256 connectedAssemblyIndex) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(networkNodeId));
+    _keyTuple[1] = bytes32(uint256(assemblyId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get connectedAssemblyIndex.
+   */
+  function _getConnectedAssemblyIndex(
+    uint256 networkNodeId,
+    uint256 assemblyId
+  ) internal view returns (uint256 connectedAssemblyIndex) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(networkNodeId));
+    _keyTuple[1] = bytes32(uint256(assemblyId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set connectedAssemblyIndex.
+   */
+  function setConnectedAssemblyIndex(
+    uint256 networkNodeId,
+    uint256 assemblyId,
+    uint256 connectedAssemblyIndex
+  ) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(networkNodeId));
+    _keyTuple[1] = bytes32(uint256(assemblyId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((connectedAssemblyIndex)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set connectedAssemblyIndex.
+   */
+  function _setConnectedAssemblyIndex(
+    uint256 networkNodeId,
+    uint256 assemblyId,
+    uint256 connectedAssemblyIndex
+  ) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(networkNodeId));
+    _keyTuple[1] = bytes32(uint256(assemblyId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((connectedAssemblyIndex)), _fieldLayout);
+  }
+
+  /**
    * @notice Get isConnected.
    */
   function getIsConnected(uint256 networkNodeId, uint256 assemblyId) internal view returns (bool isConnected) {
@@ -75,7 +137,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
   }
 
@@ -87,7 +149,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
   }
 
@@ -99,7 +161,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((isConnected)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((isConnected)), _fieldLayout);
   }
 
   /**
@@ -110,7 +172,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((isConnected)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((isConnected)), _fieldLayout);
   }
 
   /**
@@ -121,7 +183,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -133,7 +195,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 2, _fieldLayout);
     return (uint256(bytes32(_blob)));
   }
 
@@ -145,7 +207,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((connectedAt)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((connectedAt)), _fieldLayout);
   }
 
   /**
@@ -156,7 +218,7 @@ library NetworkNodeAssemblyLink {
     _keyTuple[0] = bytes32(uint256(networkNodeId));
     _keyTuple[1] = bytes32(uint256(assemblyId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((connectedAt)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((connectedAt)), _fieldLayout);
   }
 
   /**
@@ -200,8 +262,14 @@ library NetworkNodeAssemblyLink {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(uint256 networkNodeId, uint256 assemblyId, bool isConnected, uint256 connectedAt) internal {
-    bytes memory _staticData = encodeStatic(isConnected, connectedAt);
+  function set(
+    uint256 networkNodeId,
+    uint256 assemblyId,
+    uint256 connectedAssemblyIndex,
+    bool isConnected,
+    uint256 connectedAt
+  ) internal {
+    bytes memory _staticData = encodeStatic(connectedAssemblyIndex, isConnected, connectedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -216,8 +284,14 @@ library NetworkNodeAssemblyLink {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(uint256 networkNodeId, uint256 assemblyId, bool isConnected, uint256 connectedAt) internal {
-    bytes memory _staticData = encodeStatic(isConnected, connectedAt);
+  function _set(
+    uint256 networkNodeId,
+    uint256 assemblyId,
+    uint256 connectedAssemblyIndex,
+    bool isConnected,
+    uint256 connectedAt
+  ) internal {
+    bytes memory _staticData = encodeStatic(connectedAssemblyIndex, isConnected, connectedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -233,7 +307,7 @@ library NetworkNodeAssemblyLink {
    * @notice Set the full data using the data struct.
    */
   function set(uint256 networkNodeId, uint256 assemblyId, NetworkNodeAssemblyLinkData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.isConnected, _table.connectedAt);
+    bytes memory _staticData = encodeStatic(_table.connectedAssemblyIndex, _table.isConnected, _table.connectedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -249,7 +323,7 @@ library NetworkNodeAssemblyLink {
    * @notice Set the full data using the data struct.
    */
   function _set(uint256 networkNodeId, uint256 assemblyId, NetworkNodeAssemblyLinkData memory _table) internal {
-    bytes memory _staticData = encodeStatic(_table.isConnected, _table.connectedAt);
+    bytes memory _staticData = encodeStatic(_table.connectedAssemblyIndex, _table.isConnected, _table.connectedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -264,10 +338,14 @@ library NetworkNodeAssemblyLink {
   /**
    * @notice Decode the tightly packed blob of static data using this table's field layout.
    */
-  function decodeStatic(bytes memory _blob) internal pure returns (bool isConnected, uint256 connectedAt) {
-    isConnected = (_toBool(uint8(Bytes.getBytes1(_blob, 0))));
+  function decodeStatic(
+    bytes memory _blob
+  ) internal pure returns (uint256 connectedAssemblyIndex, bool isConnected, uint256 connectedAt) {
+    connectedAssemblyIndex = (uint256(Bytes.getBytes32(_blob, 0)));
 
-    connectedAt = (uint256(Bytes.getBytes32(_blob, 1)));
+    isConnected = (_toBool(uint8(Bytes.getBytes1(_blob, 32))));
+
+    connectedAt = (uint256(Bytes.getBytes32(_blob, 33)));
   }
 
   /**
@@ -281,7 +359,7 @@ library NetworkNodeAssemblyLink {
     EncodedLengths,
     bytes memory
   ) internal pure returns (NetworkNodeAssemblyLinkData memory _table) {
-    (_table.isConnected, _table.connectedAt) = decodeStatic(_staticData);
+    (_table.connectedAssemblyIndex, _table.isConnected, _table.connectedAt) = decodeStatic(_staticData);
   }
 
   /**
@@ -310,8 +388,12 @@ library NetworkNodeAssemblyLink {
    * @notice Tightly pack static (fixed length) data using this table's schema.
    * @return The static data, encoded into a sequence of bytes.
    */
-  function encodeStatic(bool isConnected, uint256 connectedAt) internal pure returns (bytes memory) {
-    return abi.encodePacked(isConnected, connectedAt);
+  function encodeStatic(
+    uint256 connectedAssemblyIndex,
+    bool isConnected,
+    uint256 connectedAt
+  ) internal pure returns (bytes memory) {
+    return abi.encodePacked(connectedAssemblyIndex, isConnected, connectedAt);
   }
 
   /**
@@ -321,10 +403,11 @@ library NetworkNodeAssemblyLink {
    * @return The dynamic (variable length) data, encoded into a sequence of bytes.
    */
   function encode(
+    uint256 connectedAssemblyIndex,
     bool isConnected,
     uint256 connectedAt
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(isConnected, connectedAt);
+    bytes memory _staticData = encodeStatic(connectedAssemblyIndex, isConnected, connectedAt);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
