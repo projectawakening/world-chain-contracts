@@ -42,11 +42,13 @@ contract NetworkNodeEnergyTest is MudTest {
   uint256 constant SMART_GATE_ID = 1235;
   uint256 constant SMART_STORAGE_ID = 1236;
   uint256 constant SMART_TURRET_ID = 1237;
+  uint256 constant PORTABLE_REFINERY_ID = 1238;
 
   uint256 networkNodeId;
   uint256 smartGateId;
   uint256 smartStorageId;
   uint256 smartTurretId;
+  uint256 portableRefineryId;
   uint256 fuelSmartObjectId;
 
   // Location data
@@ -110,6 +112,12 @@ contract NetworkNodeEnergyTest is MudTest {
     smartTurretId = _calculateObjectId(
       EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
       SMART_TURRET_ID,
+      true
+    );
+
+    portableRefineryId = _calculateObjectId(
+      EntityRecord.getTypeId(deployableSystem.getDeployableClassId()),
+      PORTABLE_REFINERY_ID,
       true
     );
 
