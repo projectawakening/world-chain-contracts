@@ -132,7 +132,7 @@ contract FuelSystem is SmartObjectFramework {
       }
     }
 
-    _updateFuel(smartObjectId);
+    updateFuel(smartObjectId);
 
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
@@ -159,7 +159,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 smartObjectId,
     uint256 fuelAmount
   ) public context access(smartObjectId) scope(smartObjectId) {
-    _updateFuel(smartObjectId);
+    updateFuel(smartObjectId);
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
 
     if (fuelAmount == 0 || fuelAmount > currentFuelAmount) {
