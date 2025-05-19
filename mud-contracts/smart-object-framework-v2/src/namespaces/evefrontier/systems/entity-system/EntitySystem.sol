@@ -168,46 +168,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev access configuration - only callable directly by a member of the object's Class access role or a Class scoped System (see SOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole)
    */
   function instantiate(uint256 classId, uint256 objectId, address accessRoleMember) public virtual context access(classId) {
-    if (!Entity.getExists(classId)) {
-      revert Entity_EntityDoesNotExist(classId);
-    }
-    if (!EntityTagMap.getHasTag(classId, CLASS_PROPERTY_TAG)) {
-      revert Entity_PropertyTagNotFound(classId, CLASS_PROPERTY_TAG);
-    }
-
-    if (objectId == uint256(0)) {
-      revert Entity_InvalidEntityId(objectId);
-    }
-
-    if (Entity.getExists(objectId)) {
-      revert Entity_EntityAlreadyExists(objectId);
-    }
-
-    bytes32 objectAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", objectId));
-
-    roleManagementSystem.scopedCreateRole(classId, objectAccessRole, objectAccessRole, accessRoleMember);
-
-    Entity.set(objectId, true, objectAccessRole, TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
-
-    // increment the count for the parent class entity relation value
-    uint256 numberOfDependentEntities = abi.decode(
-      EntityTagMap.getValue(classId, ENTITY_COUNT_PROPERTY_TAG),
-      (uint256)
-    );
-    EntityTagMap.setValue(classId, ENTITY_COUNT_PROPERTY_TAG, abi.encode(numberOfDependentEntities + 1));
-
-    // set the object tags
-    TagId inheritanceTagId = TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(objectId)));
-    TagParams memory entityRelationTag = TagParams(
-      inheritanceTagId,
-      abi.encode(EntityRelationValue("INHERITANCE", classId))
-    );
-
-    tagSystem.setTag(objectId, entityRelationTag);
-
-    TagParams memory propertyTag = TagParams(OBJECT_PROPERTY_TAG, bytes(""));
-
-    tagSystem.setTag(objectId, propertyTag);
+    _instantiate(classId, objectId, accessRoleMember);
   }
 
   /**
@@ -333,5 +294,48 @@ contract EntitySystem is SmartObjectFramework {
     if (systemResourceTags.length > 0) {
       tagSystem.setTags(classId, systemResourceTags);
     }
+  }
+
+  function _instantiate(uint256 classId, uint256 objectId, address accessRoleMember) internal virtual {
+    if (!Entity.getExists(classId)) {
+      revert Entity_EntityDoesNotExist(classId);
+    }
+    if (!EntityTagMap.getHasTag(classId, CLASS_PROPERTY_TAG)) {
+      revert Entity_PropertyTagNotFound(classId, CLASS_PROPERTY_TAG);
+    }
+
+    if (objectId == uint256(0)) {
+      revert Entity_InvalidEntityId(objectId);
+    }
+
+    if (Entity.getExists(objectId)) {
+      revert Entity_EntityAlreadyExists(objectId);
+    }
+
+    bytes32 objectAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", objectId));
+
+    roleManagementSystem.scopedCreateRole(classId, objectAccessRole, objectAccessRole, accessRoleMember);
+
+    Entity.set(objectId, true, objectAccessRole, TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
+
+    // increment the count for the parent class entity relation value
+    uint256 numberOfDependentEntities = abi.decode(
+      EntityTagMap.getValue(classId, ENTITY_COUNT_PROPERTY_TAG),
+      (uint256)
+    );
+    EntityTagMap.setValue(classId, ENTITY_COUNT_PROPERTY_TAG, abi.encode(numberOfDependentEntities + 1));
+
+    // set the object tags
+    TagId inheritanceTagId = TagIdLib.encode(TAG_TYPE_ENTITY_RELATION, bytes30(bytes32(objectId)));
+    TagParams memory entityRelationTag = TagParams(
+      inheritanceTagId,
+      abi.encode(EntityRelationValue("INHERITANCE", classId))
+    );
+
+    tagSystem.setTag(objectId, entityRelationTag);
+
+    TagParams memory propertyTag = TagParams(OBJECT_PROPERTY_TAG, bytes(""));
+
+    tagSystem.setTag(objectId, propertyTag);
   }
 }
