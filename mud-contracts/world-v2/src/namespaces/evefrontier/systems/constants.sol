@@ -15,5 +15,4 @@ uint256 constant MAX_FUEL_EFFICIENCY = 100;
 
 uint256 constant PERCENTAGE_DIVISOR = 100;
 
-
 uint256 constant MIN_FUEL_BURN_RATE = 60;

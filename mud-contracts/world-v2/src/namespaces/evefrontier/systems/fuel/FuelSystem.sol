@@ -58,8 +58,16 @@ contract FuelSystem is SmartObjectFramework {
       revert Fuel_InvalidFuelMaxCapacity(smartObjectId, fuelParams.fuelMaxCapacity, 1, uint256(type(uint128).max));
     }
     // fuel burn rate must be at least 60 seconds
-    if (fuelParams.fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE || fuelParams.fuelBurnRateInSeconds > uint256(type(uint128).max)) {
-      revert Fuel_InvalidFuelBurnRate(smartObjectId, fuelParams.fuelBurnRateInSeconds, MIN_FUEL_BURN_RATE, uint256(type(uint128).max));
+    if (
+      fuelParams.fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE ||
+      fuelParams.fuelBurnRateInSeconds > uint256(type(uint128).max)
+    ) {
+      revert Fuel_InvalidFuelBurnRate(
+        smartObjectId,
+        fuelParams.fuelBurnRateInSeconds,
+        MIN_FUEL_BURN_RATE,
+        uint256(type(uint128).max)
+      );
     }
 
     Fuel.setFuelMaxCapacity(smartObjectId, fuelParams.fuelMaxCapacity);
@@ -124,6 +132,8 @@ contract FuelSystem is SmartObjectFramework {
       }
     }
 
+    _updateFuel(smartObjectId);
+
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
     uint256 currentVolume = EntityRecord.getVolume(fuelSmartObjectId);
@@ -149,6 +159,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 smartObjectId,
     uint256 fuelAmount
   ) public context access(smartObjectId) scope(smartObjectId) {
+    _updateFuel(smartObjectId);
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
 
     if (fuelAmount == 0 || fuelAmount > currentFuelAmount) {
