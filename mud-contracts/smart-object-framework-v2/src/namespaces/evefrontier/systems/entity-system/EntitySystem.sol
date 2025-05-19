@@ -49,7 +49,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Assigns caller as a member of the new access role for this class {see, RoleManagementSystem.sol}
    * @dev access configuration - no configuration, restricted to direct calls
    */
-  function registerClass(uint256 classId, ResourceId[] memory scopedSystemIds) public context enforceCallCount(1) {
+  function registerClass(uint256 classId, ResourceId[] memory scopedSystemIds) public virtual context enforceCallCount(1) {
     _registerClass(classId, _callMsgSender(1), scopedSystemIds);
   }
 
@@ -66,7 +66,7 @@ contract EntitySystem is SmartObjectFramework {
     uint256 classId,
     address accessRoleMember,
     ResourceId[] memory scopedSystemIds
-  ) public context access(classId) {
+  ) public virtual context access(classId) {
     _registerClass(classId, accessRoleMember, scopedSystemIds);
   }
 
@@ -78,7 +78,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Requires a direct caller to be a member of the current `accessRole`, or a System that is associated to the Class
    * @dev access configuration - only callable directly by a member of the Class access role or by a Class scoped System (see SOFAccessSystem.allowClassScopedSystemOrDirectAccessRole)
    */
-  function setClassAccessRole(uint256 classId, bytes32 newAccessRole) public context access(classId) {
+  function setClassAccessRole(uint256 classId, bytes32 newAccessRole) public virtual context access(classId) {
     if (!Entity.getExists(classId)) {
       revert Entity_EntityDoesNotExist(classId);
     }
@@ -102,7 +102,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Warning: Dependent data in relationally tagged entities and resources should be handled before deletion!
    * @dev access configuration - only callable directly by a member of the Class access role (see SOFAccessSystem.allowDirectAccessRole)
    */
-  function deleteClass(uint256 classId) public context access(classId) {
+  function deleteClass(uint256 classId) public virtual context access(classId) {
     if (!Entity.getExists(classId)) {
       revert Entity_EntityDoesNotExist(classId);
     }
@@ -151,7 +151,7 @@ contract EntitySystem is SmartObjectFramework {
    * @param classIds An array of uint256 IDs of existing class tagged Entities
    * @dev Iteratively calls deleteClass for each classId in `classIds`
    */
-  function deleteClasses(uint256[] memory classIds) public {
+  function deleteClasses(uint256[] memory classIds) public virtual {
     for (uint i = 0; i < classIds.length; i++) {
       deleteClass(classIds[i]);
     }
@@ -167,7 +167,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Requires a direct caller to be a member of the parent Class `accessRole` or a System that is tagged to the parent Class
    * @dev access configuration - only callable directly by a member of the object's Class access role or a Class scoped System (see SOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole)
    */
-  function instantiate(uint256 classId, uint256 objectId, address accessRoleMember) public context access(classId) {
+  function instantiate(uint256 classId, uint256 objectId, address accessRoleMember) public virtual context access(classId) {
     if (!Entity.getExists(classId)) {
       revert Entity_EntityDoesNotExist(classId);
     }
@@ -217,7 +217,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Validates `objectId` existence, and `newAccessRole` existence
    * @dev access configuration - only callable directly by a member of the Object Access role or by a Class scoped System (see SOFAccessSystem.allowClassScopedSystemOrDirectAccessRole)
    */
-  function setObjectAccessRole(uint256 objectId, bytes32 newAccessRole) public context access(objectId) {
+  function setObjectAccessRole(uint256 objectId, bytes32 newAccessRole) public virtual context access(objectId) {
     if (!Entity.getExists(objectId)) {
       revert Entity_EntityDoesNotExist(objectId);
     }
@@ -238,7 +238,7 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Warning: Dependent data in associated entities and resources should be handled before deletion!
    * @dev access configuration - only callable directly by a member of the object's Class access role or by Class scoped System (see SOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole)
    */
-  function deleteObject(uint256 objectId) public context access(objectId) {
+  function deleteObject(uint256 objectId) public virtual context access(objectId) {
     if (!Entity.getExists(objectId)) {
       revert Entity_EntityDoesNotExist(objectId);
     }
@@ -295,13 +295,13 @@ contract EntitySystem is SmartObjectFramework {
    * @param objectIds An array of uint256 IDs of existing object tagged Entities
    * @dev Iteratively calls deleteObject for each objectId in `objectIds`
    */
-  function deleteObjects(uint256[] memory objectIds) public {
+  function deleteObjects(uint256[] memory objectIds) public virtual {
     for (uint i = 0; i < objectIds.length; i++) {
       deleteObject(objectIds[i]);
     }
   }
 
-  function _registerClass(uint256 classId, address accessRoleMember, ResourceId[] memory scopedSystemIds) private {
+  function _registerClass(uint256 classId, address accessRoleMember, ResourceId[] memory scopedSystemIds) internal virtual {
     if (classId == uint256(0)) {
       revert Entity_InvalidEntityId(classId);
     }
