@@ -58,7 +58,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
       params.smartObjectId,
       true, // exists
       maxEnergyCapacity, // maxEnergyCapacity
-      currentProduction, // currentProduction
+      0, // currentProduction is 0 until its online
       0, // totalReservedEnergy (starts at 0)
       block.timestamp, // lastUpdatedAt
       new uint256[](0) // connectedAssemblies
@@ -169,6 +169,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * TODO: change access control to only allow admin or deployable system
    */
   function reserveNetworkNodeEnergy(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
+    NetworkNode.setEnergyProduced(networkNodeId, NetworkNode.getMaxEnergyCapacity(networkNodeId));
     uint256 assemblyTypeId = EntityRecord.getTypeId(networkNodeId);
     _reserveEnergy(networkNodeId, assemblyTypeId);
   }
@@ -253,8 +254,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
     uint256 currentProduction = NetworkNode.getEnergyProduced(networkNodeId);
 
     if (currentReserved + energyRequired > currentProduction) {
-      //TODO: change this to currentProduction
-      revert NetworkNode_InsufficientEnergy(networkNodeId, energyRequired, currentProduction - currentReserved);
+      uint256 energyAvailable = currentProduction == 0 ? 0 : currentProduction - currentReserved;
+      revert NetworkNode_InsufficientEnergy(networkNodeId, energyRequired, energyAvailable);
     }
 
     // Update total reserved energy
