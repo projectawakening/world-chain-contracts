@@ -305,11 +305,13 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
 
   // Configure access for FuelSystem
   function configureFuelAccess() public {
-    bytes4[4] memory fuelOnlyAdminOrClassScopedSelectors = [
+    bytes4[6] memory fuelOnlyAdminOrClassScopedSelectors = [
       FuelSystem.configureFuelParameters.selector,
       FuelSystem.updateFuel.selector,
       FuelSystem.setFuelMaxCapacity.selector,
-      FuelSystem.configureFuelEfficiency.selector
+      FuelSystem.configureFuelEfficiency.selector,
+      FuelSystem.startBurn.selector,
+      FuelSystem.stopBurn.selector
     ];
 
     for (uint256 i = 0; i < fuelOnlyAdminOrClassScopedSelectors.length; i++) {
@@ -322,11 +324,9 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       accessConfigSystem.setAccessEnforcement(fuelSystem.toResourceId(), fuelOnlyAdminOrClassScopedSelectors[i], true);
     }
 
-    bytes4[4] memory fuelOnlyAdminOrOwnerSupportedSelectors = [
+    bytes4[2] memory fuelOnlyAdminOrOwnerSupportedSelectors = [
       FuelSystem.depositFuel.selector,
-      FuelSystem.withdrawFuel.selector,
-      FuelSystem.startBurn.selector,
-      FuelSystem.stopBurn.selector
+      FuelSystem.withdrawFuel.selector
     ];
 
     for (uint256 i = 0; i < fuelOnlyAdminOrOwnerSupportedSelectors.length; i++) {
@@ -357,6 +357,31 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       NetworkNodeSystem.createAndAnchorNetworkNode.selector,
       true
     );
+
+    bytes4[8] memory networkNodeOnlyAdminOrClassScopedSelectors = [
+      NetworkNodeSystem.connectAssembly.selector,
+      NetworkNodeSystem.disconnectAssembly.selector,
+      NetworkNodeSystem.disconnectNetworkNode.selector,
+      NetworkNodeSystem.reserveAssemblyEnergy.selector,
+      NetworkNodeSystem.reserveNetworkNodeEnergy.selector,
+      NetworkNodeSystem.releaseAssemblyEnergy.selector,
+      NetworkNodeSystem.releaseNetworkNodeEnergy.selector,
+      NetworkNodeSystem.updateEnergyHistory.selector
+    ];
+
+    for (uint256 i = 0; i < networkNodeOnlyAdminOrClassScopedSelectors.length; i++) {
+      accessConfigSystem.configureAccess(
+        networkNodeSystem.toResourceId(),
+        networkNodeOnlyAdminOrClassScopedSelectors[i],
+        accessSystem.toResourceId(),
+        AccessSystem.onlyAdminOrClassScopedAccess.selector
+      );
+      accessConfigSystem.setAccessEnforcement(
+        networkNodeSystem.toResourceId(),
+        networkNodeOnlyAdminOrClassScopedSelectors[i],
+        true
+      );
+    }
   }
 
   // Configure access for DeployableSystem

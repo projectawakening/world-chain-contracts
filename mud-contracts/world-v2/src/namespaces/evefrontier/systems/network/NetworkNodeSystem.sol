@@ -226,7 +226,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @param networkNodeId SmartObjectId of the Network Node
    * TODO: change access control to only allow admin or deployable system
    */
-  function updateEnergyHistory(uint256 networkNodeId) public {
+  function updateEnergyHistory(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     NetworkNodeEnergyHistory.set(networkNodeId, block.timestamp, NetworkNode.getTotalReservedEnergy(networkNodeId));
   }
 
