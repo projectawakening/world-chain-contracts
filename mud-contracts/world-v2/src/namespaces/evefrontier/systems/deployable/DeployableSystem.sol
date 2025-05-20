@@ -8,10 +8,12 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 import { TagId, TagIdLib } from "@eveworld/smart-object-framework-v2/src/libs/TagId.sol";
 import { EntityTagMap } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/EntityTagMap.sol";
+import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/systems/tag-system/types.sol";
+import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly, NetworkNode, NetworkNodeAssemblyLink } from "../../codegen/index.sol";
+import { Tenant, Initialize, DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly, NetworkNode, NetworkNodeAssemblyLink } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -21,11 +23,14 @@ import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
 import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
+import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
+import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
+
 // Types and parameters
 import { State, CreateAndAnchorParams } from "./types.sol";
 import { OwnershipHelper } from "../../libraries/OwnershipHelper.sol";
 import { NETWORK_NODE } from "../constants.sol";
-import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
+import { ObjectIdLib } from "../../libraries/ObjectIdLib.sol";
 
 /**
  * @title DeployableSystem
@@ -44,7 +49,14 @@ contract DeployableSystem is SmartObjectFramework {
   function createAndAnchor(
     CreateAndAnchorParams memory params,
     uint256 networkNodeId
-  ) public context access(params.smartObjectId) scope(params.smartObjectId) {
+  ) public context access(params.smartObjectId) {
+    //TODO: this is not the correct way to use SOF, its a temporary  solution to allow deployables that does not have a proper class
+    //If the smartObject is not part of any class, then default to the deployable class
+    if (!Entity.getExists(params.smartObjectId)) {
+      uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
+      entitySystem.instantiate(classId, params.smartObjectId, params.owner);
+    }
+
     // Create the smart assembly object
     smartAssemblySystem.createAssembly(params.smartObjectId, params.assemblyType, params.entityRecordParams);
 
@@ -276,6 +288,10 @@ contract DeployableSystem is SmartObjectFramework {
     DeployableState.setIsValid(smartObjectId, false);
 
     //TODO: disconnect the assembly from the network node and release the energy reserved by the deployable
+  }
+
+  function getDeployableClassId() public view returns (uint256) {
+    return Initialize.get(deployableSystem.toResourceId());
   }
 
   /*******************************

@@ -135,6 +135,22 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     Initialize.set(networkNodeSystemId, classId);
   }
 
+  function registerDeployableClass(uint256 typeId, uint256 volume) public {
+    ResourceId[] memory systemIds = new ResourceId[](8);
+    systemIds[0] = networkNodeSystem.toResourceId();
+    systemIds[1] = deployableSystem.toResourceId();
+    systemIds[2] = smartAssemblySystem.toResourceId();
+    systemIds[3] = entityRecordSystem.toResourceId();
+    systemIds[4] = ownershipSystem.toResourceId();
+    systemIds[5] = fuelSystem.toResourceId();
+    systemIds[6] = locationSystem.toResourceId();
+    systemIds[7] = batchCallSystem;
+
+    uint256 classId = initialize(typeId, volume, systemIds);
+    ResourceId deployableSystemId = deployableSystem.toResourceId();
+    Initialize.set(deployableSystemId, classId);
+  }
+
   // Configure access for all systems
   // Configure access for EntityRecordSystem
   function configureEntityRecordAccess() public {

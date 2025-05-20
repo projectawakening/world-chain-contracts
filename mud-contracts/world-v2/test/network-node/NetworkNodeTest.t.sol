@@ -42,11 +42,13 @@ contract NetworkNodeEnergyTest is MudTest {
   uint256 constant SMART_GATE_ID = 1235;
   uint256 constant SMART_STORAGE_ID = 1236;
   uint256 constant SMART_TURRET_ID = 1237;
+  uint256 constant PORTABLE_REFINERY_ID = 1238;
 
   uint256 networkNodeId;
   uint256 smartGateId;
   uint256 smartStorageId;
   uint256 smartTurretId;
+  uint256 portableRefineryId;
   uint256 fuelSmartObjectId;
 
   // Location data
@@ -110,6 +112,12 @@ contract NetworkNodeEnergyTest is MudTest {
     smartTurretId = _calculateObjectId(
       EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
       SMART_TURRET_ID,
+      true
+    );
+
+    portableRefineryId = _calculateObjectId(
+      EntityRecord.getTypeId(deployableSystem.getDeployableClassId()),
+      PORTABLE_REFINERY_ID,
       true
     );
 
@@ -296,6 +304,57 @@ contract NetworkNodeEnergyTest is MudTest {
     );
     assertFalse(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be stopped");
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 0, "No energy should be reserved");
+
+    vm.stopPrank();
+    vm.resumeGasMetering();
+  }
+
+  function test_portableRefineryDeploymentAndOperation() public {
+    vm.pauseGasMetering();
+
+    // First setup a running Network Node
+    test_networkNodeDeploymentAndOperation();
+
+    vm.startPrank(deployer, deployer);
+
+    // 1. Deploy and anchor Portable Refinery
+    deployableSystem.createAndAnchor(
+      CreateAndAnchorParams({
+        smartObjectId: portableRefineryId,
+        assemblyType: "PR",
+        entityRecordParams: EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(deployableSystem.getDeployableClassId()),
+          itemId: PORTABLE_REFINERY_ID,
+          volume: 100
+        }),
+        owner: alice,
+        locationData: locationParams
+      }),
+      networkNodeId
+    );
+
+    // Verify Portable Refinery is created and anchored
+    assertEq(
+      uint8(DeployableState.getCurrentState(portableRefineryId)),
+      uint8(State.ANCHORED),
+      "Portable Refinery should be anchored"
+    );
+
+    // 2. Bring Portable Refinery online (should succeed as Network Node has enough energy)
+    deployableSystem.bringOnline(portableRefineryId);
+
+    // Verify Portable Refinery is online
+    assertEq(
+      uint8(DeployableState.getCurrentState(portableRefineryId)),
+      uint8(State.ONLINE),
+      "Portable Refinery should be online"
+    );
+
+    //Verify energy status
+    assertEq(NetworkNode.getEnergyProduced(networkNodeId), 80, "Should be producing 80 GJ");
+    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Total reserved energy should be 10 GJ");
+    assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should be 9 units");
 
     vm.stopPrank();
     vm.resumeGasMetering();
