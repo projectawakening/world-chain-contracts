@@ -285,6 +285,8 @@ contract FuelSystem is SmartObjectFramework {
    **************************/
   // Mock: handle out of fuel by calling NetworkNodeSystem to bring everything offline
   function _handleOutOfFuel(uint256 smartObjectId) internal {
+    //stop burn before bringing offline
+    stopBurn(smartObjectId);
     if (DeployableState.getCurrentState(smartObjectId) == State.ONLINE) {
       deployableSystem.bringOffline(smartObjectId);
     }

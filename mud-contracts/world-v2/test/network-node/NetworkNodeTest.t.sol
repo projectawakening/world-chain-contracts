@@ -157,7 +157,7 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.startPrank(deployer, deployer);
 
     // 1. Deploy and anchor Network Node
-    _setupNetworkNode(networkNodeId, 80, 80);
+    _setupNetworkNode(80, 80);
 
     // Verify Network Node is created and anchored
     assertTrue(NetworkNode.getExists(networkNodeId), "Network Node should exist");
@@ -193,7 +193,7 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.startPrank(deployer, deployer);
 
     // 1. Deploy and connect Smart Gate
-    _setupSmartGate(smartGateId, networkNodeId);
+    _setupSmartGate(smartGateId);
 
     // Verify Smart Gate is connected
     assertTrue(NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartGateId), "Smart Gate should be connected");
@@ -211,7 +211,7 @@ contract NetworkNodeEnergyTest is MudTest {
     assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 60, "Total reserved energy should be 60 GJ (10 + 50)");
 
     // 3. Deploy Smart Storage Unit (should connect but fail to come online due to insufficient energy)
-    _setupSmartStorageUnit(smartStorageId, networkNodeId);
+    _setupSmartStorageUnit(smartStorageId);
 
     // Verify Smart Storage Unit is connected but not online
     assertTrue(
@@ -288,11 +288,11 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.startPrank(deployer, deployer);
 
     // Setup Network Node and bring it online
-    _setupNetworkNode(networkNodeId, 90, 90);
+    _setupNetworkNode(90, 90);
     fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
     deployableSystem.bringOnline(networkNodeId);
 
-    _setupSmartGate(smartGateId, networkNodeId);
+    _setupSmartGate(smartGateId);
     deployableSystem.bringOnline(smartGateId);
 
     // Verify initial state
@@ -334,11 +334,11 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.startPrank(deployer, deployer);
 
     // Setup Network Node and Smart Storage Unit
-    _setupNetworkNode(networkNodeId, 90, 90);
+    _setupNetworkNode(90, 90);
     fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
     deployableSystem.bringOnline(networkNodeId);
 
-    _setupSmartStorageUnit(smartStorageId, networkNodeId);
+    _setupSmartStorageUnit(smartStorageId);
     deployableSystem.bringOnline(smartStorageId);
 
     // Verify initial state
@@ -378,11 +378,11 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.startPrank(deployer, deployer);
 
     // Setup Network Node and Smart Storage Unit
-    _setupNetworkNode(networkNodeId, 90, 90);
+    _setupNetworkNode(90, 90);
     fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
     deployableSystem.bringOnline(networkNodeId);
 
-    _setupSmartStorageUnit(smartStorageId, networkNodeId);
+    _setupSmartStorageUnit(smartStorageId);
     deployableSystem.bringOnline(smartStorageId);
 
     // Verify initial state
@@ -432,11 +432,11 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.startPrank(deployer, deployer);
 
     // Setup Network Node and Smart Storage Unit
-    _setupNetworkNode(networkNodeId, 90, 90);
+    _setupNetworkNode(90, 90);
     fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
     deployableSystem.bringOnline(networkNodeId);
 
-    _setupSmartStorageUnit(smartStorageId, networkNodeId);
+    _setupSmartStorageUnit(smartStorageId);
     deployableSystem.bringOnline(smartStorageId);
     vm.stopPrank();
 
@@ -484,7 +484,7 @@ contract NetworkNodeEnergyTest is MudTest {
   }
 
   // Helper functions for common setup and operations
-  function _setupNetworkNode(uint256 networkNodeId, uint256 maxEnergyCapacity, uint256 currentProduction) internal {
+  function _setupNetworkNode(uint256 maxEnergyCapacity, uint256 currentProduction) internal {
     networkNodeSystem.createAndAnchorNetworkNode(
       CreateAndAnchorParams({
         smartObjectId: networkNodeId,
@@ -504,7 +504,7 @@ contract NetworkNodeEnergyTest is MudTest {
     );
   }
 
-  function _setupSmartGate(uint256 gateId, uint256 networkNodeId) internal {
+  function _setupSmartGate(uint256 gateId) internal {
     smartGateSystem.createAndAnchorGate(
       CreateAndAnchorParams({
         smartObjectId: gateId,
@@ -523,7 +523,7 @@ contract NetworkNodeEnergyTest is MudTest {
     );
   }
 
-  function _setupSmartStorageUnit(uint256 storageId, uint256 networkNodeId) internal {
+  function _setupSmartStorageUnit(uint256 storageId) internal {
     smartStorageUnitSystem.createAndAnchorStorageUnit(
       CreateAndAnchorParams({
         smartObjectId: storageId,

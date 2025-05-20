@@ -13,7 +13,7 @@ import { TAG_TYPE_RESOURCE_RELATION } from "@eveworld/smart-object-framework-v2/
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { Tenant, Initialize, DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly, NetworkNode, NetworkNodeAssemblyLink } from "../../codegen/index.sol";
+import { Tenant, Initialize, DeployableState, DeployableStateData, CharactersByAccount, Location, LocationData, Inventory, InventoryItem, EntityRecord, SmartGateLink, NetworkNodeByAssembly, NetworkNode, NetworkNodeAssemblyLink, FuelConsumptionState } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { LocationSystem } from "../location/LocationSystem.sol";
@@ -214,7 +214,9 @@ contract DeployableSystem is SmartObjectFramework {
       networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
       // For network nodes, stop burning fuel before bringing offline
-      fuelSystem.stopBurn(smartObjectId);
+      if (FuelConsumptionState.getBurnState(smartObjectId)) {
+        fuelSystem.stopBurn(smartObjectId);
+      }
       networkNodeSystem.releaseNetworkNodeEnergy(smartObjectId); //energy handling
       _handleNodeOffline(smartObjectId); //state handling
     }
