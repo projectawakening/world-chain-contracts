@@ -189,10 +189,13 @@ contract DeployableSystem is SmartObjectFramework {
     //Check the energy requirement to bringOnline if the deployable is connected to a network node or if it is a network node
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
     if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+      fuelSystem.updateFuel(networkNodeId);
       networkNodeSystem.reserveAssemblyEnergy(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
       // For network nodes, start burning fuel before bringing online
-      fuelSystem.startBurn(smartObjectId);
+      if (!FuelConsumptionState.getBurnState(smartObjectId)) {
+        fuelSystem.startBurn(smartObjectId);
+      }
       networkNodeSystem.reserveNetworkNodeEnergy(smartObjectId);
     }
     _setDeployableState(smartObjectId, previousState, State.ONLINE);
