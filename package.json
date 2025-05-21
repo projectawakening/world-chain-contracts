@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "dev": "dotenv -e .env mprocs './scripts/run-local-node.sh' './scripts/deploy-all.sh --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'",
+    "dev": "dotenv -e .env mprocs './scripts/run-local-node.sh' './scripts/deploy-all-v2.sh --rpc-url http://127.0.0.1:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'",
     "garnet": "dotenv -e .env mprocs './scripts/deploy-all.sh --rpc-url https://rpc.garnetchain.com --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'",
     "format": "prettier --write \"**/package.json\"",
     "format:check": "prettier --check \"**/package.json\""
@@ -26,6 +26,8 @@
     }
   },
   "dependencies": {
-    "@changesets/cli": "^2.27.3"
+    "@changesets/cli": "^2.27.3",
+    "@latticexyz/explorer": "^2.2.21",
+    "@latticexyz/store-indexer": "^2.2.21"
   }
 }
