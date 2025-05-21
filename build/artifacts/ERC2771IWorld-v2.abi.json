@@ -1856,6 +1856,37 @@
   },
   {
     "type": "function",
+    "name": "disconnectAssembly",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "disconnectNetworkNode",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "getCurrentFuelConsumptionStatus",
     "inputs": [
       {
@@ -1882,6 +1913,19 @@
       },
       {
         "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getDeployableClassId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -2408,55 +2452,6 @@
   },
   {
     "type": "function",
-    "name": "onAssemblyOffline",
-    "inputs": [
-      {
-        "name": "networkNodeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "assemblyId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "onAssemblyOnline",
-    "inputs": [
-      {
-        "name": "networkNodeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "assemblyId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "onNodeOffline",
-    "inputs": [
-      {
-        "name": "networkNodeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "onlyAdminOrCallAccess",
     "inputs": [
       {
@@ -2890,6 +2885,24 @@
   },
   {
     "type": "function",
+    "name": "registerDeployableClass",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "registerNetworkNodeClass",
     "inputs": [
       {
@@ -2971,6 +2984,37 @@
       },
       {
         "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "releaseAssemblyEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "releaseNetworkNodeEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -3072,6 +3116,37 @@
             "internalType": "uint256"
           }
         ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "reserveAssemblyEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "reserveNetworkNodeEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
@@ -3241,24 +3316,6 @@
       },
       {
         "name": "fuelMaxCapacity",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "setFuelUnitVolume",
-    "inputs": [
-      {
-        "name": "smartObjectId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "fuelUnitVolume",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -3528,6 +3585,19 @@
         "name": "assemblyType",
         "type": "string",
         "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateEnergyHistory",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],

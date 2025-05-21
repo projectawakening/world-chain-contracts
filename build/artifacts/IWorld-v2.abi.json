@@ -1856,6 +1856,37 @@
   },
   {
     "type": "function",
+    "name": "evefrontier__disconnectAssembly",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__disconnectNetworkNode",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "evefrontier__getCurrentFuelConsumptionStatus",
     "inputs": [
       {
@@ -1882,6 +1913,19 @@
       },
       {
         "name": "fuelAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__getDeployableClassId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -2408,55 +2452,6 @@
   },
   {
     "type": "function",
-    "name": "evefrontier__onAssemblyOffline",
-    "inputs": [
-      {
-        "name": "networkNodeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "assemblyId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__onAssemblyOnline",
-    "inputs": [
-      {
-        "name": "networkNodeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "assemblyId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__onNodeOffline",
-    "inputs": [
-      {
-        "name": "networkNodeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "evefrontier__onlyAdminOrCallAccess",
     "inputs": [
       {
@@ -2890,6 +2885,24 @@
   },
   {
     "type": "function",
+    "name": "evefrontier__registerDeployableClass",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "evefrontier__registerNetworkNodeClass",
     "inputs": [
       {
@@ -2971,6 +2984,37 @@
       },
       {
         "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__releaseAssemblyEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__releaseNetworkNodeEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -3072,6 +3116,37 @@
             "internalType": "uint256"
           }
         ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__reserveAssemblyEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__reserveNetworkNodeEnergy",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
@@ -3241,24 +3316,6 @@
       },
       {
         "name": "fuelMaxCapacity",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__setFuelUnitVolume",
-    "inputs": [
-      {
-        "name": "smartObjectId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "fuelUnitVolume",
         "type": "uint256",
         "internalType": "uint256"
       }
@@ -3528,6 +3585,19 @@
         "name": "assemblyType",
         "type": "string",
         "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "evefrontier__updateEnergyHistory",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
