@@ -77,6 +77,10 @@ library DeployableSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).unanchor(smartObjectId);
   }
 
+  function getDeployableClassId(DeployableSystemType self) internal view returns (uint256) {
+    return CallWrapper(self.toResourceId(), address(0)).getDeployableClassId();
+  }
+
   function _handleNodeOffline(DeployableSystemType self, uint256 networkNodeId) internal {
     return CallWrapper(self.toResourceId(), address(0))._handleNodeOffline(networkNodeId);
   }
@@ -169,6 +173,21 @@ library DeployableSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
+  function getDeployableClassId(CallWrapper memory self) internal view returns (uint256) {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_getDeployableClassId.getDeployableClassId, ());
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+
+    bytes memory result = abi.decode(returnData, (bytes));
+    return abi.decode(result, (uint256));
+  }
+
   function _handleNodeOffline(CallWrapper memory self, uint256 networkNodeId) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert DeployableSystemLib_CallingFromRootSystem();
@@ -230,6 +249,13 @@ library DeployableSystemLib {
   function unanchor(RootCallWrapper memory self, uint256 smartObjectId) internal {
     bytes memory systemCall = abi.encodeCall(_unanchor_uint256.unanchor, (smartObjectId));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
+  function getDeployableClassId(RootCallWrapper memory self) internal view returns (uint256) {
+    bytes memory systemCall = abi.encodeCall(_getDeployableClassId.getDeployableClassId, ());
+
+    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+    return abi.decode(result, (uint256));
   }
 
   function _handleNodeOffline(RootCallWrapper memory self, uint256 networkNodeId) internal {
@@ -301,6 +327,10 @@ interface _anchor_uint256_address_LocationData {
 
 interface _unanchor_uint256 {
   function unanchor(uint256 smartObjectId) external;
+}
+
+interface _getDeployableClassId {
+  function getDeployableClassId() external;
 }
 
 interface __handleNodeOffline_uint256 {

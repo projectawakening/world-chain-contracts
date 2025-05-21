@@ -92,6 +92,13 @@ contract Config is Script {
       true
     );
 
+     CallAccess.set(
+      entitySystem.toResourceId(),
+      IEntitySystem.scopedRegisterClass.selector,
+      deployableSystem.getAddress(),
+      true
+    );
+
   }
 
   function _initializeClassRegistry() internal {
@@ -100,6 +107,11 @@ contract Config is Script {
     eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"), vm.envUint("TURRET_VOLUME"));
     eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"), vm.envUint("GATE_VOLUME"));
     eveSystem.registerNetworkNodeClass(vm.envUint("NETWORK_NODE_TYPE_ID"), vm.envUint("NETWORK_NODE_VOLUME"));
+    uint256[] memory otherAssemblyTypeIds = vm.envUint("TYPE_IDS", ",");
+ 
+    for (uint i = 0; i < otherAssemblyTypeIds.length; i++) {
+      eveSystem.registerDeployableClass(otherAssemblyTypeIds[i], 1);
+    }
   }
 
   function _initializeWorldAccess() internal {
