@@ -20,11 +20,11 @@
     "test": "tsc --noEmit"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.2.14",
-    "@latticexyz/schema-type": "2.2.14",
-    "@latticexyz/store": "2.2.14",
-    "@latticexyz/world": "2.2.14",
-    "@latticexyz/world-modules": "2.2.14"
+    "@latticexyz/cli": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/schema-type": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/store": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/world": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "@latticexyz/world-modules": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
@@ -33,8 +33,8 @@
     "prettier": "3.2.5",
     "prettier-plugin-solidity": "1.3.1",
     "solhint": "^3.3.7",
-    "solhint-config-mud": "2.2.14",
-    "solhint-plugin-mud": "2.2.14",
+    "solhint-config-mud": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
+    "solhint-plugin-mud": "2.2.22-7c2fe37ce180c3d55160202867bd3835683f532b",
     "typescript": "^5.4.5"
   }
 }
