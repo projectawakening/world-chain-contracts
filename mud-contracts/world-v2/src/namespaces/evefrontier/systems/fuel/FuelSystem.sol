@@ -59,7 +59,7 @@ contract FuelSystem is SmartObjectFramework {
     }
     // fuel burn rate must be at least 60 seconds
     if (
-      fuelParams.fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE ||
+      fuelParams.fuelBurnRateInSeconds <= MIN_FUEL_BURN_RATE ||
       fuelParams.fuelBurnRateInSeconds > uint256(type(uint128).max)
     ) {
       revert Fuel_InvalidFuelBurnRate(
@@ -80,13 +80,12 @@ contract FuelSystem is SmartObjectFramework {
    * @param smartObjectId on-chain id of the deployable
    * @param fuelEntityParams the parameters of the fuel
    * @param fuelEfficiency the efficiency of the fuel
-   * TODO: access control for this function
    */
   function configureFuelEfficiency(
     uint256 smartObjectId,
     EntityRecordParams memory fuelEntityParams,
     uint256 fuelEfficiency
-  ) public {
+  ) public context access(smartObjectId) scope(smartObjectId) {
     bytes32 tenantId = Tenant.get();
 
     if (tenantId != fuelEntityParams.tenantId) {

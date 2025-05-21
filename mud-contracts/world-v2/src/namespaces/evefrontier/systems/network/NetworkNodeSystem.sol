@@ -69,7 +69,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Connects a assembly to a Network Node
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly to connect
-   * TODO: change access control to only allow admin or deployable system
    */
   function connectAssembly(
     uint256 networkNodeId,
@@ -105,7 +104,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Disconnects a assembly from a Network Node
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly to disconnect
-   * TODO: change access control to only allow admin or deployable system
    */
   function disconnectAssembly(
     uint256 networkNodeId,
@@ -131,7 +129,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
   /**
    * @dev Disconnects all assemblies from a Network Node
    * @param networkNodeId The ID of the Network Node
-   * TODO: change access control to only allow admin or deployable system
    */
   function disconnectNetworkNode(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {
@@ -153,7 +150,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Handles a assembly being brought online
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly
-   * TODO: change access control to only allow admin or deployable system
    */
   function reserveAssemblyEnergy(
     uint256 networkNodeId,
@@ -166,7 +162,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
   /**
    * @dev Handles a network node being brought online
    * @param networkNodeId SmartObjectId of the Network Node
-   * TODO: change access control to only allow admin or deployable system
    */
   function reserveNetworkNodeEnergy(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     NetworkNode.setEnergyProduced(networkNodeId, NetworkNode.getMaxEnergyCapacity(networkNodeId));
@@ -178,7 +173,6 @@ contract NetworkNodeSystem is SmartObjectFramework {
    * @dev Update energy status by assembly on offline
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly
-   * TODO: change access control to only allow admin or deployable system
    */
   function releaseAssemblyEnergy(
     uint256 networkNodeId,
@@ -203,9 +197,8 @@ contract NetworkNodeSystem is SmartObjectFramework {
   }
 
   /**
-   * @dev Update energy status and diconnect all assemblies from the network node
+   * @dev Update energy status and release energy
    * @param networkNodeId The ID of the Network Node
-   * TODO: change access control to only allow admin or deployable system
    */
   function releaseNetworkNodeEnergy(uint256 networkNodeId) public context access(networkNodeId) scope(networkNodeId) {
     if (!NetworkNode.getExists(networkNodeId)) {

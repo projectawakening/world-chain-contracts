@@ -22,7 +22,7 @@ import { smartAssemblySystem } from "../../codegen/systems/SmartAssemblySystemLi
 import { ownershipSystem } from "../../codegen/systems/OwnershipSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
-import { NetworkNodeSystem, networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
+import { networkNodeSystem } from "../../codegen/systems/NetworkNodeSystemLib.sol";
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 import { fuelSystem } from "../../codegen/systems/FuelSystemLib.sol";
 
@@ -71,7 +71,6 @@ contract DeployableSystem is SmartObjectFramework {
   }
 
   /**
-   * TODO: restrict this to smartObjectIds that exist
    * @dev creates a new deployable smart object
    * @param smartObjectId id of the smart object
    * @param owner the owner of the smart object
