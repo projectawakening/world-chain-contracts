@@ -61,7 +61,11 @@ contract AccessConfigSystem is SmartObjectFramework {
     AccessConfig.set(target, true, targetSystemId, targetFunctionId, accessSystemId, accessFunctionId, false);
   }
 
-  function setAccessEnforcement(ResourceId targetSystemId, bytes4 targetFunctionId, bool enforced) public virtual context {
+  function setAccessEnforcement(
+    ResourceId targetSystemId,
+    bytes4 targetFunctionId,
+    bool enforced
+  ) public virtual context {
     ResourceId systemId = SystemRegistry.get(address(this));
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
     (, , address msgSender, ) = IWorldWithContext(_world()).getWorldCallContext(callCount);

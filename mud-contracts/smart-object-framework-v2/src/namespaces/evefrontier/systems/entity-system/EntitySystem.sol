@@ -49,7 +49,10 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Assigns caller as a member of the new access role for this class {see, RoleManagementSystem.sol}
    * @dev access configuration - no configuration, restricted to direct calls
    */
-  function registerClass(uint256 classId, ResourceId[] memory scopedSystemIds) public virtual context enforceCallCount(1) {
+  function registerClass(
+    uint256 classId,
+    ResourceId[] memory scopedSystemIds
+  ) public virtual context enforceCallCount(1) {
     _registerClass(classId, _callMsgSender(1), scopedSystemIds);
   }
 
@@ -167,7 +170,11 @@ contract EntitySystem is SmartObjectFramework {
    * @dev Requires a direct caller to be a member of the parent Class `accessRole` or a System that is tagged to the parent Class
    * @dev access configuration - only callable directly by a member of the object's Class access role or a Class scoped System (see SOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole)
    */
-  function instantiate(uint256 classId, uint256 objectId, address accessRoleMember) public virtual context access(classId) {
+  function instantiate(
+    uint256 classId,
+    uint256 objectId,
+    address accessRoleMember
+  ) public virtual context access(classId) {
     _instantiate(classId, objectId, accessRoleMember);
   }
 
@@ -262,7 +269,11 @@ contract EntitySystem is SmartObjectFramework {
     }
   }
 
-  function _registerClass(uint256 classId, address accessRoleMember, ResourceId[] memory scopedSystemIds) internal virtual {
+  function _registerClass(
+    uint256 classId,
+    address accessRoleMember,
+    ResourceId[] memory scopedSystemIds
+  ) internal virtual {
     if (classId == uint256(0)) {
       revert Entity_InvalidEntityId(classId);
     }

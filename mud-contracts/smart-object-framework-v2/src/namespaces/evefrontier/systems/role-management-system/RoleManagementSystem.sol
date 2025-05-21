@@ -80,7 +80,10 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The role to grant membership for
    * @param account The account to grant as a member.
    */
-  function grantRole(bytes32 role, address account) external virtual context onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  function grantRole(
+    bytes32 role,
+    address account
+  ) external virtual context onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
     _grantRole(role, account);
   }
 
@@ -178,7 +181,11 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param newAdmin The identifier for
    * @dev access configuration - only callable by a Class scoped System of `entityId` (see SOFAccessSystem.allowClassScopedSystem)
    */
-  function scopedTransferRoleAdmin(uint256 entityId, bytes32 role, bytes32 newAdmin) external virtual context access(entityId) {
+  function scopedTransferRoleAdmin(
+    uint256 entityId,
+    bytes32 role,
+    bytes32 newAdmin
+  ) external virtual context access(entityId) {
     _setRoleAdmin(role, newAdmin);
   }
 
