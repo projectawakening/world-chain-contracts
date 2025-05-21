@@ -41,7 +41,7 @@ contract AccessConfigSystem is SmartObjectFramework {
     // check if caller has access to configure access
     if (
       !(CallAccess.get(systemId, this.configureAccess.selector, msgSender) ||
-        (callCount == 1 && NamespaceOwner.getOwner(targetSystemId.getNamespaceId()) == _callMsgSender(1)))
+        NamespaceOwner.getOwner(targetSystemId.getNamespaceId()) == msgSender)
     ) {
       revert AccessConfig_AccessDenied(targetSystemId, msgSender);
     }
@@ -69,7 +69,7 @@ contract AccessConfigSystem is SmartObjectFramework {
     // check if caller has access to set access enforcement
     if (
       !(CallAccess.get(systemId, this.setAccessEnforcement.selector, msgSender) ||
-        (callCount == 1 && NamespaceOwner.getOwner(targetSystemId.getNamespaceId()) == _callMsgSender(1)))
+        NamespaceOwner.getOwner(targetSystemId.getNamespaceId()) == msgSender)
     ) {
       revert AccessConfig_AccessDenied(targetSystemId, msgSender);
     }
