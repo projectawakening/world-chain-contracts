@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import { System } from "@latticexyz/world/src/System.sol";
+import { System as SystemDetectionWorkaround } from "@latticexyz/world/src/System.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { SystemRegistry } from "@latticexyz/world/src/codegen/tables/SystemRegistry.sol";
 
@@ -26,7 +26,7 @@ import { IWorldWithContext } from "../IWorldWithContext.sol";
  * @dev Base contract that extends MUD System with Smart Object Framework functionality
  * @dev Provides execution context enforcement, entity-to-system scoping, and context parameter access for SOF systems
  */
-contract SmartObjectFramework is System {
+abstract contract SmartObjectFramework is SystemDetectionWorkaround {
   /// @notice Thrown when a system call is made outside proper context
   error SOF_InvalidCall();
 
