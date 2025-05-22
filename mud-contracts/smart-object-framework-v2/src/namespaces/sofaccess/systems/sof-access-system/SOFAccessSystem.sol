@@ -268,7 +268,7 @@ contract SOFAccessSystem is SmartObjectFramework {
     revert SOFAccess_AccessDenied(entityId, msgSender);
   }
 
-  function _getClassId(uint256 entityId) private view returns (uint256) {
+  function _getClassId(uint256 entityId) internal view returns (uint256) {
     uint256 classId;
     if (entityId != 0) {
       // entityRelationValue requires an entry in EntityTagMap and entityId 0 cannot have an entry
@@ -285,7 +285,7 @@ contract SOFAccessSystem is SmartObjectFramework {
     return classId;
   }
 
-  function _checkClassScopedSystem(uint256 classId, ResourceId callingSystemId) private view returns (bool) {
+  function _checkClassScopedSystem(uint256 classId, ResourceId callingSystemId) internal view returns (bool) {
     return
       EntityTagMap.getHasTag(
         classId,
@@ -293,7 +293,7 @@ contract SOFAccessSystem is SmartObjectFramework {
       );
   }
 
-  function _checkAccessRole(uint256 entityId, address caller) private view returns (bool) {
+  function _checkAccessRole(uint256 entityId, address caller) internal view returns (bool) {
     return HasRole.getIsMember(Entity.getAccessRole(entityId), caller);
   }
 }

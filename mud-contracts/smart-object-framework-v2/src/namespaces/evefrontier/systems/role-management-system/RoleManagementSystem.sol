@@ -43,7 +43,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The identifier for the new role
    * @param admin The identifier for the admin role
    */
-  function createRole(bytes32 role, bytes32 admin) external context {
+  function createRole(bytes32 role, bytes32 admin) external virtual context {
     if (role == bytes32(0) || admin == bytes32(0)) {
       revert RoleManagement_InvalidRole();
     }
@@ -70,7 +70,7 @@ contract RoleManagementSystem is SmartObjectFramework {
   function transferRoleAdmin(
     bytes32 role,
     bytes32 newAdmin
-  ) external context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
     _setRoleAdmin(role, newAdmin);
   }
 
@@ -80,7 +80,10 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The role to grant membership for
    * @param account The account to grant as a member.
    */
-  function grantRole(bytes32 role, address account) external context onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  function grantRole(
+    bytes32 role,
+    address account
+  ) external virtual context onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
     _grantRole(role, account);
   }
 
@@ -93,7 +96,7 @@ contract RoleManagementSystem is SmartObjectFramework {
   function revokeRole(
     bytes32 role,
     address account
-  ) external context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
     if (account == _callMsgSender(1)) {
       revert RoleManagement_MustRenounceSelf();
     }
@@ -106,7 +109,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The role to revoke account membership for
    * @param callerConfirmation Address of the world entry point caller for verification
    */
-  function renounceRole(bytes32 role, address callerConfirmation) external context enforceCallCount(1) {
+  function renounceRole(bytes32 role, address callerConfirmation) external virtual context enforceCallCount(1) {
     if (callerConfirmation != _callMsgSender(1)) {
       revert RoleManagement_BadConfirmation();
     }
@@ -122,7 +125,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    */
   function revokeAll(
     bytes32 role
-  ) external context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
     address[] memory members = Role.getMembers(role);
     for (uint256 i = 0; i < members.length; i++) {
       _revokeRole(role, members[i]);
@@ -149,7 +152,7 @@ contract RoleManagementSystem is SmartObjectFramework {
     bytes32 role,
     bytes32 admin,
     address roleMember
-  ) external context access(entityId) {
+  ) external virtual context access(entityId) {
     if (role == bytes32(0) || admin == bytes32(0)) {
       revert RoleManagement_InvalidRole();
     }
@@ -178,7 +181,11 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param newAdmin The identifier for
    * @dev access configuration - only callable by a Class scoped System of `entityId` (see SOFAccessSystem.allowClassScopedSystem)
    */
-  function scopedTransferRoleAdmin(uint256 entityId, bytes32 role, bytes32 newAdmin) external context access(entityId) {
+  function scopedTransferRoleAdmin(
+    uint256 entityId,
+    bytes32 role,
+    bytes32 newAdmin
+  ) external virtual context access(entityId) {
     _setRoleAdmin(role, newAdmin);
   }
 
@@ -190,7 +197,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param account The account to grant as a member.
    * @dev access configuration - only callable by a Class scoped System of `entityId` (see SOFAccessSystem.allowClassScopedSystem)
    */
-  function scopedGrantRole(uint256 entityId, bytes32 role, address account) external context access(entityId) {
+  function scopedGrantRole(uint256 entityId, bytes32 role, address account) external virtual context access(entityId) {
     _grantRole(role, account);
   }
 
@@ -202,7 +209,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param account The account to revoke membership for
    * @dev access configuration - only callable by a Class scoped System of `entityId` (see SOFAccessSystem.allowClassScopedSystem)
    */
-  function scopedRevokeRole(uint256 entityId, bytes32 role, address account) external context access(entityId) {
+  function scopedRevokeRole(uint256 entityId, bytes32 role, address account) external virtual context access(entityId) {
     if (account == _callMsgSender(1)) {
       revert RoleManagement_MustRenounceSelf();
     }
@@ -221,7 +228,7 @@ contract RoleManagementSystem is SmartObjectFramework {
     uint256 entityId,
     bytes32 role,
     address callerConfirmation
-  ) external context access(entityId) {
+  ) external virtual context access(entityId) {
     if (callerConfirmation != _callMsgSender(1)) {
       revert RoleManagement_BadConfirmation();
     }
@@ -236,7 +243,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The role to revoke membership for
    * @dev access configuration - only callable by EntitySystem or a Class scoped System of `entityId` (see EntitySyste.deleteClass, EntitySystem.deleteObject, SOFAccessSystem.allowEntitySystemOrClassScoped)
    */
-  function scopedRevokeAll(uint256 entityId, bytes32 role) external context access(entityId) {
+  function scopedRevokeAll(uint256 entityId, bytes32 role) external virtual context access(entityId) {
     address[] memory members = Role.getMembers(role);
     for (uint256 i = 0; i < members.length; i++) {
       _revokeRole(role, members[i]);

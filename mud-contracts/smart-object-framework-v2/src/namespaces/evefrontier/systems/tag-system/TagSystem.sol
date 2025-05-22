@@ -36,7 +36,7 @@ contract TagSystem is SmartObjectFramework {
    * @param entityId A unique uint256 entity ID
    * @param tagParams A TagParams struct containing the tagId and value
    */
-  function setTag(uint256 entityId, TagParams memory tagParams) public context access(entityId) {
+  function setTag(uint256 entityId, TagParams memory tagParams) public virtual context access(entityId) {
     _setTag(entityId, tagParams);
   }
 
@@ -45,7 +45,7 @@ contract TagSystem is SmartObjectFramework {
    * @param entityId A unique uint256 entity ID
    * @param tagParams An array of TagParams structs containing the tagId and value
    */
-  function setTags(uint256 entityId, TagParams[] memory tagParams) public {
+  function setTags(uint256 entityId, TagParams[] memory tagParams) public virtual {
     for (uint i = 0; i < tagParams.length; i++) {
       setTag(entityId, tagParams[i]);
     }
@@ -58,7 +58,7 @@ contract TagSystem is SmartObjectFramework {
    * @dev Warning: removing a Tag from an Entity may trigger/require dependent data deletions of in associated Enity or Resource Tables. Be sure to handle these dependencies accordingly in your System logic before removing a Tag
 
    */
-  function removeTag(uint256 entityId, TagId tagId) public context access(entityId) {
+  function removeTag(uint256 entityId, TagId tagId) public virtual context access(entityId) {
     _removeTag(entityId, tagId);
   }
 
@@ -67,13 +67,13 @@ contract TagSystem is SmartObjectFramework {
    * @param entityId A unique uint256 entity ID
    * @param tagIds An array of TagId tagIds
    */
-  function removeTags(uint256 entityId, TagId[] memory tagIds) public {
+  function removeTags(uint256 entityId, TagId[] memory tagIds) public virtual {
     for (uint i = 0; i < tagIds.length; i++) {
       removeTag(entityId, tagIds[i]);
     }
   }
 
-  function _setTag(uint256 entityId, TagParams memory tagParams) private {
+  function _setTag(uint256 entityId, TagParams memory tagParams) internal virtual {
     if (TagId.unwrap(tagParams.tagId) == bytes32(0)) {
       revert Tag_InvalidTagId(tagParams.tagId);
     }
@@ -154,7 +154,7 @@ contract TagSystem is SmartObjectFramework {
     }
   }
 
-  function _removeTag(uint256 entityId, TagId tagId) private {
+  function _removeTag(uint256 entityId, TagId tagId) internal virtual {
     EntityTagMapData memory entityTagMapData = EntityTagMap.get(entityId, tagId);
 
     if (entityTagMapData.hasTag) {
