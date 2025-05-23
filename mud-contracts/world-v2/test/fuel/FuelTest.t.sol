@@ -348,7 +348,7 @@ contract FuelTest is MudTest {
 
     // Verify burn stopped
     assertFalse(FuelConsumptionState.getBurnState(smartObjectId));
-    assertEq(FuelConsumptionState.getFuelConsumptionTimeRemaining(smartObjectId), 0);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
   }
 
   function test_fuelEfficiencyImpact() public {
@@ -398,14 +398,295 @@ contract FuelTest is MudTest {
     fuelSystem.updateFuel(smartObjectId);
 
     // Verify system stopped burning when out of fuel
-    assertFalse(FuelConsumptionState.getBurnState(smartObjectId));
-    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getFuelConsumptionTimeRemaining(smartObjectId), 0);
+    assertFalse(FuelConsumptionState.getBurnState(smartObjectId), "Burn state should be false");
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0, "Fuel amount should be 0");
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0, "Elapsed time should be 0");
 
     vm.stopPrank();
   }
 
-  //TODO : System to system calls with mock system
+  //check fuel unit at every interval
+  function test_fuelUnitAtEveryInterval() public {
+    vm.startPrank(deployer);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+    fuelSystem.configureFuelParameters(
+      smartObjectId,
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 900 })
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+    fuelSystem.startBurn(smartObjectId); //10:00 AM
+
+    assertEq(
+      Fuel.getFuelAmount(smartObjectId),
+      4,
+      "On Start Burn, 1 unit of fuel should be consumed and it should be 4"
+    );
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
+
+    // Advance time by 600 seconds
+    vm.warp(block.timestamp + 600); //10:10 AM
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(
+      Fuel.getFuelAmount(smartObjectId),
+      4,
+      "After updateFuel, fuel amount should still be 4 as it is not consumed yet"
+    );
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp - 600);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 600, "After updateFuel, elapsed time should be 600");
+
+    // Advance time by 400 seconds
+    vm.warp(block.timestamp + 400); //10:16 AM
+
+    (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualBurnRate, uint256 fuelAmount) = fuelSystem
+      .getCurrentFuelConsumptionStatus(smartObjectId);
+    assertEq(elapsedTime, 100);
+    assertEq(unitsToConsume, 1);
+    assertEq(actualBurnRate, 900);
+    assertEq(fuelAmount, 4);
+
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 3, "After updateFuel, fuel amount should be 3");
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp - 100);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 100, "After fuel consumption, elapsed time is 100");
+
+    //Advance time to consume 4 units of fuel, last unit is being consumed
+    vm.warp(block.timestamp + 2700);
+    fuelSystem.updateFuel(smartObjectId);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0, "After updateFuel, fuel amount should be 0");
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 100, "After updateFuel, elapsed time should be 100");
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true, "After updateFuel, burn state should be true");
+
+    vm.warp(block.timestamp + 900);
+    fuelSystem.updateFuel(smartObjectId);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0, "After updateFuel, fuel amount should be 0");
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0, "After updateFuel, elapsed time should be 100");
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false, "After updateFuel, burn state should be false");
+
+    vm.stopPrank();
+  }
+
+  function test_stopStartBurnCycle() public {
+    vm.startPrank(deployer);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+    fuelSystem.configureFuelParameters(
+      smartObjectId,
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+    fuelSystem.startBurn(smartObjectId); //10:00
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    // Advance 15 minutes and stop burn
+    vm.warp(block.timestamp + 900); //10:15
+    fuelSystem.stopBurn(smartObjectId);
+
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    // Advance 15 minutes and start burn again
+    vm.warp(block.timestamp + 900); //10:30
+    fuelSystem.startBurn(smartObjectId);
+
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    // Advance 15 minutes and update fuel
+    vm.warp(block.timestamp + 900); //10:45
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 1800);
+
+    vm.warp(block.timestamp + 1900); //11:16
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 100);
+
+    vm.stopPrank();
+  }
+
+  function test_cronJobFailure() public {
+    vm.startPrank(deployer);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+    fuelSystem.configureFuelParameters(
+      smartObjectId,
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+    fuelSystem.startBurn(smartObjectId); //10:00
+
+    // Skip updates for 2 hours
+    vm.warp(block.timestamp + 7200); //12:00
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 2);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
+
+    vm.stopPrank();
+  }
+
+  function test_longIntervalBetweenUpdates() public {
+    vm.startPrank(deployer);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+    fuelSystem.configureFuelParameters(
+      smartObjectId,
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 900 }) //15 minutes
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 10);
+    fuelSystem.startBurn(smartObjectId); //10:00
+
+    // Update after 15 minutes
+    vm.warp(block.timestamp + 900); //10:15
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 8);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    // Skip update for 1 hour 45 minutes
+    vm.warp(block.timestamp + 6700); //12:03
+    fuelSystem.updateFuel(smartObjectId);
+
+    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 400);
+
+    vm.stopPrank();
+  }
+
+  function test_multipleStopStartCycles() public {
+    vm.startPrank(deployer);
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+    fuelSystem.configureFuelParameters(
+      smartObjectId,
+      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 1800 }) //30 minutes
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+    fuelSystem.startBurn(smartObjectId); //10:00
+
+    // First stop/start cycle
+    vm.warp(block.timestamp + 900); //10:15
+    fuelSystem.stopBurn(smartObjectId);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
+
+    vm.warp(block.timestamp + 900); //10:30
+    fuelSystem.startBurn(smartObjectId);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
+
+    vm.warp(block.timestamp + 900); //10:45
+    fuelSystem.stopBurn(smartObjectId);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 1800);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    vm.warp(block.timestamp + 900); //11:00
+    fuelSystem.startBurn(smartObjectId);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 1800);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    vm.warp(block.timestamp + 900); //11:15
+    fuelSystem.updateFuel(smartObjectId);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 900);
+
+    // vm.warp(block.timestamp + 900); //11:15
+    // fuelSystem.stopBurn(smartObjectId);
+    // assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 2700);
+    // assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 900);
+
+    // vm.warp(block.timestamp + 900); //11:30
+    // fuelSystem.startBurn(smartObjectId);
+    // assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 2700);
+    // assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 900);
+
+    // vm.warp(block.timestamp + 900); //11:45
+    // fuelSystem.stopBurn(smartObjectId);
+    // assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 3600);
+    // assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 900);
+
+    vm.stopPrank();
+  }
+
+  // function test_veryShortBurnRate() public {
+  //   vm.startPrank(deployer);
+  //   fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+  //   fuelSystem.configureFuelParameters(
+  //     smartObjectId,
+  //     FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 60 }) //1 minute
+  //   );
+  //   fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+  //   fuelSystem.startBurn(smartObjectId); //10:00
+
+  //   vm.warp(block.timestamp + 60); //10:01
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+  //   vm.warp(block.timestamp + 60); //10:02
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 1);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+  //   vm.stopPrank();
+  // }
+
+  // function test_veryLongBurnRate() public {
+  //   vm.startPrank(deployer);
+  //   fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+  //   fuelSystem.configureFuelParameters(
+  //     smartObjectId,
+  //     FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 86400 }) //24 hours
+  //   );
+  //   fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+  //   fuelSystem.startBurn(smartObjectId); //10:00
+
+  //   vm.warp(block.timestamp + 7200); //12:00
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 7200);
+
+  //   vm.warp(block.timestamp + 43200); //24:00
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+  //   vm.stopPrank();
+  // }
+
+  // function test_partialUnitConsumption() public {
+  //   vm.startPrank(deployer);
+  //   fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
+  //   fuelSystem.configureFuelParameters(
+  //     smartObjectId,
+  //     FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 }) //1 hour
+  //   );
+  //   fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
+  //   fuelSystem.startBurn(smartObjectId); //10:00
+
+  //   vm.warp(block.timestamp + 1800); //10:30
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 1800);
+
+  //   vm.warp(block.timestamp + 1800); //11:00
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+  //   vm.warp(block.timestamp + 1800); //11:30
+  //   fuelSystem.updateFuel(smartObjectId);
+  //   assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+  //   assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 1800);
+
+  //   vm.stopPrank();
+  // }
 
   // Helper function to calculate itemObjectId
   function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {

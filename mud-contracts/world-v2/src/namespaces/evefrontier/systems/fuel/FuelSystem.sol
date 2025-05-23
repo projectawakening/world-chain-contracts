@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { console } from "forge-std/console.sol";
+
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
@@ -59,7 +61,7 @@ contract FuelSystem is SmartObjectFramework {
     }
     // fuel burn rate must be at least 60 seconds
     if (
-      fuelParams.fuelBurnRateInSeconds <= MIN_FUEL_BURN_RATE ||
+      fuelParams.fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE ||
       fuelParams.fuelBurnRateInSeconds > uint256(type(uint128).max)
     ) {
       revert Fuel_InvalidFuelBurnRate(
@@ -80,12 +82,13 @@ contract FuelSystem is SmartObjectFramework {
    * @param smartObjectId on-chain id of the deployable
    * @param fuelEntityParams the parameters of the fuel
    * @param fuelEfficiency the efficiency of the fuel
+   * TODO: access control for this function
    */
   function configureFuelEfficiency(
     uint256 smartObjectId,
     EntityRecordParams memory fuelEntityParams,
     uint256 fuelEfficiency
-  ) public context access(smartObjectId) {
+  ) public {
     bytes32 tenantId = Tenant.get();
 
     if (tenantId != fuelEntityParams.tenantId) {
@@ -131,7 +134,7 @@ contract FuelSystem is SmartObjectFramework {
       }
     }
 
-    updateFuel(smartObjectId);
+    // _updateFuel(smartObjectId);
 
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
@@ -158,7 +161,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 smartObjectId,
     uint256 fuelAmount
   ) public context access(smartObjectId) scope(smartObjectId) {
-    updateFuel(smartObjectId);
+    // _updateFuel(smartObjectId);
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
 
     if (fuelAmount == 0 || fuelAmount > currentFuelAmount) {
@@ -171,31 +174,44 @@ contract FuelSystem is SmartObjectFramework {
   /**
    * @dev Start burning fuel for a Network Node
    * @param smartObjectId on-chain id of the deployable
-   * Consumes 1 unit of fuel, sets burnStartTime and fuelConsumptionTimeRemaining in FuelConsumptionState
+   * Consumes 1 unit of fuel, sets burnStartTime and preserves elapsed time
    */
   function startBurn(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     if (currentFuelAmount == 0) {
       revert Fuel_InsufficientFuel(smartObjectId, 1, 0);
     }
-    uint256 fuelBurnRateInSeconds = Fuel.getFuelBurnRateInSeconds(smartObjectId);
-    // Consume 1 unit of fuel
-    Fuel.setFuelAmount(smartObjectId, currentFuelAmount - 1);
-    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
 
-    // Set burn state
-    FuelConsumptionState.set(smartObjectId, block.timestamp, true, fuelBurnRateInSeconds);
+    // Get the previous elapsed time
+    uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+
+    if (previousElapsedTime == 0) {
+      // Consume 1 unit of fuel
+      Fuel.setFuelAmount(smartObjectId, currentFuelAmount - 1);
+      Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
+    }
+
+    // Set burn state with previous elapsed time
+    FuelConsumptionState.set(smartObjectId, block.timestamp, true, previousElapsedTime, 0);
   }
 
   /**
    * @dev Stop burning fuel for a Network Node
    * @param smartObjectId on-chain id of the deployable
-   * Sets burnState to false and fuelConsumptionTimeRemaining to 0
+   * Sets burnState to false and preserves elapsed time for next burn cycle
    */
   function stopBurn(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     bool burnState = FuelConsumptionState.getBurnState(smartObjectId);
     if (burnState) {
-      FuelConsumptionState.set(smartObjectId, FuelConsumptionState.getBurnStartTime(smartObjectId), false, 0);
+      // Keep elapsedTime for fuel consumption calculations
+      uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
+      uint256 elapsedTime = block.timestamp > burnStartTime ? block.timestamp - burnStartTime : 0;
+
+      uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+      previousElapsedTime = previousElapsedTime + elapsedTime;
+
+      // Preserve elapsed time, just set burn state to false
+      FuelConsumptionState.set(smartObjectId, 0, false, previousElapsedTime, 0);
       Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
     }
   }
@@ -227,56 +243,52 @@ contract FuelSystem is SmartObjectFramework {
    */
   function updateFuel(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     //Update only if there is enough fuel and burn is active
-    if (Fuel.getFuelAmount(smartObjectId) > 0 && FuelConsumptionState.getBurnState(smartObjectId)) {
+    if (FuelConsumptionState.getBurnState(smartObjectId)) {
       _updateFuel(smartObjectId);
     }
   }
 
   /**
    * @dev Returns the current fuel consumption status for a Deployable at the current block.timestamp
-   * Returns: (isBurning, timeLeft, unitsToConsume, actualConsumptionRateInSeconds, fuelAmount)
+   * Returns: (elapsedTime, unitsToConsume, actualConsumptionRateInSeconds, fuelAmount)
    */
   function getCurrentFuelConsumptionStatus(
     uint256 smartObjectId
   )
     public
     view
-    returns (uint256 timeLeft, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
+    returns (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
   {
-    uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-    bool burnState = FuelConsumptionState.getBurnState(smartObjectId);
     uint256 fuelBurnRateInSeconds = Fuel.getFuelBurnRateInSeconds(smartObjectId);
     uint256 fuelSmartObjectId = Fuel.getFuelSmartObjectId(smartObjectId);
-    uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId); // 0-100
+    uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
+    bool burnState = FuelConsumptionState.getBurnState(smartObjectId);
+    uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId);
     fuelAmount = Fuel.getFuelAmount(smartObjectId);
 
-    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE) {
-      return (0, 0, 0, fuelAmount);
+    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE || fuelAmount == 0) {
+      return (elapsedTime, 0, 0, fuelAmount);
     }
 
-    if (fuelEfficiency >= MIN_FUEL_EFFICIENCY && fuelEfficiency <= MAX_FUEL_EFFICIENCY) {
-      actualConsumptionRateInSeconds = (fuelBurnRateInSeconds * fuelEfficiency) / PERCENTAGE_DIVISOR;
-    } else {
-      actualConsumptionRateInSeconds = fuelBurnRateInSeconds;
-    }
+    // Calculate actual burn rate based on efficiency
+    actualConsumptionRateInSeconds = fuelEfficiency >= MIN_FUEL_EFFICIENCY && fuelEfficiency <= MAX_FUEL_EFFICIENCY
+      ? (fuelBurnRateInSeconds * fuelEfficiency) / PERCENTAGE_DIVISOR
+      : fuelBurnRateInSeconds;
 
     uint256 currentTime = block.timestamp;
     uint256 elapsed = currentTime > burnStartTime ? currentTime - burnStartTime : 0;
+
+    // Add previous cycle elapsed time to the current elapsed time only on the first cycle
+    uint256 previousCycleElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+    if (previousCycleElapsedTime > 0) {
+      elapsed += previousCycleElapsedTime;
+    }
+
+    // Calculate units to consume based on total elapsed time
     unitsToConsume = elapsed / actualConsumptionRateInSeconds;
-    uint256 timeIntoCurrentUnit = elapsed % actualConsumptionRateInSeconds;
+    elapsedTime = elapsed % actualConsumptionRateInSeconds;
 
-    if (unitsToConsume > 0 && fuelAmount == 0) {
-      // Out of fuel
-      return (0, unitsToConsume, actualConsumptionRateInSeconds, fuelAmount);
-    }
-
-    if (elapsed >= actualConsumptionRateInSeconds && fuelAmount > 0) {
-      // This unit should have finished burning
-      return (0, unitsToConsume, actualConsumptionRateInSeconds, fuelAmount);
-    }
-
-    timeLeft = actualConsumptionRateInSeconds - timeIntoCurrentUnit;
-    return (timeLeft, unitsToConsume, actualConsumptionRateInSeconds, fuelAmount);
+    return (elapsedTime, unitsToConsume, actualConsumptionRateInSeconds, fuelAmount);
   }
 
   /*************************
@@ -285,55 +297,97 @@ contract FuelSystem is SmartObjectFramework {
   // Mock: handle out of fuel by calling NetworkNodeSystem to bring everything offline
   function _handleOutOfFuel(uint256 smartObjectId) internal {
     //stop burn before bringing offline
-    stopBurn(smartObjectId);
     if (DeployableState.getCurrentState(smartObjectId) == State.ONLINE) {
       deployableSystem.bringOffline(smartObjectId);
     }
   }
 
+  /**
+   * @dev Internal function to update fuel consumption state and handle fuel burning
+   * @param smartObjectId The ID of the smart object to update fuel for
+   * @notice This function handles:
+   */
   function _updateFuel(uint256 smartObjectId) internal {
+    // Get current fuel consumption status
     (
-      uint256 timeLeft,
+      uint256 elapsedTime,
       uint256 unitsToConsume,
-      uint256 actualConsumptionRateInSeconds,
+      uint256 actualBurnRate,
       uint256 fuelAmount
     ) = getCurrentFuelConsumptionStatus(smartObjectId);
 
+    // Handle case where no fuel is available
+    if (fuelAmount == 0) {
+      _handleNoFuel(smartObjectId);
+      return;
+    }
+
+    // If no units to consume, just update elapsed time
+    if (unitsToConsume == 0) {
+      FuelConsumptionState.setElapsedTime(smartObjectId, elapsedTime);
+      Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
+      return;
+    }
+
     if (unitsToConsume > 0) {
-      uint256 actualUnitsToConsume = unitsToConsume > fuelAmount ? fuelAmount : unitsToConsume;
-      fuelAmount -= actualUnitsToConsume;
-      Fuel.setFuelAmount(smartObjectId, fuelAmount);
-
-      uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-      uint256 newBurnStartTime = burnStartTime + actualUnitsToConsume * actualConsumptionRateInSeconds;
-
-      if (fuelAmount == 0) {
-        FuelConsumptionState.set(smartObjectId, newBurnStartTime, false, 0);
-        _handleOutOfFuel(smartObjectId);
-      } else {
-        uint256 newTimeRemaining = actualConsumptionRateInSeconds -
-          ((block.timestamp > newBurnStartTime) ? (block.timestamp - newBurnStartTime) : 0);
-        FuelConsumptionState.set(smartObjectId, newBurnStartTime, true, newTimeRemaining);
+      uint256 previousCycleElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+      if (previousCycleElapsedTime > 0) {
+        FuelConsumptionState.setPreviousCycleElapsedTime(smartObjectId, 0);
       }
+    }
+
+    // Calculate actual units to consume (limited by available fuel)
+    uint256 actualUnitsToConsume = unitsToConsume > fuelAmount ? fuelAmount : unitsToConsume;
+
+    // Update fuel amount
+    fuelAmount -= actualUnitsToConsume;
+    Fuel.setFuelAmount(smartObjectId, fuelAmount);
+
+    // Calculate new burn timing
+    uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
+    uint256 timeUsedForConsumption = actualUnitsToConsume * actualBurnRate;
+    uint256 newBurnStartTime = burnStartTime + timeUsedForConsumption;
+
+    // Handle state updates based on remaining fuel
+    if (fuelAmount == 0) {
+      _handleLastUnitConsumption(smartObjectId, elapsedTime, actualBurnRate, newBurnStartTime);
     } else {
-      // Not enough time for a full unit, just update time remaining
-      uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-      uint256 newTimeRemaining = timeLeft;
-      if (newTimeRemaining == 0) {
-        if (fuelAmount > 0) {
-          Fuel.setFuelAmount(smartObjectId, fuelAmount - 1);
-          if (fuelAmount - 1 == 0) {
-            FuelConsumptionState.set(smartObjectId, burnStartTime, false, 0);
-            _handleOutOfFuel(smartObjectId);
-          }
-        } else {
-          Fuel.setFuelAmount(smartObjectId, 0);
-          FuelConsumptionState.set(smartObjectId, burnStartTime, false, 0);
-          _handleOutOfFuel(smartObjectId);
-        }
-        Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
-      }
-      FuelConsumptionState.set(smartObjectId, burnStartTime, true, newTimeRemaining);
+      // Continue burning with updated times
+      FuelConsumptionState.set(smartObjectId, newBurnStartTime, true, 0, elapsedTime);
+    }
+
+    Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
+  }
+
+  /**
+   * @dev Internal function to handle no fuel condition
+   * @param smartObjectId The ID of the smart object
+   */
+  function _handleNoFuel(uint256 smartObjectId) internal {
+    FuelConsumptionState.set(smartObjectId, 0, false, 0, 0);
+    _handleOutOfFuel(smartObjectId);
+  }
+
+  /**
+   * @dev Internal function to handle last unit consumption
+   * @param smartObjectId The ID of the smart object
+   * @param elapsedTime Current elapsed time
+   * @param actualBurnRate Current burn rate
+   * @param newBurnStartTime New burn start time
+   */
+  function _handleLastUnitConsumption(
+    uint256 smartObjectId,
+    uint256 elapsedTime,
+    uint256 actualBurnRate,
+    uint256 newBurnStartTime
+  ) internal {
+    if (elapsedTime >= actualBurnRate || elapsedTime == 0) {
+      // Last unit is fully consumed
+      FuelConsumptionState.set(smartObjectId, 0, false, 0, 0);
+      _handleOutOfFuel(smartObjectId);
+    } else {
+      // Last unit is still being consumed
+      FuelConsumptionState.set(smartObjectId, newBurnStartTime, true, 0, elapsedTime);
     }
   }
 }

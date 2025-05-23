@@ -108,7 +108,7 @@ library FuelSystemLib {
   )
     internal
     view
-    returns (uint256 timeLeft, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
+    returns (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
   {
     return CallWrapper(self.toResourceId(), address(0)).getCurrentFuelConsumptionStatus(smartObjectId);
   }
@@ -225,7 +225,7 @@ library FuelSystemLib {
   )
     internal
     view
-    returns (uint256 timeLeft, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
+    returns (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
   {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert FuelSystemLib_CallingFromRootSystem();
@@ -316,7 +316,7 @@ library FuelSystemLib {
   )
     internal
     view
-    returns (uint256 timeLeft, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
+    returns (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount)
   {
     bytes memory systemCall = abi.encodeCall(
       _getCurrentFuelConsumptionStatus_uint256.getCurrentFuelConsumptionStatus,

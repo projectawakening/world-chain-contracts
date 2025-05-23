@@ -190,7 +190,8 @@ export default defineWorld({
             smartObjectId: "uint256", // eg: Network Node ID
             burnStartTime: "uint256", // Block timestamp when burn started, this time is reset for every unit of fuel consumed
             burnState: "bool", // true if burn is active, false if not
-            fuelConsumptionTimeRemaining: "uint256", // Seconds remaining for current burn session, `CurrentBlockTime - (burnStartTime + fuelBurnRateInSeconds)` //updated every 5 mins
+            previousCycleElapsedTime: "uint256", // Total elapsed time since burn started, used to calculate fuel consumption
+            elapsedTime: "uint256", // Total elapsed time since burn started, used to calculate fuel consumption
           },
           key: ["smartObjectId"],
         },

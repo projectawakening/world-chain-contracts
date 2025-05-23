@@ -19,7 +19,8 @@ import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 struct FuelConsumptionStateData {
   uint256 burnStartTime;
   bool burnState;
-  uint256 fuelConsumptionTimeRemaining;
+  uint256 previousCycleElapsedTime;
+  uint256 elapsedTime;
 }
 
 library FuelConsumptionState {
@@ -27,12 +28,12 @@ library FuelConsumptionState {
   ResourceId constant _tableId = ResourceId.wrap(0x746265766566726f6e746965720000004675656c436f6e73756d7074696f6e53);
 
   FieldLayout constant _fieldLayout =
-    FieldLayout.wrap(0x0041030020012000000000000000000000000000000000000000000000000000);
+    FieldLayout.wrap(0x0061040020012020000000000000000000000000000000000000000000000000);
 
   // Hex-encoded key schema of (uint256)
   Schema constant _keySchema = Schema.wrap(0x002001001f000000000000000000000000000000000000000000000000000000);
-  // Hex-encoded value schema of (uint256, bool, uint256)
-  Schema constant _valueSchema = Schema.wrap(0x004103001f601f00000000000000000000000000000000000000000000000000);
+  // Hex-encoded value schema of (uint256, bool, uint256, uint256)
+  Schema constant _valueSchema = Schema.wrap(0x006104001f601f1f000000000000000000000000000000000000000000000000);
 
   /**
    * @notice Get the table's key field names.
@@ -48,10 +49,11 @@ library FuelConsumptionState {
    * @return fieldNames An array of strings with the names of value fields.
    */
   function getFieldNames() internal pure returns (string[] memory fieldNames) {
-    fieldNames = new string[](3);
+    fieldNames = new string[](4);
     fieldNames[0] = "burnStartTime";
     fieldNames[1] = "burnState";
-    fieldNames[2] = "fuelConsumptionTimeRemaining";
+    fieldNames[2] = "previousCycleElapsedTime";
+    fieldNames[3] = "elapsedTime";
   }
 
   /**
@@ -153,11 +155,9 @@ library FuelConsumptionState {
   }
 
   /**
-   * @notice Get fuelConsumptionTimeRemaining.
+   * @notice Get previousCycleElapsedTime.
    */
-  function getFuelConsumptionTimeRemaining(
-    uint256 smartObjectId
-  ) internal view returns (uint256 fuelConsumptionTimeRemaining) {
+  function getPreviousCycleElapsedTime(uint256 smartObjectId) internal view returns (uint256 previousCycleElapsedTime) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -166,11 +166,11 @@ library FuelConsumptionState {
   }
 
   /**
-   * @notice Get fuelConsumptionTimeRemaining.
+   * @notice Get previousCycleElapsedTime.
    */
-  function _getFuelConsumptionTimeRemaining(
+  function _getPreviousCycleElapsedTime(
     uint256 smartObjectId
-  ) internal view returns (uint256 fuelConsumptionTimeRemaining) {
+  ) internal view returns (uint256 previousCycleElapsedTime) {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
@@ -179,23 +179,65 @@ library FuelConsumptionState {
   }
 
   /**
-   * @notice Set fuelConsumptionTimeRemaining.
+   * @notice Set previousCycleElapsedTime.
    */
-  function setFuelConsumptionTimeRemaining(uint256 smartObjectId, uint256 fuelConsumptionTimeRemaining) internal {
+  function setPreviousCycleElapsedTime(uint256 smartObjectId, uint256 previousCycleElapsedTime) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((fuelConsumptionTimeRemaining)), _fieldLayout);
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((previousCycleElapsedTime)), _fieldLayout);
   }
 
   /**
-   * @notice Set fuelConsumptionTimeRemaining.
+   * @notice Set previousCycleElapsedTime.
    */
-  function _setFuelConsumptionTimeRemaining(uint256 smartObjectId, uint256 fuelConsumptionTimeRemaining) internal {
+  function _setPreviousCycleElapsedTime(uint256 smartObjectId, uint256 previousCycleElapsedTime) internal {
     bytes32[] memory _keyTuple = new bytes32[](1);
     _keyTuple[0] = bytes32(uint256(smartObjectId));
 
-    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((fuelConsumptionTimeRemaining)), _fieldLayout);
+    StoreCore.setStaticField(_tableId, _keyTuple, 2, abi.encodePacked((previousCycleElapsedTime)), _fieldLayout);
+  }
+
+  /**
+   * @notice Get elapsedTime.
+   */
+  function getElapsedTime(uint256 smartObjectId) internal view returns (uint256 elapsedTime) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Get elapsedTime.
+   */
+  function _getElapsedTime(uint256 smartObjectId) internal view returns (uint256 elapsedTime) {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 3, _fieldLayout);
+    return (uint256(bytes32(_blob)));
+  }
+
+  /**
+   * @notice Set elapsedTime.
+   */
+  function setElapsedTime(uint256 smartObjectId, uint256 elapsedTime) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreSwitch.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((elapsedTime)), _fieldLayout);
+  }
+
+  /**
+   * @notice Set elapsedTime.
+   */
+  function _setElapsedTime(uint256 smartObjectId, uint256 elapsedTime) internal {
+    bytes32[] memory _keyTuple = new bytes32[](1);
+    _keyTuple[0] = bytes32(uint256(smartObjectId));
+
+    StoreCore.setStaticField(_tableId, _keyTuple, 3, abi.encodePacked((elapsedTime)), _fieldLayout);
   }
 
   /**
@@ -235,9 +277,10 @@ library FuelConsumptionState {
     uint256 smartObjectId,
     uint256 burnStartTime,
     bool burnState,
-    uint256 fuelConsumptionTimeRemaining
+    uint256 previousCycleElapsedTime,
+    uint256 elapsedTime
   ) internal {
-    bytes memory _staticData = encodeStatic(burnStartTime, burnState, fuelConsumptionTimeRemaining);
+    bytes memory _staticData = encodeStatic(burnStartTime, burnState, previousCycleElapsedTime, elapsedTime);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -255,9 +298,10 @@ library FuelConsumptionState {
     uint256 smartObjectId,
     uint256 burnStartTime,
     bool burnState,
-    uint256 fuelConsumptionTimeRemaining
+    uint256 previousCycleElapsedTime,
+    uint256 elapsedTime
   ) internal {
-    bytes memory _staticData = encodeStatic(burnStartTime, burnState, fuelConsumptionTimeRemaining);
+    bytes memory _staticData = encodeStatic(burnStartTime, burnState, previousCycleElapsedTime, elapsedTime);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;
@@ -275,7 +319,8 @@ library FuelConsumptionState {
     bytes memory _staticData = encodeStatic(
       _table.burnStartTime,
       _table.burnState,
-      _table.fuelConsumptionTimeRemaining
+      _table.previousCycleElapsedTime,
+      _table.elapsedTime
     );
 
     EncodedLengths _encodedLengths;
@@ -294,7 +339,8 @@ library FuelConsumptionState {
     bytes memory _staticData = encodeStatic(
       _table.burnStartTime,
       _table.burnState,
-      _table.fuelConsumptionTimeRemaining
+      _table.previousCycleElapsedTime,
+      _table.elapsedTime
     );
 
     EncodedLengths _encodedLengths;
@@ -311,12 +357,18 @@ library FuelConsumptionState {
    */
   function decodeStatic(
     bytes memory _blob
-  ) internal pure returns (uint256 burnStartTime, bool burnState, uint256 fuelConsumptionTimeRemaining) {
+  )
+    internal
+    pure
+    returns (uint256 burnStartTime, bool burnState, uint256 previousCycleElapsedTime, uint256 elapsedTime)
+  {
     burnStartTime = (uint256(Bytes.getBytes32(_blob, 0)));
 
     burnState = (_toBool(uint8(Bytes.getBytes1(_blob, 32))));
 
-    fuelConsumptionTimeRemaining = (uint256(Bytes.getBytes32(_blob, 33)));
+    previousCycleElapsedTime = (uint256(Bytes.getBytes32(_blob, 33)));
+
+    elapsedTime = (uint256(Bytes.getBytes32(_blob, 65)));
   }
 
   /**
@@ -330,7 +382,9 @@ library FuelConsumptionState {
     EncodedLengths,
     bytes memory
   ) internal pure returns (FuelConsumptionStateData memory _table) {
-    (_table.burnStartTime, _table.burnState, _table.fuelConsumptionTimeRemaining) = decodeStatic(_staticData);
+    (_table.burnStartTime, _table.burnState, _table.previousCycleElapsedTime, _table.elapsedTime) = decodeStatic(
+      _staticData
+    );
   }
 
   /**
@@ -360,9 +414,10 @@ library FuelConsumptionState {
   function encodeStatic(
     uint256 burnStartTime,
     bool burnState,
-    uint256 fuelConsumptionTimeRemaining
+    uint256 previousCycleElapsedTime,
+    uint256 elapsedTime
   ) internal pure returns (bytes memory) {
-    return abi.encodePacked(burnStartTime, burnState, fuelConsumptionTimeRemaining);
+    return abi.encodePacked(burnStartTime, burnState, previousCycleElapsedTime, elapsedTime);
   }
 
   /**
@@ -374,9 +429,10 @@ library FuelConsumptionState {
   function encode(
     uint256 burnStartTime,
     bool burnState,
-    uint256 fuelConsumptionTimeRemaining
+    uint256 previousCycleElapsedTime,
+    uint256 elapsedTime
   ) internal pure returns (bytes memory, EncodedLengths, bytes memory) {
-    bytes memory _staticData = encodeStatic(burnStartTime, burnState, fuelConsumptionTimeRemaining);
+    bytes memory _staticData = encodeStatic(burnStartTime, burnState, previousCycleElapsedTime, elapsedTime);
 
     EncodedLengths _encodedLengths;
     bytes memory _dynamicData;

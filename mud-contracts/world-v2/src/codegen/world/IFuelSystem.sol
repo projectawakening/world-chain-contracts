@@ -55,5 +55,5 @@ interface IFuelSystem {
   )
     external
     view
-    returns (uint256 timeLeft, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount);
+    returns (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualConsumptionRateInSeconds, uint256 fuelAmount);
 }
