@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
-import { console } from "forge-std/console.sol";
-
 // Smart Object Framework imports
 import { SmartObjectFramework } from "@eveworld/smart-object-framework-v2/src/inherit/SmartObjectFramework.sol";
 
@@ -210,6 +208,11 @@ contract FuelSystem is SmartObjectFramework {
       uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
       previousElapsedTime = previousElapsedTime + elapsedTime;
 
+      // If the previous cycle is equal to the burn rate, then it means its completed a full cycle, so reset the previous cycle elapsed time to 0
+      if (previousElapsedTime >= Fuel.getFuelBurnRateInSeconds(smartObjectId)) {
+        previousElapsedTime = 0;
+      }
+
       // Preserve elapsed time, just set burn state to false
       FuelConsumptionState.set(smartObjectId, 0, false, previousElapsedTime, 0);
       Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
@@ -266,7 +269,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId);
     fuelAmount = Fuel.getFuelAmount(smartObjectId);
 
-    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE || fuelAmount == 0) {
+    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE) {
       return (elapsedTime, 0, 0, fuelAmount);
     }
 
@@ -282,6 +285,11 @@ contract FuelSystem is SmartObjectFramework {
     uint256 previousCycleElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
     if (previousCycleElapsedTime > 0) {
       elapsed += previousCycleElapsedTime;
+    }
+    //when the last unit is being consumed, we only consider for 1 unit of fuel window
+    if (fuelAmount == 0) {
+      elapsed = elapsed < actualConsumptionRateInSeconds ? elapsed : 0;
+      return (elapsed, 0, 0, fuelAmount);
     }
 
     // Calculate units to consume based on total elapsed time
@@ -317,7 +325,7 @@ contract FuelSystem is SmartObjectFramework {
     ) = getCurrentFuelConsumptionStatus(smartObjectId);
 
     // Handle case where no fuel is available
-    if (fuelAmount == 0) {
+    if (fuelAmount == 0 && elapsedTime == 0) {
       _handleNoFuel(smartObjectId);
       return;
     }
