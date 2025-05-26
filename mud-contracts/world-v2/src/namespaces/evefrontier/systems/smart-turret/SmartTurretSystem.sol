@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, SmartTurretConfig, Characters, CharactersByAccount, OwnershipByObject, Initialize } from "../../codegen/index.sol";
+import { Tenant, DeployableState, SmartTurretConfig, Characters, CharactersByAccount, OwnershipByObject, Initialize } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -22,6 +22,7 @@ import { smartTurretSystem } from "../../codegen/systems/SmartTurretSystemLib.so
 import { State, CreateAndAnchorParams } from "../deployable/types.sol";
 import { TargetPriority, Turret, SmartTurretTarget, AggressionParams } from "./types.sol";
 import { SMART_TURRET } from "../constants.sol";
+import { ObjectIdLib } from "../../libraries/ObjectIdLib.sol";
 
 contract SmartTurretSystem is SmartObjectFramework {
   /**
@@ -32,10 +33,12 @@ contract SmartTurretSystem is SmartObjectFramework {
   function createAndAnchorTurret(
     CreateAndAnchorParams memory params,
     uint256 networkNodeId
-  ) public context access(params.smartObjectId) scope(getSmartTurretClassId()) {
+  ) public context access(params.smartObjectId) {
     params.assemblyType = SMART_TURRET;
 
-    entitySystem.instantiate(getSmartTurretClassId(), params.smartObjectId, params.owner);
+    uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
+
+    entitySystem.instantiate(classId, params.smartObjectId, params.owner);
 
     deployableSystem.createAndAnchor(params, networkNodeId);
   }

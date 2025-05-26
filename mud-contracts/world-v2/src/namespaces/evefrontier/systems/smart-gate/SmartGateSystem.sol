@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { SmartGateConfig, SmartGateLink, SmartGateLinkData, DeployableState, Location, LocationData, Initialize } from "../../codegen/index.sol";
+import { Tenant, SmartGateConfig, SmartGateLink, SmartGateLinkData, DeployableState, Location, LocationData, Initialize } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -21,6 +21,7 @@ import { smartGateSystem } from "../../codegen/systems/SmartGateSystemLib.sol";
 // Types and parameters
 import { State, CreateAndAnchorParams } from "../deployable/types.sol";
 import { SMART_GATE } from "../constants.sol";
+import { ObjectIdLib } from "../../libraries/ObjectIdLib.sol";
 
 contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_UndefinedClassId();
@@ -42,10 +43,12 @@ contract SmartGateSystem is SmartObjectFramework {
     CreateAndAnchorParams memory params,
     uint256 maxDistance,
     uint256 networkNodeId
-  ) public context access(params.smartObjectId) scope(getSmartGateClassId()) {
+  ) public context access(params.smartObjectId) {
     params.assemblyType = SMART_GATE;
 
-    entitySystem.instantiate(getSmartGateClassId(), params.smartObjectId, params.owner);
+    uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
+
+    entitySystem.instantiate(classId, params.smartObjectId, params.owner);
 
     deployableSystem.createAndAnchor(params, networkNodeId);
 

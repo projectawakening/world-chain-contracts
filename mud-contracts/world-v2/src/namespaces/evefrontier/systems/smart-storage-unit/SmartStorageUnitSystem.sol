@@ -12,9 +12,13 @@ import { Initialize } from "../../codegen/index.sol";
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
 import { inventorySystem } from "../../codegen/systems/InventorySystemLib.sol";
 import { smartStorageUnitSystem } from "../../codegen/systems/SmartStorageUnitSystemLib.sol";
+
+import { Tenant } from "../../codegen/index.sol";
+
 // Types and parameters
 import { CreateAndAnchorParams } from "../deployable/types.sol";
 import { SMART_STORAGE_UNIT } from "../constants.sol";
+import { ObjectIdLib } from "../../libraries/ObjectIdLib.sol";
 
 contract SmartStorageUnitSystem is SmartObjectFramework {
   /**
@@ -29,10 +33,12 @@ contract SmartStorageUnitSystem is SmartObjectFramework {
     uint256 capacity,
     uint256 ephemeralCapacity,
     uint256 networkNodeId
-  ) public context access(params.smartObjectId) scope(getSmartStorageUnitClassId()) {
+  ) public context access(params.smartObjectId) {
     params.assemblyType = SMART_STORAGE_UNIT;
 
-    entitySystem.instantiate(getSmartStorageUnitClassId(), params.smartObjectId, params.owner);
+    uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
+
+    entitySystem.instantiate(classId, params.smartObjectId, params.owner);
 
     deployableSystem.createAndAnchor(params, networkNodeId);
 
