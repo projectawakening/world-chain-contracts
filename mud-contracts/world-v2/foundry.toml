@@ -27,6 +27,7 @@ fs_permissions = [{ access = "read", path = "./"}]
 max_test_rejects = 750536
 runs = 10
 gas_limit = 120000000
+script_execution_protection=false
 
 [profile.garnet]
 eth_rpc_url = "https://rpc.garnetchain.com"

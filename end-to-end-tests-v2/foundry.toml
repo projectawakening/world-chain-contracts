@@ -12,6 +12,7 @@ out = 'out'
 cache = true
 cache_path = "cache"
 incremental = true
+script_execution_protection=false
 
 [profile.default.ir]
 optimize = true

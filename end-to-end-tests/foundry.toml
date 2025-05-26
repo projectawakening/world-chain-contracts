@@ -8,5 +8,6 @@ optimizer_runs = 300
 verbosity = 2
 src = 'script'
 out = 'out'
+script_execution_protection=false
 
 

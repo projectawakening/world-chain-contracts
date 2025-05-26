@@ -22,6 +22,7 @@ extra_output_files = [
   "evm.bytecode"
 ]
 fs_permissions = [{ access = "read", path = "./"}]
+script_execution_protection=false
 
 [profile.devnet]
 eth_rpc_url = "https://devnet-data-sync.nursery.reitnorf.com"
