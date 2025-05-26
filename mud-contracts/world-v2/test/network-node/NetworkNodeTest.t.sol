@@ -483,6 +483,163 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.resumeGasMetering();
   }
 
+  function test_networkNodeOnlineOfflineCycle() public {
+    vm.startPrank(deployer, deployer);
+
+    // Setup Network Node with 100 GJ capacity and 100 GJ production
+    _setupNetworkNode(100, 100);
+
+    // Deposit initial fuel
+    fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
+
+    // 1. Bring Network Node online (should start burning fuel)
+    deployableSystem.bringOnline(networkNodeId);
+
+    // Verify initial state
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ONLINE),
+      "Network Node should be online"
+    );
+    assertTrue(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be active");
+    assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Initial fuel amount should be 9");
+    assertEq(FuelConsumptionState.getElapsedTime(networkNodeId), 0, "Initial elapsed time should be 0");
+
+    // 2. Update after 30 minutes
+    vm.warp(block.timestamp + 1800);
+    fuelSystem.updateFuel(networkNodeId);
+
+    // Verify state after 30 minutes
+    assertEq(Fuel.getFuelAmount(networkNodeId), 9, "Fuel amount should still be 9 after 30 minutes");
+    assertEq(FuelConsumptionState.getElapsedTime(networkNodeId), 1800, "Elapsed time should be 1800 seconds");
+
+    // 3. Update after 1 hour
+    vm.warp(block.timestamp + 2000);
+    fuelSystem.updateFuel(networkNodeId);
+
+    // Verify state after 1 hour
+    assertEq(Fuel.getFuelAmount(networkNodeId), 8, "Fuel amount should be 8 after 1 hour");
+    assertEq(FuelConsumptionState.getElapsedTime(networkNodeId), 200, "Elapsed time should reset to 200");
+
+    // 4. Bring Network Node offline
+    deployableSystem.bringOffline(networkNodeId);
+
+    // Verify state after bringing offline
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ANCHORED),
+      "Network Node should be offline"
+    );
+    assertFalse(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be stopped");
+    assertEq(
+      FuelConsumptionState.getPreviousCycleElapsedTime(networkNodeId),
+      200,
+      "Previous cycle elapsed time should be 200"
+    );
+    assertEq(FuelConsumptionState.getElapsedTime(networkNodeId), 0, "Elapsed time should be 0");
+
+    // 5. Wait 30 minutes while offline
+    vm.warp(block.timestamp + 1800);
+    fuelSystem.updateFuel(networkNodeId);
+
+    // Verify no fuel consumption while offline
+    assertEq(Fuel.getFuelAmount(networkNodeId), 8, "Fuel amount should remain 8 while offline");
+    assertFalse(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be stopped");
+    assertEq(
+      FuelConsumptionState.getPreviousCycleElapsedTime(networkNodeId),
+      200,
+      "Previous cycle elapsed time should be 200"
+    );
+    assertEq(FuelConsumptionState.getElapsedTime(networkNodeId), 0, "Elapsed time should be 0");
+
+    // 6. Bring Network Node back online
+    deployableSystem.bringOnline(networkNodeId);
+
+    // Verify state after bringing back online
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ONLINE),
+      "Network Node should be online again"
+    );
+    assertTrue(FuelConsumptionState.getBurnState(networkNodeId), "Burn should be active again");
+    assertEq(Fuel.getFuelAmount(networkNodeId), 8, "One unit should be consumed on bringing online");
+
+    // 7. Update after 1 hour
+    vm.warp(block.timestamp + 3600);
+    fuelSystem.updateFuel(networkNodeId);
+
+    // Verify final state
+    assertEq(Fuel.getFuelAmount(networkNodeId), 7, "Fuel amount should be 7 after another hour");
+    assertEq(FuelConsumptionState.getElapsedTime(networkNodeId), 200, "Elapsed time should be 200");
+
+    vm.stopPrank();
+  }
+
+  function test_networkNodeOnlineOfflineWithAssemblies() public {
+    vm.pauseGasMetering();
+    vm.startPrank(deployer, deployer);
+
+    // Setup Network Node with 100 GJ capacity and 100 GJ production
+    _setupNetworkNode(100, 100);
+
+    // Deposit initial fuel
+    fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
+
+    // Setup and connect Smart Gate (requires 50 GJ)
+    _setupSmartGate(smartGateId);
+
+    // 1. Bring Network Node online
+    deployableSystem.bringOnline(networkNodeId);
+
+    // Verify initial Network Node state
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ONLINE),
+      "Network Node should be online"
+    );
+    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 10, "Network Node should reserve 10 GJ for itself");
+
+    // 2. Bring Smart Gate online
+    deployableSystem.bringOnline(smartGateId);
+
+    // Verify Smart Gate is online and energy is reserved
+    assertEq(uint8(DeployableState.getCurrentState(smartGateId)), uint8(State.ONLINE), "Smart Gate should be online");
+    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 60, "Total reserved energy should be 60 GJ (10 + 50)");
+
+    // 3. Update after 1 hour
+    vm.warp(block.timestamp + 3600);
+    fuelSystem.updateFuel(networkNodeId);
+
+    // Verify fuel consumption with connected assembly
+    assertEq(Fuel.getFuelAmount(networkNodeId), 8, "Fuel amount should be 8 after 1 hour");
+
+    // 4. Bring Network Node offline
+    deployableSystem.bringOffline(networkNodeId);
+
+    // Verify all connected assemblies are offline
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.ANCHORED),
+      "Network Node should be offline"
+    );
+    assertEq(
+      uint8(DeployableState.getCurrentState(smartGateId)),
+      uint8(State.ANCHORED),
+      "Smart Gate should be offline"
+    );
+    assertEq(NetworkNode.getTotalReservedEnergy(networkNodeId), 0, "No energy should be reserved");
+
+    // 5. Wait 30 minutes while offline
+    vm.warp(block.timestamp + 1800);
+    fuelSystem.updateFuel(networkNodeId);
+
+    // Verify no fuel consumption while offline
+    assertEq(Fuel.getFuelAmount(networkNodeId), 8, "Fuel amount should remain 8 while offline");
+
+    vm.stopPrank();
+    vm.resumeGasMetering();
+  }
+
   // Helper functions for common setup and operations
   function _setupNetworkNode(uint256 maxEnergyCapacity, uint256 currentProduction) internal {
     networkNodeSystem.createAndAnchorNetworkNode(
