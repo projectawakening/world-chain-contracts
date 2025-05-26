@@ -136,8 +136,9 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
     uint256 currentVolume = EntityRecord.getVolume(fuelSmartObjectId);
 
-    currentVolume = currentVolume == 0 ? 1 : currentVolume;
-    uint256 projectedCapacity = (currentFuelAmount + fuelAmount) * currentVolume;
+    // Convert volume to fixed-point representation if it's not already
+    currentVolume = currentVolume == 0 ? ONE_UNIT_IN_WEI : currentVolume;
+    uint256 projectedCapacity = ((currentFuelAmount + fuelAmount) * currentVolume) / ONE_UNIT_IN_WEI;
 
     if (projectedCapacity > fuelMaxCapacity) {
       revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, projectedCapacity, fuelMaxCapacity);
