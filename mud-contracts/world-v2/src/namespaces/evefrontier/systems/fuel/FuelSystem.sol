@@ -206,15 +206,15 @@ contract FuelSystem is SmartObjectFramework {
       uint256 elapsedTime = block.timestamp > burnStartTime ? block.timestamp - burnStartTime : 0;
 
       uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
-      previousElapsedTime = previousElapsedTime + elapsedTime;
+      uint256 currentElapsedTime = previousElapsedTime + elapsedTime;
 
       // If the previous cycle is equal to the burn rate, then it means its completed a full cycle, so reset the previous cycle elapsed time to 0
-      if (previousElapsedTime >= Fuel.getFuelBurnRateInSeconds(smartObjectId)) {
-        previousElapsedTime = 0;
+      if (currentElapsedTime >= Fuel.getFuelBurnRateInSeconds(smartObjectId)) {
+        currentElapsedTime = 0;
       }
 
       // Preserve elapsed time, just set burn state to false
-      FuelConsumptionState.set(smartObjectId, 0, false, previousElapsedTime, 0);
+      FuelConsumptionState.set(smartObjectId, 0, false, currentElapsedTime, 0);
       Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
     }
   }
@@ -281,7 +281,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 currentTime = block.timestamp;
     uint256 elapsed = currentTime > burnStartTime ? currentTime - burnStartTime : 0;
 
-    // Add previous cycle elapsed time to the current elapsed time only on the first cycle
+    // Add previous cycle elapsed time to the current elapsed time only unit the first unit is being consumed
     uint256 previousCycleElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
     if (previousCycleElapsedTime > 0) {
       elapsed += previousCycleElapsedTime;
