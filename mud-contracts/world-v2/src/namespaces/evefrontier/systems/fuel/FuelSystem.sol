@@ -86,7 +86,7 @@ contract FuelSystem is SmartObjectFramework {
     uint256 smartObjectId,
     EntityRecordParams memory fuelEntityParams,
     uint256 fuelEfficiency
-  ) public {
+  ) public context access(smartObjectId) {
     bytes32 tenantId = Tenant.get();
 
     if (tenantId != fuelEntityParams.tenantId) {
