@@ -10,6 +10,7 @@ import { ECDSA } from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Nonces } from "openzeppelin-contracts/utils/Nonces.sol";
 import { Address } from "openzeppelin-contracts/utils/Address.sol";
+import { Errors } from "openzeppelin-contracts/utils/Errors.sol";
 import { IForwarderSystem } from "@eveworld/world-core/src/codegen/world/IForwarderSystem.sol";
 
 /**
