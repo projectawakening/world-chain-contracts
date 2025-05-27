@@ -179,7 +179,7 @@ contract FuelTest is MudTest {
       tenantId: tenantId,
       typeId: TEST_FUEL_TYPE_ID,
       itemId: 0,
-      volume: 100
+      volume: 28 * (10 ** 16)
     });
 
     fuelEntityRecordParams2 = EntityRecordParams({
@@ -267,10 +267,7 @@ contract FuelTest is MudTest {
 
     // Setup initial configuration
     fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      FuelParams({ fuelMaxCapacity: 1000, fuelBurnRateInSeconds: 3600 })
-    );
+    fuelSystem.configureFuelParameters(smartObjectId, FuelParams({ fuelMaxCapacity: 10, fuelBurnRateInSeconds: 3600 }));
 
     // Test deposit
     fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 5);
@@ -286,8 +283,8 @@ contract FuelTest is MudTest {
     );
     fuelSystem.depositFuel(smartObjectId, invalidFuelSmartObjectId, 8); // Invalid fuel type id
 
-    vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_ExceedsMaxCapacity.selector, smartObjectId, 8, 1100, 1000));
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 8); // Would exceed max capacity
+    vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_ExceedsMaxCapacity.selector, smartObjectId, 38, 11, 10));
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 38); // Would exceed max capacity , can accept 35
 
     vm.expectRevert(abi.encodeWithSelector(FuelSystem.Fuel_InvalidFuelAmount.selector, smartObjectId, 4, 1, 3));
     fuelSystem.withdrawFuel(smartObjectId, 4); // Not enough fuel

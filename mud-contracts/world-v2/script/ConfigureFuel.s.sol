@@ -19,7 +19,7 @@ contract ConfigureFuel is Script {
     StoreSwitch.setStoreAddress(worldAddress);
 
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-    
+
     // Read comma-separated list of fuel smart object ids from environment variable
     uint256[] memory fuelTypeIds = vm.envUint("FUEL_TYPE_ID", ",");
     uint256[] memory fuelEfficiencies = vm.envUint("FUEL_EFFICIENCY", ",");
@@ -43,14 +43,14 @@ contract ConfigureFuel is Script {
         tenantId: tenantId,
         typeId: fuelTypeIds[i],
         itemId: 0,
-        volume: fuelVolumes[i]
+        volume: fuelVolumes[i] * (10 ** 16) // Convert to fixed-point representation by 2 decimal places as the volume is 0.28
       });
-      
+
       vm.startBroadcast(deployerPrivateKey);
 
       fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, fuelEfficiencies[i]);
-      
+
       vm.stopBroadcast();
-    } 
+    }
   }
 }
