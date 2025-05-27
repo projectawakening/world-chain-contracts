@@ -328,7 +328,7 @@ contract ERC2771Forwarder is EIP712, HashNonce {
       }
 
       if (address(this).balance < request.value) {
-        revert Address.AddressInsufficientBalance(address(this));
+        revert Errors.InsufficientBalance(address(this).balance, request.value);
       }
       (callSuccess, returndata) = target.call{ value: value }(data);
 
