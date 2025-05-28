@@ -286,7 +286,6 @@ contract FuelSystem is SmartObjectFramework {
     }
     //when the last unit is being consumed, we only consider for 1 unit of fuel window
     if (fuelAmount == 0) {
-      elapsed = elapsed < actualConsumptionRateInSeconds ? elapsed : 0;
       return (elapsed, 0, actualConsumptionRateInSeconds, fuelAmount);
     }
 
@@ -323,7 +322,7 @@ contract FuelSystem is SmartObjectFramework {
     ) = getCurrentFuelConsumptionStatus(smartObjectId);
 
     // Handle case where no fuel is available
-    if (fuelAmount == 0 && elapsedTime == 0) {
+    if (fuelAmount == 0 && elapsedTime >= actualBurnRate) {
       _handleNoFuel(smartObjectId);
       return;
     }
