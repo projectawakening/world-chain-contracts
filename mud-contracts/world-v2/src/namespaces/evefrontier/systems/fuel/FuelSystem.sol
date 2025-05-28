@@ -287,7 +287,7 @@ contract FuelSystem is SmartObjectFramework {
     //when the last unit is being consumed, we only consider for 1 unit of fuel window
     if (fuelAmount == 0) {
       elapsed = elapsed < actualConsumptionRateInSeconds ? elapsed : 0;
-      return (elapsed, 0, 0, fuelAmount);
+      return (elapsed, 0, actualConsumptionRateInSeconds, fuelAmount);
     }
 
     // Calculate units to consume based on total elapsed time
