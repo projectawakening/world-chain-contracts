@@ -174,12 +174,12 @@ contract FuelSystem is SmartObjectFramework {
    */
   function startBurn(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
-    if (currentFuelAmount == 0) {
-      revert Fuel_InsufficientFuel(smartObjectId, 1, 0);
-    }
-
     // Get the previous elapsed time
     uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+
+    if (currentFuelAmount == 0 && previousElapsedTime == 0) {
+      revert Fuel_InsufficientFuel(smartObjectId, 1, 0);
+    }
 
     if (previousElapsedTime == 0) {
       // Consume 1 unit of fuel
