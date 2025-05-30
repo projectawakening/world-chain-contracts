@@ -545,7 +545,7 @@ contract EntitySystemTest is MudTest {
     assertEq(accessRoleBefore, classAccessRole);
 
     // create new class access role
-    roleManagementSystem.createRole(newClassAccessRole, classAccessRole);
+    roleManagementSystem.createRole(classId, newClassAccessRole, classAccessRole);
 
     // success
     entitySystem.setClassAccessRole(classId, newClassAccessRole);
@@ -587,7 +587,7 @@ contract EntitySystemTest is MudTest {
     vm.stopPrank();
 
     vm.prank(alice);
-    roleManagementSystem.createRole(newObjectAccessRole, objectAccessRole);
+    roleManagementSystem.createRole(objectId, newObjectAccessRole, objectAccessRole);
 
     vm.prank(alice);
     // success

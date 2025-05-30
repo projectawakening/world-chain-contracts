@@ -43,7 +43,7 @@ library EntitySystemLib {
   error Entity_PropertyTagNotFound(uint256 entityId, TagId tagId);
   error Entity_EntityRelationsFound(uint256 classId, uint256 numOfTags);
   error Entity_BadRoleConfirmation();
-  error Entity_RoleDoesNotExist(bytes32 role);
+  error Entity_RoleDoesNotExist(uint256 entityId, bytes32 role);
 
   function registerClass(EntitySystemType self, uint256 classId, ResourceId[] memory scopedSystemIds) internal {
     return CallWrapper(self.toResourceId(), address(0)).registerClass(classId, scopedSystemIds);

@@ -10,7 +10,6 @@ import { ResourceIdInstance } from "@latticexyz/store/src/ResourceId.sol";
 import { Entity, EntityData } from "../../codegen/tables/Entity.sol";
 import { EntityTagMap } from "../../codegen/tables/EntityTagMap.sol";
 import { Role } from "../../codegen/tables/Role.sol";
-import { HasRole } from "../../codegen/tables/HasRole.sol";
 
 import { TagId, TagIdLib } from "../../../../libs/TagId.sol";
 
@@ -33,7 +32,7 @@ contract EntitySystem is SmartObjectFramework {
   error Entity_PropertyTagNotFound(uint256 entityId, TagId tagId);
   error Entity_EntityRelationsFound(uint256 classId, uint256 numOfTags);
   error Entity_BadRoleConfirmation();
-  error Entity_RoleDoesNotExist(bytes32 role);
+  error Entity_RoleDoesNotExist(uint256 entityId, bytes32 role);
   /**
    * Common TagIds for Entity management
    */
@@ -88,8 +87,8 @@ contract EntitySystem is SmartObjectFramework {
     if (!EntityTagMap.getHasTag(classId, CLASS_PROPERTY_TAG)) {
       revert Entity_PropertyTagNotFound(classId, CLASS_PROPERTY_TAG);
     }
-    if (!Role.getExists(newAccessRole)) {
-      revert Entity_RoleDoesNotExist(newAccessRole);
+    if (!Role.getExists(classId, newAccessRole)) {
+      revert Entity_RoleDoesNotExist(classId, newAccessRole);
     }
     Entity.setAccessRole(classId, newAccessRole);
   }
@@ -124,9 +123,8 @@ contract EntitySystem is SmartObjectFramework {
     }
 
     // delete the class access role data
-    bytes32 classAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", classId));
-    roleManagementSystem.scopedRevokeAll(classId, classAccessRole);
-    Role.deleteRecord(classAccessRole);
+    roleManagementSystem.scopedRevokeAll(classId, "ACCESS_ROLE");
+    Role.deleteRecord(classId, "ACCESS_ROLE");
 
     // remove all tags attached to this class
     TagId[] memory propertyTagIds = new TagId[](class.propertyTags.length);
@@ -192,8 +190,8 @@ contract EntitySystem is SmartObjectFramework {
     if (!EntityTagMap.getHasTag(objectId, OBJECT_PROPERTY_TAG)) {
       revert Entity_PropertyTagNotFound(objectId, OBJECT_PROPERTY_TAG);
     }
-    if (!Role.getExists(newAccessRole)) {
-      revert Entity_RoleDoesNotExist(newAccessRole);
+    if (!Role.getExists(objectId, newAccessRole)) {
+      revert Entity_RoleDoesNotExist(objectId, newAccessRole);
     }
     Entity.setAccessRole(objectId, newAccessRole);
   }
@@ -248,12 +246,10 @@ contract EntitySystem is SmartObjectFramework {
     }
 
     // delete the object access role data
-    bytes32 objectAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", objectId));
-
     // scoped to `classid` because this function is only callable directly by a member of the object's class access role
-    roleManagementSystem.scopedRevokeAll(objectEntityRelationValue.relatedEntityId, objectAccessRole);
+    roleManagementSystem.scopedRevokeAll(objectEntityRelationValue.relatedEntityId, "ACCESS_ROLE");
 
-    Role.deleteRecord(objectAccessRole);
+    Role.deleteRecord(objectId, "ACCESS_ROLE");
 
     Entity.deleteRecord(objectId);
   }
@@ -281,11 +277,9 @@ contract EntitySystem is SmartObjectFramework {
       revert Entity_EntityAlreadyExists(classId);
     }
 
-    bytes32 classAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", classId));
+    roleManagementSystem.scopedCreateRole(classId, "ACCESS_ROLE", "ACCESS_ROLE", accessRoleMember);
 
-    roleManagementSystem.scopedCreateRole(0, classAccessRole, classAccessRole, accessRoleMember);
-
-    Entity.set(classId, true, classAccessRole, TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
+    Entity.set(classId, true, "ACCESS_ROLE", TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
 
     TagParams[] memory propertyTags = new TagParams[](2);
     propertyTags[0] = TagParams(CLASS_PROPERTY_TAG, bytes(""));
@@ -323,11 +317,9 @@ contract EntitySystem is SmartObjectFramework {
       revert Entity_EntityAlreadyExists(objectId);
     }
 
-    bytes32 objectAccessRole = keccak256(abi.encodePacked("ACCESS_ROLE", objectId));
+    roleManagementSystem.scopedCreateRole(objectId, "ACCESS_ROLE", "ACCESS_ROLE", accessRoleMember);
 
-    roleManagementSystem.scopedCreateRole(classId, objectAccessRole, objectAccessRole, accessRoleMember);
-
-    Entity.set(objectId, true, objectAccessRole, TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
+    Entity.set(objectId, true, "ACCESS_ROLE", TagId.wrap(bytes32(0)), new bytes32[](0), new bytes32[](0));
 
     // increment the count for the parent class entity relation value
     uint256 numberOfDependentEntities = abi.decode(
