@@ -17,6 +17,4 @@ interface ISmartStorageUnitSystem {
     uint256 ephemeralCapacity,
     uint256 networkNodeId
   ) external;
-
-  function evefrontier__getSmartStorageUnitClassId() external view returns (uint256);
 }

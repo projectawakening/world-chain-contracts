@@ -63,9 +63,10 @@ contract NetworkNodeEnergyTest is MudTest {
 
   // Assembly Type IDs
   uint256 constant NETWORK_NODE_TYPE_ID = 88092;
-  uint256 constant SMART_GATE_TYPE_ID = 84955;
-  uint256 constant SMART_STORAGE_UNIT_TYPE_ID = 77917;
   uint256 constant SMART_TURRET_TYPE_ID = 84556;
+  uint256 constant SSU_TYPE_ID = 77917;
+  uint256 constant SMART_GATE_TYPE_ID = 84955;
+  uint256 constant REFINERY_TYPE_ID = 88086;
 
   uint256 constant FUEL_TYPE_ID = 1;
 
@@ -97,29 +98,13 @@ contract NetworkNodeEnergyTest is MudTest {
       true
     );
 
-    smartGateId = _calculateObjectId(
-      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-      SMART_GATE_ID,
-      true
-    );
+    smartGateId = _calculateObjectId(SMART_GATE_TYPE_ID, SMART_GATE_ID, true);
 
-    smartStorageId = _calculateObjectId(
-      EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-      SMART_STORAGE_ID,
-      true
-    );
+    smartStorageId = _calculateObjectId(SSU_TYPE_ID, SMART_STORAGE_ID, true);
 
-    smartTurretId = _calculateObjectId(
-      EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
-      SMART_TURRET_ID,
-      true
-    );
+    smartTurretId = _calculateObjectId(SMART_TURRET_TYPE_ID, SMART_TURRET_ID, true);
 
-    portableRefineryId = _calculateObjectId(
-      EntityRecord.getTypeId(deployableSystem.getDeployableClassId()),
-      PORTABLE_REFINERY_ID,
-      true
-    );
+    portableRefineryId = _calculateObjectId(REFINERY_TYPE_ID, PORTABLE_REFINERY_ID, true);
 
     fuelSmartObjectId = _calculateObjectId(FUEL_TYPE_ID, 0, false);
 
@@ -146,7 +131,7 @@ contract NetworkNodeEnergyTest is MudTest {
     // Configure energy requirements for different assembly types
     AssemblyEnergyConfig.setEnergyConstant(NETWORK_NODE_TYPE_ID, 10); // Network Node requires 10 GJ
     AssemblyEnergyConfig.setEnergyConstant(SMART_GATE_TYPE_ID, 50); // Smart Gate requires 50 GJ
-    AssemblyEnergyConfig.setEnergyConstant(SMART_STORAGE_UNIT_TYPE_ID, 30); // Smart Storage Unit requires 30 GJ
+    AssemblyEnergyConfig.setEnergyConstant(SSU_TYPE_ID, 30); // Smart Storage Unit requires 30 GJ
     AssemblyEnergyConfig.setEnergyConstant(SMART_TURRET_TYPE_ID, 40); // Smart Turret requires 40 GJ
 
     vm.stopPrank();
@@ -669,7 +654,7 @@ contract NetworkNodeEnergyTest is MudTest {
         locationData: locationParams,
         entityRecordParams: EntityRecordParams({
           tenantId: tenantId,
-          typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+          typeId: SMART_GATE_TYPE_ID,
           itemId: SMART_GATE_ID,
           volume: 100
         }),
@@ -688,7 +673,7 @@ contract NetworkNodeEnergyTest is MudTest {
         locationData: locationParams,
         entityRecordParams: EntityRecordParams({
           tenantId: tenantId,
-          typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+          typeId: SSU_TYPE_ID,
           itemId: SMART_STORAGE_ID,
           volume: 100
         }),

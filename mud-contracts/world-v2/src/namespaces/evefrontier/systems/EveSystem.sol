@@ -61,64 +61,6 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     Initialize.set(smartCharacterSystemId, classId);
   }
 
-  function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](13);
-    systemIds[0] = smartStorageUnitSystem.toResourceId();
-    systemIds[1] = deployableSystem.toResourceId();
-    systemIds[2] = smartAssemblySystem.toResourceId();
-    systemIds[3] = entityRecordSystem.toResourceId();
-    systemIds[4] = ownershipSystem.toResourceId();
-    systemIds[5] = fuelSystem.toResourceId();
-    systemIds[6] = locationSystem.toResourceId();
-    systemIds[7] = inventorySystem.toResourceId();
-    systemIds[8] = ephemeralInventorySystem.toResourceId();
-    systemIds[9] = inventoryInteractSystem.toResourceId();
-    systemIds[10] = ephemeralInteractSystem.toResourceId();
-    systemIds[11] = networkNodeSystem.toResourceId();
-    systemIds[12] = batchCallSystem;
-
-    uint256 classId = initialize(typeId, volume, systemIds);
-
-    ResourceId smartStorageUnitSystemId = smartStorageUnitSystem.toResourceId();
-    Initialize.set(smartStorageUnitSystemId, classId);
-  }
-
-  function registerSmartTurretClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](9);
-    systemIds[0] = smartTurretSystem.toResourceId();
-    systemIds[1] = deployableSystem.toResourceId();
-    systemIds[2] = smartAssemblySystem.toResourceId();
-    systemIds[3] = entityRecordSystem.toResourceId();
-    systemIds[4] = ownershipSystem.toResourceId();
-    systemIds[5] = fuelSystem.toResourceId();
-    systemIds[6] = locationSystem.toResourceId();
-    systemIds[7] = networkNodeSystem.toResourceId();
-    systemIds[8] = batchCallSystem;
-
-    uint256 classId = initialize(typeId, volume, systemIds);
-
-    ResourceId smartTurretSystemId = smartTurretSystem.toResourceId();
-    Initialize.set(smartTurretSystemId, classId);
-  }
-
-  function registerSmartGateClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](9);
-    systemIds[0] = smartGateSystem.toResourceId();
-    systemIds[1] = deployableSystem.toResourceId();
-    systemIds[2] = smartAssemblySystem.toResourceId();
-    systemIds[3] = entityRecordSystem.toResourceId();
-    systemIds[4] = ownershipSystem.toResourceId();
-    systemIds[5] = fuelSystem.toResourceId();
-    systemIds[6] = locationSystem.toResourceId();
-    systemIds[7] = networkNodeSystem.toResourceId();
-    systemIds[8] = batchCallSystem;
-
-    uint256 classId = initialize(typeId, volume, systemIds);
-
-    ResourceId smartGateSystemId = smartGateSystem.toResourceId();
-    Initialize.set(smartGateSystemId, classId);
-  }
-
   function registerNetworkNodeClass(uint256 typeId, uint256 volume) public {
     ResourceId[] memory systemIds = new ResourceId[](8);
     systemIds[0] = networkNodeSystem.toResourceId();
@@ -135,8 +77,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     Initialize.set(networkNodeSystemId, classId);
   }
 
-  function registerDeployableClass(uint256 typeId, uint256 volume) public {
-    ResourceId[] memory systemIds = new ResourceId[](8);
+  function registerSmartAssemblies(uint256 typeId, uint256 volume) public {
+    ResourceId[] memory systemIds = new ResourceId[](15);
     systemIds[0] = networkNodeSystem.toResourceId();
     systemIds[1] = deployableSystem.toResourceId();
     systemIds[2] = smartAssemblySystem.toResourceId();
@@ -144,11 +86,16 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
     systemIds[4] = ownershipSystem.toResourceId();
     systemIds[5] = fuelSystem.toResourceId();
     systemIds[6] = locationSystem.toResourceId();
-    systemIds[7] = batchCallSystem;
+    systemIds[7] = smartStorageUnitSystem.toResourceId();
+    systemIds[8] = inventorySystem.toResourceId();
+    systemIds[9] = ephemeralInventorySystem.toResourceId();
+    systemIds[10] = inventoryInteractSystem.toResourceId();
+    systemIds[11] = ephemeralInteractSystem.toResourceId();
+    systemIds[12] = smartGateSystem.toResourceId();
+    systemIds[13] = smartTurretSystem.toResourceId();
+    systemIds[14] = batchCallSystem;
 
-    uint256 classId = initialize(typeId, volume, systemIds);
-    ResourceId deployableSystemId = deployableSystem.toResourceId();
-    Initialize.set(deployableSystemId, classId);
+    initialize(typeId, volume, systemIds);
   }
 
   // Configure access for all systems

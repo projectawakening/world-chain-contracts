@@ -83,6 +83,7 @@ contract DeployableTest is MudTest {
   // Smart Object variables
   uint256 constant SMART_OBJECT_ID = 1234;
   uint256 constant SMART_OBJECT_TYPE_ID = 1235;
+  uint256 constant SMART_GATE_TYPE_ID = 84955;
 
   uint256 smartGate1Id;
   uint256 smartGate2Id;
@@ -125,8 +126,8 @@ contract DeployableTest is MudTest {
     // Setup smart object IDs
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
-    smartGate1Id = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), GATE_1_ID, true);
-    smartGate2Id = _calculateObjectId(EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()), GATE_2_ID, true);
+    smartGate1Id = _calculateObjectId(EntityRecord.getTypeId(SMART_GATE_TYPE_ID), GATE_1_ID, true);
+    smartGate2Id = _calculateObjectId(EntityRecord.getTypeId(SMART_GATE_TYPE_ID), GATE_2_ID, true);
 
     // Register class and setup smart object state
     deployableObjectClassId = _calculateObjectId(SMART_OBJECT_TYPE_ID, 0, false);
@@ -688,12 +689,7 @@ contract DeployableTest is MudTest {
       CreateAndAnchorParams(
         smartGate1Id,
         "SG",
-        EntityRecordParams({
-          tenantId: tenantId,
-          typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-          itemId: GATE_1_ID,
-          volume: 1000
-        }),
+        EntityRecordParams({ tenantId: tenantId, typeId: SMART_GATE_TYPE_ID, itemId: GATE_1_ID, volume: 1000 }),
         alice,
         LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 })
       ),
@@ -705,12 +701,7 @@ contract DeployableTest is MudTest {
       CreateAndAnchorParams(
         smartGate2Id,
         "SG",
-        EntityRecordParams({
-          tenantId: tenantId,
-          typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-          itemId: GATE_2_ID,
-          volume: 1000
-        }),
+        EntityRecordParams({ tenantId: tenantId, typeId: SMART_GATE_TYPE_ID, itemId: GATE_2_ID, volume: 1000 }),
         alice,
         LocationData({ solarSystemId: 1, x: 2, y: 2, z: 2 })
       ),

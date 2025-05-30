@@ -127,6 +127,7 @@ contract SmartGateTest is MudTest {
   uint256 constant ENEMY_TRIBE_ID = 202;
 
   uint256 constant SMART_OBJECT_ID = 1234;
+  uint256 constant TURRET_TYPE_ID = 84556;
 
   uint256 smartObjectId;
 
@@ -231,17 +232,13 @@ contract SmartGateTest is MudTest {
     );
 
     // Setup smart object ID for this turret
-    smartObjectId = _calculateObjectId(
-      EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
-      SMART_OBJECT_ID,
-      true
-    );
+    smartObjectId = _calculateObjectId(TURRET_TYPE_ID, SMART_OBJECT_ID, true);
 
     locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1002, z: 1003 });
 
     entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
-      typeId: EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()),
+      typeId: TURRET_TYPE_ID,
       itemId: SMART_OBJECT_ID,
       volume: 10000
     });
@@ -314,7 +311,7 @@ contract SmartGateTest is MudTest {
 
     EntityRecordData memory entityRecordData = EntityRecord.get(smartObjectId);
     assertEq(entityRecordData.tenantId, tenantId);
-    assertEq(entityRecordData.typeId, EntityRecord.getTypeId(smartTurretSystem.getSmartTurretClassId()));
+    assertEq(entityRecordData.typeId, TURRET_TYPE_ID);
     assertEq(entityRecordData.itemId, SMART_OBJECT_ID);
     assertEq(entityRecordData.volume, 10000);
 

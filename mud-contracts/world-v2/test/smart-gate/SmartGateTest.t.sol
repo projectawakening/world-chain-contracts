@@ -73,6 +73,7 @@ contract SmartGateTest is MudTest {
   uint256 constant DESTINATION_GATE_ID = 1235;
   uint256 constant INVALID_SOURCE_GATE_ID = 1236;
   uint256 constant INVALID_DESTINATION_GATE_ID = 1237;
+  uint256 constant SMART_GATE_TYPE_ID = 84955;
 
   uint256 sourceGateId;
   uint256 destinationGateId;
@@ -117,29 +118,15 @@ contract SmartGateTest is MudTest {
     tenantId = Tenant.get();
 
     // Setup smart object IDs
-    sourceGateId = _calculateObjectId(
-      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-      SOURCE_GATE_ID,
-      true
-    );
-    destinationGateId = _calculateObjectId(
-      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-      DESTINATION_GATE_ID,
-      true
-    );
+    sourceGateId = _calculateObjectId(SMART_GATE_TYPE_ID, SOURCE_GATE_ID, true);
+    destinationGateId = _calculateObjectId(SMART_GATE_TYPE_ID, DESTINATION_GATE_ID, true);
 
-    invalidSourceGateId = _calculateObjectId(
-      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-      INVALID_SOURCE_GATE_ID,
-      true
-    );
-    entitySystem.instantiate(smartGateSystem.getSmartGateClassId(), invalidSourceGateId, alice);
-    invalidDestinationGateId = _calculateObjectId(
-      EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
-      INVALID_DESTINATION_GATE_ID,
-      true
-    );
-    entitySystem.instantiate(smartGateSystem.getSmartGateClassId(), invalidDestinationGateId, alice);
+    uint256 smartGateClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_GATE_TYPE_ID)));
+
+    invalidSourceGateId = _calculateObjectId(SMART_GATE_TYPE_ID, INVALID_SOURCE_GATE_ID, true);
+    entitySystem.instantiate(smartGateClassId, invalidSourceGateId, alice);
+    invalidDestinationGateId = _calculateObjectId(SMART_GATE_TYPE_ID, INVALID_DESTINATION_GATE_ID, true);
+    entitySystem.instantiate(smartGateClassId, invalidDestinationGateId, alice);
 
     sourceLocationParams = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
 
@@ -147,14 +134,14 @@ contract SmartGateTest is MudTest {
 
     sourceEntityRecordParams = EntityRecordParams({
       tenantId: tenantId,
-      typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+      typeId: SMART_GATE_TYPE_ID,
       itemId: SOURCE_GATE_ID,
       volume: 10000
     });
 
     destinationEntityRecordParams = EntityRecordParams({
       tenantId: tenantId,
-      typeId: EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()),
+      typeId: SMART_GATE_TYPE_ID,
       itemId: DESTINATION_GATE_ID,
       volume: 10000
     });
@@ -228,7 +215,7 @@ contract SmartGateTest is MudTest {
 
     EntityRecordData memory entityRecordData = EntityRecord.get(sourceGateId);
     assertEq(entityRecordData.tenantId, tenantId);
-    assertEq(entityRecordData.typeId, EntityRecord.getTypeId(smartGateSystem.getSmartGateClassId()));
+    assertEq(entityRecordData.typeId, SMART_GATE_TYPE_ID);
     assertEq(entityRecordData.itemId, SOURCE_GATE_ID);
     assertEq(entityRecordData.volume, 10000);
 
