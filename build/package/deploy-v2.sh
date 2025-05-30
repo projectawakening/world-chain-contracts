@@ -14,6 +14,42 @@ trap 'cp $LOG_FILE "logs/$(date +%Y%m%d_%H%M%S)-deploy-in-docker-v2.log"' EXIT
 # Parse command line arguments
 parse_arguments "$@"
 
+# Function to validate and log environment variables
+validate_and_log_env() {
+    local var_name=$1
+    local var_value=${!var_name}
+    
+    if [ -z "$var_value" ]; then
+        echo "Error: Required environment variable $var_name is not set" | tee -a $LOG_FILE
+        exit 1
+    fi
+    
+    echo "Environment variable $var_name: $var_value" | tee -a $LOG_FILE
+}
+
+# Log all environment variables
+echo "=== Required Environment Variables ===" | tee -a $LOG_FILE
+validate_and_log_env "BASE_URI"
+validate_and_log_env "ERC20_TOKEN_NAME"
+validate_and_log_env "ERC20_TOKEN_SYMBOL"
+validate_and_log_env "ERC20_INITIAL_SUPPLY"
+validate_and_log_env "EVE_TOKEN_NAMESPACE"
+validate_and_log_env "EVE_TOKEN_ADMIN"
+validate_and_log_env "ADMIN_ACCOUNTS"
+validate_and_log_env "TENANT"
+validate_and_log_env "CHARACTER_TYPE_ID"
+validate_and_log_env "CHARACTER_VOLUME"
+validate_and_log_env "NETWORK_NODE_TYPE_ID"
+validate_and_log_env "NETWORK_NODE_VOLUME"
+validate_and_log_env "NETWORK_NODE_VOLUME"
+validate_and_log_env "TYPE_IDS"
+validate_and_log_env "ASSEMBLY_TYPE_ID"
+validate_and_log_env "ENERGY_CONSTANT"
+validate_and_log_env "FUEL_TYPE_ID"
+validate_and_log_env "FUEL_EFFICIENCY"
+validate_and_log_env "FUEL_VOLUME"
+echo "===========================" | tee -a $LOG_FILE
+
 # Fetch and export the chain ID
 chain_id=$(get_chain_id "$rpc_url")
 wait
