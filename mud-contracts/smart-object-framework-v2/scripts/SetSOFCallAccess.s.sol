@@ -6,14 +6,11 @@ import { Script } from "forge-std/Script.sol";
 import { IWorldKernel } from "@latticexyz/world/src/IWorldKernel.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 
-import { CallAccess } from "../src/namespaces/evefrontier/codegen/tables/CallAccess.sol";
-
-import { IAccessConfigSystem } from "../src/namespaces/evefrontier/interfaces/IAccessConfigSystem.sol";
 import { IEntitySystem } from "../src/namespaces/evefrontier/interfaces/IEntitySystem.sol";
 import { ITagSystem } from "../src/namespaces/evefrontier/interfaces/ITagSystem.sol";
 import { IRoleManagementSystem } from "../src/namespaces/evefrontier/interfaces/IRoleManagementSystem.sol";
 
-import { accessConfigSystem } from "../src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
+import { callAccessSystem } from "../src/namespaces/evefrontier/codegen/systems/CallAccessSystemLib.sol";
 import { entitySystem } from "../src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { tagSystem } from "../src/namespaces/evefrontier/codegen/systems/TagSystemLib.sol";
 import { roleManagementSystem } from "../src/namespaces/evefrontier/codegen/systems/RoleManagementSystemLib.sol";
@@ -28,28 +25,26 @@ contract SetSOFCallAccess is Script {
 
     vm.startBroadcast(deployerPrivateKey);
 
-    runSetSOFCallAccess();
+    runSetSOFCallAccess(deployer);
 
     vm.stopBroadcast();
   }
 }
 
-function runSetSOFCallAccess() {
+function runSetSOFCallAccess(address delegator) {
   // TagSystem.sol
-  CallAccess.set(tagSystem.toResourceId(), ITagSystem.setTag.selector, entitySystem.getAddress(), true);
-  CallAccess.set(tagSystem.toResourceId(), ITagSystem.removeTag.selector, entitySystem.getAddress(), true);
+  callAccessSystem.callFrom(delegator).addCallAccess(tagSystem.toResourceId(), ITagSystem.setTag.selector, entitySystem.getAddress());
+  callAccessSystem.callFrom(delegator).addCallAccess(tagSystem.toResourceId(), ITagSystem.removeTag.selector, entitySystem.getAddress());
 
   // RoleManagementSystem.sol
-  CallAccess.set(
+  callAccessSystem.callFrom(delegator).addCallAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedCreateRole.selector,
-    entitySystem.getAddress(),
-    true
+    entitySystem.getAddress()
   );
-  CallAccess.set(
+  callAccessSystem.callFrom(delegator).addCallAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRevokeAll.selector,
-    entitySystem.getAddress(),
-    true
+    entitySystem.getAddress()
   );
 }

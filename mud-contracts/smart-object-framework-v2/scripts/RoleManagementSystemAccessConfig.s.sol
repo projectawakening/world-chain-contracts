@@ -24,77 +24,77 @@ contract RoleManagementSystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runRoleManagementSystemAccessConfig();
+    runRoleManagementSystemAccessConfig(deployer);
 
     vm.stopBroadcast();
   }
 }
 
-function runRoleManagementSystemAccessConfig() {
+function runRoleManagementSystemAccessConfig(address delegator) {
   // RoleManagementSystem.sol access config and enforcement
-  accessConfigSystem.configureAccess(
+  accessConfigSystem.callFrom(delegator).configureAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedCreateRole.selector,
     sOFAccessSystem.toResourceId(),
     ISOFAccessSystem.allowCallAccessOrClassScopedSystem.selector
   );
-  accessConfigSystem.configureAccess(
+  accessConfigSystem.callFrom(delegator).configureAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedTransferRoleAdmin.selector,
     sOFAccessSystem.toResourceId(),
     ISOFAccessSystem.allowClassScopedSystemOnly.selector
   );
-  accessConfigSystem.configureAccess(
+  accessConfigSystem.callFrom(delegator).configureAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedGrantRole.selector,
     sOFAccessSystem.toResourceId(),
     ISOFAccessSystem.allowClassScopedSystemOnly.selector
   );
-  accessConfigSystem.configureAccess(
+  accessConfigSystem.callFrom(delegator).configureAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRevokeRole.selector,
     sOFAccessSystem.toResourceId(),
     ISOFAccessSystem.allowClassScopedSystemOnly.selector
   );
-  accessConfigSystem.configureAccess(
+  accessConfigSystem.callFrom(delegator).configureAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRenounceRole.selector,
     sOFAccessSystem.toResourceId(),
     ISOFAccessSystem.allowClassScopedSystemOnly.selector
   );
-  accessConfigSystem.configureAccess(
+  accessConfigSystem.callFrom(delegator).configureAccess(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRevokeAll.selector,
     sOFAccessSystem.toResourceId(),
     ISOFAccessSystem.allowCallAccessOrClassScopedSystem.selector
   );
 
-  accessConfigSystem.setAccessEnforcement(
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedCreateRole.selector,
     true
   );
-  accessConfigSystem.setAccessEnforcement(
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedTransferRoleAdmin.selector,
     true
   );
-  accessConfigSystem.setAccessEnforcement(
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedGrantRole.selector,
     true
   );
-  accessConfigSystem.setAccessEnforcement(
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRevokeRole.selector,
     true
   );
-  accessConfigSystem.setAccessEnforcement(
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRenounceRole.selector,
     true
   );
-  accessConfigSystem.setAccessEnforcement(
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(
     roleManagementSystem.toResourceId(),
     IRoleManagementSystem.scopedRevokeAll.selector,
     true

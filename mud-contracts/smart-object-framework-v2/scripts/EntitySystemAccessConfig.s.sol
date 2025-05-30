@@ -24,32 +24,32 @@ contract EntitySystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runEntitySystemAccessConfig();
+    runEntitySystemAccessConfig(deployer);
 
     vm.stopBroadcast();
   }
 }
 
-function runEntitySystemAccessConfig() {
+function runEntitySystemAccessConfig(address delegator) {
   // EntitySystem.sol access configurations
   // set allowClassScopedSystemOrDirectClassAccessRole for setClassAccessRole
-  accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
   // set noAllowances for deleteClass
-  accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.noAllowances.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.noAllowances.selector);
   // set allowClassScopedSystemOrDirectClassAccessRole for instantiate
-  accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
   // set allowClassScopedSystemOrDirectAccessRole for setObjectAccessRole
-  accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectAccessRole.selector);
   // set allowClassScopedSystemOrDirectClassAccessRole for deleteObject
-  accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowClassScopedSystemOrDirectClassAccessRole.selector);
   // set allowCallAccessOnly for scopedRegisterClass
-  accessConfigSystem.configureAccess(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOnly.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOnly.selector);
 
   // EntitySystem.sol toggle access enforcement on
-  accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, true);
-  accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, true);
-  accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, true);
-  accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, true);
-  accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, true);
-  accessConfigSystem.setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.setClassAccessRole.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteClass.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.instantiate.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.setObjectAccessRole.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, true);
 }
