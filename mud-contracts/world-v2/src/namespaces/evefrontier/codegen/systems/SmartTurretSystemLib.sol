@@ -67,10 +67,6 @@ library SmartTurretSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).aggression(params);
   }
 
-  function getSmartTurretClassId(SmartTurretSystemType self) internal view returns (uint256) {
-    return CallWrapper(self.toResourceId(), address(0)).getSmartTurretClassId();
-  }
-
   function createAndAnchorTurret(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -137,21 +133,6 @@ library SmartTurretSystemLib {
     return abi.decode(result, (TargetPriority[]));
   }
 
-  function getSmartTurretClassId(CallWrapper memory self) internal view returns (uint256) {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert SmartTurretSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_getSmartTurretClassId.getSmartTurretClassId, ());
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-
-    bytes memory result = abi.decode(returnData, (bytes));
-    return abi.decode(result, (uint256));
-  }
-
   function createAndAnchorTurret(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -196,13 +177,6 @@ library SmartTurretSystemLib {
 
     bytes memory result = SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
     return abi.decode(result, (TargetPriority[]));
-  }
-
-  function getSmartTurretClassId(RootCallWrapper memory self) internal view returns (uint256) {
-    bytes memory systemCall = abi.encodeCall(_getSmartTurretClassId.getSmartTurretClassId, ());
-
-    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
-    return abi.decode(result, (uint256));
   }
 
   function callFrom(SmartTurretSystemType self, address from) internal pure returns (CallWrapper memory) {
@@ -262,10 +236,6 @@ interface _inProximity_uint256_TargetPriorityArray_Turret_SmartTurretTarget {
 
 interface _aggression_AggressionParams {
   function aggression(AggressionParams memory params) external;
-}
-
-interface _getSmartTurretClassId {
-  function getSmartTurretClassId() external;
 }
 
 using SmartTurretSystemLib for SmartTurretSystemType global;

@@ -18,27 +18,6 @@ interface IEveSystem {
   function registerSmartCharacterClass(uint256 typeId, uint256 volume) external;
 
   /**
-   * @notice Register a smart storage unit class with the given type ID
-   * @param typeId The type ID for the smart storage unit class
-   * @param volume The volume for the smart storage unit class
-   */
-  function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) external;
-
-  /**
-   * @notice Register a smart turret class with the given type ID
-   * @param typeId The type ID for the smart turret class
-   * @param volume The volume for the smart turret class
-   */
-  function registerSmartTurretClass(uint256 typeId, uint256 volume) external;
-
-  /**
-   * @notice Register a smart gate class with the given type ID
-   * @param typeId The type ID for the smart gate class
-   * @param volume The volume for the smart gate class
-   */
-  function registerSmartGateClass(uint256 typeId, uint256 volume) external;
-
-  /**
    * @notice Configure access for EntityRecordSystem
    */
   function configureEntityRecordAccess() external;

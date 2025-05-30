@@ -40,24 +40,12 @@ library EveSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).registerSmartCharacterClass(typeId, volume);
   }
 
-  function registerSmartStorageUnitClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartStorageUnitClass(typeId, volume);
-  }
-
-  function registerSmartTurretClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartTurretClass(typeId, volume);
-  }
-
-  function registerSmartGateClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerSmartGateClass(typeId, volume);
-  }
-
   function registerNetworkNodeClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
     return CallWrapper(self.toResourceId(), address(0)).registerNetworkNodeClass(typeId, volume);
   }
 
-  function registerDeployableClass(EveSystemType self, uint256 typeId, uint256 volume) internal {
-    return CallWrapper(self.toResourceId(), address(0)).registerDeployableClass(typeId, volume);
+  function registerSmartAssemblies(EveSystemType self, uint256 typeId, uint256 volume) internal {
+    return CallWrapper(self.toResourceId(), address(0)).registerSmartAssemblies(typeId, volume);
   }
 
   function configureEntityRecordAccess(EveSystemType self) internal {
@@ -137,45 +125,6 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerSmartStorageUnitClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _registerSmartStorageUnitClass_uint256_uint256.registerSmartStorageUnitClass,
-      (typeId, volume)
-    );
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function registerSmartTurretClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _registerSmartTurretClass_uint256_uint256.registerSmartTurretClass,
-      (typeId, volume)
-    );
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function registerSmartGateClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(
-      _registerSmartGateClass_uint256_uint256.registerSmartGateClass,
-      (typeId, volume)
-    );
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
   function registerNetworkNodeClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
@@ -189,12 +138,12 @@ library EveSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function registerDeployableClass(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
+  function registerSmartAssemblies(CallWrapper memory self, uint256 typeId, uint256 volume) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert EveSystemLib_CallingFromRootSystem();
 
     bytes memory systemCall = abi.encodeCall(
-      _registerDeployableClass_uint256_uint256.registerDeployableClass,
+      _registerSmartAssemblies_uint256_uint256.registerSmartAssemblies,
       (typeId, volume)
     );
     self.from == address(0)
@@ -370,30 +319,6 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function registerSmartStorageUnitClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
-    bytes memory systemCall = abi.encodeCall(
-      _registerSmartStorageUnitClass_uint256_uint256.registerSmartStorageUnitClass,
-      (typeId, volume)
-    );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function registerSmartTurretClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
-    bytes memory systemCall = abi.encodeCall(
-      _registerSmartTurretClass_uint256_uint256.registerSmartTurretClass,
-      (typeId, volume)
-    );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function registerSmartGateClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
-    bytes memory systemCall = abi.encodeCall(
-      _registerSmartGateClass_uint256_uint256.registerSmartGateClass,
-      (typeId, volume)
-    );
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
   function registerNetworkNodeClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
     bytes memory systemCall = abi.encodeCall(
       _registerNetworkNodeClass_uint256_uint256.registerNetworkNodeClass,
@@ -402,9 +327,9 @@ library EveSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function registerDeployableClass(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
+  function registerSmartAssemblies(RootCallWrapper memory self, uint256 typeId, uint256 volume) internal {
     bytes memory systemCall = abi.encodeCall(
-      _registerDeployableClass_uint256_uint256.registerDeployableClass,
+      _registerSmartAssemblies_uint256_uint256.registerSmartAssemblies,
       (typeId, volume)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
@@ -532,24 +457,12 @@ interface _registerSmartCharacterClass_uint256_uint256 {
   function registerSmartCharacterClass(uint256 typeId, uint256 volume) external;
 }
 
-interface _registerSmartStorageUnitClass_uint256_uint256 {
-  function registerSmartStorageUnitClass(uint256 typeId, uint256 volume) external;
-}
-
-interface _registerSmartTurretClass_uint256_uint256 {
-  function registerSmartTurretClass(uint256 typeId, uint256 volume) external;
-}
-
-interface _registerSmartGateClass_uint256_uint256 {
-  function registerSmartGateClass(uint256 typeId, uint256 volume) external;
-}
-
 interface _registerNetworkNodeClass_uint256_uint256 {
   function registerNetworkNodeClass(uint256 typeId, uint256 volume) external;
 }
 
-interface _registerDeployableClass_uint256_uint256 {
-  function registerDeployableClass(uint256 typeId, uint256 volume) external;
+interface _registerSmartAssemblies_uint256_uint256 {
+  function registerSmartAssemblies(uint256 typeId, uint256 volume) external;
 }
 
 interface _configureEntityRecordAccess {

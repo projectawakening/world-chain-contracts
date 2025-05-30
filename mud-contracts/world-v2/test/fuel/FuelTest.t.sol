@@ -138,10 +138,10 @@ contract FuelTest is MudTest {
     // Setup smart object ID
     smartObjectId = _calculateObjectId(SMART_OBJECT_TYPE_ID, SMART_OBJECT_ID, true);
 
-    fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, TEST_FUEL_TYPE_ID);
-    fuelSmartObjectId2 = ObjectIdLib.calculateNonSingletonId(tenantId, TEST_FUEL_TYPE_ID_2);
+    fuelSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, TEST_FUEL_TYPE_ID);
+    fuelSmartObjectId2 = ObjectIdLib.calculateObjectId(tenantId, TEST_FUEL_TYPE_ID_2);
 
-    invalidFuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, INVALID_FUEL_TYPE_ID);
+    invalidFuelSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, INVALID_FUEL_TYPE_ID);
 
     // Create resource ID for the mock system
     bytes14 namespace = bytes14("evefrontier");

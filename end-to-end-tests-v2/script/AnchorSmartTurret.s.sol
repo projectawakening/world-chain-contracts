@@ -27,9 +27,9 @@ contract AnchorSmartTurret is Script {
     uint256 bobSmartTurretItemId = 1560;
     uint256 charlieSmartTurretItemId = 1561;
 
-    uint256 aliceSmartTurretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, aliceSmartTurretItemId);
-    uint256 bobSmartTurretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, bobSmartTurretItemId);
-    uint256 charlieSmartTurretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, charlieSmartTurretItemId);
+    uint256 aliceSmartTurretSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, aliceSmartTurretItemId);
+    uint256 bobSmartTurretSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, bobSmartTurretItemId);
+    uint256 charlieSmartTurretSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, charlieSmartTurretItemId);
 
     EntityRecordParams memory aliceSmartTurretEntityRecordParams = EntityRecordParams({
       tenantId: tenantId,

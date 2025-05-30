@@ -93,7 +93,7 @@ contract FuelSystem is SmartObjectFramework {
       revert SmartAssemblySystem.SmartAssembly_InvalidTenantId(smartObjectId, fuelEntityParams.tenantId);
     }
 
-    if (ObjectIdLib.calculateNonSingletonId(tenantId, fuelEntityParams.typeId) != smartObjectId) {
+    if (ObjectIdLib.calculateObjectId(tenantId, fuelEntityParams.typeId) != smartObjectId) {
       revert Fuel_InvalidFuelTypeId(smartObjectId, fuelEntityParams.typeId);
     }
     if (fuelEfficiency < 10 || fuelEfficiency > 100) {

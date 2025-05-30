@@ -53,7 +53,7 @@ contract DeployableSystem is SmartObjectFramework {
     //TODO: this is not the correct way to use SOF, its a temporary  solution to allow deployables that does not have a proper class
     //If the smartObject is not part of any class, then default to the deployable class
     if (!Entity.getExists(params.smartObjectId)) {
-      uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
+      uint256 classId = ObjectIdLib.calculateObjectId(Tenant.get(), params.entityRecordParams.typeId);
       entitySystem.instantiate(classId, params.smartObjectId, params.owner);
     }
 

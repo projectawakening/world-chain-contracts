@@ -37,7 +37,7 @@ contract ConfigureFuel is Script {
     bytes32 tenantId = Tenant.get();
 
     for (uint256 i = 0; i < fuelTypeIds.length; i++) {
-      uint256 fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, fuelTypeIds[i]);
+      uint256 fuelSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, fuelTypeIds[i]);
 
       EntityRecordParams memory fuelEntityRecordParams = EntityRecordParams({
         tenantId: tenantId,

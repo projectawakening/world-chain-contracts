@@ -46,10 +46,6 @@ contract SmartGateSystem is SmartObjectFramework {
   ) public context access(params.smartObjectId) {
     params.assemblyType = SMART_GATE;
 
-    uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
-
-    entitySystem.instantiate(classId, params.smartObjectId, params.owner);
-
     deployableSystem.createAndAnchor(params, networkNodeId);
 
     SmartGateConfig.setMaxDistance(params.smartObjectId, maxDistance);
@@ -227,10 +223,6 @@ contract SmartGateSystem is SmartObjectFramework {
     // Sum of squares (distance squared in meters)
     uint256 distanceSquaredMeters = (dx * dx) + (dy * dy) + (dz * dz);
     return distanceSquaredMeters <= (maxDistance * maxDistance);
-  }
-
-  function getSmartGateClassId() public view returns (uint256) {
-    return Initialize.get(smartGateSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {

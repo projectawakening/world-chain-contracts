@@ -32,7 +32,7 @@ contract AnchorSSU is Script {
     uint256 ssuItemId = 1244;
     uint256 storageCapacity = 100000000;
     uint256 ephemeralCapacity = 100000000;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
     uint256 networkNodeId = 0;
 

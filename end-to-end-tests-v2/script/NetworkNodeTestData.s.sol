@@ -50,7 +50,7 @@ contract NetworkNodeTestData is Script {
 
     // Step 2: Deployer creates Network Node
     bytes32 tenantId = Tenant.get();
-    uint256 networkNodeId = ObjectIdLib.calculateSingletonId(tenantId, NETWORK_NODE_ID);
+    uint256 networkNodeId = ObjectIdLib.calculateObjectId(tenantId, NETWORK_NODE_ID);
     console.log("networkNodeId", networkNodeId);
     createNetworkNode(alice, networkNodeId);
 
@@ -72,7 +72,7 @@ contract NetworkNodeTestData is Script {
     assemblyTypeIds[0] = NETWORK_NODE_ID;
 
     uint256 fuelTypeId = vm.envUint("FUEL_TYPE_ID");
-    uint256 fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, fuelTypeId);
+    uint256 fuelSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, fuelTypeId);
     fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
 
     bringOnline(assemblyTypeIds);
@@ -84,7 +84,7 @@ contract NetworkNodeTestData is Script {
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
 
     uint256 characterItemId = CHARACTER_BASE_ITEM_ID;
-    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
+    uint256 characterSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, characterItemId);
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -155,7 +155,7 @@ contract NetworkNodeTestData is Script {
     uint256 ephemeralCapacity = 100000000;
 
     uint256 ssuItemId = SSU_BASE_ITEM_ID;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
 
     LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
@@ -189,7 +189,7 @@ contract NetworkNodeTestData is Script {
     uint256 smartTurretTypeId = vm.envUint("TURRET_TYPE_ID");
 
     uint256 turretItemId = TURRET_BASE_ITEM_ID;
-    uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
+    uint256 turretSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, turretItemId);
     LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
@@ -215,7 +215,7 @@ contract NetworkNodeTestData is Script {
   function createPrinter(address account, uint256 networkNodeId) internal {
     bytes32 tenantId = Tenant.get();
     uint256 printerTypeId = vm.envUint("PRINTER_TYPE_ID");
-    uint256 printerSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, PRINTER_ITEM_ID);
+    uint256 printerSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, PRINTER_ITEM_ID);
 
     LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
@@ -240,7 +240,7 @@ contract NetworkNodeTestData is Script {
   function createPortableRefinery(address account, uint256 networkNodeId) internal {
     bytes32 tenantId = Tenant.get();
     uint256 portableRefineryTypeId = vm.envUint("PORTABLE_REFINERY_TYPE_ID");
-    uint256 portableRefinerySmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, PORTABLE_REFINERY_ITEM_ID);
+    uint256 portableRefinerySmartObjectId = ObjectIdLib.calculateObjectId(tenantId, PORTABLE_REFINERY_ITEM_ID);
 
     LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
@@ -266,7 +266,7 @@ contract NetworkNodeTestData is Script {
     bytes32 tenantId = Tenant.get();
     for (uint256 i = 0; i < assemblyItemIds.length; i++) {
       uint256 assemblyItemId = assemblyItemIds[i];
-      uint256 assemblySmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, assemblyItemId);
+      uint256 assemblySmartObjectId = ObjectIdLib.calculateObjectId(tenantId, assemblyItemId);
       deployableSystem.bringOnline(assemblySmartObjectId);
     }
   }
