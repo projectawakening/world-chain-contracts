@@ -1897,7 +1897,7 @@
     ],
     "outputs": [
       {
-        "name": "timeLeft",
+        "name": "elapsedTime",
         "type": "uint256",
         "internalType": "uint256"
       },
@@ -2020,45 +2020,6 @@
   {
     "type": "function",
     "name": "evefrontier__getSmartCharacterClassId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__getSmartGateClassId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__getSmartStorageUnitClassId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__getSmartTurretClassId",
     "inputs": [],
     "outputs": [
       {
@@ -2885,24 +2846,6 @@
   },
   {
     "type": "function",
-    "name": "evefrontier__registerDeployableClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "evefrontier__registerNetworkNodeClass",
     "inputs": [
       {
@@ -2921,61 +2864,25 @@
   },
   {
     "type": "function",
+    "name": "evefrontier__registerSmartAssemblies",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "evefrontier__registerSmartCharacterClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__registerSmartGateClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__registerSmartStorageUnitClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "evefrontier__registerSmartTurretClass",
     "inputs": [
       {
         "name": "typeId",
