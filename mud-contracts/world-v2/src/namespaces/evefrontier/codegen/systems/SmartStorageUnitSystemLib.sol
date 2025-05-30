@@ -53,10 +53,6 @@ library SmartStorageUnitSystemLib {
       );
   }
 
-  function getSmartStorageUnitClassId(SmartStorageUnitSystemType self) internal view returns (uint256) {
-    return CallWrapper(self.toResourceId(), address(0)).getSmartStorageUnitClassId();
-  }
-
   function createAndAnchorStorageUnit(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -76,21 +72,6 @@ library SmartStorageUnitSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function getSmartStorageUnitClassId(CallWrapper memory self) internal view returns (uint256) {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert SmartStorageUnitSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_getSmartStorageUnitClassId.getSmartStorageUnitClassId, ());
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-
-    bytes memory result = abi.decode(returnData, (bytes));
-    return abi.decode(result, (uint256));
-  }
-
   function createAndAnchorStorageUnit(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -103,13 +84,6 @@ library SmartStorageUnitSystemLib {
       (params, capacity, ephemeralCapacity, networkNodeId)
     );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function getSmartStorageUnitClassId(RootCallWrapper memory self) internal view returns (uint256) {
-    bytes memory systemCall = abi.encodeCall(_getSmartStorageUnitClassId.getSmartStorageUnitClassId, ());
-
-    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
-    return abi.decode(result, (uint256));
   }
 
   function callFrom(SmartStorageUnitSystemType self, address from) internal pure returns (CallWrapper memory) {
@@ -160,10 +134,6 @@ interface _createAndAnchorStorageUnit_CreateAndAnchorParams_uint256_uint256_uint
     uint256 ephemeralCapacity,
     uint256 networkNodeId
   ) external;
-}
-
-interface _getSmartStorageUnitClassId {
-  function getSmartStorageUnitClassId() external;
 }
 
 using SmartStorageUnitSystemLib for SmartStorageUnitSystemType global;

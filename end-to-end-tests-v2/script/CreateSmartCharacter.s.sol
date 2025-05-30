@@ -66,7 +66,7 @@ contract CreateSmartCharacter is Script {
     uint256 characterTypeId = vm.envUint("CHARACTER_TYPE_ID");
 
     bytes32 tenantId = Tenant.get();
-    uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
+    uint256 characterSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, characterItemId);
 
     EntityRecordParams memory entityRecordParams = EntityRecordParams({
       tenantId: tenantId,

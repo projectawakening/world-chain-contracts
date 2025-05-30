@@ -93,7 +93,7 @@ contract FuelSystem is SmartObjectFramework {
       revert SmartAssemblySystem.SmartAssembly_InvalidTenantId(smartObjectId, fuelEntityParams.tenantId);
     }
 
-    if (ObjectIdLib.calculateNonSingletonId(tenantId, fuelEntityParams.typeId) != smartObjectId) {
+    if (ObjectIdLib.calculateObjectId(tenantId, fuelEntityParams.typeId) != smartObjectId) {
       revert Fuel_InvalidFuelTypeId(smartObjectId, fuelEntityParams.typeId);
     }
     if (fuelEfficiency < 10 || fuelEfficiency > 100) {
@@ -174,12 +174,12 @@ contract FuelSystem is SmartObjectFramework {
    */
   function startBurn(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
-    if (currentFuelAmount == 0) {
-      revert Fuel_InsufficientFuel(smartObjectId, 1, 0);
-    }
-
     // Get the previous elapsed time
     uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+
+    if (currentFuelAmount == 0 && previousElapsedTime == 0) {
+      revert Fuel_InsufficientFuel(smartObjectId, 1, 0);
+    }
 
     if (previousElapsedTime == 0) {
       // Consume 1 unit of fuel
@@ -286,8 +286,7 @@ contract FuelSystem is SmartObjectFramework {
     }
     //when the last unit is being consumed, we only consider for 1 unit of fuel window
     if (fuelAmount == 0) {
-      elapsed = elapsed < actualConsumptionRateInSeconds ? elapsed : 0;
-      return (elapsed, 0, 0, fuelAmount);
+      return (elapsed, 0, actualConsumptionRateInSeconds, fuelAmount);
     }
 
     // Calculate units to consume based on total elapsed time
@@ -323,7 +322,7 @@ contract FuelSystem is SmartObjectFramework {
     ) = getCurrentFuelConsumptionStatus(smartObjectId);
 
     // Handle case where no fuel is available
-    if (fuelAmount == 0 && elapsedTime == 0) {
+    if (fuelAmount == 0 && elapsedTime >= actualBurnRate) {
       _handleNoFuel(smartObjectId);
       return;
     }

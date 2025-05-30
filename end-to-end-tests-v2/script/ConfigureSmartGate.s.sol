@@ -40,8 +40,8 @@ contract ConfigureSmartGate is Script {
     uint256 characterId = CharactersByAccount.getSmartObjectId(alice);
     uint256 smartGate1ItemId = 1557;
     uint256 smartGate2ItemId = 1558;
-    uint256 smartGate1SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate1ItemId);
-    uint256 smartGate2SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate2ItemId);
+    uint256 smartGate1SmartObjectId = ObjectIdLib.calculateObjectId(tenantId, smartGate1ItemId);
+    uint256 smartGate2SmartObjectId = ObjectIdLib.calculateObjectId(tenantId, smartGate2ItemId);
 
     // Bring the smart gate online
     deployableSystem.bringOnline(smartGate1SmartObjectId);

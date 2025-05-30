@@ -25,13 +25,13 @@ contract DepositToInventory is Script {
 
     bytes32 tenantId = Tenant.get();
     uint256 ssuItemId = 1244; // value from AnchorSSU.s.sol
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
     uint256 SINGLETON_ITEM_TYPE_ID = 9000;
     uint256 SINGLETON_ITEM_ID = 66;
     uint256 NON_SINGLETON_ITEM_TYPE_ID = 9090;
     uint256 ITEM_VOLUME = 10;
-    uint256 singletonObjectId = ObjectIdLib.calculateSingletonId(tenantId, SINGLETON_ITEM_ID);
-    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
+    uint256 singletonObjectId = ObjectIdLib.calculateObjectId(tenantId, SINGLETON_ITEM_ID);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateObjectId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);

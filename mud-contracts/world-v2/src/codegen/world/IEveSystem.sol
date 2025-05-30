@@ -11,15 +11,9 @@ pragma solidity >=0.8.24;
 interface IEveSystem {
   function evefrontier__registerSmartCharacterClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerSmartStorageUnitClass(uint256 typeId, uint256 volume) external;
-
-  function evefrontier__registerSmartTurretClass(uint256 typeId, uint256 volume) external;
-
-  function evefrontier__registerSmartGateClass(uint256 typeId, uint256 volume) external;
-
   function evefrontier__registerNetworkNodeClass(uint256 typeId, uint256 volume) external;
 
-  function evefrontier__registerDeployableClass(uint256 typeId, uint256 volume) external;
+  function evefrontier__registerSmartAssemblies(uint256 typeId, uint256 volume) external;
 
   function evefrontier__configureEntityRecordAccess() external;
 

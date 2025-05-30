@@ -107,10 +107,6 @@ library SmartGateSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).isWithinRange(sourceGateId, destinationGateId);
   }
 
-  function getSmartGateClassId(SmartGateSystemType self) internal view returns (uint256) {
-    return CallWrapper(self.toResourceId(), address(0)).getSmartGateClassId();
-  }
-
   function createAndAnchorGate(
     CallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -273,21 +269,6 @@ library SmartGateSystemLib {
     return abi.decode(result, (bool));
   }
 
-  function getSmartGateClassId(CallWrapper memory self) internal view returns (uint256) {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert SmartGateSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_getSmartGateClassId.getSmartGateClassId, ());
-    bytes memory worldCall = self.from == address(0)
-      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
-      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
-    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
-    if (!success) revertWithBytes(returnData);
-
-    bytes memory result = abi.decode(returnData, (bytes));
-    return abi.decode(result, (uint256));
-  }
-
   function createAndAnchorGate(
     RootCallWrapper memory self,
     CreateAndAnchorParams memory params,
@@ -393,13 +374,6 @@ library SmartGateSystemLib {
     return abi.decode(result, (bool));
   }
 
-  function getSmartGateClassId(RootCallWrapper memory self) internal view returns (uint256) {
-    bytes memory systemCall = abi.encodeCall(_getSmartGateClassId.getSmartGateClassId, ());
-
-    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
-    return abi.decode(result, (uint256));
-  }
-
   function callFrom(SmartGateSystemType self, address from) internal pure returns (CallWrapper memory) {
     return CallWrapper(self.toResourceId(), from);
   }
@@ -476,10 +450,6 @@ interface _isAnyGateLinked_uint256_uint256 {
 
 interface _isWithinRange_uint256_uint256 {
   function isWithinRange(uint256 sourceGateId, uint256 destinationGateId) external;
-}
-
-interface _getSmartGateClassId {
-  function getSmartGateClassId() external;
 }
 
 using SmartGateSystemLib for SmartGateSystemType global;

@@ -53,14 +53,19 @@ contract SmartStorageUnitTest is MudTest {
   address alice;
 
   uint256 constant SMART_OBJECT_ID = 1234;
+  uint256 constant STORAGE_OBJECT_ID = 1235;
+  uint256 constant SSU_TYPE_ID = 77917;
+  uint256 constant STORAGE_TYPE_ID = 88068;
 
   uint256 smartObjectId;
+  uint256 storageObjectId;
 
   // Location data
   LocationData locationParams;
 
   //entity record
   EntityRecordParams entityRecordParams;
+  EntityRecordParams storageEntityRecord;
 
   function setUp() public virtual override {
     vm.pauseGasMetering();
@@ -83,18 +88,22 @@ contract SmartStorageUnitTest is MudTest {
     tenantId = Tenant.get();
 
     // Setup smart object IDs
-    smartObjectId = _calculateObjectId(
-      EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-      SMART_OBJECT_ID,
-      true
-    );
+    smartObjectId = _calculateObjectId(SSU_TYPE_ID, SMART_OBJECT_ID, true);
+    storageObjectId = _calculateObjectId(STORAGE_TYPE_ID, STORAGE_OBJECT_ID, true);
 
     locationParams = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
 
     entityRecordParams = EntityRecordParams({
       tenantId: tenantId,
-      typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
+      typeId: SSU_TYPE_ID,
       itemId: SMART_OBJECT_ID,
+      volume: 1000
+    });
+
+    storageEntityRecord = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: STORAGE_TYPE_ID,
+      itemId: STORAGE_OBJECT_ID,
       volume: 1000
     });
 
@@ -143,14 +152,24 @@ contract SmartStorageUnitTest is MudTest {
     assertEq(EphemeralInvCapacity.get(smartObjectId), 0);
 
     vm.startPrank(alice, deployer);
-    // create and anchor source gate
+    // create and anchor ssu
     world.call(
       smartStorageUnitSystem.toResourceId(),
       abi.encodeCall(
         SmartStorageUnitSystem.createAndAnchorStorageUnit,
-        (CreateAndAnchorParams(smartObjectId, "SSU", entityRecordParams, alice, locationParams), 1000, 1000, 0) // networkNodeId
+        (CreateAndAnchorParams(smartObjectId, "SSU", entityRecordParams, alice, locationParams), 1000, 1000, 0) // smart storage unit
       )
     );
+
+    // create and anchor storage
+    world.call(
+      smartStorageUnitSystem.toResourceId(),
+      abi.encodeCall(
+        SmartStorageUnitSystem.createAndAnchorStorageUnit,
+        (CreateAndAnchorParams(storageObjectId, "SSU", storageEntityRecord, alice, locationParams), 1000, 1000, 0) // plain storage
+      )
+    );
+
     vm.stopPrank();
 
     // check entity record data before creating and anchoring
@@ -158,13 +177,23 @@ contract SmartStorageUnitTest is MudTest {
 
     EntityRecordData memory entityRecordData = EntityRecord.get(smartObjectId);
     assertEq(entityRecordData.tenantId, tenantId);
-    assertEq(entityRecordData.typeId, EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()));
+    assertEq(entityRecordData.typeId, SSU_TYPE_ID);
     assertEq(entityRecordData.itemId, SMART_OBJECT_ID);
     assertEq(entityRecordData.volume, 1000);
 
     // smart assembly data before creating and anchoring
     assertEq(
       keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))),
+      keccak256(abi.encodePacked("SSU"))
+    );
+
+    EntityRecordData memory storageRecordData = EntityRecord.get(storageObjectId);
+    assertEq(storageRecordData.tenantId, tenantId);
+    assertEq(storageRecordData.typeId, STORAGE_TYPE_ID);
+    assertEq(storageRecordData.itemId, STORAGE_OBJECT_ID);
+
+    assertEq(
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(storageObjectId))),
       keccak256(abi.encodePacked("SSU"))
     );
 

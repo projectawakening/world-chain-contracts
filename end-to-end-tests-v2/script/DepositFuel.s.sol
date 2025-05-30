@@ -21,14 +21,14 @@ contract DepositFuel is Script {
     address alice = vm.addr(alicePrivateKey);
 
     uint256 fuelTypeId = vm.envUint("FUEL_TYPE_ID");
-    uint256 fuelSmartObjectId = ObjectIdLib.calculateNonSingletonId(Tenant.get(), fuelTypeId);
+    uint256 fuelSmartObjectId = ObjectIdLib.calculateObjectId(Tenant.get(), fuelTypeId);
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
     bytes32 tenantId = Tenant.get();
     uint256 ssuItemId = 1244;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
     // deposit fuel currently can be made directly by ADMIN or by owner of the SSU (via validated call)
     // by ADMIN
     fuelSystem.depositFuel(ssuSmartObjectId, fuelSmartObjectId, 500);

@@ -26,8 +26,8 @@ contract AnchorSmartGate is Script {
     uint256 smartGate1ItemId = 1557;
     uint256 smartGate2ItemId = 1558;
     uint256 networkNodeId = 0;
-    uint256 smartGate1SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate1ItemId);
-    uint256 smartGate2SmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, smartGate2ItemId);
+    uint256 smartGate1SmartObjectId = ObjectIdLib.calculateObjectId(tenantId, smartGate1ItemId);
+    uint256 smartGate2SmartObjectId = ObjectIdLib.calculateObjectId(tenantId, smartGate2ItemId);
 
     LocationData memory sourceGateLocation = LocationData({ solarSystemId: 1, x: 1001, y: 1001, z: 1001 });
     LocationData memory destinationGateLocation = LocationData({ solarSystemId: 1, x: 1002, y: 1002, z: 1002 });

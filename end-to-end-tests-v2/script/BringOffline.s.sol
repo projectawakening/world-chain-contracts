@@ -22,7 +22,7 @@ contract BringOffline is Script {
 
     bytes32 tenantId = Tenant.get();
     uint256 ssuItemId = 1244;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
 
     // SSU is already online from the BringOnline.s.sol script
 

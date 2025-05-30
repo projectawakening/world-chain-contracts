@@ -28,8 +28,8 @@ contract WithdrawFromInventory is Script {
     uint256 ssuItemId = 1244;
     uint256 NON_SINGLETON_ITEM_TYPE_ID = 9090;
 
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
-    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateObjectId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
 
     InventoryItemParams[] memory items = new InventoryItemParams[](1);
     items[0] = InventoryItemParams({
