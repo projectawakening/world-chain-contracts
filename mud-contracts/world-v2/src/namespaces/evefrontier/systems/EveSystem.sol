@@ -398,10 +398,11 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       true
     );
 
-    bytes4[3] memory onlyAdminSupportedSelectors = [
+    bytes4[4] memory onlyAdminSupportedSelectors = [
       DeployableSystem.createAndAnchor.selector,
       DeployableSystem.createDeployable.selector,
-      DeployableSystem.anchor.selector
+      DeployableSystem.anchor.selector,
+      DeployableSystem.unanchor.selector
     ];
 
     for (uint256 i = 0; i < onlyAdminSupportedSelectors.length; i++) {
@@ -412,22 +413,6 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
         AccessSystem.onlyAdminSupportedAccess.selector
       );
       accessConfigSystem.setAccessEnforcement(deployableSystem.toResourceId(), onlyAdminSupportedSelectors[i], true);
-    }
-
-    bytes4[1] memory deployableOnlyOwnerWithAdminSupportAccessSelectors = [DeployableSystem.unanchor.selector];
-
-    for (uint256 i = 0; i < deployableOnlyOwnerWithAdminSupportAccessSelectors.length; i++) {
-      accessConfigSystem.configureAccess(
-        deployableSystem.toResourceId(),
-        deployableOnlyOwnerWithAdminSupportAccessSelectors[i],
-        accessSystem.toResourceId(),
-        AccessSystem.onlyOwnerWithAdminSupportAccess.selector
-      );
-      accessConfigSystem.setAccessEnforcement(
-        deployableSystem.toResourceId(),
-        deployableOnlyOwnerWithAdminSupportAccessSelectors[i],
-        true
-      );
     }
 
     accessConfigSystem.configureAccess(
