@@ -29,7 +29,7 @@ contract DepositToEphemeral is Script {
 
     bytes32 tenantId = Tenant.get();
     uint256 ssuItemId = 1244;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
 
     CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](2);
 
@@ -39,8 +39,8 @@ contract DepositToEphemeral is Script {
     uint256 NON_SINGLETON_ITEM_TYPE_ID = 9090; // same non-singleton type as in DepositToInventory.s.sol
     uint256 ITEM_VOLUME = 10; // same item volume as in DepositToInventory.s.sol
 
-    uint256 newSingletonObjectId = ObjectIdLib.calculateSingletonId(tenantId, NEW_SINGLETON_ITEM_ID);
-    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
+    uint256 newSingletonObjectId = ObjectIdLib.calculateObjectId(tenantId, NEW_SINGLETON_ITEM_ID);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateObjectId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
 
     items[0] = CreateInventoryItemParams({
       smartObjectId: newSingletonObjectId,

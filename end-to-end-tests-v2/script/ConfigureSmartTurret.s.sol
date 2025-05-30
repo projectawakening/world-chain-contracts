@@ -31,7 +31,7 @@ contract ConfigureSmartTurret is Script {
     address charlie = vm.addr(vm.deriveKey(mnemonic, 4));
 
     bytes32 tenantId = Tenant.get();
-    uint256 aliceSmartTurretId = ObjectIdLib.calculateSingletonId(tenantId, 1559);
+    uint256 aliceSmartTurretId = ObjectIdLib.calculateObjectId(tenantId, 1559);
 
     uint256 aliceCharacterId = CharactersByAccount.getSmartObjectId(alice);
     uint256 bobCharacterId = CharactersByAccount.getSmartObjectId(bob);

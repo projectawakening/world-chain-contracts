@@ -59,14 +59,14 @@ contract TransferItems is Script {
     bobSSUItemId = 6666;
     charlieSSUItemId = 7777;
 
-    aliceSSUInventoryId = ObjectIdLib.calculateSingletonId(Tenant.get(), aliceSSUItemId);
-    bobSSUInventoryId = ObjectIdLib.calculateSingletonId(Tenant.get(), bobSSUItemId);
-    charlieSSUInventoryId = ObjectIdLib.calculateSingletonId(Tenant.get(), charlieSSUItemId);
+    aliceSSUInventoryId = ObjectIdLib.calculateObjectId(Tenant.get(), aliceSSUItemId);
+    bobSSUInventoryId = ObjectIdLib.calculateObjectId(Tenant.get(), bobSSUItemId);
+    charlieSSUInventoryId = ObjectIdLib.calculateObjectId(Tenant.get(), charlieSSUItemId);
 
-    singletonItem1ObjectId = ObjectIdLib.calculateSingletonId(tenantId, 66); // from the DepositToInventory.s.sol script (in alice's inventory for alice's SSU)
-    singletonItem2ObjectId = ObjectIdLib.calculateSingletonId(tenantId, 77); // from the DepositToEphemeral.s.sol script (in bob's ephemeral inventory for alice's SSU)
-    singletonItem3ObjectId = ObjectIdLib.calculateSingletonId(tenantId, NEW_SINGLETON_ITEM_ID); // new singleton item id (to put into Charlie's inventory)
-    nonSingletonItem1ObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, 9090); // from the DepositToInventory/DepositToEphemeral.s.sol script (7 in alice's inventory for alice's SSU, 8 in bob's ephemeral inventory for alice's SSU)
+    singletonItem1ObjectId = ObjectIdLib.calculateObjectId(tenantId, 66); // from the DepositToInventory.s.sol script (in alice's inventory for alice's SSU)
+    singletonItem2ObjectId = ObjectIdLib.calculateObjectId(tenantId, 77); // from the DepositToEphemeral.s.sol script (in bob's ephemeral inventory for alice's SSU)
+    singletonItem3ObjectId = ObjectIdLib.calculateObjectId(tenantId, NEW_SINGLETON_ITEM_ID); // new singleton item id (to put into Charlie's inventory)
+    nonSingletonItem1ObjectId = ObjectIdLib.calculateObjectId(tenantId, 9090); // from the DepositToInventory/DepositToEphemeral.s.sol script (7 in alice's inventory for alice's SSU, 8 in bob's ephemeral inventory for alice's SSU)
 
     // create an SSU with primary inventory for bob and charlie
     vm.startBroadcast(deployerPrivateKey);
