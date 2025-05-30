@@ -24,9 +24,9 @@ contract WithdrawFromEphemeral is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
     bytes32 tenantId = Tenant.get();
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, 1244);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, 1244);
 
-    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, 9090);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateObjectId(tenantId, 9090);
 
     InventoryItemParams[] memory items = new InventoryItemParams[](1);
     items[0] = InventoryItemParams({

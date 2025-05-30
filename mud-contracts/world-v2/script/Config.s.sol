@@ -32,8 +32,6 @@ import { smartAssemblySystem } from "../src/namespaces/evefrontier/codegen/syste
 import { EntityRecordSystem, entityRecordSystem } from "../src/namespaces/evefrontier/codegen/systems/EntityRecordSystemLib.sol";
 import { Tenant, WorldVersion } from "../src/namespaces/evefrontier/codegen/index.sol";
 
-
-
 contract Config is Script {
   function run(address worldAddress) public {
     StoreSwitch.setStoreAddress(worldAddress);
@@ -92,35 +90,55 @@ contract Config is Script {
       true
     );
 
-     CallAccess.set(
+    CallAccess.set(
       entitySystem.toResourceId(),
       IEntitySystem.scopedRegisterClass.selector,
       deployableSystem.getAddress(),
       true
     );
-
   }
 
   function _initializeClassRegistry() internal {
     eveSystem.registerSmartCharacterClass(vm.envUint("CHARACTER_TYPE_ID"), vm.envUint("CHARACTER_VOLUME"));
-    eveSystem.registerSmartStorageUnitClass(vm.envUint("SSU_TYPE_ID"), vm.envUint("SSU_VOLUME"));
-    eveSystem.registerSmartTurretClass(vm.envUint("TURRET_TYPE_ID"), vm.envUint("TURRET_VOLUME"));
-    eveSystem.registerSmartGateClass(vm.envUint("GATE_TYPE_ID"), vm.envUint("GATE_VOLUME"));
     eveSystem.registerNetworkNodeClass(vm.envUint("NETWORK_NODE_TYPE_ID"), vm.envUint("NETWORK_NODE_VOLUME"));
     uint256[] memory otherAssemblyTypeIds = vm.envUint("TYPE_IDS", ",");
- 
     for (uint i = 0; i < otherAssemblyTypeIds.length; i++) {
-      eveSystem.registerDeployableClass(otherAssemblyTypeIds[i], 1);
+      eveSystem.registerSmartAssemblies(otherAssemblyTypeIds[i], 1);
     }
   }
 
   function _initializeWorldAccess() internal {
     // EntityRecordSystem.sol
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, inventorySystem.getAddress(), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, ephemeralInventorySystem.getAddress(), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartCharacterSystem.getAddress(), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, smartAssemblySystem.getAddress(), true);
-    CallAccess.set(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, fuelSystem.getAddress(), true);
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createRecord.selector,
+      inventorySystem.getAddress(),
+      true
+    );
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createRecord.selector,
+      ephemeralInventorySystem.getAddress(),
+      true
+    );
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createRecord.selector,
+      smartCharacterSystem.getAddress(),
+      true
+    );
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createRecord.selector,
+      smartAssemblySystem.getAddress(),
+      true
+    );
+    CallAccess.set(
+      entityRecordSystem.toResourceId(),
+      EntityRecordSystem.createRecord.selector,
+      fuelSystem.getAddress(),
+      true
+    );
 
     // InventorySystem.sol
     bytes4[2] memory inventoryFunctionSelectors = [
@@ -128,8 +146,18 @@ contract Config is Script {
       InventorySystem.withdrawInventory.selector
     ];
     for (uint i = 0; i < inventoryFunctionSelectors.length; i++) {
-      CallAccess.set(inventorySystem.toResourceId(), inventoryFunctionSelectors[i], inventoryInteractSystem.getAddress(), true);
-      CallAccess.set(inventorySystem.toResourceId(), inventoryFunctionSelectors[i], ephemeralInteractSystem.getAddress(), true);
+      CallAccess.set(
+        inventorySystem.toResourceId(),
+        inventoryFunctionSelectors[i],
+        inventoryInteractSystem.getAddress(),
+        true
+      );
+      CallAccess.set(
+        inventorySystem.toResourceId(),
+        inventoryFunctionSelectors[i],
+        ephemeralInteractSystem.getAddress(),
+        true
+      );
     }
 
     // EphemeralInventorySystem.sol
@@ -138,8 +166,18 @@ contract Config is Script {
       EphemeralInventorySystem.withdrawEphemeral.selector
     ];
     for (uint i = 0; i < ephemeralInventoryFunctionSelectors.length; i++) {
-      CallAccess.set(ephemeralInventorySystem.toResourceId(), ephemeralInventoryFunctionSelectors[i], inventoryInteractSystem.getAddress(), true);
-      CallAccess.set(ephemeralInventorySystem.toResourceId(), ephemeralInventoryFunctionSelectors[i], ephemeralInteractSystem.getAddress(), true);
+      CallAccess.set(
+        ephemeralInventorySystem.toResourceId(),
+        ephemeralInventoryFunctionSelectors[i],
+        inventoryInteractSystem.getAddress(),
+        true
+      );
+      CallAccess.set(
+        ephemeralInventorySystem.toResourceId(),
+        ephemeralInventoryFunctionSelectors[i],
+        ephemeralInteractSystem.getAddress(),
+        true
+      );
     }
 
     // OwnershipSystem.sol
@@ -148,19 +186,43 @@ contract Config is Script {
       InventoryOwnershipSystem.removeItemFromInventory.selector
     ];
     for (uint i = 0; i < ownershipInventoryFunctionSelectors.length; i++) {
-      CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], inventorySystem.getAddress(), true);
-      CallAccess.set(ownershipSystem.toResourceId(), ownershipInventoryFunctionSelectors[i], ephemeralInventorySystem.getAddress(), true);
+      CallAccess.set(
+        ownershipSystem.toResourceId(),
+        ownershipInventoryFunctionSelectors[i],
+        inventorySystem.getAddress(),
+        true
+      );
+      CallAccess.set(
+        ownershipSystem.toResourceId(),
+        ownershipInventoryFunctionSelectors[i],
+        ephemeralInventorySystem.getAddress(),
+        true
+      );
     }
     bytes4[2] memory ownershipAccountFunctionSelectors = [
       OwnershipSystem.assignOwner.selector,
       OwnershipSystem.removeOwner.selector
     ];
     for (uint i = 0; i < ownershipAccountFunctionSelectors.length; i++) {
-      CallAccess.set(ownershipSystem.toResourceId(), ownershipAccountFunctionSelectors[i], deployableSystem.getAddress(), true);
-      CallAccess.set(ownershipSystem.toResourceId(), ownershipAccountFunctionSelectors[i], smartCharacterSystem.getAddress(), true);
+      CallAccess.set(
+        ownershipSystem.toResourceId(),
+        ownershipAccountFunctionSelectors[i],
+        deployableSystem.getAddress(),
+        true
+      );
+      CallAccess.set(
+        ownershipSystem.toResourceId(),
+        ownershipAccountFunctionSelectors[i],
+        smartCharacterSystem.getAddress(),
+        true
+      );
     }
-    CallAccess.set(ownershipSystem.toResourceId(), OwnershipSystem.assignOwner.selector, ephemeralInventorySystem.getAddress(), true);
-
+    CallAccess.set(
+      ownershipSystem.toResourceId(),
+      OwnershipSystem.assignOwner.selector,
+      ephemeralInventorySystem.getAddress(),
+      true
+    );
 
     bytes32 adminRole = bytes32("admin");
     roleManagementSystem.createRole(adminRole, adminRole); // this auto-grants the role to the caller (deployer)

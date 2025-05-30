@@ -23,7 +23,7 @@ contract BringOnline is Script {
 
     bytes32 tenantId = Tenant.get();
     uint256 ssuItemId = 1244; // value from AnchorSSU.s.sol
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
 
     // currently bringOnline can be made by ADMIN or by owner of the SSU directly
     vm.startBroadcast(deployerPrivateKey);

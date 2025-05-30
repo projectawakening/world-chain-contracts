@@ -1897,7 +1897,7 @@
     ],
     "outputs": [
       {
-        "name": "timeLeft",
+        "name": "elapsedTime",
         "type": "uint256",
         "internalType": "uint256"
       },
@@ -2020,45 +2020,6 @@
   {
     "type": "function",
     "name": "getSmartCharacterClassId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getSmartGateClassId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getSmartStorageUnitClassId",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "getSmartTurretClassId",
     "inputs": [],
     "outputs": [
       {
@@ -2885,24 +2846,6 @@
   },
   {
     "type": "function",
-    "name": "registerDeployableClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "registerNetworkNodeClass",
     "inputs": [
       {
@@ -2921,61 +2864,25 @@
   },
   {
     "type": "function",
+    "name": "registerSmartAssemblies",
+    "inputs": [
+      {
+        "name": "typeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "volume",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "registerSmartCharacterClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "registerSmartGateClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "registerSmartStorageUnitClass",
-    "inputs": [
-      {
-        "name": "typeId",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "volume",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "registerSmartTurretClass",
     "inputs": [
       {
         "name": "typeId",

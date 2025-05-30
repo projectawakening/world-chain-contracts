@@ -89,6 +89,7 @@ contract EphemeralInteractTest is MudTest {
   uint256 constant ITEM_TYPE_ID_NON_SINGLETON = 1001; // Non-singleton item type
   uint256 constant ITEM_VOLUME = 100;
   uint256 constant TRANSFER_ITEM_TYPE_ID = 9091;
+  uint256 constant SSU_TYPE_ID = 77917;
 
   // Test addresses
   address deployer;
@@ -125,11 +126,7 @@ contract EphemeralInteractTest is MudTest {
     tenantId = Tenant.get();
 
     // Setup smart object IDs
-    inventoryObjectId = _calculateObjectId(
-      EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-      SMART_OBJECT_ITEM_ID,
-      true
-    );
+    inventoryObjectId = _calculateObjectId(SSU_TYPE_ID, SMART_OBJECT_ITEM_ID, true);
 
     // Setup SSU for inventory
     uint256 capacity = 1000;
@@ -141,12 +138,7 @@ contract EphemeralInteractTest is MudTest {
           CreateAndAnchorParams(
             inventoryObjectId,
             "SSU",
-            EntityRecordParams({
-              tenantId: tenantId,
-              typeId: EntityRecord.getTypeId(smartStorageUnitSystem.getSmartStorageUnitClassId()),
-              itemId: SMART_OBJECT_ITEM_ID,
-              volume: 1000
-            }),
+            EntityRecordParams({ tenantId: tenantId, typeId: SSU_TYPE_ID, itemId: SMART_OBJECT_ITEM_ID, volume: 1000 }),
             alice,
             LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
           ),

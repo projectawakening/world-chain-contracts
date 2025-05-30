@@ -36,18 +36,10 @@ contract SmartStorageUnitSystem is SmartObjectFramework {
   ) public context access(params.smartObjectId) {
     params.assemblyType = SMART_STORAGE_UNIT;
 
-    uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
-
-    entitySystem.instantiate(classId, params.smartObjectId, params.owner);
-
     deployableSystem.createAndAnchor(params, networkNodeId);
 
     inventorySystem.setCapacity(params.smartObjectId, capacity);
 
     inventorySystem.setEphemeralCapacity(params.smartObjectId, ephemeralCapacity);
-  }
-
-  function getSmartStorageUnitClassId() public view returns (uint256) {
-    return Initialize.get(smartStorageUnitSystem.toResourceId());
   }
 }

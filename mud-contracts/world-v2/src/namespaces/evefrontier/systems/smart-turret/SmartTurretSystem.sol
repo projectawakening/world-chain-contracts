@@ -35,11 +35,6 @@ contract SmartTurretSystem is SmartObjectFramework {
     uint256 networkNodeId
   ) public context access(params.smartObjectId) {
     params.assemblyType = SMART_TURRET;
-
-    uint256 classId = ObjectIdLib.calculateSingletonId(Tenant.get(), params.entityRecordParams.typeId);
-
-    entitySystem.instantiate(classId, params.smartObjectId, params.owner);
-
     deployableSystem.createAndAnchor(params, networkNodeId);
   }
 
@@ -145,10 +140,6 @@ contract SmartTurretSystem is SmartObjectFramework {
     }
 
     return updatedPriorityQueue;
-  }
-
-  function getSmartTurretClassId() public view returns (uint256) {
-    return Initialize.get(smartTurretSystem.toResourceId());
   }
 
   function getWorld() internal view returns (IWorldWithContext) {

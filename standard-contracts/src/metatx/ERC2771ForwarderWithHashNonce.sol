@@ -9,6 +9,7 @@ import { ERC2771Context } from "openzeppelin-contracts/metatx/ERC2771Context.sol
 import { ECDSA } from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 import { EIP712 } from "openzeppelin-contracts/utils/cryptography/EIP712.sol";
 import { Address } from "openzeppelin-contracts/utils/Address.sol";
+import { Errors } from "openzeppelin-contracts/utils/Errors.sol";
 import { HashNonce } from "./HashNonce.sol";
 import { IForwarderSystem } from "@eveworld/world-core/src/codegen/world/IForwarderSystem.sol";
 
@@ -328,7 +329,7 @@ contract ERC2771Forwarder is EIP712, HashNonce {
       }
 
       if (address(this).balance < request.value) {
-        revert Address.AddressInsufficientBalance(address(this));
+        revert Errors.InsufficientBalance(address(this).balance, request.value);
       }
       (callSuccess, returndata) = target.call{ value: value }(data);
 

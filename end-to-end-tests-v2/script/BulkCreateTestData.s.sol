@@ -109,7 +109,7 @@ contract BulkCreateTestData is Script {
 
     for (uint256 i = 0; i < count; i++) {
       uint256 characterItemId = CHARACTER_BASE_ITEM_ID + i;
-      uint256 characterSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, characterItemId);
+      uint256 characterSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, characterItemId);
 
       EntityRecordParams memory entityRecordParams = EntityRecordParams({
         tenantId: tenantId,
@@ -146,7 +146,7 @@ contract BulkCreateTestData is Script {
 
     for (uint256 i = 0; i < count; i++) {
       uint256 ssuItemId = SSU_BASE_ITEM_ID + i;
-      uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+      uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
 
       LocationData memory locationParams = LocationData({ solarSystemId: 1, x: 1001 + i, y: 1001 + i, z: 1001 + i });
 
@@ -182,7 +182,7 @@ contract BulkCreateTestData is Script {
 
     for (uint256 i = 0; i < count; i++) {
       uint256 turretItemId = TURRET_BASE_ITEM_ID + i;
-      uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
+      uint256 turretSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, turretItemId);
 
       LocationData memory locationData = LocationData({ solarSystemId: 1, x: 1001 + i, y: 1001 + i, z: 1001 + i });
 
@@ -218,8 +218,8 @@ contract BulkCreateTestData is Script {
       uint256 sourceGateItemId = GATE_BASE_ITEM_ID + i;
       uint256 destinationGateItemId = GATE_BASE_ITEM_ID + i + 1;
 
-      uint256 sourceGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, sourceGateItemId);
-      uint256 destinationGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, destinationGateItemId);
+      uint256 sourceGateSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, sourceGateItemId);
+      uint256 destinationGateSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, destinationGateItemId);
 
       LocationData memory sourceGateLocation = LocationData({
         solarSystemId: 1,
@@ -280,12 +280,12 @@ contract BulkCreateTestData is Script {
 
     // Bring SSU online
     uint256 ssuItemId = SSU_BASE_ITEM_ID + index;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
     deployableSystem.bringOnline(ssuSmartObjectId);
 
     // Bring Smart Turret online
     uint256 turretItemId = TURRET_BASE_ITEM_ID + index;
-    uint256 turretSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, turretItemId);
+    uint256 turretSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, turretItemId);
     deployableSystem.bringOnline(turretSmartObjectId);
 
     // Bring Smart Gates online (if applicable)
@@ -293,8 +293,8 @@ contract BulkCreateTestData is Script {
       uint256 sourceGateItemId = GATE_BASE_ITEM_ID + index;
       uint256 destinationGateItemId = GATE_BASE_ITEM_ID + index + 1;
 
-      sourceGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, sourceGateItemId);
-      destinationGateSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, destinationGateItemId);
+      sourceGateSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, sourceGateItemId);
+      destinationGateSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, destinationGateItemId);
 
       // Bring both gates online since they have the same owner
       deployableSystem.bringOnline(sourceGateSmartObjectId);
@@ -333,11 +333,11 @@ contract BulkCreateTestData is Script {
     IWorldWithContext world = IWorldWithContext(StoreSwitch.getStoreAddress());
 
     uint256 ssuItemId = SSU_BASE_ITEM_ID + index;
-    uint256 ssuSmartObjectId = ObjectIdLib.calculateSingletonId(tenantId, ssuItemId);
+    uint256 ssuSmartObjectId = ObjectIdLib.calculateObjectId(tenantId, ssuItemId);
 
     CreateInventoryItemParams[] memory items = new CreateInventoryItemParams[](1);
 
-    uint256 nonSingletonObjectId = ObjectIdLib.calculateNonSingletonId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
+    uint256 nonSingletonObjectId = ObjectIdLib.calculateObjectId(tenantId, NON_SINGLETON_ITEM_TYPE_ID);
 
     // Add as non-singleton item
     items[0] = CreateInventoryItemParams({

@@ -5,28 +5,32 @@ ENV IMAGE_TAG=${IMAGE_TAG}
 
 # Install basic dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    ca-certificates \
-    jq \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+  git \
+  curl \
+  ca-certificates \
+  jq \
+  build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 18.x
 RUN curl -fsSL https://nodejs.org/dist/v18.16.0/node-v18.16.0-linux-x64.tar.gz | \
-    tar -xz -C /usr/local --strip-components=1
+  tar -xz -C /usr/local --strip-components=1
 
 # Install pnpm
 RUN npm install -g pnpm@8.9.2
 
-# Install Foundry
+# Install Foundry pinned to a version
 RUN curl -L https://foundry.paradigm.xyz | bash && \
-    export PATH="$PATH:$HOME/.foundry/bin" && \
-    echo 'export PATH="$PATH:$HOME/.foundry/bin"' >> $HOME/.bashrc && \
-    $HOME/.foundry/bin/foundryup
+  /root/.foundry/bin/foundryup --version 1.1.0 && \
+  /root/.foundry/bin/foundryup && \
+  ln -s /root/.foundry/bin/forge /usr/local/bin/forge && \
+  ln -s /root/.foundry/bin/cast /usr/local/bin/cast && \
+  ln -s /root/.foundry/bin/anvil /usr/local/bin/anvil
 
 # Add Foundry to PATH
 ENV PATH="$PATH:/root/.foundry/bin"
+
+RUN /root/.foundry/bin/forge --version
 
 # Set up working directory
 WORKDIR /monorepo
