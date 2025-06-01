@@ -28,7 +28,7 @@
     "@latticexyz/schema-type": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/store": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/world": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@latticexyz/world-modules": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
+    "@latticexyz/world-modules": "2.2.21",
     "@latticexyz/gas-report": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@eveworld/smart-object-framework-v2": "link:../smart-object-framework-v2"
   },
