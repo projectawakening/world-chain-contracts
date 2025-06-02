@@ -44,6 +44,9 @@ RUN CI=1 pnpm install --frozen-lockfile
 # Building all other modules
 RUN pnpm nx run-many -t build
 
+# Combine ABIs only for v2 contracts
+RUN pnpm combine-abis
+
 # Make entrypoint script executable
 RUN chmod +x ./build/package/entrypoint.sh
 
