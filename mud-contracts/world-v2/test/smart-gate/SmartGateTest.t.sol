@@ -413,6 +413,37 @@ contract SmartGateTest is MudTest {
     vm.stopPrank();
   }
 
+  function test_unlinkAndLinkGates() public {
+    vm.pauseGasMetering();
+    test_linkGates();
+
+    assertEq(OwnershipByObject.get(sourceGateId), alice);
+    assertEq(OwnershipByObject.get(destinationGateId), alice);
+
+    vm.startPrank(alice, deployer);
+    smartGateSystem.unlinkGates(sourceGateId, destinationGateId);
+    vm.stopPrank();
+
+    bool isLinked = smartGateSystem.isGateLinked(sourceGateId, destinationGateId);
+    assert(!isLinked);
+
+    isLinked = smartGateSystem.isGateLinked(destinationGateId, sourceGateId);
+    assert(!isLinked);
+
+    vm.startPrank(alice, deployer);
+    smartGateSystem.linkGates(sourceGateId, destinationGateId);
+    vm.stopPrank();
+
+    isLinked = smartGateSystem.isGateLinked(sourceGateId, destinationGateId);
+    assert(isLinked);
+
+    isLinked = smartGateSystem.isGateLinked(destinationGateId, sourceGateId);
+    assert(isLinked);
+
+    vm.stopPrank();
+    vm.resumeGasMetering();
+  }
+
   function test_canJump() public {
     uint256 characterId = 1;
     test_linkGates();

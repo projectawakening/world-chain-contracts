@@ -237,7 +237,7 @@ contract SmartGateSystem is SmartObjectFramework {
     uint256 destinationGateId;
     //delete the source gate record
     SmartGateLinkData memory linkData = SmartGateLink.get(sourceGateId);
-    if (linkData.isLinked) {
+    if (!linkData.isLinked) {
       destinationGateId = linkData.destinationGateId;
 
       SmartGateLink.deleteRecord(sourceGateId);
