@@ -900,6 +900,24 @@
   },
   {
     "type": "function",
+    "name": "evefrontier__connectAssemblies",
+    "inputs": [
+      {
+        "name": "networkNodeId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "assemblyIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "evefrontier__connectAssembly",
     "inputs": [
       {
