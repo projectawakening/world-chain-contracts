@@ -340,12 +340,62 @@ contract FuelTest is MudTest {
     assertTrue(FuelConsumptionState.getBurnState(smartObjectId));
     assertEq(Fuel.getFuelAmount(smartObjectId), 2); // Should have consumed 2 more units
 
+    //deposit fuel of the same type should work
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 1);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+
+    //deposit fuel of different type
+    fuelSystem.configureFuelEfficiency(fuelSmartObjectId2, fuelEntityRecordParams2, 100);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        FuelSystem.Fuel_TypeMismatch.selector,
+        smartObjectId,
+        fuelSmartObjectId,
+        fuelSmartObjectId2
+      )
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
+
     // Stop burn
     fuelSystem.stopBurn(smartObjectId);
 
     // Verify burn stopped
     assertFalse(FuelConsumptionState.getBurnState(smartObjectId));
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
+
+    //deposit of the same fuel type should work after stop burn
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 1);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+
+    fuelSystem.startBurn(smartObjectId);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+
+    // Advance time by 3 hours
+    vm.warp(block.timestamp + (3600 * 3) + 100);
+
+    fuelSystem.updateFuel(smartObjectId);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
+    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 100);
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
+
+    //deposit fuel of different type during last unit should fail
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_ActiveFuelCycleExists.selector, smartObjectId, fuelSmartObjectId2)
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
+
+    //Try to deposit fuel of different type after burn stopped, but previous cycle is not completed
+    fuelSystem.stopBurn(smartObjectId);
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_ActiveFuelCycleExists.selector, smartObjectId, fuelSmartObjectId2)
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
+
+    //same type should work
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 1);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
+
+    vm.stopPrank();
   }
 
   function test_fuelEfficiencyImpact() public {

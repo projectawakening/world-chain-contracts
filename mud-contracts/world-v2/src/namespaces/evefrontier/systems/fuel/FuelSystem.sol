@@ -44,7 +44,7 @@ contract FuelSystem is SmartObjectFramework {
   error Fuel_BurnNotActive(uint256 smartObjectId);
   error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelSmartObjectId, uint256 newFuelSmartObjectId);
   error Fuel_InvalidFuelSmartObjectId(uint256 smartObjectId, uint256 fuelSmartObjectId);
-  error Fuel_ActiveFuelCycleExists(uint256 smartObjectId);
+  error Fuel_ActiveFuelCycleExists(uint256 smartObjectId, uint256 fuelSmartObjectId);
 
   /**
    * @dev sets fuel parameters for a Network Node
@@ -124,15 +124,20 @@ contract FuelSystem is SmartObjectFramework {
       revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 1, type(uint256).max);
     }
 
-    if (FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId) != 0) {
-      revert Fuel_ActiveFuelCycleExists(smartObjectId);
-    }
-
-    //cannot deposit fuel of different type unless the fuelAmount is 0
+    //cannot deposit fuel of different type unless the current cycle is not active or the previous cycle is not completed
     if (
       Fuel.getFuelSmartObjectId(smartObjectId) != 0 && (Fuel.getFuelSmartObjectId(smartObjectId) != fuelSmartObjectId)
     ) {
-      revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
+      if (Fuel.getFuelAmount(smartObjectId) != 0) {
+        revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
+      }
+
+      if (
+        FuelConsumptionState.getElapsedTime(smartObjectId) != 0 ||
+        FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId) != 0
+      ) {
+        revert Fuel_ActiveFuelCycleExists(smartObjectId, fuelSmartObjectId);
+      }
     }
 
     uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
