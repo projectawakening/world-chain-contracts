@@ -29,6 +29,8 @@ interface INetworkNodeSystem {
 
   function evefrontier__connectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
 
+  function evefrontier__connectAssemblies(uint256 networkNodeId, uint256[] memory assemblyIds) external;
+
   function evefrontier__disconnectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
 
   function evefrontier__disconnectNetworkNode(uint256 networkNodeId) external;
