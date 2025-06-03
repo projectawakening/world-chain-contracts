@@ -571,8 +571,27 @@ contract NetworkNodeEnergyTest is MudTest {
     );
 
     // Bring online and check the fuel consumption
-    // fuelSystem.depositFuel(newNetworkNodeId, fuelSmartObjectId, 10);
-    // deployableSystem.bringOnline(newNetworkNodeId);
+    fuelSystem.depositFuel(newNetworkNodeId, fuelSmartObjectId, 10);
+    deployableSystem.bringOnline(newNetworkNodeId);
+    deployableSystem.bringOnline(smartStorageId);
+
+    assertEq(NetworkNode.getTotalReservedEnergy(newNetworkNodeId), 40, "Total reserved energy should be 40 GJ");
+    assertEq(
+      uint8(DeployableState.getCurrentState(newNetworkNodeId)),
+      uint8(State.ONLINE),
+      "Network Node should be online"
+    );
+    assertEq(
+      uint8(DeployableState.getCurrentState(smartStorageId)),
+      uint8(State.ONLINE),
+      "Smart Storage Unit should be online"
+    );
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.UNANCHORED),
+      "Network Node should be unanchored"
+    );
+
     vm.stopPrank();
     vm.resumeGasMetering();
   }
