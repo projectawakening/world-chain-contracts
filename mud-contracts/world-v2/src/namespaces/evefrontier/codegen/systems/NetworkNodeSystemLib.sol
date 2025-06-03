@@ -65,6 +65,10 @@ library NetworkNodeSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).connectAssembly(networkNodeId, assemblyId);
   }
 
+  function connectAssemblies(NetworkNodeSystemType self, uint256 networkNodeId, uint256[] memory assemblyIds) internal {
+    return CallWrapper(self.toResourceId(), address(0)).connectAssemblies(networkNodeId, assemblyIds);
+  }
+
   function disconnectAssembly(NetworkNodeSystemType self, uint256 networkNodeId, uint256 assemblyId) internal {
     return CallWrapper(self.toResourceId(), address(0)).disconnectAssembly(networkNodeId, assemblyId);
   }
@@ -123,6 +127,19 @@ library NetworkNodeSystemLib {
     bytes memory systemCall = abi.encodeCall(
       _connectAssembly_uint256_uint256.connectAssembly,
       (networkNodeId, assemblyId)
+    );
+    self.from == address(0)
+      ? _world().call(self.systemId, systemCall)
+      : _world().callFrom(self.from, self.systemId, systemCall);
+  }
+
+  function connectAssemblies(CallWrapper memory self, uint256 networkNodeId, uint256[] memory assemblyIds) internal {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert NetworkNodeSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(
+      _connectAssemblies_uint256_uint256Array.connectAssemblies,
+      (networkNodeId, assemblyIds)
     );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
@@ -251,6 +268,18 @@ library NetworkNodeSystemLib {
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
+  function connectAssemblies(
+    RootCallWrapper memory self,
+    uint256 networkNodeId,
+    uint256[] memory assemblyIds
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _connectAssemblies_uint256_uint256Array.connectAssemblies,
+      (networkNodeId, assemblyIds)
+    );
+    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
+  }
+
   function disconnectAssembly(RootCallWrapper memory self, uint256 networkNodeId, uint256 assemblyId) internal {
     bytes memory systemCall = abi.encodeCall(
       _disconnectAssembly_uint256_uint256.disconnectAssembly,
@@ -357,6 +386,10 @@ interface _createAndAnchorNetworkNode_CreateAndAnchorParams_FuelParams_uint256_u
 
 interface _connectAssembly_uint256_uint256 {
   function connectAssembly(uint256 networkNodeId, uint256 assemblyId) external;
+}
+
+interface _connectAssemblies_uint256_uint256Array {
+  function connectAssemblies(uint256 networkNodeId, uint256[] memory assemblyIds) external;
 }
 
 interface _disconnectAssembly_uint256_uint256 {

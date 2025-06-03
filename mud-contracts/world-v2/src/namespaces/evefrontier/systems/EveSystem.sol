@@ -305,7 +305,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       true
     );
 
-    bytes4[8] memory networkNodeOnlyAdminOrClassScopedSelectors = [
+    bytes4[9] memory networkNodeOnlyAdminOrClassScopedSelectors = [
       NetworkNodeSystem.connectAssembly.selector,
       NetworkNodeSystem.disconnectAssembly.selector,
       NetworkNodeSystem.disconnectNetworkNode.selector,
@@ -313,7 +313,8 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       NetworkNodeSystem.reserveNetworkNodeEnergy.selector,
       NetworkNodeSystem.releaseAssemblyEnergy.selector,
       NetworkNodeSystem.releaseNetworkNodeEnergy.selector,
-      NetworkNodeSystem.updateEnergyHistory.selector
+      NetworkNodeSystem.updateEnergyHistory.selector,
+      NetworkNodeSystem.connectAssemblies.selector
     ];
 
     for (uint256 i = 0; i < networkNodeOnlyAdminOrClassScopedSelectors.length; i++) {

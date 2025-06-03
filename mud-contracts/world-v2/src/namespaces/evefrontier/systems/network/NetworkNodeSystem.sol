@@ -101,6 +101,41 @@ contract NetworkNodeSystem is SmartObjectFramework {
   }
 
   /**
+   * @dev Connects a assembly to a Network Node
+   * @param networkNodeId The ID of the Network Node
+   * @param assemblyIds The IDs of the assemblies to connect.Note: This function can only process arrays of length upto 20.
+   */
+  function connectAssemblies(
+    uint256 networkNodeId,
+    uint256[] memory assemblyIds
+  ) public context access(networkNodeId) scope(networkNodeId) {
+    if (!NetworkNode.getExists(networkNodeId)) {
+      revert NetworkNode_DoesNotExist(networkNodeId);
+    }
+
+    for (uint256 i = 0; i < assemblyIds.length; i++) {
+      uint256 assemblyId = assemblyIds[i];
+
+      if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+        // Record the connection
+        NetworkNodeAssemblyLink.set(
+          networkNodeId,
+          assemblyId,
+          i, // Index of the assembly in the connectedAssemblies array
+          true, // isConnected
+          block.timestamp // connectedAt
+        );
+      }
+
+      // Record for reverse lookup
+      NetworkNodeByAssembly.set(assemblyId, networkNodeId);
+    }
+
+    //Add assemblyIds to the list of connected assemblies
+    NetworkNode.setConnectedAssemblies(networkNodeId, assemblyIds);
+  }
+
+  /**
    * @dev Disconnects a assembly from a Network Node
    * @param networkNodeId The ID of the Network Node
    * @param assemblyId The ID of the assembly to disconnect
