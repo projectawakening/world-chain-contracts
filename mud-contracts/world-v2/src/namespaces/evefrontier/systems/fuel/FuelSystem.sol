@@ -356,10 +356,8 @@ contract FuelSystem is SmartObjectFramework {
     fuelAmount -= actualUnitsToConsume;
     Fuel.setFuelAmount(smartObjectId, fuelAmount);
 
-    // Calculate new burn timing
-    uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-    uint256 timeUsedForConsumption = actualUnitsToConsume * actualBurnRate;
-    uint256 newBurnStartTime = burnStartTime + timeUsedForConsumption;
+    // Calculate new burn timing if its skips update cycles
+    uint256 newBurnStartTime = block.timestamp - elapsedTime;
 
     // Handle state updates based on remaining fuel
     if (fuelAmount == 0) {
