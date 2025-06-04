@@ -133,8 +133,9 @@ contract FuelSystem is SmartObjectFramework {
       }
 
       if (
-        FuelConsumptionState.getElapsedTime(smartObjectId) != 0 ||
-        FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId) != 0
+        ((FuelConsumptionState.getBurnState(smartObjectId) && Fuel.getFuelAmount(smartObjectId) == 0)) ||
+        (!FuelConsumptionState.getBurnState(smartObjectId) &&
+          FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId) != 0)
       ) {
         revert Fuel_ActiveFuelCycleExists(smartObjectId, fuelSmartObjectId);
       }
