@@ -2,7 +2,6 @@
 pragma solidity >=0.8.24;
 
 import "forge-std/Test.sol";
-import "forge-std/console.sol";
 import { MudTest } from "@latticexyz/world/test/MudTest.t.sol";
 import { ResourceId } from "@latticexyz/world/src/WorldResourceId.sol";
 import { WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
@@ -527,6 +526,7 @@ contract FuelTest is MudTest {
     fuelSystem.startBurn(smartObjectId); //10:00
 
     assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
 
     // Advance 15 minutes and stop burn
@@ -542,6 +542,7 @@ contract FuelTest is MudTest {
     fuelSystem.startBurn(smartObjectId);
 
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
     assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
 
@@ -550,12 +551,24 @@ contract FuelTest is MudTest {
     fuelSystem.updateFuel(smartObjectId);
 
     assertEq(Fuel.getFuelAmount(smartObjectId), 4);
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp - 900);
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 1800);
 
     vm.warp(block.timestamp + 1900); //11:16
+
+    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 900);
+    (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualBurnRate, uint256 fuelAmount) = fuelSystem
+      .getCurrentFuelConsumptionStatus(smartObjectId);
+    assertEq(elapsedTime, 100);
+    assertEq(unitsToConsume, 1);
+    assertEq(actualBurnRate, 3600);
+    assertEq(fuelAmount, 4);
+
     fuelSystem.updateFuel(smartObjectId);
 
     assertEq(Fuel.getFuelAmount(smartObjectId), 3);
+    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp - 100);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 100);
 
     vm.stopPrank();

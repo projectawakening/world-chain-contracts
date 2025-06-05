@@ -26,3 +26,6 @@
 # Ignore logs
 **/logs/**
 docs/
+
+# Ignore vscode settings
+.vscode/
