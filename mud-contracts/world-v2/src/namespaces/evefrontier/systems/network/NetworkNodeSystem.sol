@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { DeployableState, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByAssembly, NetworkNodeEnergyHistory } from "../../codegen/index.sol";
+import { SmartAssembly, DeployableState, NetworkNode, NetworkNodeData, NetworkNodeAssemblyLink, AssemblyEnergyConfig, Initialize, EntityRecord, NetworkNodeByAssembly, NetworkNodeEnergyHistory } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { deployableSystem } from "../../codegen/systems/DeployableSystemLib.sol";
@@ -31,6 +31,7 @@ contract NetworkNodeSystem is SmartObjectFramework {
   error NetworkNode_AssemblyNotConnected(uint256 networkNodeId, uint256 assemblyId);
   error NetworkNode_AssemblyAlreadyConnected(uint256 networkNodeId, uint256 assemblyId);
   error NetworkNode_NotConfigured(uint256 smartObjectId);
+  error NetworkNode_InvalidAssemblyType(uint256 networkNodeId, uint256 assemblyId);
 
   /**
    * @notice Create and anchor a Network Node
@@ -78,26 +79,32 @@ contract NetworkNodeSystem is SmartObjectFramework {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
-    if (NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+    if (NetworkNodeByAssembly.get(assemblyId) != 0) {
       revert NetworkNode_AssemblyAlreadyConnected(networkNodeId, assemblyId);
+    }
+
+    if (keccak256(abi.encodePacked(SmartAssembly.get(assemblyId))) == keccak256(abi.encodePacked(NETWORK_NODE))) {
+      revert NetworkNode_InvalidAssemblyType(networkNodeId, assemblyId);
     }
 
     uint256 connectedAssemblyLength = NetworkNode.getConnectedAssemblies(networkNodeId).length;
 
-    // Record the connection
-    NetworkNodeAssemblyLink.set(
-      networkNodeId,
-      assemblyId,
-      connectedAssemblyLength, // Index of the assembly in the connectedAssemblies array
-      true, // isConnected
-      block.timestamp // connectedAt
-    );
+    if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+      // Record the connection
+      NetworkNodeAssemblyLink.set(
+        networkNodeId,
+        assemblyId,
+        connectedAssemblyLength, // Index of the assembly in the connectedAssemblies array
+        true, // isConnected
+        block.timestamp // connectedAt
+      );
 
-    // Record for reverse lookup
-    NetworkNodeByAssembly.set(assemblyId, networkNodeId);
+      // Record for reverse lookup
+      NetworkNodeByAssembly.set(assemblyId, networkNodeId);
 
-    //Add assemblyId to the list of connected assemblies
-    NetworkNode.pushConnectedAssemblies(networkNodeId, assemblyId);
+      //Add assemblyId to the list of connected assemblies
+      NetworkNode.pushConnectedAssemblies(networkNodeId, assemblyId);
+    }
   }
 
   /**
@@ -113,26 +120,30 @@ contract NetworkNodeSystem is SmartObjectFramework {
       revert NetworkNode_DoesNotExist(networkNodeId);
     }
 
+    uint256 connectedAssemblyLength = NetworkNode.getConnectedAssemblies(networkNodeId).length;
+
     for (uint256 i = 0; i < assemblyIds.length; i++) {
       uint256 assemblyId = assemblyIds[i];
 
-      if (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) {
+      if (
+        (NetworkNodeByAssembly.get(assemblyId) == 0) &&
+        (!NetworkNodeAssemblyLink.getIsConnected(networkNodeId, assemblyId)) &&
+        (keccak256(abi.encodePacked(SmartAssembly.get(assemblyId))) != keccak256(abi.encodePacked(NETWORK_NODE)))
+      ) {
         // Record the connection
         NetworkNodeAssemblyLink.set(
           networkNodeId,
           assemblyId,
-          i, // Index of the assembly in the connectedAssemblies array
+          connectedAssemblyLength + i, // Index of the assembly in the connectedAssemblies array
           true, // isConnected
           block.timestamp // connectedAt
         );
+
+        // Record for reverse lookup
+        NetworkNodeByAssembly.set(assemblyId, networkNodeId);
+        NetworkNode.pushConnectedAssemblies(networkNodeId, assemblyId);
       }
-
-      // Record for reverse lookup
-      NetworkNodeByAssembly.set(assemblyId, networkNodeId);
     }
-
-    //Add assemblyIds to the list of connected assemblies
-    NetworkNode.setConnectedAssemblies(networkNodeId, assemblyIds);
   }
 
   /**

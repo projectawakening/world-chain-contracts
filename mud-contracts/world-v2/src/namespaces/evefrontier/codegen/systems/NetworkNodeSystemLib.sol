@@ -44,6 +44,7 @@ library NetworkNodeSystemLib {
   error NetworkNode_AssemblyNotConnected(uint256 networkNodeId, uint256 assemblyId);
   error NetworkNode_AssemblyAlreadyConnected(uint256 networkNodeId, uint256 assemblyId);
   error NetworkNode_NotConfigured(uint256 smartObjectId);
+  error NetworkNode_InvalidAssemblyType(uint256 networkNodeId, uint256 assemblyId);
 
   function createAndAnchorNetworkNode(
     NetworkNodeSystemType self,

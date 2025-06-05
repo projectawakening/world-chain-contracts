@@ -472,7 +472,6 @@ contract NetworkNodeEnergyTest is MudTest {
     vm.pauseGasMetering();
     vm.startPrank(deployer, deployer);
 
-    uint256 oldNetworkNodeId = networkNodeId;
     uint256 newNetworkNodeId = _calculateObjectId(
       EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
       NETWORK_NODE_ID + 1,
@@ -592,6 +591,101 @@ contract NetworkNodeEnergyTest is MudTest {
       "Network Node should be unanchored"
     );
 
+    vm.stopPrank();
+    vm.resumeGasMetering();
+  }
+
+  function test_invalidOrphansConnection() public {
+    vm.pauseGasMetering();
+    vm.startPrank(deployer, deployer);
+
+    uint256 newNetworkNodeId = _calculateObjectId(
+      EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
+      NETWORK_NODE_ID + 1,
+      true
+    );
+    networkNodeSystem.createAndAnchorNetworkNode(
+      CreateAndAnchorParams({
+        smartObjectId: newNetworkNodeId,
+        assemblyType: "NWN",
+        entityRecordParams: EntityRecordParams({
+          tenantId: tenantId,
+          typeId: EntityRecord.getTypeId(networkNodeSystem.getNetworkNodeClassId()),
+          itemId: NETWORK_NODE_ID + 1,
+          volume: 100
+        }),
+        owner: alice,
+        locationData: LocationData({ solarSystemId: 1, x: 1000, y: 1001, z: 1002 })
+      }),
+      fuelParams,
+      90,
+      90
+    );
+
+    // Setup Network Node and Smart Storage Unit
+    _setupNetworkNode(90, 90);
+    fuelSystem.depositFuel(networkNodeId, fuelSmartObjectId, 10);
+    deployableSystem.bringOnline(networkNodeId);
+
+    _setupSmartStorageUnit(smartStorageId);
+    deployableSystem.bringOnline(smartStorageId);
+
+    assertEq(NetworkNode.getConnectedAssemblies(networkNodeId).length, 1, "Network node should have 1 assembly");
+    assertEq(NetworkNode.getConnectedAssemblies(newNetworkNodeId).length, 0, "New network node should have 0 assembly");
+
+    //Skip the connection if its already connected
+    uint256[] memory assemblyIds = new uint256[](1);
+    assemblyIds[0] = smartStorageId;
+    networkNodeSystem.connectAssemblies(newNetworkNodeId, assemblyIds);
+
+    assertEq(NetworkNode.getConnectedAssemblies(newNetworkNodeId).length, 0, "New network node should have 0 assembly");
+
+    //Skip the connection if its a network node
+    assemblyIds[0] = networkNodeId;
+    networkNodeSystem.connectAssemblies(newNetworkNodeId, assemblyIds);
+    assertEq(NetworkNode.getConnectedAssemblies(newNetworkNodeId).length, 0, "New network node should have 0 assembly");
+
+    // Unanchor the Network Node (using deployer who is the owner)
+    deployableSystem.unanchor(networkNodeId);
+    assertEq(NetworkNode.getConnectedAssemblies(networkNodeId).length, 0, "Network node should have 0 assembly");
+
+    // Verify Network Node is unanchored and all assemblies are offline
+    assertEq(
+      uint8(DeployableState.getCurrentState(networkNodeId)),
+      uint8(State.UNANCHORED),
+      "Network Node should be unanchored"
+    );
+
+    //Set up new network node and connect the orphaned assemblies, skip if its network node
+    assemblyIds = new uint256[](2);
+    assemblyIds[0] = smartStorageId;
+    assemblyIds[1] = networkNodeId;
+
+    networkNodeSystem.connectAssemblies(newNetworkNodeId, assemblyIds);
+
+    // Verify the assemblies are connected to the new network node
+    assertEq(NetworkNode.getConnectedAssemblies(newNetworkNodeId).length, 1, "New network node should have 1 assembly");
+    assertEq(
+      NetworkNodeAssemblyLink.getIsConnected(newNetworkNodeId, smartStorageId),
+      true,
+      "Smart Storage Unit should be connected to the new network node"
+    );
+
+    //Work as expected
+    fuelSystem.depositFuel(newNetworkNodeId, fuelSmartObjectId, 10);
+    deployableSystem.bringOnline(newNetworkNodeId);
+    deployableSystem.bringOnline(smartStorageId);
+
+    assertEq(
+      uint8(DeployableState.getCurrentState(newNetworkNodeId)),
+      uint8(State.ONLINE),
+      "Network Node should be online"
+    );
+    assertEq(
+      uint8(DeployableState.getCurrentState(smartStorageId)),
+      uint8(State.ONLINE),
+      "Smart Storage Unit should be online"
+    );
     vm.stopPrank();
     vm.resumeGasMetering();
   }
