@@ -138,6 +138,7 @@ contract FuelSystem is SmartObjectFramework {
       //reset the time only if it was burning
       if (FuelConsumptionState.getBurnState(smartObjectId)) {
         FuelConsumptionState.setBurnStartTime(smartObjectId, block.timestamp);
+        Fuel.setFuelAmount(smartObjectId, fuelAmount - 1);
       }
     }
 
