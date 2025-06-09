@@ -131,11 +131,12 @@ contract FuelSystem is SmartObjectFramework {
       }
 
       if (Fuel.getFuelAmount(smartObjectId) == 0) {
-        FuelConsumptionState.setPreviousCycleElapsedTime(
-          smartObjectId,
-          FuelConsumptionState.getElapsedTime(smartObjectId)
-        );
+        FuelConsumptionState.setPreviousCycleElapsedTime(smartObjectId, 0);
         FuelConsumptionState.setElapsedTime(smartObjectId, 0);
+      }
+
+      //reset the time only if it was burning
+      if (FuelConsumptionState.getBurnState(smartObjectId)) {
         FuelConsumptionState.setBurnStartTime(smartObjectId, block.timestamp);
       }
     }
@@ -206,20 +207,23 @@ contract FuelSystem is SmartObjectFramework {
    */
   function stopBurn(uint256 smartObjectId) public context access(smartObjectId) scope(smartObjectId) {
     bool burnState = FuelConsumptionState.getBurnState(smartObjectId);
+    uint256 currentElapsedTime = 0;
     if (burnState) {
-      // Keep elapsedTime for fuel consumption calculations
-      uint256 burnStartTime = FuelConsumptionState.getBurnStartTime(smartObjectId);
-      uint256 elapsedTime = block.timestamp > burnStartTime ? block.timestamp - burnStartTime : 0;
+      //if fuel is 0 then reset the previous cycle elapsed time to 0
+      if (Fuel.getFuelAmount(smartObjectId) > 0) {
+        (uint256 elapsedTime, uint256 unitsToConsume, , uint256 fuelAmount) = getCurrentFuelConsumptionStatus(
+          smartObjectId
+        );
 
-      uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
-      uint256 currentElapsedTime = previousElapsedTime + elapsedTime;
-
-      // If the previous cycle is equal to the burn rate, then it means its completed a full cycle, so reset the previous cycle elapsed time to 0
-      if (currentElapsedTime >= Fuel.getFuelBurnRateInSeconds(smartObjectId)) {
-        currentElapsedTime = 0;
+        if (unitsToConsume == 0) {
+          uint256 previousElapsedTime = FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId);
+          currentElapsedTime = previousElapsedTime + elapsedTime;
+        } else {
+          uint256 actualUnitsToConsume = unitsToConsume > fuelAmount ? fuelAmount : unitsToConsume;
+          Fuel.setFuelAmount(smartObjectId, fuelAmount - actualUnitsToConsume);
+        }
       }
 
-      // Preserve elapsed time, just set burn state to false
       FuelConsumptionState.set(smartObjectId, 0, false, currentElapsedTime, 0);
       Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
     }
