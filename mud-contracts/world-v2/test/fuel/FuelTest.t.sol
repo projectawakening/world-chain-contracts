@@ -555,7 +555,7 @@ contract FuelTest is MudTest {
 
     //continue to burn with the new fuel
     fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
     assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
@@ -564,7 +564,7 @@ contract FuelTest is MudTest {
     );
     assertEq(actualBurnRate, 1800);
 
-    //Deposit Different Fuel type when its offline but remainig elapsed time in last cycle, should suceed and discard the remaining
+    // Deposit Different Fuel type when its offline but remainig elapsed time in last cycle, should suceed and discard the remaining
     vm.warp(block.timestamp + 3600);
     fuelSystem.stopBurn(smartObjectId);
     (elapsedTime, unitsToConsume, actualBurnRate, fuelAmount) = fuelSystem.getCurrentFuelConsumptionStatus(
