@@ -377,6 +377,23 @@ contract FuelTest is MudTest {
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 100);
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
 
+    //deposit fuel of different type during last unit should fail
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_ActiveFuelCycleExists.selector, smartObjectId, fuelSmartObjectId2)
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
+
+    //Try to deposit fuel of different type after burn stopped, but previous cycle is not completed
+    fuelSystem.stopBurn(smartObjectId);
+    vm.expectRevert(
+      abi.encodeWithSelector(FuelSystem.Fuel_ActiveFuelCycleExists.selector, smartObjectId, fuelSmartObjectId2)
+    );
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
+
+    //same type should work
+    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 1);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
+
     vm.stopPrank();
   }
 
@@ -496,119 +513,6 @@ contract FuelTest is MudTest {
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), false, "After updateFuel, burn state should be false");
 
     vm.stopPrank();
-  }
-
-  function test_DepositDifferentFuelType() public {
-    vm.startPrank(deployer);
-    vm.pauseGasMetering();
-
-    //Deposit Different Fuel type when its burning and fuel left, should revert
-    fuelSystem.configureFuelEfficiency(fuelSmartObjectId, fuelEntityRecordParams, 100);
-    fuelSystem.configureFuelEfficiency(fuelSmartObjectId2, fuelEntityRecordParams2, 50);
-    fuelSystem.configureFuelParameters(
-      smartObjectId,
-      FuelParams({ fuelMaxCapacity: 10000, fuelBurnRateInSeconds: 3600 })
-    );
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 2);
-    fuelSystem.startBurn(smartObjectId);
-
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
-    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
-
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        FuelSystem.Fuel_TypeMismatch.selector,
-        smartObjectId,
-        fuelSmartObjectId,
-        fuelSmartObjectId2
-      )
-    );
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
-
-    //Deposit Different Fuel type when its stopped and fuel left, should revert
-    vm.warp(block.timestamp + 3600);
-    fuelSystem.stopBurn(smartObjectId);
-
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
-    (uint256 elapsedTime, uint256 unitsToConsume, uint256 actualBurnRate, uint256 fuelAmount) = fuelSystem
-      .getCurrentFuelConsumptionStatus(smartObjectId);
-    assertEq(actualBurnRate, 3600);
-
-    vm.expectRevert(
-      abi.encodeWithSelector(
-        FuelSystem.Fuel_TypeMismatch.selector,
-        smartObjectId,
-        fuelSmartObjectId,
-        fuelSmartObjectId2
-      )
-    );
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
-
-    //Deposit Different Fuel type when the last unit is burning, should suceed and discard the remaining
-    fuelSystem.startBurn(smartObjectId);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
-    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
-    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
-
-    //continue to burn with the new fuel
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
-    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
-    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
-    (elapsedTime, unitsToConsume, actualBurnRate, fuelAmount) = fuelSystem.getCurrentFuelConsumptionStatus(
-      smartObjectId
-    );
-    assertEq(actualBurnRate, 1800);
-
-    //Deposit Different Fuel type when its offline but remainig elapsed time in last cycle, should suceed and discard the remaining
-    vm.warp(block.timestamp + 3600);
-    fuelSystem.stopBurn(smartObjectId);
-    (elapsedTime, unitsToConsume, actualBurnRate, fuelAmount) = fuelSystem.getCurrentFuelConsumptionStatus(
-      smartObjectId
-    );
-    assertEq(elapsedTime, 1800);
-    assertEq(fuelAmount, 0);
-    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
-
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId, 1);
-
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
-    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);
-
-    //use up all the fuel
-    vm.warp(block.timestamp + 3600);
-    fuelSystem.updateFuel(smartObjectId);
-
-    //does not do anything
-    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
-    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);
-
-    fuelSystem.startBurn(smartObjectId);
-    vm.warp(block.timestamp + 3600);
-    fuelSystem.updateFuel(smartObjectId);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
-
-    //Deposit different Fuel type, when there is no fuel success
-    fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
-    assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
-    assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);
-
-    vm.stopPrank();
-    vm.resumeGasMetering();
   }
 
   function test_stopStartBurnCycle() public {

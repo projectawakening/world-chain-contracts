@@ -44,6 +44,8 @@ contract FuelSystem is SmartObjectFramework {
   error Fuel_BurnNotActive(uint256 smartObjectId);
   error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelSmartObjectId, uint256 newFuelSmartObjectId);
   error Fuel_InvalidFuelSmartObjectId(uint256 smartObjectId, uint256 fuelSmartObjectId);
+  error Fuel_ActiveFuelCycleExists(uint256 smartObjectId, uint256 fuelSmartObjectId);
+
   /**
    * @dev sets fuel parameters for a Network Node
    * @param smartObjectId on-chain id of the network node
@@ -130,13 +132,12 @@ contract FuelSystem is SmartObjectFramework {
         revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
       }
 
-      if (Fuel.getFuelAmount(smartObjectId) == 0) {
-        FuelConsumptionState.setPreviousCycleElapsedTime(
-          smartObjectId,
-          FuelConsumptionState.getElapsedTime(smartObjectId)
-        );
-        FuelConsumptionState.setElapsedTime(smartObjectId, 0);
-        FuelConsumptionState.setBurnStartTime(smartObjectId, block.timestamp);
+      if (
+        ((FuelConsumptionState.getBurnState(smartObjectId) && Fuel.getFuelAmount(smartObjectId) == 0)) ||
+        (!FuelConsumptionState.getBurnState(smartObjectId) &&
+          FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId) != 0)
+      ) {
+        revert Fuel_ActiveFuelCycleExists(smartObjectId, fuelSmartObjectId);
       }
     }
 
@@ -275,14 +276,14 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId);
     fuelAmount = Fuel.getFuelAmount(smartObjectId);
 
+    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE) {
+      return (elapsedTime, 0, 0, fuelAmount);
+    }
+
     // Calculate actual burn rate based on efficiency
     actualConsumptionRateInSeconds = fuelEfficiency >= MIN_FUEL_EFFICIENCY && fuelEfficiency <= MAX_FUEL_EFFICIENCY
       ? (fuelBurnRateInSeconds * fuelEfficiency) / PERCENTAGE_DIVISOR
       : fuelBurnRateInSeconds;
-
-    if (!burnState || burnStartTime == 0) {
-      return (elapsedTime, 0, actualConsumptionRateInSeconds, fuelAmount);
-    }
 
     uint256 currentTime = block.timestamp;
     uint256 elapsed = currentTime > burnStartTime ? currentTime - burnStartTime : 0;

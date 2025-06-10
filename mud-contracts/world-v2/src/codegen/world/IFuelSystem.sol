@@ -29,6 +29,7 @@ interface IFuelSystem {
   error Fuel_BurnNotActive(uint256 smartObjectId);
   error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelSmartObjectId, uint256 newFuelSmartObjectId);
   error Fuel_InvalidFuelSmartObjectId(uint256 smartObjectId, uint256 fuelSmartObjectId);
+  error Fuel_ActiveFuelCycleExists(uint256 smartObjectId, uint256 fuelSmartObjectId);
 
   function evefrontier__configureFuelParameters(uint256 smartObjectId, FuelParams memory fuelParams) external;
 

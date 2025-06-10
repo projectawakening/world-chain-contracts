@@ -54,6 +54,7 @@ library FuelSystemLib {
   error Fuel_BurnNotActive(uint256 smartObjectId);
   error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelSmartObjectId, uint256 newFuelSmartObjectId);
   error Fuel_InvalidFuelSmartObjectId(uint256 smartObjectId, uint256 fuelSmartObjectId);
+  error Fuel_ActiveFuelCycleExists(uint256 smartObjectId, uint256 fuelSmartObjectId);
 
   function configureFuelParameters(FuelSystemType self, uint256 smartObjectId, FuelParams memory fuelParams) internal {
     return CallWrapper(self.toResourceId(), address(0)).configureFuelParameters(smartObjectId, fuelParams);
