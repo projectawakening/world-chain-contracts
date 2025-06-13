@@ -135,10 +135,7 @@ contract FuelSystem is SmartObjectFramework {
         revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
       }
 
-      FuelConsumptionState.setPreviousCycleElapsedTime(
-        smartObjectId,
-        FuelConsumptionState.getElapsedTime(smartObjectId)
-      );
+      FuelConsumptionState.setPreviousCycleElapsedTime(smartObjectId, 0);
       FuelConsumptionState.setElapsedTime(smartObjectId, 0);
 
       if (FuelConsumptionState.getBurnState(smartObjectId)) {
