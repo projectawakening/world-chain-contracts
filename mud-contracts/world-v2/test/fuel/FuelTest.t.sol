@@ -546,7 +546,7 @@ contract FuelTest is MudTest {
     );
     fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
 
-    //Deposit Different Fuel type when the last unit is burning, should suceed and discard the remaining
+    // Deposit Different Fuel type when the last unit is burning, should suceed and discard the remaining
     fuelSystem.startBurn(smartObjectId);
     assertEq(Fuel.getFuelAmount(smartObjectId), 0);
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
@@ -555,7 +555,7 @@ contract FuelTest is MudTest {
 
     //continue to burn with the new fuel
     fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
-    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
     assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), block.timestamp);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
@@ -570,7 +570,7 @@ contract FuelTest is MudTest {
     (elapsedTime, unitsToConsume, actualBurnRate, fuelAmount) = fuelSystem.getCurrentFuelConsumptionStatus(
       smartObjectId
     );
-    assertEq(elapsedTime, 1800);
+    assertEq(elapsedTime, 0);
     assertEq(fuelAmount, 0);
     assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
@@ -588,7 +588,7 @@ contract FuelTest is MudTest {
     fuelSystem.updateFuel(smartObjectId);
 
     //does not do anything
-    assertEq(Fuel.getFuelAmount(smartObjectId), 0);
+    assertEq(Fuel.getFuelAmount(smartObjectId), 1);
     assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
     assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);
@@ -602,7 +602,7 @@ contract FuelTest is MudTest {
     //Deposit different Fuel type, when there is no fuel success
     fuelSystem.depositFuel(smartObjectId, fuelSmartObjectId2, 1);
     assertEq(Fuel.getFuelAmount(smartObjectId), 1);
-    assertEq(FuelConsumptionState.getBurnState(smartObjectId), true);
+    assertEq(FuelConsumptionState.getBurnState(smartObjectId), false);
     assertEq(FuelConsumptionState.getBurnStartTime(smartObjectId), 0);
     assertEq(FuelConsumptionState.getElapsedTime(smartObjectId), 0);
     assertEq(FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId), 0);

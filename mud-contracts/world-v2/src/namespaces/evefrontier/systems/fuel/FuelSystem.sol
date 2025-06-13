@@ -122,6 +122,11 @@ contract FuelSystem is SmartObjectFramework {
       revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 1, type(uint256).max);
     }
 
+    // call updateFuel to make sure the fuel is consumed
+    updateFuel(smartObjectId);
+
+    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
+
     //cannot deposit fuel of different type unless the current cycle is not active or the previous cycle is not completed
     if (
       Fuel.getFuelSmartObjectId(smartObjectId) != 0 && (Fuel.getFuelSmartObjectId(smartObjectId) != fuelSmartObjectId)
@@ -130,30 +135,35 @@ contract FuelSystem is SmartObjectFramework {
         revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
       }
 
-      if (Fuel.getFuelAmount(smartObjectId) == 0) {
-        FuelConsumptionState.setPreviousCycleElapsedTime(
-          smartObjectId,
-          FuelConsumptionState.getElapsedTime(smartObjectId)
-        );
-        FuelConsumptionState.setElapsedTime(smartObjectId, 0);
+      FuelConsumptionState.setPreviousCycleElapsedTime(
+        smartObjectId,
+        FuelConsumptionState.getElapsedTime(smartObjectId)
+      );
+      FuelConsumptionState.setElapsedTime(smartObjectId, 0);
+
+      if (FuelConsumptionState.getBurnState(smartObjectId)) {
         FuelConsumptionState.setBurnStartTime(smartObjectId, block.timestamp);
+        currentFuelAmount = fuelAmount - 1;
+      } else {
+        currentFuelAmount = fuelAmount;
       }
+    } else {
+      currentFuelAmount += fuelAmount;
     }
 
-    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
     uint256 currentVolume = EntityRecord.getVolume(fuelSmartObjectId);
 
     // Convert volume to fixed-point representation if it's not already
     currentVolume = currentVolume == 0 ? ONE_UNIT_IN_WEI : currentVolume;
-    uint256 projectedCapacity = ((currentFuelAmount + fuelAmount) * currentVolume) / ONE_UNIT_IN_WEI;
+    uint256 projectedCapacity = (currentFuelAmount * currentVolume) / ONE_UNIT_IN_WEI;
 
     if (projectedCapacity > fuelMaxCapacity) {
       revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, projectedCapacity, fuelMaxCapacity);
     }
 
     Fuel.setFuelSmartObjectId(smartObjectId, fuelSmartObjectId);
-    Fuel.setFuelAmount(smartObjectId, currentFuelAmount + fuelAmount);
+    Fuel.setFuelAmount(smartObjectId, currentFuelAmount);
     Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 
