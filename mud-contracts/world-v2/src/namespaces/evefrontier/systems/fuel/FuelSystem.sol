@@ -44,8 +44,6 @@ contract FuelSystem is SmartObjectFramework {
   error Fuel_BurnNotActive(uint256 smartObjectId);
   error Fuel_TypeMismatch(uint256 smartObjectId, uint256 currentFuelSmartObjectId, uint256 newFuelSmartObjectId);
   error Fuel_InvalidFuelSmartObjectId(uint256 smartObjectId, uint256 fuelSmartObjectId);
-  error Fuel_ActiveFuelCycleExists(uint256 smartObjectId, uint256 fuelSmartObjectId);
-
   /**
    * @dev sets fuel parameters for a Network Node
    * @param smartObjectId on-chain id of the network node
@@ -124,6 +122,11 @@ contract FuelSystem is SmartObjectFramework {
       revert Fuel_InvalidFuelAmount(smartObjectId, fuelAmount, 1, type(uint256).max);
     }
 
+    // call updateFuel to make sure the fuel is consumed
+    updateFuel(smartObjectId);
+
+    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
+
     //cannot deposit fuel of different type unless the current cycle is not active or the previous cycle is not completed
     if (
       Fuel.getFuelSmartObjectId(smartObjectId) != 0 && (Fuel.getFuelSmartObjectId(smartObjectId) != fuelSmartObjectId)
@@ -132,29 +135,32 @@ contract FuelSystem is SmartObjectFramework {
         revert Fuel_TypeMismatch(smartObjectId, Fuel.getFuelSmartObjectId(smartObjectId), fuelSmartObjectId);
       }
 
-      if (
-        ((FuelConsumptionState.getBurnState(smartObjectId) && Fuel.getFuelAmount(smartObjectId) == 0)) ||
-        (!FuelConsumptionState.getBurnState(smartObjectId) &&
-          FuelConsumptionState.getPreviousCycleElapsedTime(smartObjectId) != 0)
-      ) {
-        revert Fuel_ActiveFuelCycleExists(smartObjectId, fuelSmartObjectId);
+      FuelConsumptionState.setPreviousCycleElapsedTime(smartObjectId, 0);
+      FuelConsumptionState.setElapsedTime(smartObjectId, 0);
+
+      if (FuelConsumptionState.getBurnState(smartObjectId)) {
+        FuelConsumptionState.setBurnStartTime(smartObjectId, block.timestamp);
+        currentFuelAmount = fuelAmount - 1;
+      } else {
+        currentFuelAmount = fuelAmount;
       }
+    } else {
+      currentFuelAmount += fuelAmount;
     }
 
-    uint256 currentFuelAmount = Fuel.getFuelAmount(smartObjectId);
     uint256 fuelMaxCapacity = Fuel.getFuelMaxCapacity(smartObjectId);
     uint256 currentVolume = EntityRecord.getVolume(fuelSmartObjectId);
 
     // Convert volume to fixed-point representation if it's not already
     currentVolume = currentVolume == 0 ? ONE_UNIT_IN_WEI : currentVolume;
-    uint256 projectedCapacity = ((currentFuelAmount + fuelAmount) * currentVolume) / ONE_UNIT_IN_WEI;
+    uint256 projectedCapacity = (currentFuelAmount * currentVolume) / ONE_UNIT_IN_WEI;
 
     if (projectedCapacity > fuelMaxCapacity) {
       revert Fuel_ExceedsMaxCapacity(smartObjectId, fuelAmount, projectedCapacity, fuelMaxCapacity);
     }
 
     Fuel.setFuelSmartObjectId(smartObjectId, fuelSmartObjectId);
-    Fuel.setFuelAmount(smartObjectId, currentFuelAmount + fuelAmount);
+    Fuel.setFuelAmount(smartObjectId, currentFuelAmount);
     Fuel.setLastUpdatedAt(smartObjectId, block.timestamp);
   }
 
@@ -276,14 +282,14 @@ contract FuelSystem is SmartObjectFramework {
     uint256 fuelEfficiency = FuelEfficiencyConfig.getEfficiency(fuelSmartObjectId);
     fuelAmount = Fuel.getFuelAmount(smartObjectId);
 
-    if (!burnState || burnStartTime == 0 || fuelBurnRateInSeconds < MIN_FUEL_BURN_RATE) {
-      return (elapsedTime, 0, 0, fuelAmount);
-    }
-
     // Calculate actual burn rate based on efficiency
     actualConsumptionRateInSeconds = fuelEfficiency >= MIN_FUEL_EFFICIENCY && fuelEfficiency <= MAX_FUEL_EFFICIENCY
       ? (fuelBurnRateInSeconds * fuelEfficiency) / PERCENTAGE_DIVISOR
       : fuelBurnRateInSeconds;
+
+    if (!burnState || burnStartTime == 0) {
+      return (elapsedTime, 0, actualConsumptionRateInSeconds, fuelAmount);
+    }
 
     uint256 currentTime = block.timestamp;
     uint256 elapsed = currentTime > burnStartTime ? currentTime - burnStartTime : 0;
