@@ -57,6 +57,7 @@ library AccessSystemLib {
   error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
+  error Access_NoAccess();
 
   function onlyOwnerOrEphemeralTransferRole(
     AccessSystemType self,
@@ -204,6 +205,10 @@ library AccessSystemLib {
     bytes memory data
   ) internal view {
     return CallWrapper(self.toResourceId(), address(0)).onlySmartAssemblyClassScopedAccess(smartObjectId, data);
+  }
+
+  function noAccess(AccessSystemType self, uint256 entityId, bytes memory targetCallData) internal view {
+    return CallWrapper(self.toResourceId(), address(0)).noAccess(entityId, targetCallData);
   }
 
   function isAdmin(AccessSystemType self, address caller) internal view returns (bool) {
@@ -708,6 +713,19 @@ library AccessSystemLib {
     abi.decode(returnData, (bytes));
   }
 
+  function noAccess(CallWrapper memory self, uint256 entityId, bytes memory targetCallData) internal view {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_noAccess_uint256_bytes.noAccess, (entityId, targetCallData));
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+    abi.decode(returnData, (bytes));
+  }
+
   function isAdmin(CallWrapper memory self, address caller) internal view returns (bool) {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert AccessSystemLib_CallingFromRootSystem();
@@ -1136,6 +1154,11 @@ library AccessSystemLib {
     SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
   }
 
+  function noAccess(RootCallWrapper memory self, uint256 entityId, bytes memory targetCallData) internal view {
+    bytes memory systemCall = abi.encodeCall(_noAccess_uint256_bytes.noAccess, (entityId, targetCallData));
+    SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+  }
+
   function isAdmin(RootCallWrapper memory self, address caller) internal view returns (bool) {
     bytes memory systemCall = abi.encodeCall(_isAdmin_address.isAdmin, (caller));
 
@@ -1379,6 +1402,10 @@ interface _onlyAdminOrClassScopedAccess_uint256_bytes {
 
 interface _onlySmartAssemblyClassScopedAccess_uint256_bytes {
   function onlySmartAssemblyClassScopedAccess(uint256 smartObjectId, bytes memory data) external;
+}
+
+interface _noAccess_uint256_bytes {
+  function noAccess(uint256 entityId, bytes memory targetCallData) external;
 }
 
 interface _isAdmin_address {

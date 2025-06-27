@@ -49,6 +49,7 @@ contract AccessSystem is SmartObjectFramework {
   error Access_NotEphemeralOwnerOrCallAccessWithEphemeralOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwner(address caller, uint256 smartObjectId);
   error Access_NotAdminSupportedOrDirectOwnerGates(address caller, uint256 smartObjectId);
+  error Access_NoAccess();
 
   function onlyOwnerOrEphemeralTransferRole(uint256 smartObjectId, bytes memory data) public view {
     uint256 callCount = IWorldWithContext(_world()).getWorldCallCount();
@@ -427,6 +428,10 @@ contract AccessSystem is SmartObjectFramework {
     }
 
     revert Access_NotClassScoped(msgSender, smartObjectId);
+  }
+
+  function noAccess(uint256 entityId, bytes memory targetCallData) public view {
+    revert Access_NoAccess();
   }
 
   function isAdmin(address caller) public view returns (bool) {

@@ -15,6 +15,7 @@ import { RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 
 // Smart Object Framework imports
 import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorldWithContext.sol";
+import { AccessConfigSystem, accessConfigSystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/AccessConfigSystemLib.sol";
 import { Entity } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/tables/Entity.sol";
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 import { Role, HasRole } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/index.sol";
@@ -27,7 +28,7 @@ import { DeployableSystem, deployableSystem } from "../../src/namespaces/evefron
 import { InventorySystem, inventorySystem } from "../../src/namespaces/evefrontier/codegen/systems/InventorySystemLib.sol";
 import { InventoryInteractSystem, inventoryInteractSystem } from "../../src/namespaces/evefrontier/codegen/systems/InventoryInteractSystemLib.sol";
 import { SmartStorageUnitSystem, smartStorageUnitSystem } from "../../src/namespaces/evefrontier/codegen/systems/SmartStorageUnitSystemLib.sol";
-import { AccessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
+import { AccessSystem, accessSystem } from "../../src/namespaces/evefrontier/codegen/systems/AccessSystemLib.sol";
 
 // Types and parameters
 import { EntityRecordParams } from "../../src/namespaces/evefrontier/systems/entity-record/types.sol";
@@ -49,7 +50,7 @@ contract CustomInventoryInteractSystem is System {
   }
 }
 
-contract EphemeralInteractTest is MudTest {
+contract InventoryInteractTest is MudTest {
   using WorldResourceIdInstance for ResourceId;
 
   IWorldWithContext public world;
@@ -199,6 +200,7 @@ contract EphemeralInteractTest is MudTest {
   }
 
   function test_transferToInventory() public {
+    vm.pauseGasMetering();
     // First, add items to primary inventory
     InventoryItemParams[] memory itemParams = new InventoryItemParams[](2);
     itemParams[0] = InventoryItemParams({ smartObjectId: item1ObjectId, quantity: 1 });
@@ -227,11 +229,40 @@ contract EphemeralInteractTest is MudTest {
       smartObjectId: item2ObjectId,
       quantity: 3 // Transfer part of item2
     });
-    vm.pauseGasMetering();
+
+    // Expect revert due to no access
+    vm.expectRevert(abi.encodeWithSelector(AccessSystem.Access_NoAccess.selector));
+    vm.startPrank(alice);
+    world.call(
+      inventoryInteractSystem.toResourceId(),
+      abi.encodeWithSelector(
+        InventoryInteractSystem.transferToInventory.selector,
+        inventoryObjectId,
+        inventoryObjectId2,
+        transferParams
+      )
+    );
+
+    // Allow transferToInventory access to test functionality
+    vm.startPrank(deployer);
+    accessConfigSystem.configureAccess(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.transferToInventory.selector,
+      accessSystem.toResourceId(),
+      AccessSystem.onlyOwnerOrInventoryTransferRole.selector
+    );
+    accessConfigSystem.setAccessEnforcement(
+      inventoryInteractSystem.toResourceId(),
+      InventoryInteractSystem.transferToInventory.selector,
+      true
+    );
+    vm.stopPrank();
+
     // Direct call with alice is allowed (SSU owner)
     vm.startPrank(alice);
-    inventoryInteractSystem.transferToInventory(inventoryObjectId, inventoryObjectId2, transferParams);
     vm.resumeGasMetering();
+    inventoryInteractSystem.transferToInventory(inventoryObjectId, inventoryObjectId2, transferParams);
+    vm.pauseGasMetering();
     // Verify state after the direct call
     // Check primary inventory - should have less items now
     assertEq(Inventory.lengthItems(inventoryObjectId), 1); // item1 completely gone

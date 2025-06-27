@@ -534,7 +534,7 @@ contract EveSystem is IEveSystem, SmartObjectFramework {
       inventoryInteractSystem.toResourceId(),
       InventoryInteractSystem.transferToInventory.selector,
       accessSystem.toResourceId(),
-      AccessSystem.onlyOwnerOrInventoryTransferRole.selector
+      AccessSystem.noAccess.selector
     );
     accessConfigSystem.setAccessEnforcement(
       inventoryInteractSystem.toResourceId(),
