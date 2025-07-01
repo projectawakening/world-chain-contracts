@@ -31,7 +31,7 @@
     "access-config:configure-all": "PRIVATE_KEY=$PRIVATE_KEY && RPC_URL=$RPC_URL && WORLD_ADDRESS=$WORLD_ADDRESS && ADMIN_ACCOUNTS=$ADMIN_ACCOUNTS && pnpm run access-config:access-lists && pnpm run access-config:entity-record && pnpm run access-config:erc-721-puppet && pnpm run access-config:inventory && pnpm run access-config:kill-mail && pnpm run access-config:location && pnpm run access-config:smart-character && pnpm run access-config:smart-deployable && pnpm run access-config:smart-gate && pnpm run access-config:smart-storage-unit && pnpm run access-config:smart-turret && pnpm run access-config:static-data"
   },
   "dependencies": {
-    "@latticexyz/cli": "2.2.14",
+    "@latticexyz/cli": "2.2.22",
     "@latticexyz/schema-type": "2.2.8",
     "@latticexyz/store": "2.2.8",
     "@latticexyz/world": "2.2.8",
