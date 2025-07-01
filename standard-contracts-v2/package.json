@@ -23,7 +23,7 @@
   "license": "ISC",
   "dependencies": {
     "prettier-plugin-solidity": "^1.3.1",
-    "solc": "^0.8.24",
+    "solc": "^0.8.30",
     "@eveworld/world-core-v2": "link:../mud-contracts/core-v2",
     "@openzeppelin/contracts": "^5.0.1"
   },
