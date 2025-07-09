@@ -44,6 +44,7 @@ library SmartGateSystemLib {
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotOnline(uint256 smartObjectId);
+  error SmartGate_GatesNotSameType(uint256 sourceGateTypeId, uint256 destinationGateTypeId);
 
   function createAndAnchorGate(
     SmartGateSystemType self,

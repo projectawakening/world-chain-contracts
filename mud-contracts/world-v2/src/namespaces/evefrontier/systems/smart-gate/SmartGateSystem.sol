@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { Tenant, SmartGateConfig, SmartGateLink, SmartGateLinkData, DeployableState, Location, LocationData, Initialize } from "../../codegen/index.sol";
+import { Tenant, SmartGateConfig, SmartGateLink, SmartGateLinkData, DeployableState, Location, LocationData, Initialize, EntityRecord } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -32,6 +32,7 @@ contract SmartGateSystem is SmartObjectFramework {
   error SmartGate_SameSourceAndDestination(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GatesNotOnline(uint256 sourceGateId, uint256 destinationGateId);
   error SmartGate_GateNotOnline(uint256 smartObjectId);
+  error SmartGate_GatesNotSameType(uint256 sourceGateTypeId, uint256 destinationGateTypeId);
 
   /**
    * @notice Create and anchor a Smart Gate
@@ -70,6 +71,14 @@ contract SmartGateSystem is SmartObjectFramework {
 
     if (destinationGateState == State.NULL || destinationGateState == State.DESTROYED) {
       revert DeployableSystem.Deployable_IncorrectState(destinationGateId, destinationGateState);
+    }
+
+    //check if the gates are of same type id and if not then throw an error
+    if (EntityRecord.getTypeId(sourceGateId) != EntityRecord.getTypeId(destinationGateId)) {
+      revert SmartGate_GatesNotSameType(
+        EntityRecord.getTypeId(sourceGateId),
+        EntityRecord.getTypeId(destinationGateId)
+      );
     }
 
     if (isAnyGateLinked(sourceGateId, destinationGateId)) {

@@ -71,12 +71,15 @@ contract SmartGateTest is MudTest {
 
   uint256 constant SOURCE_GATE_ID = 1234;
   uint256 constant DESTINATION_GATE_ID = 1235;
+  uint256 constant SMALL_GATE_SOURCE_ID = 123999;
   uint256 constant INVALID_SOURCE_GATE_ID = 1236;
   uint256 constant INVALID_DESTINATION_GATE_ID = 1237;
   uint256 constant SMART_GATE_TYPE_ID = 84955;
+  uint256 constant SMALL_GATE_TYPE_ID = 88086;
 
   uint256 sourceGateId;
   uint256 destinationGateId;
+  uint256 smallGateSourceId;
 
   uint256 invalidSourceGateId;
   uint256 invalidDestinationGateId;
@@ -84,12 +87,16 @@ contract SmartGateTest is MudTest {
   // Location data
   LocationData sourceLocationParams;
   LocationData destinationLocationParams;
+  LocationData smallGateSourceLocationParams;
 
   //entity record
   EntityRecordParams sourceEntityRecordParams;
   EntityRecordParams destinationEntityRecordParams;
+  EntityRecordParams smallGateSourceEntityRecordParams;
 
   uint256 maxDistance = 1; // will increase after testing failure
+
+  uint256 smallGateMaxDistance = 5;
 
   // New variables
   uint256 networkNodeId;
@@ -120,8 +127,10 @@ contract SmartGateTest is MudTest {
     // Setup smart object IDs
     sourceGateId = _calculateObjectId(SMART_GATE_TYPE_ID, SOURCE_GATE_ID, true);
     destinationGateId = _calculateObjectId(SMART_GATE_TYPE_ID, DESTINATION_GATE_ID, true);
+    smallGateSourceId = _calculateObjectId(SMALL_GATE_TYPE_ID, SMALL_GATE_SOURCE_ID, true);
 
     uint256 smartGateClassId = uint256(keccak256(abi.encodePacked(tenantId, SMART_GATE_TYPE_ID)));
+    uint256 smallGateClassId = uint256(keccak256(abi.encodePacked(tenantId, SMALL_GATE_TYPE_ID)));
 
     invalidSourceGateId = _calculateObjectId(SMART_GATE_TYPE_ID, INVALID_SOURCE_GATE_ID, true);
     entitySystem.instantiate(smartGateClassId, invalidSourceGateId, alice);
@@ -131,6 +140,8 @@ contract SmartGateTest is MudTest {
     sourceLocationParams = LocationData({ solarSystemId: 1, x: 1, y: 1, z: 1 });
 
     destinationLocationParams = LocationData({ solarSystemId: 2, x: 2, y: 2, z: 2 });
+
+    smallGateSourceLocationParams = LocationData({ solarSystemId: 3, x: 3, y: 3, z: 3 });
 
     sourceEntityRecordParams = EntityRecordParams({
       tenantId: tenantId,
@@ -143,6 +154,13 @@ contract SmartGateTest is MudTest {
       tenantId: tenantId,
       typeId: SMART_GATE_TYPE_ID,
       itemId: DESTINATION_GATE_ID,
+      volume: 10000
+    });
+
+    smallGateSourceEntityRecordParams = EntityRecordParams({
+      tenantId: tenantId,
+      typeId: SMALL_GATE_TYPE_ID,
+      itemId: SMALL_GATE_SOURCE_ID,
       volume: 10000
     });
 
@@ -378,17 +396,6 @@ contract SmartGateTest is MudTest {
     vm.stopPrank();
   }
 
-  // Helper function to calculate itemObjectId
-  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
-    if (isSingleton) {
-      // For singleton items: hash of tenantId and itemId
-      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
-    } else {
-      // For non-singleton items: hash of typeId
-      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
-    }
-  }
-
   function test_unlinkGates() public {
     test_linkGates();
 
@@ -553,5 +560,73 @@ contract SmartGateTest is MudTest {
       abi.encodeCall(SmartGateSystem.linkGates, (sourceGateId, destinationGateId))
     );
     vm.stopPrank();
+  }
+
+  function test_CannotLinkSmartGatesOfDifferentTypes() public {
+    vm.startPrank(alice, deployer);
+    // create and anchor small gate source
+    world.call(
+      smartGateSystem.toResourceId(),
+      abi.encodeCall(
+        SmartGateSystem.createAndAnchorGate,
+        (
+          CreateAndAnchorParams(
+            smallGateSourceId,
+            "SG",
+            smallGateSourceEntityRecordParams,
+            alice,
+            smallGateSourceLocationParams
+          ),
+          smallGateMaxDistance,
+          0
+        )
+      )
+    );
+    // create and anchor destination gate of different type owned by alice (not bob)
+    world.call(
+      smartGateSystem.toResourceId(),
+      abi.encodeCall(
+        SmartGateSystem.createAndAnchorGate,
+        (
+          CreateAndAnchorParams(
+            destinationGateId,
+            "SG",
+            destinationEntityRecordParams,
+            alice,
+            destinationLocationParams
+          ),
+          maxDistance,
+          0
+        )
+      )
+    );
+    vm.stopPrank();
+
+    vm.startPrank(deployer);
+    accessConfigSystem.setAccessEnforcement(smartGateSystem.toResourceId(), SmartGateSystem.linkGates.selector, true);
+    vm.stopPrank();
+
+    // expect revert when linking gates of different types
+    vm.startPrank(alice, deployer);
+    vm.expectRevert(
+      abi.encodeWithSelector(
+        SmartGateSystem.SmartGate_GatesNotSameType.selector,
+        SMALL_GATE_TYPE_ID,
+        SMART_GATE_TYPE_ID
+      )
+    );
+    smartGateSystem.linkGates(smallGateSourceId, destinationGateId);
+    vm.stopPrank();
+  }
+
+  // Helper function to calculate itemObjectId
+  function _calculateObjectId(uint256 typeId, uint256 itemId, bool isSingleton) internal view returns (uint256) {
+    if (isSingleton) {
+      // For singleton items: hash of tenantId and itemId
+      return uint256(keccak256(abi.encodePacked(tenantId, itemId)));
+    } else {
+      // For non-singleton items: hash of typeId
+      return uint256(keccak256(abi.encodePacked(tenantId, typeId)));
+    }
   }
 }
