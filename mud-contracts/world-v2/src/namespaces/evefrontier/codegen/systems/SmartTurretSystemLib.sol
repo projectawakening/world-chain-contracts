@@ -37,6 +37,7 @@ struct RootCallWrapper {
  */
 library SmartTurretSystemLib {
   error SmartTurretSystemLib_CallingFromRootSystem();
+  error SmartTurret_NotTurretType(uint256 smartObjectId);
 
   function createAndAnchorTurret(
     SmartTurretSystemType self,

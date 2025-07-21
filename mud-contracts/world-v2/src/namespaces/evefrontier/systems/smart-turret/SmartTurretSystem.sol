@@ -11,7 +11,7 @@ import { IWorldWithContext } from "@eveworld/smart-object-framework-v2/src/IWorl
 import { entitySystem } from "@eveworld/smart-object-framework-v2/src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
 
 // Local namespace tables
-import { Tenant, DeployableState, SmartTurretConfig, Characters, CharactersByAccount, OwnershipByObject, Initialize } from "../../codegen/index.sol";
+import { Tenant, DeployableState, SmartTurretConfig, Characters, CharactersByAccount, OwnershipByObject, Initialize, SmartAssembly } from "../../codegen/index.sol";
 
 // Local namespace systems
 import { DeployableSystem } from "../deployable/DeployableSystem.sol";
@@ -25,6 +25,8 @@ import { SMART_TURRET } from "../constants.sol";
 import { ObjectIdLib } from "../../libraries/ObjectIdLib.sol";
 
 contract SmartTurretSystem is SmartObjectFramework {
+  error SmartTurret_NotTurretType(uint256 smartObjectId);
+
   /**
    * @notice Create and anchor a Smart Turret
    * @param params CreateAndAnchorDeployableParams
@@ -48,6 +50,14 @@ contract SmartTurretSystem is SmartObjectFramework {
     uint256 smartObjectId,
     ResourceId systemId
   ) public context access(smartObjectId) scope(smartObjectId) {
+    //Check if its turret type to configure
+    if (
+      keccak256(abi.encodePacked(SmartAssembly.getAssemblyType(smartObjectId))) !=
+      keccak256(abi.encodePacked(SMART_TURRET))
+    ) {
+      revert SmartTurret_NotTurretType(smartObjectId);
+    }
+
     SmartTurretConfig.set(smartObjectId, systemId);
   }
 
