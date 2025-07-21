@@ -72,5 +72,11 @@
     "solhint": "^3.3.7",
     "solhint-config-mud": "2.2.8",
     "solhint-plugin-mud": "2.2.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "eslint-config-prettier": "10.1.8",
+      "eslint-plugin-prettier": "4.2.5"
+    }
   }
 }

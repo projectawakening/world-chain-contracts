@@ -42,5 +42,11 @@
     "solhint-config-mud": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "solhint-plugin-mud": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "typescript": "^5.4.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "eslint-config-prettier": "10.1.8",
+      "eslint-plugin-prettier": "4.2.5"
+    }
   }
 }
