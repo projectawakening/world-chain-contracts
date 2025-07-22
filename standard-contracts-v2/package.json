@@ -38,5 +38,11 @@
     "prettier": "^3.2.5",
     "solhint": "^4.5.2",
     "solhint-plugin-prettier": "^0.1.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "eslint-config-prettier": "10.1.8",
+      "eslint-plugin-prettier": "4.2.5"
+    }
   }
 }
