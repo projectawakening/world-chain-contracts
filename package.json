@@ -8,7 +8,7 @@
     "format:check": "prettier --check \"**/package.json\""
   },
   "devDependencies": {
-    "dotenv-cli": "^8.0.0",
+    "dotenv-cli": "^10.0.0",
     "mprocs": "^0.6.4",
     "nx": "18.2.0"
   },
