@@ -21,7 +21,7 @@
     "post-deploy": "forge script script/PostDeploy.s.sol:PostDeploy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "configure-fuel": "forge script script/ConfigureFuel.s.sol:ConfigureFuel --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "configure-energy": "forge script script/ConfigureEnergy.s.sol:ConfigureEnergy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
-    "test": "chmod +x run-tests.sh && ./run-tests.sh"
+    "test": "chmod +x run-tests.sh && ./run-tests.sh && chmod +x run-tests-new-world.sh && ./run-tests-new-world.sh"
   },
   "dependencies": {
     "@latticexyz/cli": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",

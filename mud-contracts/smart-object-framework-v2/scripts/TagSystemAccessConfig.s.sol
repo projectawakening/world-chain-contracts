@@ -24,20 +24,20 @@ contract TagSystemAccessConfig is Script {
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
 
-    runTagSystemAccessConfig();
+    runTagSystemAccessConfig(deployer);
 
     vm.stopBroadcast();
   }
 }
 
-function runTagSystemAccessConfig() {
+function runTagSystemAccessConfig(address delegator) {
   // Tag System access configurations
   // set allowCallAccessOrDirectAccessRole for setTag
-  accessConfigSystem.configureAccess(tagSystem.toResourceId(), ITagSystem.setTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(tagSystem.toResourceId(), ITagSystem.setTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);
   // set allowCallAccessOrDirectAccessRole for removeTag
-  accessConfigSystem.configureAccess(tagSystem.toResourceId(), ITagSystem.removeTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);
+  accessConfigSystem.callFrom(delegator).configureAccess(tagSystem.toResourceId(), ITagSystem.removeTag.selector, sOFAccessSystem.toResourceId(), ISOFAccessSystem.allowCallAccessOrDirectAccessRole.selector);
 
   // TagSystem.sol toggle access enforcement on
-  accessConfigSystem.setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.setTag.selector, true);
-  accessConfigSystem.setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.removeTag.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.setTag.selector, true);
+  accessConfigSystem.callFrom(delegator).setAccessEnforcement(tagSystem.toResourceId(), ITagSystem.removeTag.selector, true);
 }

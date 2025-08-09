@@ -42,6 +42,11 @@ export default defineWorld({
           name: "TagSystem",
           openAccess: true,
         },
+        // Closed access systems
+        CallAccessSystem: {
+          name: "CallAccessSystem",
+          openAccess: false,
+        },
       },
       tables: {
         CallAccess: {

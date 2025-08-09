@@ -15,6 +15,8 @@ import { ERC20MetadataData } from "@latticexyz/world-modules/src/modules/erc20-p
 import { FunctionSelectors } from "@latticexyz/world/src/codegen/tables/FunctionSelectors.sol";
 import { ResourceId } from "@latticexyz/store/src/ResourceId.sol";
 
+import { delegateInstallSOFModule } from "@eveworld/smart-object-framework-v2/src/module/delegateInstallSOFModule.sol";
+
 import { SmartCharacterSystem } from "../src/namespaces/evefrontier/systems/smart-character/SmartCharacterSystem.sol";
 import { DeployableSystem } from "../src/namespaces/evefrontier/systems/deployable/DeployableSystem.sol";
 
@@ -33,6 +35,9 @@ contract PostDeploy is Script {
 
     // Start broadcasting transactions from the deployer account
     vm.startBroadcast(deployerPrivateKey);
+
+    // install Smart Object Framework
+    delegateInstallSOFModule();
 
     // install all the necessary tokens
     _installPuppet(world);
