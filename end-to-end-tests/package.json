@@ -55,7 +55,7 @@
     "@eveworld/world": "0.0.17",
     "@eveworld/world-core": "link:../mud-contracts/core",
     "@latticexyz/cli": "2.2.14",
-    "@latticexyz/gas-report": "2.2.8",
+    "@latticexyz/gas-report": "2.2.23",
     "@latticexyz/schema-type": "2.2.8",
     "@latticexyz/store": "2.2.8",
     "@latticexyz/world": "2.2.8",
