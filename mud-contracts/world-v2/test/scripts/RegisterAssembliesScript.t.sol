@@ -36,14 +36,16 @@ contract RegisterAssembliesScriptTest is Test {
   function test_registerAssemblies_registersClassesWithVolumes() public {
     uint256[] memory ids = new uint256[](2);
     uint256[] memory vols = new uint256[](2);
-    ids[0] = 987654321; 
+    ids[0] = 987654321;
     vols[0] = 1;
-    ids[1] = 987654322; 
+    ids[1] = 987654322;
     vols[1] = 42;
 
     vm.startPrank(deployer, deployer);
     // Grant EveSystem call access if it doesn't already have it
-    if (!CallAccess.get(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, eveSystem.getAddress())) {
+    if (
+      !CallAccess.get(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, eveSystem.getAddress())
+    ) {
       CallAccess.set(
         entitySystem.toResourceId(),
         IEntitySystem.scopedRegisterClass.selector,
@@ -51,7 +53,13 @@ contract RegisterAssembliesScriptTest is Test {
         true
       );
     }
-    if (!CallAccess.get(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, eveSystem.getAddress())) {
+    if (
+      !CallAccess.get(
+        entityRecordSystem.toResourceId(),
+        EntityRecordSystem.createRecord.selector,
+        eveSystem.getAddress()
+      )
+    ) {
       CallAccess.set(
         entityRecordSystem.toResourceId(),
         EntityRecordSystem.createRecord.selector,
@@ -79,12 +87,14 @@ contract RegisterAssembliesScriptTest is Test {
     uint256[] memory ids = new uint256[](1);
     uint256[] memory vols = new uint256[](1);
     // Use an ID already registered in the loaded world state (see run-tests.sh TYPE_IDS)
-    ids[0] = 77917; 
+    ids[0] = 77917;
     vols[0] = 7;
 
     vm.startPrank(deployer, deployer);
     // Grant EveSystem call access if it doesn't already have it
-    if (!CallAccess.get(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, eveSystem.getAddress())) {
+    if (
+      !CallAccess.get(entitySystem.toResourceId(), IEntitySystem.scopedRegisterClass.selector, eveSystem.getAddress())
+    ) {
       CallAccess.set(
         entitySystem.toResourceId(),
         IEntitySystem.scopedRegisterClass.selector,
@@ -92,7 +102,13 @@ contract RegisterAssembliesScriptTest is Test {
         true
       );
     }
-    if (!CallAccess.get(entityRecordSystem.toResourceId(), EntityRecordSystem.createRecord.selector, eveSystem.getAddress())) {
+    if (
+      !CallAccess.get(
+        entityRecordSystem.toResourceId(),
+        EntityRecordSystem.createRecord.selector,
+        eveSystem.getAddress()
+      )
+    ) {
       CallAccess.set(
         entityRecordSystem.toResourceId(),
         EntityRecordSystem.createRecord.selector,
@@ -106,5 +122,3 @@ contract RegisterAssembliesScriptTest is Test {
     vm.stopPrank();
   }
 }
-
-
