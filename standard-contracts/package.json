@@ -28,7 +28,7 @@
     "@openzeppelin/contracts": "^5.0.1",
     "@latticexyz/schema-type": "2.2.8",
     "@latticexyz/store": "2.2.8",
-    "@latticexyz/world": "2.2.8",
+    "@latticexyz/world": "2.2.23",
     "@eveworld/world": "0.0.17",
     "@eveworld/world-core": "link:../mud-contracts/core",
     "@eveworld/common-constants": "0.0.13"

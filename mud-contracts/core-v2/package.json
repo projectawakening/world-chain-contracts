@@ -23,7 +23,7 @@
     "@latticexyz/cli": "2.2.14",
     "@latticexyz/schema-type": "2.2.14",
     "@latticexyz/store": "2.2.14",
-    "@latticexyz/world": "2.2.14",
+    "@latticexyz/world": "2.2.23",
     "@latticexyz/world-modules": "2.2.14"
   },
   "devDependencies": {
