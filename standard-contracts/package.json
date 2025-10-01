@@ -37,7 +37,7 @@
     "ds-test": "https://github.com/dapphub/ds-test.git#e282159d5170298eb2455a6c05280ab5a73a4ef0",
     "forge-std": "https://github.com/foundry-rs/forge-std.git#74cfb77e308dd188d2f58864aaf44963ae6b88b1",
     "@types/mocha": "^10.0.6",
-    "chai": "^5.1.0",
+    "chai": "^6.2.0",
     "ethers": "^6.11.1",
     "husky": "^9.0.11",
     "mocha": "^11.0.1",
