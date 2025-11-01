@@ -28,6 +28,6 @@
   "dependencies": {
     "@changesets/cli": "^2.27.3",
     "@latticexyz/explorer": "^2.2.21",
-    "@latticexyz/store-indexer": "^2.2.21"
+    "@latticexyz/store-indexer": "^2.2.23"
   }
 }
