@@ -24,7 +24,7 @@
     "@latticexyz/schema-type": "2.2.14",
     "@latticexyz/store": "2.2.14",
     "@latticexyz/world": "2.2.14",
-    "@latticexyz/world-modules": "2.2.14"
+    "@latticexyz/world-modules": "2.2.23"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
