@@ -41,7 +41,7 @@
     "@eveworld/standard-contracts-v2": "link:../standard-contracts-v2",
     "@eveworld/world-v2": "link:../mud-contracts/world-v2",
     "@eveworld/world-core-v2": "link:../mud-contracts/core-v2",
-    "@latticexyz/cli": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
+    "@latticexyz/cli": "2.2.23",
     "@latticexyz/gas-report": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/schema-type": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/store": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
