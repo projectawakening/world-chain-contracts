@@ -21,7 +21,6 @@
     "post-deploy": "forge script script/PostDeploy.s.sol:PostDeploy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "configure-fuel": "forge script script/ConfigureFuel.s.sol:ConfigureFuel --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "configure-energy": "forge script script/ConfigureEnergy.s.sol:ConfigureEnergy --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
-    "reapply-access": "forge script script/ReapplyAccess.s.sol:ReapplyAccess --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "register-assemblies": "PRIVATE_KEY=$PRIVATE_KEY && NEW_ASSEMBLY_TYPE_IDS=$NEW_ASSEMBLY_TYPE_IDS && NEW_ASSEMBLY_VOLUMES=$NEW_ASSEMBLY_VOLUMES && WORLD_ADDRESS=$WORLD_ADDRESS && forge script script/RegisterAssemblies.s.sol:RegisterAssemblies --private-key $PRIVATE_KEY --broadcast --rpc-url $RPC_URL --sig \"run(address)\" $WORLD_ADDRESS -vv",
     "test": "chmod +x run-tests.sh && ./run-tests.sh"
   },
