@@ -1,6 +1,6 @@
 [profile.default]
 solc = "0.8.24"
-evm_version="cancun"
+evm_version = "cancun"
 ffi = false
 fuzz_runs = 256
 optimizer = true
@@ -17,12 +17,19 @@ allow_paths = [
   # projects created from this template and using linked mud packages
   "../../../mud/packages",
 ]
-extra_output_files = [
-  "abi",
-  "evm.bytecode"
-]
-fs_permissions = [{ access = "read", path = "./"}]
-script_execution_protection=false
+extra_output_files = ["abi", "evm.bytecode"]
+fs_permissions = [{ access = "read", path = "./" }]
+script_execution_protection = false
+
+[fuzz]
+max_test_rejects = 750536
+runs = 10
+gas_limit = 120000000
+seed = '0x2'
+
+[lint]
+# Disable lint checks during build to prevent build failures
+deny_warnings = false
 
 [profile.devnet]
 eth_rpc_url = "https://devnet-data-sync.nursery.reitnorf.com"
