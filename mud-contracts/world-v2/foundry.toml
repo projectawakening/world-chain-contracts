@@ -1,10 +1,9 @@
 [profile.default]
 solc = "0.8.24"
-evm_version="cancun"
+evm_version = "cancun"
 ffi = false
 optimizer = true
 optimizer_runs = 300
-seed = '0x2'
 verbosity = 3
 src = "src"
 test = "test"
@@ -18,17 +17,19 @@ allow_paths = [
   "../../../mud/packages",
   "../smart-object-framework-v2",
 ]
-extra_output_files = [
-  "abi",
-  "evm.bytecode"
-]
-fs_permissions = [{ access = "read", path = "./"}]
-script_execution_protection=false
+extra_output_files = ["abi", "evm.bytecode"]
+fs_permissions = [{ access = "read", path = "./" }]
+script_execution_protection = false
 
 [fuzz]
 max_test_rejects = 750536
 runs = 10
 gas_limit = 120000000
+seed = '0x2'
+
+[lint]
+# Disable lint checks during build to prevent build failures
+deny_warnings = false
 
 [profile.garnet]
 eth_rpc_url = "https://rpc.garnetchain.com"

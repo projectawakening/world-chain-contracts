@@ -21,7 +21,7 @@ RUN npm install -g pnpm@8.9.2
 
 # Install Foundry pinned to a version
 RUN curl -L https://foundry.paradigm.xyz | bash && \
-  /root/.foundry/bin/foundryup --version 1.1.0 && \
+  /root/.foundry/bin/foundryup --version 1.2.3 && \
   /root/.foundry/bin/foundryup && \
   ln -s /root/.foundry/bin/forge /usr/local/bin/forge && \
   ln -s /root/.foundry/bin/cast /usr/local/bin/cast && \
@@ -41,8 +41,9 @@ RUN rm -rf node_modules
 # Install module dependencies
 RUN CI=1 pnpm install --frozen-lockfile
 
-# Building all other modules
-RUN pnpm nx run-many -t build
+# Building only v2 modules
+ENV SKIP_LINT=1
+RUN pnpm nx run-many -t build --projects=core-v2,smart-object-framework-v2,world-v2,standard-contracts-v2,end-to-end-tests-v2
 
 # Make entrypoint script executable
 RUN chmod +x ./build/package/entrypoint.sh

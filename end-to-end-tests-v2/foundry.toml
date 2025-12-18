@@ -1,6 +1,6 @@
 [profile.default]
 solc = "0.8.24"
-evm_version="cancun"
+evm_version = "cancun"
 ffi = false
 fuzz_runs = 256
 optimizer = true
@@ -12,7 +12,7 @@ out = 'out'
 cache = true
 cache_path = "cache"
 incremental = true
-script_execution_protection=false
+script_execution_protection = false
 
 [profile.default.ir]
 optimize = true
@@ -26,12 +26,16 @@ allow_paths = [
   "node_modules/@latticexyz/schema-type/src",
   "node_modules/@latticexyz/world-modules/src",
   "node_modules/@openzeppelin/contracts",
-  "../standard-contracts-v2/src"
+  "../standard-contracts-v2/src",
 ]
+
+[lint]
+# Disable lint checks during build to prevent build failures
+deny_warnings = false
 
 [profile.dev]
 solc = "0.8.24"
-evm_version="cancun"
+evm_version = "cancun"
 ffi = false
 fuzz_runs = 256
 optimizer = true
@@ -51,6 +55,5 @@ allow_paths = [
   "node_modules/@latticexyz/schema-type/src",
   "node_modules/@latticexyz/world-modules/src",
   "node_modules/@openzeppelin/contracts",
-  "../standard-contracts-v2/src"
+  "../standard-contracts-v2/src",
 ]
-

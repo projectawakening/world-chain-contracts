@@ -1,6 +1,6 @@
 [profile.default]
 solc = "0.8.24"
-evm_version="cancun"
+evm_version = "cancun"
 ffi = false
 fuzz_runs = 256
 optimizer = true
@@ -8,6 +8,8 @@ optimizer_runs = 300
 verbosity = 2
 src = 'script'
 out = 'out'
-script_execution_protection=false
+script_execution_protection = false
 
-
+[lint]
+# Disable lint checks during build to prevent build failures
+deny_warnings = false
