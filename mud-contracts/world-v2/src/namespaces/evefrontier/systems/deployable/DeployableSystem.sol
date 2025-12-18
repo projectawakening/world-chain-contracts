@@ -161,7 +161,11 @@ contract DeployableSystem is SmartObjectFramework {
     ownershipSystem.removeOwner(smartObjectId, owner);
 
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
-    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+    if (
+      NetworkNode.getExists(networkNodeId) &&
+      NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId) &&
+      (previousState == State.ONLINE)
+    ) {
       networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
       networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
@@ -294,7 +298,11 @@ contract DeployableSystem is SmartObjectFramework {
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
-    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+    if (
+      NetworkNode.getExists(networkNodeId) &&
+      NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId) &&
+      (previousState == State.ONLINE)
+    ) {
       networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
       networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
