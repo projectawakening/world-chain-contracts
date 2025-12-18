@@ -164,7 +164,7 @@ contract DeployableSystem is SmartObjectFramework {
     if (
       NetworkNode.getExists(networkNodeId) &&
       NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId) &&
-      (DeployableState.getCurrentState(smartObjectId) == State.ONLINE)
+      (previousState == State.ONLINE)
     ) {
       networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
       networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
@@ -301,7 +301,7 @@ contract DeployableSystem is SmartObjectFramework {
     if (
       NetworkNode.getExists(networkNodeId) &&
       NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId) &&
-      (DeployableState.getCurrentState(smartObjectId) == State.ONLINE)
+      (previousState == State.ONLINE)
     ) {
       networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
       networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
