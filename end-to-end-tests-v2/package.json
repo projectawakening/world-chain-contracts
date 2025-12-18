@@ -47,7 +47,7 @@
     "@latticexyz/store": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/world": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
     "@latticexyz/world-modules": "2.2.15-main-ba5191c3d6f74b3c4982afd465cf449d23d70bb7",
-    "@openzeppelin/contracts": "^5.0.1"
+    "@openzeppelin/contracts": "^5.4.0"
   },
   "devDependencies": {
     "@types/debug": "4.1.7",
