@@ -161,12 +161,10 @@ contract DeployableSystem is SmartObjectFramework {
     ownershipSystem.removeOwner(smartObjectId, owner);
 
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
-    if (
-      NetworkNode.getExists(networkNodeId) &&
-      NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId) &&
-      (previousState == State.ONLINE)
-    ) {
-      networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
+    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+      if ((previousState == State.ONLINE)) {
+        networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId);
+      }
       networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
       // For network nodes, stop burning fuel before bringing offline
@@ -298,12 +296,10 @@ contract DeployableSystem is SmartObjectFramework {
     locationSystem.saveLocation(smartObjectId, LocationData({ solarSystemId: 0, x: 0, y: 0, z: 0 }));
 
     uint256 networkNodeId = NetworkNodeByAssembly.getNetworkNodeId(smartObjectId);
-    if (
-      NetworkNode.getExists(networkNodeId) &&
-      NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId) &&
-      (previousState == State.ONLINE)
-    ) {
-      networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId); //release energy
+    if (NetworkNode.getExists(networkNodeId) && NetworkNodeAssemblyLink.getIsConnected(networkNodeId, smartObjectId)) {
+      if ((previousState == State.ONLINE)) {
+        networkNodeSystem.releaseAssemblyEnergy(networkNodeId, smartObjectId);
+      }
       networkNodeSystem.disconnectAssembly(networkNodeId, smartObjectId);
     } else if (NetworkNode.getExists(smartObjectId)) {
       // For network nodes, stop burning fuel before bringing offline
