@@ -70,21 +70,23 @@ export default defineWorld({
         },
         Role: {
           schema: {
+            entityId: "uint256",
             role: "bytes32",
             exists: "bool",
             admin: "bytes32",
             members: "address[]",
           },
-          key: ["role"],
+          key: ["entityId", "role"],
         },
         HasRole: {
           schema: {
+            entityId: "uint256",
             role: "bytes32",
             account: "address",
             isMember: "bool",
             index: "uint256",
           },
-          key: ["role", "account"],
+          key: ["entityId", "role", "account"],
         },
         /*******************
          * ENTITES and ENTITY MAPPED DATA *

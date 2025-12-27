@@ -18,7 +18,7 @@ interface IEntitySystem {
   error Entity_PropertyTagNotFound(uint256 entityId, TagId tagId);
   error Entity_EntityRelationsFound(uint256 classId, uint256 numOfTags);
   error Entity_BadRoleConfirmation();
-  error Entity_RoleDoesNotExist(bytes32 role);
+  error Entity_RoleDoesNotExist(uint256 entityId, bytes32 role);
 
   function evefrontier__registerClass(uint256 classId, ResourceId[] memory scopedSystemIds) external;
 

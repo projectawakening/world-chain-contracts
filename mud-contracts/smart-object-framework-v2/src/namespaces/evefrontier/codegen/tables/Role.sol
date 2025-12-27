@@ -29,8 +29,8 @@ library Role {
   FieldLayout constant _fieldLayout =
     FieldLayout.wrap(0x0021020101200000000000000000000000000000000000000000000000000000);
 
-  // Hex-encoded key schema of (bytes32)
-  Schema constant _keySchema = Schema.wrap(0x002001005f000000000000000000000000000000000000000000000000000000);
+  // Hex-encoded key schema of (uint256, bytes32)
+  Schema constant _keySchema = Schema.wrap(0x004002001f5f0000000000000000000000000000000000000000000000000000);
   // Hex-encoded value schema of (bool, bytes32, address[])
   Schema constant _valueSchema = Schema.wrap(0x00210201605fc300000000000000000000000000000000000000000000000000);
 
@@ -39,8 +39,9 @@ library Role {
    * @return keyNames An array of strings with the names of key fields.
    */
   function getKeyNames() internal pure returns (string[] memory keyNames) {
-    keyNames = new string[](1);
-    keyNames[0] = "role";
+    keyNames = new string[](2);
+    keyNames[0] = "entityId";
+    keyNames[1] = "role";
   }
 
   /**
@@ -71,9 +72,10 @@ library Role {
   /**
    * @notice Get exists.
    */
-  function getExists(bytes32 role) internal view returns (bool exists) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function getExists(uint256 entityId, bytes32 role) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -82,9 +84,10 @@ library Role {
   /**
    * @notice Get exists.
    */
-  function _getExists(bytes32 role) internal view returns (bool exists) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _getExists(uint256 entityId, bytes32 role) internal view returns (bool exists) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 0, _fieldLayout);
     return (_toBool(uint8(bytes1(_blob))));
@@ -93,9 +96,10 @@ library Role {
   /**
    * @notice Set exists.
    */
-  function setExists(bytes32 role, bool exists) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function setExists(uint256 entityId, bytes32 role, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
   }
@@ -103,9 +107,10 @@ library Role {
   /**
    * @notice Set exists.
    */
-  function _setExists(bytes32 role, bool exists) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _setExists(uint256 entityId, bytes32 role, bool exists) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.setStaticField(_tableId, _keyTuple, 0, abi.encodePacked((exists)), _fieldLayout);
   }
@@ -113,9 +118,10 @@ library Role {
   /**
    * @notice Get admin.
    */
-  function getAdmin(bytes32 role) internal view returns (bytes32 admin) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function getAdmin(uint256 entityId, bytes32 role) internal view returns (bytes32 admin) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     bytes32 _blob = StoreSwitch.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (bytes32(_blob));
@@ -124,9 +130,10 @@ library Role {
   /**
    * @notice Get admin.
    */
-  function _getAdmin(bytes32 role) internal view returns (bytes32 admin) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _getAdmin(uint256 entityId, bytes32 role) internal view returns (bytes32 admin) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     bytes32 _blob = StoreCore.getStaticField(_tableId, _keyTuple, 1, _fieldLayout);
     return (bytes32(_blob));
@@ -135,9 +142,10 @@ library Role {
   /**
    * @notice Set admin.
    */
-  function setAdmin(bytes32 role, bytes32 admin) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function setAdmin(uint256 entityId, bytes32 role, bytes32 admin) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((admin)), _fieldLayout);
   }
@@ -145,9 +153,10 @@ library Role {
   /**
    * @notice Set admin.
    */
-  function _setAdmin(bytes32 role, bytes32 admin) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _setAdmin(uint256 entityId, bytes32 role, bytes32 admin) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.setStaticField(_tableId, _keyTuple, 1, abi.encodePacked((admin)), _fieldLayout);
   }
@@ -155,9 +164,10 @@ library Role {
   /**
    * @notice Get members.
    */
-  function getMembers(bytes32 role) internal view returns (address[] memory members) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function getMembers(uint256 entityId, bytes32 role) internal view returns (address[] memory members) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     bytes memory _blob = StoreSwitch.getDynamicField(_tableId, _keyTuple, 0);
     return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_address());
@@ -166,9 +176,10 @@ library Role {
   /**
    * @notice Get members.
    */
-  function _getMembers(bytes32 role) internal view returns (address[] memory members) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _getMembers(uint256 entityId, bytes32 role) internal view returns (address[] memory members) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     bytes memory _blob = StoreCore.getDynamicField(_tableId, _keyTuple, 0);
     return (SliceLib.getSubslice(_blob, 0, _blob.length).decodeArray_address());
@@ -177,9 +188,10 @@ library Role {
   /**
    * @notice Set members.
    */
-  function setMembers(bytes32 role, address[] memory members) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function setMembers(uint256 entityId, bytes32 role, address[] memory members) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((members)));
   }
@@ -187,9 +199,10 @@ library Role {
   /**
    * @notice Set members.
    */
-  function _setMembers(bytes32 role, address[] memory members) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _setMembers(uint256 entityId, bytes32 role, address[] memory members) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.setDynamicField(_tableId, _keyTuple, 0, EncodeArray.encode((members)));
   }
@@ -197,9 +210,10 @@ library Role {
   /**
    * @notice Get the length of members.
    */
-  function lengthMembers(bytes32 role) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function lengthMembers(uint256 entityId, bytes32 role) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     uint256 _byteLength = StoreSwitch.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -210,9 +224,10 @@ library Role {
   /**
    * @notice Get the length of members.
    */
-  function _lengthMembers(bytes32 role) internal view returns (uint256) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _lengthMembers(uint256 entityId, bytes32 role) internal view returns (uint256) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     uint256 _byteLength = StoreCore.getDynamicFieldLength(_tableId, _keyTuple, 0);
     unchecked {
@@ -224,9 +239,10 @@ library Role {
    * @notice Get an item of members.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function getItemMembers(bytes32 role, uint256 _index) internal view returns (address) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function getItemMembers(uint256 entityId, bytes32 role, uint256 _index) internal view returns (address) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     unchecked {
       bytes memory _blob = StoreSwitch.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 20, (_index + 1) * 20);
@@ -238,9 +254,10 @@ library Role {
    * @notice Get an item of members.
    * @dev Reverts with Store_IndexOutOfBounds if `_index` is out of bounds for the array.
    */
-  function _getItemMembers(bytes32 role, uint256 _index) internal view returns (address) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _getItemMembers(uint256 entityId, bytes32 role, uint256 _index) internal view returns (address) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     unchecked {
       bytes memory _blob = StoreCore.getDynamicFieldSlice(_tableId, _keyTuple, 0, _index * 20, (_index + 1) * 20);
@@ -251,9 +268,10 @@ library Role {
   /**
    * @notice Push an element to members.
    */
-  function pushMembers(bytes32 role, address _element) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function pushMembers(uint256 entityId, bytes32 role, address _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
   }
@@ -261,9 +279,10 @@ library Role {
   /**
    * @notice Push an element to members.
    */
-  function _pushMembers(bytes32 role, address _element) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _pushMembers(uint256 entityId, bytes32 role, address _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.pushToDynamicField(_tableId, _keyTuple, 0, abi.encodePacked((_element)));
   }
@@ -271,9 +290,10 @@ library Role {
   /**
    * @notice Pop an element from members.
    */
-  function popMembers(bytes32 role) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function popMembers(uint256 entityId, bytes32 role) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.popFromDynamicField(_tableId, _keyTuple, 0, 20);
   }
@@ -281,9 +301,10 @@ library Role {
   /**
    * @notice Pop an element from members.
    */
-  function _popMembers(bytes32 role) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _popMembers(uint256 entityId, bytes32 role) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.popFromDynamicField(_tableId, _keyTuple, 0, 20);
   }
@@ -291,9 +312,10 @@ library Role {
   /**
    * @notice Update an element of members at `_index`.
    */
-  function updateMembers(bytes32 role, uint256 _index, address _element) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function updateMembers(uint256 entityId, bytes32 role, uint256 _index, address _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     unchecked {
       bytes memory _encoded = abi.encodePacked((_element));
@@ -304,9 +326,10 @@ library Role {
   /**
    * @notice Update an element of members at `_index`.
    */
-  function _updateMembers(bytes32 role, uint256 _index, address _element) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _updateMembers(uint256 entityId, bytes32 role, uint256 _index, address _element) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     unchecked {
       bytes memory _encoded = abi.encodePacked((_element));
@@ -317,9 +340,10 @@ library Role {
   /**
    * @notice Get the full data.
    */
-  function get(bytes32 role) internal view returns (RoleData memory _table) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function get(uint256 entityId, bytes32 role) internal view returns (RoleData memory _table) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreSwitch.getRecord(
       _tableId,
@@ -332,9 +356,10 @@ library Role {
   /**
    * @notice Get the full data.
    */
-  function _get(bytes32 role) internal view returns (RoleData memory _table) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _get(uint256 entityId, bytes32 role) internal view returns (RoleData memory _table) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     (bytes memory _staticData, EncodedLengths _encodedLengths, bytes memory _dynamicData) = StoreCore.getRecord(
       _tableId,
@@ -347,14 +372,15 @@ library Role {
   /**
    * @notice Set the full data using individual values.
    */
-  function set(bytes32 role, bool exists, bytes32 admin, address[] memory members) internal {
+  function set(uint256 entityId, bytes32 role, bool exists, bytes32 admin, address[] memory members) internal {
     bytes memory _staticData = encodeStatic(exists, admin);
 
     EncodedLengths _encodedLengths = encodeLengths(members);
     bytes memory _dynamicData = encodeDynamic(members);
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -362,14 +388,15 @@ library Role {
   /**
    * @notice Set the full data using individual values.
    */
-  function _set(bytes32 role, bool exists, bytes32 admin, address[] memory members) internal {
+  function _set(uint256 entityId, bytes32 role, bool exists, bytes32 admin, address[] memory members) internal {
     bytes memory _staticData = encodeStatic(exists, admin);
 
     EncodedLengths _encodedLengths = encodeLengths(members);
     bytes memory _dynamicData = encodeDynamic(members);
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -377,14 +404,15 @@ library Role {
   /**
    * @notice Set the full data using the data struct.
    */
-  function set(bytes32 role, RoleData memory _table) internal {
+  function set(uint256 entityId, bytes32 role, RoleData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.exists, _table.admin);
 
     EncodedLengths _encodedLengths = encodeLengths(_table.members);
     bytes memory _dynamicData = encodeDynamic(_table.members);
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData);
   }
@@ -392,14 +420,15 @@ library Role {
   /**
    * @notice Set the full data using the data struct.
    */
-  function _set(bytes32 role, RoleData memory _table) internal {
+  function _set(uint256 entityId, bytes32 role, RoleData memory _table) internal {
     bytes memory _staticData = encodeStatic(_table.exists, _table.admin);
 
     EncodedLengths _encodedLengths = encodeLengths(_table.members);
     bytes memory _dynamicData = encodeDynamic(_table.members);
 
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.setRecord(_tableId, _keyTuple, _staticData, _encodedLengths, _dynamicData, _fieldLayout);
   }
@@ -447,9 +476,10 @@ library Role {
   /**
    * @notice Delete all data for given keys.
    */
-  function deleteRecord(bytes32 role) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function deleteRecord(uint256 entityId, bytes32 role) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreSwitch.deleteRecord(_tableId, _keyTuple);
   }
@@ -457,9 +487,10 @@ library Role {
   /**
    * @notice Delete all data for given keys.
    */
-  function _deleteRecord(bytes32 role) internal {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function _deleteRecord(uint256 entityId, bytes32 role) internal {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     StoreCore.deleteRecord(_tableId, _keyTuple, _fieldLayout);
   }
@@ -513,9 +544,10 @@ library Role {
   /**
    * @notice Encode keys as a bytes32 array using this table's field layout.
    */
-  function encodeKeyTuple(bytes32 role) internal pure returns (bytes32[] memory) {
-    bytes32[] memory _keyTuple = new bytes32[](1);
-    _keyTuple[0] = role;
+  function encodeKeyTuple(uint256 entityId, bytes32 role) internal pure returns (bytes32[] memory) {
+    bytes32[] memory _keyTuple = new bytes32[](2);
+    _keyTuple[0] = bytes32(uint256(entityId));
+    _keyTuple[1] = role;
 
     return _keyTuple;
   }

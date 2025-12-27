@@ -11,24 +11,22 @@ pragma solidity >=0.8.24;
 interface IRoleManagementSystem {
   error RoleManagement_InvalidRole();
   error RoleManagement_InvalidRoleMember();
-  error RoleManagement_RoleAlreadyCreated(bytes32 role);
-  error RoleManagement_UnauthorizedAccount(bytes32 role, address caller);
+  error RoleManagement_RoleAlreadyCreated(uint256 entityId, bytes32 role);
+  error RoleManagement_UnauthorizedAccount(uint256 entityId, bytes32 role, address caller);
   error RoleManagement_MustRenounceSelf();
   error RoleManagement_BadConfirmation();
-  error RoleManagement_RoleDoesNotExist(bytes32 role);
-  error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
+  error RoleManagement_RoleDoesNotExist(uint256 entityId, bytes32 role);
+  error RoleManagement_AdminAlreadyAssigned(uint256 entityId, bytes32 role, bytes32 admin);
 
-  function evefrontier__createRole(bytes32 role, bytes32 admin) external;
+  function evefrontier__transferRoleAdmin(uint256 entityId, bytes32 role, bytes32 newAdmin) external;
 
-  function evefrontier__transferRoleAdmin(bytes32 role, bytes32 newAdmin) external;
+  function evefrontier__grantRole(uint256 entityId, bytes32 role, address account) external;
 
-  function evefrontier__grantRole(bytes32 role, address account) external;
+  function evefrontier__revokeRole(uint256 entityId, bytes32 role, address account) external;
 
-  function evefrontier__revokeRole(bytes32 role, address account) external;
+  function evefrontier__renounceRole(uint256 entityId, bytes32 role, address callerConfirmation) external;
 
-  function evefrontier__renounceRole(bytes32 role, address callerConfirmation) external;
-
-  function evefrontier__revokeAll(bytes32 role) external;
+  function evefrontier__revokeAll(uint256 entityId, bytes32 role) external;
 
   function evefrontier__scopedCreateRole(uint256 entityId, bytes32 role, bytes32 admin, address roleMember) external;
 

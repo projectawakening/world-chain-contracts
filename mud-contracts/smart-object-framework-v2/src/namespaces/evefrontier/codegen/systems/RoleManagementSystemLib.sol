@@ -37,35 +37,36 @@ library RoleManagementSystemLib {
   error RoleManagementSystemLib_CallingFromRootSystem();
   error RoleManagement_InvalidRole();
   error RoleManagement_InvalidRoleMember();
-  error RoleManagement_RoleAlreadyCreated(bytes32 role);
-  error RoleManagement_UnauthorizedAccount(bytes32 role, address caller);
+  error RoleManagement_RoleAlreadyCreated(uint256 entityId, bytes32 role);
+  error RoleManagement_UnauthorizedAccount(uint256 entityId, bytes32 role, address caller);
   error RoleManagement_MustRenounceSelf();
   error RoleManagement_BadConfirmation();
-  error RoleManagement_RoleDoesNotExist(bytes32 role);
-  error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
+  error RoleManagement_RoleDoesNotExist(uint256 entityId, bytes32 role);
+  error RoleManagement_AdminAlreadyAssigned(uint256 entityId, bytes32 role, bytes32 admin);
 
-  function createRole(RoleManagementSystemType self, bytes32 role, bytes32 admin) internal {
-    return CallWrapper(self.toResourceId(), address(0)).createRole(role, admin);
+  function transferRoleAdmin(RoleManagementSystemType self, uint256 entityId, bytes32 role, bytes32 newAdmin) internal {
+    return CallWrapper(self.toResourceId(), address(0)).transferRoleAdmin(entityId, role, newAdmin);
   }
 
-  function transferRoleAdmin(RoleManagementSystemType self, bytes32 role, bytes32 newAdmin) internal {
-    return CallWrapper(self.toResourceId(), address(0)).transferRoleAdmin(role, newAdmin);
+  function grantRole(RoleManagementSystemType self, uint256 entityId, bytes32 role, address account) internal {
+    return CallWrapper(self.toResourceId(), address(0)).grantRole(entityId, role, account);
   }
 
-  function grantRole(RoleManagementSystemType self, bytes32 role, address account) internal {
-    return CallWrapper(self.toResourceId(), address(0)).grantRole(role, account);
+  function revokeRole(RoleManagementSystemType self, uint256 entityId, bytes32 role, address account) internal {
+    return CallWrapper(self.toResourceId(), address(0)).revokeRole(entityId, role, account);
   }
 
-  function revokeRole(RoleManagementSystemType self, bytes32 role, address account) internal {
-    return CallWrapper(self.toResourceId(), address(0)).revokeRole(role, account);
+  function renounceRole(
+    RoleManagementSystemType self,
+    uint256 entityId,
+    bytes32 role,
+    address callerConfirmation
+  ) internal {
+    return CallWrapper(self.toResourceId(), address(0)).renounceRole(entityId, role, callerConfirmation);
   }
 
-  function renounceRole(RoleManagementSystemType self, bytes32 role, address callerConfirmation) internal {
-    return CallWrapper(self.toResourceId(), address(0)).renounceRole(role, callerConfirmation);
-  }
-
-  function revokeAll(RoleManagementSystemType self, bytes32 role) internal {
-    return CallWrapper(self.toResourceId(), address(0)).revokeAll(role);
+  function revokeAll(RoleManagementSystemType self, uint256 entityId, bytes32 role) internal {
+    return CallWrapper(self.toResourceId(), address(0)).revokeAll(entityId, role);
   }
 
   function scopedCreateRole(
@@ -108,61 +109,57 @@ library RoleManagementSystemLib {
     return CallWrapper(self.toResourceId(), address(0)).scopedRevokeAll(entityId, role);
   }
 
-  function createRole(CallWrapper memory self, bytes32 role, bytes32 admin) internal {
+  function transferRoleAdmin(CallWrapper memory self, uint256 entityId, bytes32 role, bytes32 newAdmin) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert RoleManagementSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_createRole_bytes32_bytes32.createRole, (role, admin));
+    bytes memory systemCall = abi.encodeCall(
+      _transferRoleAdmin_uint256_bytes32_bytes32.transferRoleAdmin,
+      (entityId, role, newAdmin)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function transferRoleAdmin(CallWrapper memory self, bytes32 role, bytes32 newAdmin) internal {
+  function grantRole(CallWrapper memory self, uint256 entityId, bytes32 role, address account) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert RoleManagementSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_transferRoleAdmin_bytes32_bytes32.transferRoleAdmin, (role, newAdmin));
+    bytes memory systemCall = abi.encodeCall(_grantRole_uint256_bytes32_address.grantRole, (entityId, role, account));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function grantRole(CallWrapper memory self, bytes32 role, address account) internal {
+  function revokeRole(CallWrapper memory self, uint256 entityId, bytes32 role, address account) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert RoleManagementSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_grantRole_bytes32_address.grantRole, (role, account));
+    bytes memory systemCall = abi.encodeCall(_revokeRole_uint256_bytes32_address.revokeRole, (entityId, role, account));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function revokeRole(CallWrapper memory self, bytes32 role, address account) internal {
+  function renounceRole(CallWrapper memory self, uint256 entityId, bytes32 role, address callerConfirmation) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert RoleManagementSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_revokeRole_bytes32_address.revokeRole, (role, account));
+    bytes memory systemCall = abi.encodeCall(
+      _renounceRole_uint256_bytes32_address.renounceRole,
+      (entityId, role, callerConfirmation)
+    );
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function renounceRole(CallWrapper memory self, bytes32 role, address callerConfirmation) internal {
+  function revokeAll(CallWrapper memory self, uint256 entityId, bytes32 role) internal {
     // if the contract calling this function is a root system, it should use `callAsRoot`
     if (address(_world()) == address(this)) revert RoleManagementSystemLib_CallingFromRootSystem();
 
-    bytes memory systemCall = abi.encodeCall(_renounceRole_bytes32_address.renounceRole, (role, callerConfirmation));
-    self.from == address(0)
-      ? _world().call(self.systemId, systemCall)
-      : _world().callFrom(self.from, self.systemId, systemCall);
-  }
-
-  function revokeAll(CallWrapper memory self, bytes32 role) internal {
-    // if the contract calling this function is a root system, it should use `callAsRoot`
-    if (address(_world()) == address(this)) revert RoleManagementSystemLib_CallingFromRootSystem();
-
-    bytes memory systemCall = abi.encodeCall(_revokeAll_bytes32.revokeAll, (role));
+    bytes memory systemCall = abi.encodeCall(_revokeAll_uint256_bytes32.revokeAll, (entityId, role));
     self.from == address(0)
       ? _world().call(self.systemId, systemCall)
       : _world().callFrom(self.from, self.systemId, systemCall);
@@ -254,33 +251,39 @@ library RoleManagementSystemLib {
       : _world().callFrom(self.from, self.systemId, systemCall);
   }
 
-  function createRole(RootCallWrapper memory self, bytes32 role, bytes32 admin) internal {
-    bytes memory systemCall = abi.encodeCall(_createRole_bytes32_bytes32.createRole, (role, admin));
+  function transferRoleAdmin(RootCallWrapper memory self, uint256 entityId, bytes32 role, bytes32 newAdmin) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _transferRoleAdmin_uint256_bytes32_bytes32.transferRoleAdmin,
+      (entityId, role, newAdmin)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function transferRoleAdmin(RootCallWrapper memory self, bytes32 role, bytes32 newAdmin) internal {
-    bytes memory systemCall = abi.encodeCall(_transferRoleAdmin_bytes32_bytes32.transferRoleAdmin, (role, newAdmin));
+  function grantRole(RootCallWrapper memory self, uint256 entityId, bytes32 role, address account) internal {
+    bytes memory systemCall = abi.encodeCall(_grantRole_uint256_bytes32_address.grantRole, (entityId, role, account));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function grantRole(RootCallWrapper memory self, bytes32 role, address account) internal {
-    bytes memory systemCall = abi.encodeCall(_grantRole_bytes32_address.grantRole, (role, account));
+  function revokeRole(RootCallWrapper memory self, uint256 entityId, bytes32 role, address account) internal {
+    bytes memory systemCall = abi.encodeCall(_revokeRole_uint256_bytes32_address.revokeRole, (entityId, role, account));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function revokeRole(RootCallWrapper memory self, bytes32 role, address account) internal {
-    bytes memory systemCall = abi.encodeCall(_revokeRole_bytes32_address.revokeRole, (role, account));
+  function renounceRole(
+    RootCallWrapper memory self,
+    uint256 entityId,
+    bytes32 role,
+    address callerConfirmation
+  ) internal {
+    bytes memory systemCall = abi.encodeCall(
+      _renounceRole_uint256_bytes32_address.renounceRole,
+      (entityId, role, callerConfirmation)
+    );
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
-  function renounceRole(RootCallWrapper memory self, bytes32 role, address callerConfirmation) internal {
-    bytes memory systemCall = abi.encodeCall(_renounceRole_bytes32_address.renounceRole, (role, callerConfirmation));
-    SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
-  }
-
-  function revokeAll(RootCallWrapper memory self, bytes32 role) internal {
-    bytes memory systemCall = abi.encodeCall(_revokeAll_bytes32.revokeAll, (role));
+  function revokeAll(RootCallWrapper memory self, uint256 entityId, bytes32 role) internal {
+    bytes memory systemCall = abi.encodeCall(_revokeAll_uint256_bytes32.revokeAll, (entityId, role));
     SystemCall.callWithHooksOrRevert(self.from, self.systemId, systemCall, msg.value);
   }
 
@@ -383,28 +386,24 @@ library RoleManagementSystemLib {
  * Each interface is uniquely named based on the function name and parameters to prevent collisions.
  */
 
-interface _createRole_bytes32_bytes32 {
-  function createRole(bytes32 role, bytes32 admin) external;
+interface _transferRoleAdmin_uint256_bytes32_bytes32 {
+  function transferRoleAdmin(uint256 entityId, bytes32 role, bytes32 newAdmin) external;
 }
 
-interface _transferRoleAdmin_bytes32_bytes32 {
-  function transferRoleAdmin(bytes32 role, bytes32 newAdmin) external;
+interface _grantRole_uint256_bytes32_address {
+  function grantRole(uint256 entityId, bytes32 role, address account) external;
 }
 
-interface _grantRole_bytes32_address {
-  function grantRole(bytes32 role, address account) external;
+interface _revokeRole_uint256_bytes32_address {
+  function revokeRole(uint256 entityId, bytes32 role, address account) external;
 }
 
-interface _revokeRole_bytes32_address {
-  function revokeRole(bytes32 role, address account) external;
+interface _renounceRole_uint256_bytes32_address {
+  function renounceRole(uint256 entityId, bytes32 role, address callerConfirmation) external;
 }
 
-interface _renounceRole_bytes32_address {
-  function renounceRole(bytes32 role, address callerConfirmation) external;
-}
-
-interface _revokeAll_bytes32 {
-  function revokeAll(bytes32 role) external;
+interface _revokeAll_uint256_bytes32 {
+  function revokeAll(uint256 entityId, bytes32 role) external;
 }
 
 interface _scopedCreateRole_uint256_bytes32_bytes32_address {

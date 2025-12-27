@@ -18,12 +18,12 @@ import { SmartObjectFramework } from "../../../../inherit/SmartObjectFramework.s
 contract RoleManagementSystem is SmartObjectFramework {
   error RoleManagement_InvalidRole();
   error RoleManagement_InvalidRoleMember();
-  error RoleManagement_RoleAlreadyCreated(bytes32 role);
-  error RoleManagement_UnauthorizedAccount(bytes32 role, address caller);
+  error RoleManagement_RoleAlreadyCreated(uint256 entityId, bytes32 role);
+  error RoleManagement_UnauthorizedAccount(uint256 entityId, bytes32 role, address caller);
   error RoleManagement_MustRenounceSelf();
   error RoleManagement_BadConfirmation();
-  error RoleManagement_RoleDoesNotExist(bytes32 role);
-  error RoleManagement_AdminAlreadyAssigned(bytes32 role, bytes32 admin);
+  error RoleManagement_RoleDoesNotExist(uint256 entityId, bytes32 role);
+  error RoleManagement_AdminAlreadyAssigned(uint256 entityId, bytes32 role, bytes32 admin);
 
   /**
    * @dev Modifier that checks if `account` is a member of a specific role with `roleId`. Reverts
@@ -31,34 +31,9 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The role identifier to check
    * @param account The address to verify role membership for
    */
-  modifier onlyRole(bytes32 role, address account) {
-    _checkRole(role, account);
+  modifier onlyRole(uint256 entityId, bytes32 role, address account) {
+    _checkRole(entityId, role, account);
     _;
-  }
-
-  /**
-   * @notice Create a new `role` with specified `admin` role
-   * @dev Creates a new entry in the {Role} table assigning an admin value, and exsitence
-   *   flag under the `role` key. NOTE: If `role` and `admin` are identical, then creates self-administered role
-   * @param role The identifier for the new role
-   * @param admin The identifier for the admin role
-   */
-  function createRole(bytes32 role, bytes32 admin) external virtual context {
-    if (role == bytes32(0) || admin == bytes32(0)) {
-      revert RoleManagement_InvalidRole();
-    }
-
-    if (Role.getExists(role)) {
-      revert RoleManagement_RoleAlreadyCreated(role);
-    }
-
-    if (role == admin) {
-      _createRole(role, admin);
-      _grantRole(role, _callMsgSender(1));
-    } else {
-      _checkRole(admin, _callMsgSender(1));
-      _createRole(role, admin);
-    }
   }
 
   /**
@@ -68,10 +43,11 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param newAdmin The new admin role to set
    */
   function transferRoleAdmin(
+    uint256 entityId,
     bytes32 role,
     bytes32 newAdmin
-  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
-    _setRoleAdmin(role, newAdmin);
+  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(entityId, role), _callMsgSender(1)) {
+    _setRoleAdmin(entityId, role, newAdmin);
   }
 
   /**
@@ -81,10 +57,11 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param account The account to grant as a member.
    */
   function grantRole(
+    uint256 entityId,
     bytes32 role,
     address account
-  ) external virtual context onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
-    _grantRole(role, account);
+  ) external virtual context onlyRole(Role.getAdmin(entityId, role), _callMsgSender(1)) {
+    _grantRole(entityId, role, account);
   }
 
   /**
@@ -94,13 +71,14 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param account The account to remove as a member
    */
   function revokeRole(
+    uint256 entityId,
     bytes32 role,
     address account
-  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(entityId, role), _callMsgSender(1)) {
     if (account == _callMsgSender(1)) {
       revert RoleManagement_MustRenounceSelf();
     }
-    _revokeRole(role, account);
+    _revokeRole(entityId, role, account);
   }
 
   /**
@@ -109,12 +87,12 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role The role to revoke account membership for
    * @param callerConfirmation Address of the world entry point caller for verification
    */
-  function renounceRole(bytes32 role, address callerConfirmation) external virtual context enforceCallCount(1) {
+  function renounceRole(uint256 entityId, bytes32 role, address callerConfirmation) external virtual context enforceCallCount(1) {
     if (callerConfirmation != _callMsgSender(1)) {
       revert RoleManagement_BadConfirmation();
     }
 
-    _revokeRole(role, callerConfirmation);
+    _revokeRole(entityId, role, callerConfirmation);
   }
 
   /**
@@ -124,11 +102,12 @@ contract RoleManagementSystem is SmartObjectFramework {
    * WARNING: Use with caution! This will remove role memberships for ALL member accounts
    */
   function revokeAll(
+    uint256 entityId,
     bytes32 role
-  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(role), _callMsgSender(1)) {
+  ) external virtual context enforceCallCount(1) onlyRole(Role.getAdmin(entityId, role), _callMsgSender(1)) {
     address[] memory members = Role.getMembers(role);
     for (uint256 i = 0; i < members.length; i++) {
-      _revokeRole(role, members[i]);
+      _revokeRole(entityId, role, members[i]);
     }
   }
 
@@ -158,18 +137,20 @@ contract RoleManagementSystem is SmartObjectFramework {
     }
 
     if (Role.getExists(role)) {
-      revert RoleManagement_RoleAlreadyCreated(role);
+      revert RoleManagement_RoleAlreadyCreated(entityId, role);
     }
 
     if (role == admin) {
       if (roleMember == address(0)) {
         revert RoleManagement_InvalidRoleMember();
       }
-      _createRole(role, admin);
-      _grantRole(role, roleMember);
+      _createRole(entityId, role, admin);
+      _grantRole(entityId, role, roleMember);
     } else {
-      _checkRole(admin, _callMsgSender(1));
-      _createRole(role, admin);
+      if (!Role.getExists(admin)) {
+        revert RoleManagement_RoleDoesNotExist(entityId, admin);
+      }
+      _createRole(entityId, role, admin);
     }
   }
 
@@ -186,7 +167,7 @@ contract RoleManagementSystem is SmartObjectFramework {
     bytes32 role,
     bytes32 newAdmin
   ) external virtual context access(entityId) {
-    _setRoleAdmin(role, newAdmin);
+    _setRoleAdmin(entityId, role, newAdmin);
   }
 
   /**
@@ -198,7 +179,7 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @dev access configuration - only callable by a Class scoped System of `entityId` (see SOFAccessSystem.allowClassScopedSystem)
    */
   function scopedGrantRole(uint256 entityId, bytes32 role, address account) external virtual context access(entityId) {
-    _grantRole(role, account);
+    _grantRole(entityId, role, account);
   }
 
   /**
@@ -213,7 +194,7 @@ contract RoleManagementSystem is SmartObjectFramework {
     if (account == _callMsgSender(1)) {
       revert RoleManagement_MustRenounceSelf();
     }
-    _revokeRole(role, account);
+    _revokeRole(entityId, role, account);
   }
 
   /**
@@ -233,7 +214,7 @@ contract RoleManagementSystem is SmartObjectFramework {
       revert RoleManagement_BadConfirmation();
     }
 
-    _revokeRole(role, callerConfirmation);
+    _revokeRole(entityId, role, callerConfirmation);
   }
 
   /**
@@ -246,7 +227,7 @@ contract RoleManagementSystem is SmartObjectFramework {
   function scopedRevokeAll(uint256 entityId, bytes32 role) external virtual context access(entityId) {
     address[] memory members = Role.getMembers(role);
     for (uint256 i = 0; i < members.length; i++) {
-      _revokeRole(role, members[i]);
+      _revokeRole(entityId, role, members[i]);
     }
   }
 
@@ -255,9 +236,9 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role Role to verify
    * @param account Account to check membership of
    */
-  function _checkRole(bytes32 role, address account) internal view virtual {
-    if (!HasRole.getIsMember(role, account)) {
-      revert RoleManagement_UnauthorizedAccount(role, account);
+  function _checkRole(uint256 entityId, bytes32 role, address account) internal view virtual {
+    if (!HasRole.getIsMember(entityId, role, account)) {
+      revert RoleManagement_UnauthorizedAccount(entityId, role, account);
     }
   }
 
@@ -266,10 +247,10 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role Role to create
    * @param admin Admin role to assign
    */
-  function _createRole(bytes32 role, bytes32 admin) internal virtual {
-    Role.set(role, true, bytes32(0), new address[](0));
+  function _createRole(uint256 entityId, bytes32 role, bytes32 admin) internal virtual {
+    Role.set(entityId, role, true, bytes32(0), new address[](0));
 
-    _setRoleAdmin(role, admin);
+    _setRoleAdmin(entityId, role, admin);
   }
 
   /**
@@ -277,16 +258,16 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role Role to modify
    * @param admin New admin role
    */
-  function _setRoleAdmin(bytes32 role, bytes32 admin) internal virtual {
-    RoleData memory roleData = Role.get(role);
-    RoleData memory adminData = Role.get(admin);
+  function _setRoleAdmin(uint256 entityId, bytes32 role, bytes32 admin) internal virtual {
+    RoleData memory roleData = Role.get(entityId, role);
+    RoleData memory adminData = Role.get(entityId, admin);
 
     if (!adminData.exists) {
-      revert RoleManagement_RoleDoesNotExist(admin);
+      revert RoleManagement_RoleDoesNotExist(entityId, admin);
     }
 
     if (roleData.admin == admin) {
-      revert RoleManagement_AdminAlreadyAssigned(role, admin);
+      revert RoleManagement_AdminAlreadyAssigned(entityId, role, admin);
     }
 
     Role.setAdmin(role, admin);
@@ -297,12 +278,12 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role Role to grant
    * @param account Role membership recipient address
    */
-  function _grantRole(bytes32 role, address account) internal virtual {
-    uint256 lengthMembers = Role.lengthMembers(role);
+  function _grantRole(uint256 entityId, bytes32 role, address account) internal virtual {
+    uint256 lengthMembers = Role.lengthMembers(entityId, role);
 
-    if (!HasRole.getIsMember(role, account)) {
-      HasRole.set(role, account, true, lengthMembers);
-      Role.pushMembers(role, account);
+    if (!HasRole.getIsMember(entityId, role, account)) {
+      HasRole.set(entityId, role, account, true, lengthMembers);
+      Role.pushMembers(entityId, role, account);
     }
   }
 
@@ -311,12 +292,12 @@ contract RoleManagementSystem is SmartObjectFramework {
    * @param role Role to revoke
    * @param account Address to revoke role membership from
    */
-  function _revokeRole(bytes32 role, address account) internal virtual {
-    if (HasRole.getIsMember(role, account)) {
-      uint256 memberIndex = HasRole.getIndex(role, account);
-      Role.updateMembers(role, memberIndex, Role.getItemMembers(role, Role.lengthMembers(role) - 1));
-      Role.popMembers(role);
-      HasRole.deleteRecord(role, account);
+  function _revokeRole(uint256 entityId, bytes32 role, address account) internal virtual {
+    if (HasRole.getIsMember(entityId, role, account)) {
+      uint256 memberIndex = HasRole.getIndex(entityId, role, account);
+      Role.updateMembers(entityId, role, memberIndex, Role.getItemMembers(entityId, role, Role.lengthMembers(entityId, role) - 1));
+      Role.popMembers(entityId, role);
+      HasRole.deleteRecord(entityId, role, account);
     }
   }
 }
