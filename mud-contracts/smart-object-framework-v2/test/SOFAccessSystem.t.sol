@@ -10,6 +10,7 @@ import { System } from "@latticexyz/world/src/System.sol";
 import { ResourceId, WorldResourceIdInstance, WorldResourceIdLib } from "@latticexyz/world/src/WorldResourceId.sol";
 import { RESOURCE_NAMESPACE, RESOURCE_SYSTEM } from "@latticexyz/world/src/worldResourceTypes.sol";
 import { ResourceIds } from "@latticexyz/store/src/codegen/tables/ResourceIds.sol";
+import { Systems } from "@latticexyz/world/src/codegen/tables/Systems.sol";
 
 import { IEntitySystem } from "../src/namespaces/evefrontier/interfaces/IEntitySystem.sol";
 import { entitySystem } from "../src/namespaces/evefrontier/codegen/systems/EntitySystemLib.sol";
@@ -29,14 +30,17 @@ import { TagId, TagIdLib } from "../src/libs/TagId.sol";
 
 import { TAG_TYPE_PROPERTY, TAG_TYPE_ENTITY_RELATION, TAG_TYPE_RESOURCE_RELATION, TAG_IDENTIFIER_CLASS, TAG_IDENTIFIER_OBJECT, TAG_IDENTIFIER_ENTITY_COUNT, TagParams, EntityRelationValue, ResourceRelationValue } from "../src/namespaces/evefrontier/systems/tag-system/types.sol";
 
-import { ClassScopedMock } from "./mocks/ClassScopedMock.sol";
-import { UnscopedMock } from "./mocks/UnscopedMock.sol";
+import { createMockForwarder } from "./mocks/MockForwarder.sol";
 import { SmartObjectFramework } from "../src/inherit/SmartObjectFramework.sol";
+
+import { IWorld } from "../src/codegen/world/IWorld.sol";
 
 contract SOFAccessSystemTest is MudTest {
   IBaseWorld world;
-  ClassScopedMock classScopedSystem;
-  UnscopedMock unscopedSystem;
+  IWorld classScopedForwarder;
+  address classScopedSystem;
+  IWorld unscopedForwarder;
+  address unscopedSystem;
 
   ResourceId ENTITY_SYSTEM_ID = entitySystem.toResourceId();
   ResourceId TAG_SYSTEM_ID = tagSystem.toResourceId();
@@ -78,11 +82,11 @@ contract SOFAccessSystemTest is MudTest {
     vm.startPrank(deployer);
 
     // DEPLOY AND REGISTER THE CLASS SCOPED SYSTEM AND THE UNSCOPED SYSTEM
-    classScopedSystem = new ClassScopedMock();
-    world.registerSystem(CLASS_SCOPED_SYSTEM_ID, System(classScopedSystem), true);
+    classScopedForwarder = IWorld(createMockForwarder(worldAddress, CLASS_SCOPED_SYSTEM_ID));
+    classScopedSystem = Systems.getSystem(CLASS_SCOPED_SYSTEM_ID);
 
-    unscopedSystem = new UnscopedMock();
-    world.registerSystem(UNSCOPED_SYSTEM_ID, System(unscopedSystem), true);
+    unscopedForwarder = IWorld(createMockForwarder(worldAddress, UNSCOPED_SYSTEM_ID));
+    unscopedSystem = Systems.getSystem(UNSCOPED_SYSTEM_ID);
 
     // CONFIGURE ROLES, ACCESS, AND ENFORCEMENT FOR THE ENTITY, TAG and ROLE MANAGEMENT SYSTEMS
     _configureSOFCallAccess();
@@ -269,17 +273,11 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
-    world.call(
-      UNSCOPED_SYSTEM_ID,
-      abi.encodeCall(
-        UnscopedMock.callSetTag,
-        (
-          classId,
-          TagParams(
-            CLASS_SCOPED_SYSTEM_TAG,
-            abi.encode(ResourceRelationValue("COMPOSITION", RESOURCE_SYSTEM, CLASS_SCOPED_SYSTEM_ID.getResourceName()))
-          )
-        )
+    unscopedForwarder.evefrontier__setTag(
+      classId,
+      TagParams(
+        CLASS_SCOPED_SYSTEM_TAG,
+        abi.encode(ResourceRelationValue("COMPOSITION", RESOURCE_SYSTEM, CLASS_SCOPED_SYSTEM_ID.getResourceName()))
       )
     );
 
@@ -287,17 +285,11 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(classScopedSystem))
     );
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(
-        ClassScopedMock.callSetTag,
-        (
-          classId,
-          TagParams(
-            UNSCOPED_SYSTEM_TAG,
-            abi.encode(ResourceRelationValue("COMPOSITION", RESOURCE_SYSTEM, UNSCOPED_SYSTEM_ID.getResourceName()))
-          )
-        )
+    classScopedForwarder.evefrontier__setTag(
+      classId,
+      TagParams(
+        UNSCOPED_SYSTEM_TAG,
+        abi.encode(ResourceRelationValue("COMPOSITION", RESOURCE_SYSTEM, UNSCOPED_SYSTEM_ID.getResourceName()))
       )
     );
 
@@ -334,7 +326,7 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callRemoveTag, (classId, CLASS_SCOPED_SYSTEM_TAG)));
+    unscopedForwarder.evefrontier__removeTag(classId, CLASS_SCOPED_SYSTEM_TAG);
 
     // success, via the EntitySystem call (all tags removed through deleteClass->removeSystemTags->removeSystemTag)
 
@@ -353,7 +345,7 @@ contract SOFAccessSystemTest is MudTest {
     entitySystem.registerClass(classId, scopedSystemIds);
 
     // set object level tag (unscopedSystem)
-    world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callInstantiate, (classId, objectId, alice)));
+    classScopedForwarder.evefrontier__instantiate(classId, objectId, alice);
 
     vm.prank(alice);
     tagSystem.setTag(
@@ -368,10 +360,7 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(classScopedSystem))
     );
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callRemoveTag, (classId, CLASS_SCOPED_SYSTEM_TAG))
-    );
+    classScopedForwarder.evefrontier__removeTag(classId, CLASS_SCOPED_SYSTEM_TAG);
 
     // revert, if direct caller is not a class access role member (class)
     vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(this)));
@@ -406,13 +395,10 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callSetClassAccessRole, (classId, classAccessRole)));
+    unscopedForwarder.evefrontier__setClassAccessRole(classId, classAccessRole);
 
     // success, via the class scoped system call
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callSetClassAccessRole, (classId, classAccessRole))
-    );
+    classScopedForwarder.evefrontier__setClassAccessRole(classId, classAccessRole);
 
     // revert, if direct caller is not a class access role member
     vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(this)));
@@ -440,13 +426,10 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callSetObjectAccessRole, (objectId, classAccessRole)));
+    unscopedForwarder.evefrontier__setObjectAccessRole(objectId, classAccessRole);
 
     // success, via the class scoped system call
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callSetObjectAccessRole, (objectId, classAccessRole))
-    );
+    classScopedForwarder.evefrontier__setObjectAccessRole(objectId, classAccessRole);
 
     // revert, if direct caller is not a object access role member (in this case the object role is the class role added in the last call)
     vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(this)));
@@ -470,10 +453,10 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callInstantiate, (classId, objectId, alice)));
+    unscopedForwarder.evefrontier__instantiate(classId, objectId, alice);
 
     // success, via the class scoped system call
-    world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callInstantiate, (classId, objectId, alice)));
+    classScopedForwarder.evefrontier__instantiate(classId, objectId, alice);
 
     // add UNSCOPED_SYSTEM_ID to the CallAccess table for the instantiate function
     vm.prank(deployer);
@@ -484,7 +467,7 @@ contract SOFAccessSystemTest is MudTest {
     entitySystem.deleteObject(objectId);
 
     // success, via UNSCOPED, the newly CallAccess defined caller
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callInstantiate, (classId, objectId, alice)));
+    unscopedForwarder.evefrontier__instantiate(classId, objectId, alice);
 
     // delete object (so we can successfully instantiate again)
     vm.prank(deployer);
@@ -515,10 +498,10 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteObject, (objectId)));
+    unscopedForwarder.evefrontier__deleteObject(objectId);
 
     // success, via the class scoped system call
-    world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callDeleteObject, (objectId)));
+    classScopedForwarder.evefrontier__deleteObject(objectId);
 
     // re-instantiate object (so we can successfully delete it again)
     vm.prank(deployer);
@@ -529,7 +512,7 @@ contract SOFAccessSystemTest is MudTest {
     CallAccess.set(entitySystem.toResourceId(), IEntitySystem.deleteObject.selector, address(unscopedSystem), true);
 
     // success, via UNSCOPED, the newly CallAccess defined caller
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteObject, (objectId)));
+    unscopedForwarder.evefrontier__deleteObject(objectId);
 
     // re-instantiate object (so we can successfully delete it again)
     vm.prank(deployer);
@@ -558,13 +541,13 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(classScopedSystem))
     );
-    world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callDeleteClass, (classId)));
+    classScopedForwarder.evefrontier__deleteClass(classId);
 
     // revert if calling from an unscoped system
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteClass, (classId)));
+    unscopedForwarder.evefrontier__deleteClass(classId);
 
     // add UNSCOPED_SYSTEM_ID to the CallAccess table for deleteClass
     vm.prank(deployer);
@@ -574,7 +557,7 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callDeleteClass, (classId)));
+    unscopedForwarder.evefrontier__deleteClass(classId);
 
     // revert on direct call
     vm.expectRevert(abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, classId, address(this)));
@@ -605,10 +588,7 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(
-      UNSCOPED_SYSTEM_ID,
-      abi.encodeCall(UnscopedMock.callScopedCreateRole, (objectId, adminRole, adminRole, deployer))
-    );
+    unscopedForwarder.evefrontier__scopedCreateRole(objectId, adminRole, adminRole, deployer);
 
     // add UNSCOPED_SYSTEM_ID to the CallAccess table for the scopedCreateRole function
     vm.prank(deployer);
@@ -620,16 +600,10 @@ contract SOFAccessSystemTest is MudTest {
     );
 
     // success, via UNSCOPED, the newly CallAccess defined caller
-    world.call(
-      UNSCOPED_SYSTEM_ID,
-      abi.encodeCall(UnscopedMock.callScopedCreateRole, (objectId, testRole, testRole, deployer))
-    );
+    unscopedForwarder.evefrontier__scopedCreateRole(objectId, testRole, testRole, deployer);
 
     // success, via the class scoped system call
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callScopedCreateRole, (objectId, adminRole, adminRole, deployer))
-    );
+    classScopedForwarder.evefrontier__scopedCreateRole(objectId, adminRole, adminRole, deployer);
   }
 
   function test_RoleManagermentSystem_scopedTransferRoleAdmin() public {
@@ -656,17 +630,11 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(
-      UNSCOPED_SYSTEM_ID,
-      abi.encodeCall(UnscopedMock.callScopedTransferRoleAdmin, (objectId, testRole, adminRole))
-    );
+    unscopedForwarder.evefrontier__scopedTransferRoleAdmin(objectId, testRole, adminRole);
 
     // success, via the class scoped system call
     vm.prank(deployer);
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callScopedTransferRoleAdmin, (objectId, testRole, adminRole))
-    );
+    classScopedForwarder.evefrontier__scopedTransferRoleAdmin(objectId, testRole, adminRole);
   }
 
   function test_RoleManagermentSystem_scopedGrantRole() public {
@@ -690,7 +658,7 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedGrantRole, (objectId, adminRole, alice)));
+    unscopedForwarder.evefrontier__scopedGrantRole(objectId, adminRole, alice);
 
     // add UNSCOPED_SYSTEM_ID to the CallAccess table for the scopedGrantRole function
     vm.prank(deployer);
@@ -702,14 +670,11 @@ contract SOFAccessSystemTest is MudTest {
     );
 
     // success, via UNSCOPED, the newly CallAccess defined caller
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedGrantRole, (objectId, adminRole, bob)));
+    unscopedForwarder.evefrontier__scopedGrantRole(objectId, adminRole, bob);
 
     // success, via the class scoped system call
     vm.prank(deployer);
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callScopedGrantRole, (objectId, adminRole, alice))
-    );
+    classScopedForwarder.evefrontier__scopedGrantRole(objectId, adminRole, alice);
   }
 
   function test_RoleManagermentSystem_scopedRevokeRole() public {
@@ -735,14 +700,11 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedRevokeRole, (objectId, adminRole, alice)));
+    unscopedForwarder.evefrontier__scopedRevokeRole(objectId, adminRole, alice);
 
     // success, via the class scoped system call
     vm.prank(deployer);
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callScopedRevokeRole, (objectId, adminRole, alice))
-    );
+    classScopedForwarder.evefrontier__scopedRevokeRole(objectId, adminRole, alice);
   }
 
   function test_RoleManagermentSystem_scopedRenounceRole() public {
@@ -766,17 +728,10 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(
-      UNSCOPED_SYSTEM_ID,
-      abi.encodeCall(UnscopedMock.callScopedRenounceRole, (objectId, adminRole, deployer))
-    );
+    unscopedForwarder.evefrontier__scopedRenounceRole(objectId, adminRole, deployer);
 
     // success, via the class scoped system call
-    vm.prank(deployer);
-    world.call(
-      CLASS_SCOPED_SYSTEM_ID,
-      abi.encodeCall(ClassScopedMock.callScopedRenounceRole, (objectId, adminRole, deployer))
-    );
+    classScopedForwarder.evefrontier__scopedRenounceRole(objectId, adminRole, address(classScopedForwarder));
   }
 
   function test_RoleManagermentSystem_scopedRevokeAll() public {
@@ -803,7 +758,7 @@ contract SOFAccessSystemTest is MudTest {
     vm.expectRevert(
       abi.encodeWithSelector(ISOFAccessSystem.SOFAccess_AccessDenied.selector, objectId, address(unscopedSystem))
     );
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedRevokeAll, (objectId, adminRole)));
+    unscopedForwarder.evefrontier__scopedRevokeAll(objectId, adminRole);
 
     // add UNSCOPED_SYSTEM_ID to the CallAccess table for the scopedRevokeAll function
     vm.prank(deployer);
@@ -815,11 +770,11 @@ contract SOFAccessSystemTest is MudTest {
     );
 
     // success, via UNSCOPED, the newly CallAccess defined caller
-    world.call(UNSCOPED_SYSTEM_ID, abi.encodeCall(UnscopedMock.callScopedRevokeAll, (objectId, adminRole)));
+    unscopedForwarder.evefrontier__scopedRevokeAll(objectId, adminRole);
 
     // success, via the class scoped system call
     vm.prank(deployer);
-    world.call(CLASS_SCOPED_SYSTEM_ID, abi.encodeCall(ClassScopedMock.callScopedRevokeAll, (objectId, adminRole)));
+    classScopedForwarder.evefrontier__scopedRevokeAll(objectId, adminRole);
 
     // EntitySystemm calling case success proven in EntitySystem.deleteClass and EntitySystem.deleteObject tests above
   }
