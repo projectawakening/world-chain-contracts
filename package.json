@@ -10,7 +10,7 @@
   "devDependencies": {
     "dotenv-cli": "^8.0.0",
     "mprocs": "^0.6.4",
-    "nx": "18.2.0"
+    "nx": "22.3.3"
   },
   "pnpm": {
     "overrides": {
