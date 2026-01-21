@@ -293,6 +293,10 @@ contract EntitySystem is SmartObjectFramework {
 
     tagSystem.setTags(classId, propertyTags);
 
+    _addToScope(classId, scopedSystemIds);
+  }
+
+  function _addToScope(uint256 entityId, ResourceId[] memory scopedSystemIds) internal virtual {
     TagParams[] memory systemResourceTags = new TagParams[](scopedSystemIds.length);
     for (uint i = 0; i < scopedSystemIds.length; i++) {
       systemResourceTags[i] = TagParams(
@@ -303,7 +307,7 @@ contract EntitySystem is SmartObjectFramework {
       );
     }
     if (systemResourceTags.length > 0) {
-      tagSystem.setTags(classId, systemResourceTags);
+      tagSystem.setTags(entityId, systemResourceTags);
     }
   }
 
